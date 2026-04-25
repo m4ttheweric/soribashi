@@ -8,10 +8,23 @@
 export type BoxMod = string | Record<string, unknown> | (string | Record<string, unknown>)[];
 
 /**
+ * Transforms a mod key (property name or bare string) into a `data-*` attribute
+ * name. camelCase is converted to kebab-case per Mantine convention:
+ *   isActive  → data-is-active
+ *   XLarge    → data-x-large
+ *   data-foo  → data-foo   (already-prefixed keys are preserved verbatim)
+ */
+function transformModKey(key: string): string {
+  const cleanKey = key.startsWith('data-') ? key.slice(5) : key;
+  const kebabKey = cleanKey.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  return `data-${kebabKey}`;
+}
+
+/**
  * Converts a `mod` value into a flat record of `data-*` attributes.
  *
  *   getBoxMod('active')                       => { 'data-active': true }
- *   getBoxMod({ active: true, loading: 0 })   => { 'data-active': true }
+ *   getBoxMod({ isActive: true, loading: 0 }) => { 'data-is-active': true }
  *   getBoxMod([{ active: true }, 'open'])     => { 'data-active': true, 'data-open': true }
  *   getBoxMod({ size: 'lg' })                  => { 'data-size': 'lg' }
  *
@@ -21,7 +34,7 @@ export type BoxMod = string | Record<string, unknown> | (string | Record<string,
  */
 export function getBoxMod(value: BoxMod | undefined): Record<string, unknown> {
   if (value === undefined || value === null) return {};
-  if (typeof value === 'string') return { [`data-${value}`]: true };
+  if (typeof value === 'string') return { [transformModKey(value)]: true };
 
   if (Array.isArray(value)) {
     const out: Record<string, unknown> = {};
@@ -35,9 +48,7 @@ export function getBoxMod(value: BoxMod | undefined): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, v] of Object.entries(value)) {
     if (v === false || v === null || v === undefined || v === '' || v === 0) continue;
-    // If the key already starts with 'data-', preserve it; otherwise prefix.
-    const attr = key.startsWith('data-') ? key : `data-${key}`;
-    out[attr] = v === true ? true : v;
+    out[transformModKey(key)] = v === true ? true : v;
   }
   return out;
 }
