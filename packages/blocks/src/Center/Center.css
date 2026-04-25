@@ -1,0 +1,8 @@
+.sb-Center-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sb-Center-root[data-inline='true'] {
+  display: inline-flex;
+}

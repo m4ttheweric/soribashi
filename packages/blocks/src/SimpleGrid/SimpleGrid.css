@@ -1,0 +1,13 @@
+.sb-SimpleGrid-root { display: grid; }
+.sb-SimpleGrid-root[data-cols='1']  { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.sb-SimpleGrid-root[data-cols='2']  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sb-SimpleGrid-root[data-cols='3']  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sb-SimpleGrid-root[data-cols='4']  { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sb-SimpleGrid-root[data-cols='6']  { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+.sb-SimpleGrid-root[data-gap='none'] { gap: 0; }
+.sb-SimpleGrid-root[data-gap='xs']   { gap: var(--spacing-xs); }
+.sb-SimpleGrid-root[data-gap='sm']   { gap: var(--spacing-sm); }
+.sb-SimpleGrid-root[data-gap='md']   { gap: var(--spacing-md); }
+.sb-SimpleGrid-root[data-gap='lg']   { gap: var(--spacing-lg); }
+.sb-SimpleGrid-root[data-gap='xl']   { gap: var(--spacing-xl); }

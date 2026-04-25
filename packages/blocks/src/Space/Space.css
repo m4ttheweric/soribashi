@@ -1,0 +1,13 @@
+.sb-Space-root[data-h='xs']  { height: var(--spacing-xs); }
+.sb-Space-root[data-h='sm']  { height: var(--spacing-sm); }
+.sb-Space-root[data-h='md']  { height: var(--spacing-md); }
+.sb-Space-root[data-h='lg']  { height: var(--spacing-lg); }
+.sb-Space-root[data-h='xl']  { height: var(--spacing-xl); }
+.sb-Space-root[data-h='2xl'] { height: var(--spacing-2xl); }
+
+.sb-Space-root[data-w='xs']  { width: var(--spacing-xs); }
+.sb-Space-root[data-w='sm']  { width: var(--spacing-sm); }
+.sb-Space-root[data-w='md']  { width: var(--spacing-md); }
+.sb-Space-root[data-w='lg']  { width: var(--spacing-lg); }
+.sb-Space-root[data-w='xl']  { width: var(--spacing-xl); }
+.sb-Space-root[data-w='2xl'] { width: var(--spacing-2xl); }

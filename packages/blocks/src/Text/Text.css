@@ -1,0 +1,33 @@
+.sb-Text-root {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  line-height: 1.5;
+}
+
+.sb-Text-root[data-size='xs']  { font-size: var(--font-size-xs); }
+.sb-Text-root[data-size='sm']  { font-size: var(--font-size-sm); }
+.sb-Text-root[data-size='md']  { font-size: var(--font-size-md); }
+.sb-Text-root[data-size='lg']  { font-size: var(--font-size-lg); }
+.sb-Text-root[data-size='xl']  { font-size: var(--font-size-xl); }
+.sb-Text-root[data-size='2xl'] { font-size: var(--font-size-2xl); }
+.sb-Text-root[data-size='3xl'] { font-size: var(--font-size-3xl); }
+
+.sb-Text-root[data-weight='normal']    { font-weight: 400; }
+.sb-Text-root[data-weight='medium']    { font-weight: 500; }
+.sb-Text-root[data-weight='semibold']  { font-weight: 600; }
+.sb-Text-root[data-weight='bold']      { font-weight: 700; }
+
+.sb-Text-root[data-color='default']  { color: var(--text-default); }
+.sb-Text-root[data-color='muted']    { color: var(--text-muted); }
+.sb-Text-root[data-color='disabled'] { color: var(--text-disabled); }
+
+.sb-Text-root[data-align='left']    { text-align: left; }
+.sb-Text-root[data-align='center']  { text-align: center; }
+.sb-Text-root[data-align='right']   { text-align: right; }
+.sb-Text-root[data-align='justify'] { text-align: justify; }
+
+.sb-Text-root[data-truncate='true'] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

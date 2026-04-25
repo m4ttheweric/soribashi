@@ -1,0 +1,21 @@
+.sb-Stack-root {
+  display: flex;
+  flex-direction: column;
+}
+.sb-Stack-root[data-gap='none'] { gap: 0; }
+.sb-Stack-root[data-gap='xs']   { gap: var(--spacing-xs); }
+.sb-Stack-root[data-gap='sm']   { gap: var(--spacing-sm); }
+.sb-Stack-root[data-gap='md']   { gap: var(--spacing-md); }
+.sb-Stack-root[data-gap='lg']   { gap: var(--spacing-lg); }
+.sb-Stack-root[data-gap='xl']   { gap: var(--spacing-xl); }
+
+.sb-Stack-root[data-align='start']    { align-items: flex-start; }
+.sb-Stack-root[data-align='center']   { align-items: center; }
+.sb-Stack-root[data-align='end']      { align-items: flex-end; }
+.sb-Stack-root[data-align='stretch']  { align-items: stretch; }
+
+.sb-Stack-root[data-justify='start']    { justify-content: flex-start; }
+.sb-Stack-root[data-justify='center']   { justify-content: center; }
+.sb-Stack-root[data-justify='end']      { justify-content: flex-end; }
+.sb-Stack-root[data-justify='between']  { justify-content: space-between; }
+.sb-Stack-root[data-justify='around']   { justify-content: space-around; }
