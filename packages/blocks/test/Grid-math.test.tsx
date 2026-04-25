@@ -203,3 +203,33 @@ describe('Grid grow prop', () => {
     expect(col.style.getPropertyValue('--col-flex-grow')).toBe('1');
   });
 });
+
+// ---------------------------------------------------------------------------
+// #8 — align prop on Grid.Col (renamed from alignSelf)
+// ---------------------------------------------------------------------------
+
+describe('Grid.Col align prop', () => {
+  it('align prop maps to --col-align-self CSS var', () => {
+    const { container } = wrap(
+      <Grid.Col span={6} align="center">X</Grid.Col>,
+    );
+    const col = container.querySelector('.sb-Grid-col') as HTMLElement;
+    expect(col.style.getPropertyValue('--col-align-self')).toBe('center');
+  });
+
+  it('align="flex-start" maps correctly', () => {
+    const { container } = wrap(
+      <Grid.Col span={6} align="flex-start">X</Grid.Col>,
+    );
+    const col = container.querySelector('.sb-Grid-col') as HTMLElement;
+    expect(col.style.getPropertyValue('--col-align-self')).toBe('flex-start');
+  });
+
+  it('align="end" on col renders correctly', () => {
+    const { container } = wrap(
+      <Grid.Col align="end">X</Grid.Col>,
+    );
+    const col = container.querySelector('.sb-Grid-col') as HTMLElement;
+    expect(col.style.getPropertyValue('--col-align-self')).toBe('end');
+  });
+});
