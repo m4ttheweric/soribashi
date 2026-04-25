@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/theme" },
+    { "path": "./packages/codegen" },
+    { "path": "./packages/factory" },
+    { "path": "./packages/blocks" },
+    { "path": "./packages/core" },
+    { "path": "./apps/playground" }
+  ]
+}
