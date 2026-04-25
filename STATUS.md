@@ -2,7 +2,30 @@
 
 **As of 2026-04-25**
 
-All 5 plans executed end-to-end. **155 tests passing** across 23 test files in 5 packages. Playground app builds and runs. **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md` for the full ledger satisfying Hard Rule 13. Three behavioral alignments applied (function-form `useProps` defaults, polymorphic-preserving `withProps`, generic-preserving `withProps`); all other divergences are deliberate and documented.
+All 5 original plans executed end-to-end. **233 tests passing** across 27 test files. Playground app builds (21KB CSS, 190KB JS gzipped 60KB) and runs. **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md` for the full ledger satisfying Hard Rule 13.
+
+## Mantine blocks adaptation — IN PROGRESS
+
+A second pass to faithfully adapt Mantine's blocks (per `docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md`) is **partially complete**:
+
+**Completed (Phases 0–5 + Stack):**
+- ✅ Phase 0: `THIRD-PARTY-LICENSES.md` with Mantine MIT attribution
+- ✅ Phase 1: theme additions (`fontWeight`, `lineHeight`, `fontFamily.heading`, `heading.sizes`)
+- ✅ Phase 2: helper utilities (`rem`, `getSpacing`, `getRadius`, `getSize`, `getFontSize`, `getLineHeight`, `getShadow`, `getThemeColor`)
+- ✅ Phase 3: factory infrastructure (`useRandomClassName`, `hashStyleProps`, `<InlineStyles>`)
+- ✅ Phase 4: Box style-props machinery (`STYLE_PROPS_DATA`, `parseStyleProps`, `extractStyleProps`, `getBoxMod`)
+- ✅ Phase 5: Box itself — full Mantine-faithful with style-prop pipeline + responsive `StyleProp<T>` support (20 dedicated tests)
+- ✅ Phase 6 (Stack only): adapted to Box-wrapping pattern with var-based theming
+
+**Remaining (Phases 6 partial + 7–9):**
+- ⏳ Group (with `grow` + `preventGrowOverflow`), Center, AspectRatio (children-aware fix), Space, Paper (a11y defaults)
+- ⏳ Flex (responsive style props), Grid + GridCol + GridProvider + responsive cols, SimpleGrid (container queries + auto-fill/auto-fit), Container (block + grid strategies + breakout)
+- ⏳ Text (lineClamp, gradient, inline, inherit), Title (text-wrap, lineClamp, getTitleSize)
+- ⏳ Final cleanup: update style.css imports, divergence ledger refresh, lint check for `--mantine-` references
+
+The remaining 12 blocks still work in their original soribashi form (data-attribute selectors). Tests pass; only the Stack block currently uses the new Mantine-faithful pattern.
+
+**Pre-existing TypeScript errors surfaced:** With `tsconfig.json` properly in place again, `bun run typecheck` reveals pre-existing TS errors in `factory.tsx`, `use-styles.ts`, `Text.tsx`, `Title.tsx` that were latent because the root `tsconfig.json` had been deleted at some point earlier. These are unrelated to the Mantine adaptation and should be addressed in a focused fix pass. Tests and the playground build are unaffected.
 
 ## What was built
 
