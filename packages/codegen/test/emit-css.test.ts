@@ -167,6 +167,11 @@ describe('emitCss', () => {
         heading: {
           sizes: {
             h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
           },
           textWrap: 'wrap',
         },
