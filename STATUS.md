@@ -2,7 +2,7 @@
 
 **As of 2026-04-25**
 
-All 5 original plans executed end-to-end **and** the Mantine blocks adaptation pass is complete. **249 tests passing** across 27 test files. Playground app builds, typecheck clean (`bun run typecheck`). See `docs/superpowers/divergences/mantine-master.md` and `THIRD-PARTY-LICENSES.md`.
+All 5 original plans executed end-to-end, the Mantine blocks adaptation pass is complete, **and** a follow-on validation pass closed all 15 residual divergences against Mantine `63dafbbf`. **347 tests passing** across 37 test files. Playground app builds, typecheck clean (`bun run typecheck`). See `docs/superpowers/divergences/mantine-master.md` and `THIRD-PARTY-LICENSES.md`.
 
 ## Mantine blocks adaptation — COMPLETE
 
@@ -20,6 +20,7 @@ All 5 original plans executed end-to-end **and** the Mantine blocks adaptation p
 - ✅ **Phase 7:** Flex, Grid + Grid.Col, SimpleGrid, Container (block strategy)
 - ✅ **Phase 8:** Text (lineClamp, gradient, inline, inherit, RTL truncate, span shorthand) + Title (`order`, `size` accepts `h1`-`h6` token, `lineClamp`, `textWrap`, `getTitleSize` reading `theme.tokens.heading.sizes`)
 - ✅ **Phase 9:** Divergence ledger refreshed (`docs/superpowers/divergences/mantine-master.md`); `--mantine-` lint clean (only attribution-comment references remain); final smoke (`bunx vitest run`, `bun run typecheck`, `bun run --filter @soribashi/playground build`) all green
+- ✅ **Validation pass (post-Phase 9):** 15 residual divergences against Mantine `63dafbbf` closed in a parallel-batch fix run — Grid math parameterized on `columns`, full Box style-prop parity (`hiddenFrom`/`visibleFrom`/12 missing props/logical-shorthand `mx`/`my`), `getBoxMod` kebab-cases mod keys, utility resolvers drop the `STANDARD_KEYS` allowlist, `rem` accepts px-strings, codegen emits `--heading-text-wrap`, `useRandomClassName` handles React 19 IDs, Paper border var scoped, SimpleGrid renames + selector specificity. See `mantine-master.md` § "Post-adaptation validation pass" for the full table.
 
 ### Deferred (acknowledged, not yet implemented)
 

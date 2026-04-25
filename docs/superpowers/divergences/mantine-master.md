@@ -151,13 +151,35 @@ Per the 2026-04-25 blocks adaptation pass (see `docs/superpowers/plans/2026-04-2
 | `Space` | One-line `Box` wrapper (the `w` / `h` style props do all the work). |
 | `Paper` | a11y defaults plus light/dark border via `:root` / `.dark`. |
 | `Flex` | Adapted; flat values for own props (responsive `StyleProp<T>` deferred — see below). |
-| `Grid` + `Grid.Col` | Adapted; flat values for `cols`, `span`, etc. (`GridProvider` deferred). |
-| `SimpleGrid` | Block strategy fully adapted (`type='container'` mode deferred). |
+| `Grid` + `Grid.Col` | Mantine column-math helpers (`getColumnFlexBasis`/`getColumnMaxWidth`/`getColumnFlexGrow`/`getColumnOffset`) ported and parameterized on `columns`. `GridProvider` context wires `columns` + `grow` to children. Responsive `StyleProp<T>` for col span / offset / order still deferred. |
+| `SimpleGrid` | Block strategy fully adapted (`minColWidth` / `autoFlow` / `autoRows` / `type='media'`). `type='container'` mode deferred. |
 | `Container` | Both block and grid strategies implemented. Grid strategy: `strategy="grid"` renders a CSS Grid template; direct children default to the center column; children with `data-breakout` span the full viewport; `data-breakout > [data-container]` children are re-constrained to `--container-size`. |
 | `Text` | `lineClamp`, `gradient`, `inline`, `inherit`, RTL truncate (`truncate='start'`), `span` shorthand. |
 | `Title` | `order` (1-6), `size` accepts `h1`-`h6` token, `lineClamp`, `textWrap`, vars from `theme.tokens.heading.sizes`. |
 
 Layout blocks are now full Mantine adaptations. Behavioral parity verified by tests; remaining differences are limited to (1) token names (per § 4 of the adaptation spec), (2) framework imports targeting `@soribashi/factory` instead of Mantine's `core`, and (3) class-name prefix `sb-` instead of `mantine-`.
+
+### Post-adaptation validation pass — 2026-04-25
+
+After the adaptation pass, a second-pass validation against Mantine `63dafbbf` surfaced 15 residual divergences. All 15 are now closed:
+
+| # | Area | Resolution |
+|---|---|---|
+| 1 | `Grid` math hardcoded 12 columns, missing gap-factor term, `span="auto"` set width=100% | Ported Mantine column-math helpers; parameterized on `columns`; added `GridProvider` for context-aware col vars; added `grow` prop |
+| 2 | `getBoxMod` did not kebab-case camelCase keys | Added `transformModKey` mirroring Mantine's `replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()` |
+| 3 | `mx`/`my` mapped to physical longhands | Now map to `marginInline` / `marginBlock` logical shorthands (same for padding) |
+| 4 | `fw` resolver mangled CSS keywords like `bolder` | Identity pass-through (matches Mantine) |
+| 5 | `hiddenFrom` / `visibleFrom` / `sx` / `lightHidden` / `darkHidden` leaked to DOM | Explicitly consumed in Box destructure; not forwarded to DOM |
+| 6 | Visibility props not implemented | `hiddenFrom`/`visibleFrom`/`lightHidden`/`darkHidden` now apply `sb-{hidden,visible}-from-{bp}` / `sb-{light,dark}-hidden` classes backed by `packages/blocks/src/Box/visibility.css` |
+| 7 | Style-prop set missing 12 props | Added `mis`/`mie`/`pis`/`pie`/`ff`/`fs`/`tt`/`td`/`bgsz`/`bgp`/`bgr`/`bga` |
+| 8 | Prop renames (`Grid.Col alignSelf`, `SimpleGrid minColumnWidth`/`autoCols`/`type='simple'`) | Renamed to `align`, `minColWidth`, `autoFlow`, `type='media'`. Added `autoRows` on SimpleGrid. |
+| 9 | `--heading-text-wrap` referenced by `Title.css` but never emitted | `emit-css.ts` now emits the var when `theme.tokens.heading.textWrap` is set |
+| 10 | `getSize`/`getSpacing`/`getRadius`/`getFontSize` over-restrictive `STANDARD_KEYS` allowlist | Replaced with Mantine's `isNumberLike` heuristic (open-ended token resolution); `getRadius(undefined)` falls back to `var(--radius-md)` |
+| 11 | `rem.ts` did not handle px-strings | Now parses `'8px'` → `'0.5rem'`, recurses on space- and comma-separated values, passes through CSS functions |
+| 12 | `useRandomClassName` only stripped `:` | Now strips `[:«»]` (handles React 19 boundary IDs) |
+| 13 | `Paper` `--paper-border-color` declared on `:root`/`.dark` (global namespace) | Scoped to `.sb-Paper-root` and `.dark .sb-Paper-root` |
+| 14 | `SimpleGrid` auto-flow rules wrapped in `:where()` (zero specificity) | Bare attribute selectors (matches Mantine specificity for overridability) |
+| 15 | Ledger marked `Container` grid strategy as deferred when in fact shipped | Ledger entry corrected; per-block table updated |
 
 ---
 
