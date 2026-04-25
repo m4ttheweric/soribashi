@@ -1,0 +1,113 @@
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/core/Box/style-props/style-props-data.ts
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ *
+ * Soribashi changes:
+ *   - Resolvers reference soribashi's @soribashi/blocks/utils helpers
+ *   - Token names: --mantine-* → soribashi-equivalent (handled inside the resolvers)
+ */
+import {
+  getSpacing,
+  getRadius,
+  getFontSize,
+  getLineHeight,
+  getThemeColor,
+  rem,
+} from '../../utils/index.ts';
+import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
+
+const identity: StylePropResolver = (v) =>
+  v === undefined || v === null ? undefined : String(v);
+
+const sizeOrRem: StylePropResolver = (v) => {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === 'number') return rem(v);
+  return String(v);
+};
+
+const fontWeight: StylePropResolver = (v) => {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === 'number') return v.toString();
+  // accept token keys like 'regular', 'bold'
+  if (typeof v === 'string' && /^[a-z]+$/.test(v)) return `var(--font-weight-${v})`;
+  return String(v);
+};
+
+/**
+ * Static map from prop name to CSS property + resolver. Mirrors Mantine's
+ * style-prop set. Adding a new prop here makes it work on every component
+ * that wraps Box.
+ */
+export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
+  // Margin
+  m: { property: 'margin', resolver: getSpacing as StylePropResolver },
+  mt: { property: 'marginTop', resolver: getSpacing as StylePropResolver },
+  mb: { property: 'marginBottom', resolver: getSpacing as StylePropResolver },
+  ml: { property: 'marginLeft', resolver: getSpacing as StylePropResolver },
+  mr: { property: 'marginRight', resolver: getSpacing as StylePropResolver },
+  ms: { property: 'marginInlineStart', resolver: getSpacing as StylePropResolver },
+  me: { property: 'marginInlineEnd', resolver: getSpacing as StylePropResolver },
+  mx: {
+    property: ['marginInlineStart', 'marginInlineEnd'],
+    resolver: getSpacing as StylePropResolver,
+  },
+  my: {
+    property: ['marginTop', 'marginBottom'],
+    resolver: getSpacing as StylePropResolver,
+  },
+
+  // Padding
+  p: { property: 'padding', resolver: getSpacing as StylePropResolver },
+  pt: { property: 'paddingTop', resolver: getSpacing as StylePropResolver },
+  pb: { property: 'paddingBottom', resolver: getSpacing as StylePropResolver },
+  pl: { property: 'paddingLeft', resolver: getSpacing as StylePropResolver },
+  pr: { property: 'paddingRight', resolver: getSpacing as StylePropResolver },
+  ps: { property: 'paddingInlineStart', resolver: getSpacing as StylePropResolver },
+  pe: { property: 'paddingInlineEnd', resolver: getSpacing as StylePropResolver },
+  px: {
+    property: ['paddingInlineStart', 'paddingInlineEnd'],
+    resolver: getSpacing as StylePropResolver,
+  },
+  py: {
+    property: ['paddingTop', 'paddingBottom'],
+    resolver: getSpacing as StylePropResolver,
+  },
+
+  // Color
+  bg: { property: 'background', resolver: getThemeColor as StylePropResolver },
+  c: { property: 'color', resolver: getThemeColor as StylePropResolver },
+  bd: { property: 'border', resolver: identity },
+  bdrs: { property: 'borderRadius', resolver: getRadius as StylePropResolver },
+
+  // Typography
+  fz: { property: 'fontSize', resolver: getFontSize as StylePropResolver },
+  fw: { property: 'fontWeight', resolver: fontWeight },
+  lh: { property: 'lineHeight', resolver: getLineHeight as StylePropResolver },
+  lts: { property: 'letterSpacing', resolver: sizeOrRem },
+  ta: { property: 'textAlign', resolver: identity },
+
+  // Visual
+  opacity: { property: 'opacity', resolver: identity },
+
+  // Layout
+  display: { property: 'display', resolver: identity },
+  pos: { property: 'position', resolver: identity },
+  top: { property: 'top', resolver: sizeOrRem },
+  left: { property: 'left', resolver: sizeOrRem },
+  right: { property: 'right', resolver: sizeOrRem },
+  bottom: { property: 'bottom', resolver: sizeOrRem },
+  inset: { property: 'inset', resolver: sizeOrRem },
+
+  // Sizing
+  w: { property: 'width', resolver: sizeOrRem },
+  miw: { property: 'minWidth', resolver: sizeOrRem },
+  maw: { property: 'maxWidth', resolver: sizeOrRem },
+  h: { property: 'height', resolver: sizeOrRem },
+  mih: { property: 'minHeight', resolver: sizeOrRem },
+  mah: { property: 'maxHeight', resolver: sizeOrRem },
+
+  // Flex
+  flex: { property: 'flex', resolver: identity },
+};
