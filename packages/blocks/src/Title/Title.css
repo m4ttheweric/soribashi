@@ -1,24 +1,22 @@
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/components/Title/Title.module.css
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ */
 .sb-Title-root {
   margin: 0;
-  font-family: var(--font-family-sans);
-  line-height: 1.2;
+  font-weight: var(--title-fw);
+  font-size: var(--title-fz);
+  line-height: var(--title-lh);
+  font-family: var(--font-family-heading);
+  text-wrap: var(--title-text-wrap, var(--heading-text-wrap, wrap));
 }
 
-.sb-Title-root[data-level='1'] { font-size: var(--font-size-3xl); line-height: 1.1; }
-.sb-Title-root[data-level='2'] { font-size: var(--font-size-2xl); line-height: 1.2; }
-.sb-Title-root[data-level='3'] { font-size: var(--font-size-xl);  line-height: 1.3; }
-.sb-Title-root[data-level='4'] { font-size: var(--font-size-lg);  line-height: 1.4; }
-.sb-Title-root[data-level='5'] { font-size: var(--font-size-md);  line-height: 1.5; }
-.sb-Title-root[data-level='6'] { font-size: var(--font-size-sm);  line-height: 1.5; }
-
-.sb-Title-root[data-weight='normal']   { font-weight: 400; }
-.sb-Title-root[data-weight='medium']   { font-weight: 500; }
-.sb-Title-root[data-weight='semibold'] { font-weight: 600; }
-.sb-Title-root[data-weight='bold']     { font-weight: 700; }
-
-.sb-Title-root[data-color='default'] { color: var(--text-default); }
-.sb-Title-root[data-color='muted']   { color: var(--text-muted); }
-
-.sb-Title-root[data-align='left']   { text-align: left; }
-.sb-Title-root[data-align='center'] { text-align: center; }
-.sb-Title-root[data-align='right']  { text-align: right; }
+.sb-Title-root:where([data-line-clamp]) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: var(--title-line-clamp);
+  -webkit-box-orient: vertical;
+}

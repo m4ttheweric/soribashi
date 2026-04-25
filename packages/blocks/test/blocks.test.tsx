@@ -363,10 +363,36 @@ describe('Title', () => {
     expect(container.firstChild?.nodeName).toBe('H1');
   });
 
-  it('renders correct heading element per level', () => {
-    for (const level of [1, 2, 3, 4, 5, 6] as const) {
-      const { container } = wrap(<Title level={level}>X</Title>);
-      expect(container.firstChild?.nodeName).toBe(`H${level}`);
+  it('renders correct heading element per order', () => {
+    for (const order of [1, 2, 3, 4, 5, 6] as const) {
+      const { container } = wrap(<Title order={order}>X</Title>);
+      expect(container.firstChild?.nodeName).toBe(`H${order}`);
     }
+  });
+
+  it('order=2 size="h1" styles an h2 element with h1 sizing tokens', () => {
+    const { container } = wrap(
+      <Title order={2} size="h1">
+        X
+      </Title>,
+    );
+    const el = container.firstChild as HTMLElement;
+    expect(el.nodeName).toBe('H2');
+    expect(el.style.getPropertyValue('--title-fz')).toBe('var(--heading-h1-font-size)');
+    expect(el.style.getPropertyValue('--title-fw')).toBe('var(--heading-h1-font-weight)');
+    expect(el.style.getPropertyValue('--title-lh')).toBe('var(--heading-h1-line-height)');
+  });
+
+  it('lineClamp adds data-line-clamp and --title-line-clamp var', () => {
+    const { container } = wrap(<Title lineClamp={2}>X</Title>);
+    const el = container.firstChild as HTMLElement;
+    expect(el.dataset.lineClamp).toBe('true');
+    expect(el.style.getPropertyValue('--title-line-clamp')).toBe('2');
+  });
+
+  it('textWrap sets --title-text-wrap CSS var', () => {
+    const { container } = wrap(<Title textWrap="balance">X</Title>);
+    const el = container.firstChild as HTMLElement;
+    expect(el.style.getPropertyValue('--title-text-wrap')).toBe('balance');
   });
 });

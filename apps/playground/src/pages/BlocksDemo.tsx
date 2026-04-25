@@ -16,11 +16,11 @@ export function BlocksDemo() {
   return (
     <Container size="xl" px="lg">
       <Stack gap="xl">
-        <Title level={1}>Layout Blocks</Title>
+        <Title order={1}>Layout Blocks</Title>
 
         <Paper p="lg" withBorder>
           <Stack gap="md">
-            <Title level={3}>Stack</Title>
+            <Title order={3}>Stack</Title>
             <Stack gap="sm">
               {['One', 'Two', 'Three'].map((s) => (
                 <Box key={s} bg="surface.raised" p="md" bdrs="md">
@@ -33,7 +33,7 @@ export function BlocksDemo() {
 
         <Paper p="lg" withBorder>
           <Stack gap="md">
-            <Title level={3}>Group</Title>
+            <Title order={3}>Group</Title>
             <Group gap="sm">
               {['One', 'Two', 'Three'].map((s) => (
                 <Box key={s} bg="surface.raised" p="md" bdrs="md">
@@ -46,7 +46,7 @@ export function BlocksDemo() {
 
         <Paper p="lg" withBorder>
           <Stack gap="md">
-            <Title level={3}>Grid</Title>
+            <Title order={3}>Grid</Title>
             <Grid columns={12} gap="md">
               <Grid.Col span={4}>
                 <Box bg="surface.raised" p="md" bdrs="md">
@@ -79,7 +79,7 @@ export function BlocksDemo() {
 
         <Paper p="lg" withBorder>
           <Stack gap="md">
-            <Title level={3}>SimpleGrid</Title>
+            <Title order={3}>SimpleGrid</Title>
             <SimpleGrid cols={3} spacing="md">
               {['A', 'B', 'C', 'D', 'E', 'F'].map((s) => (
                 <Box key={s} bg="surface.raised" p="md" bdrs="md">
@@ -92,10 +92,10 @@ export function BlocksDemo() {
 
         <Paper p="lg" withBorder>
           <Stack gap="md">
-            <Title level={3}>Typography</Title>
-            <Title level={1}>Title 1</Title>
-            <Title level={2}>Title 2</Title>
-            <Title level={3}>Title 3</Title>
+            <Title order={3}>Typography</Title>
+            <Title order={1}>Title 1</Title>
+            <Title order={2}>Title 2</Title>
+            <Title order={3}>Title 3</Title>
             <Text size="lg">Body large</Text>
             <Text>Body default</Text>
             <Text c="text.muted">Muted text</Text>
@@ -104,7 +104,7 @@ export function BlocksDemo() {
 
         <Paper p="lg" withBorder>
           <Stack gap="md">
-            <Title level={3}>Center</Title>
+            <Title order={3}>Center</Title>
             <Center>
               <Box bg="surface.raised" p="lg" bdrs="md">
                 Centered

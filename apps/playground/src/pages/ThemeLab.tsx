@@ -9,11 +9,11 @@ export function ThemeLab() {
   return (
     <Container size="xl" px="lg">
       <Stack gap="xl">
-        <Title level={1}>Soribashi Theme Lab</Title>
+        <Title order={1}>Soribashi Theme Lab</Title>
 
         <Paper p="lg" withBorder shadow="sm">
           <Stack gap="md">
-            <Title level={2}>Intent × Variant Matrix</Title>
+            <Title order={2}>Intent × Variant Matrix</Title>
             <Text c="text.muted">
               Every Button below is the same component. Color decisions live in the theme's
               intentResolver. Adding a new intent or variant happens in exactly one place.
@@ -36,7 +36,7 @@ export function ThemeLab() {
 
         <Paper p="lg" withBorder shadow="sm">
           <Stack gap="md">
-            <Title level={2}>Sizes</Title>
+            <Title order={2}>Sizes</Title>
             <Group>
               {SIZES.map((size) => (
                 <Button key={size} size={size}>
@@ -49,7 +49,7 @@ export function ThemeLab() {
 
         <Paper p="lg" withBorder shadow="sm">
           <Stack gap="md">
-            <Title level={2}>States</Title>
+            <Title order={2}>States</Title>
             <Group>
               <Button>Default</Button>
               <Button loading>Loading</Button>

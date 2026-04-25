@@ -22,7 +22,7 @@ export function App() {
         >
           <Container size="xl" px="none">
             <Group justify="between">
-              <Title level={3}>Soribashi</Title>
+              <Title order={3}>Soribashi</Title>
               <Group>
                 <button onClick={() => setPage('theme-lab')}>Theme Lab</button>
                 <button onClick={() => setPage('blocks')}>Blocks</button>
