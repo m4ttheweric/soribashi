@@ -98,7 +98,7 @@ export function BlocksDemo() {
             <Title level={3}>Title 3</Title>
             <Text size="lg">Body large</Text>
             <Text>Body default</Text>
-            <Text color="muted">Muted text</Text>
+            <Text c="text.muted">Muted text</Text>
           </Stack>
         </Paper>
 

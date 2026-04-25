@@ -14,7 +14,7 @@ export function ThemeLab() {
         <Paper p="lg" withBorder shadow="sm">
           <Stack gap="md">
             <Title level={2}>Intent × Variant Matrix</Title>
-            <Text color="muted">
+            <Text c="text.muted">
               Every Button below is the same component. Color decisions live in the theme's
               intentResolver. Adding a new intent or variant happens in exactly one place.
             </Text>

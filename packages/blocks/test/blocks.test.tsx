@@ -228,14 +228,28 @@ describe('SimpleGrid', () => {
 });
 
 describe('Container', () => {
-  it('renders lg size by default', () => {
+  it('renders with sb-Container-root and default block strategy', () => {
     const { container } = wrap(<Container>X</Container>);
-    expect((container.firstChild as HTMLElement).dataset.size).toBe('lg');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Container-root');
+    expect(el.dataset.strategy).toBe('block');
   });
 
-  it('respects size prop', () => {
-    const { container } = wrap(<Container size="xl">X</Container>);
-    expect((container.firstChild as HTMLElement).dataset.size).toBe('xl');
+  it('size prop sets --container-size CSS var', () => {
+    const { container } = wrap(<Container size="lg">X</Container>);
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--container-size')).toBe('var(--container-size-lg)');
+  });
+
+  it('fluid prop adds data-fluid attribute', () => {
+    const { container } = wrap(<Container fluid>X</Container>);
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.dataset.fluid).toBe('true');
+  });
+
+  it('strategy=grid sets data-strategy=grid', () => {
+    const { container } = wrap(<Container strategy="grid">X</Container>);
+    expect((container.querySelector('div') as HTMLElement).dataset.strategy).toBe('grid');
   });
 });
 
@@ -300,23 +314,46 @@ describe('Paper', () => {
 describe('Text', () => {
   it('renders p by default', () => {
     const { container } = wrap(<Text>X</Text>);
-    expect(container.firstChild?.nodeName).toBe('P');
+    expect(container.querySelector('p')).toBeInTheDocument();
   });
 
-  it('respects as prop', () => {
-    const { container } = wrap(<Text as="span">X</Text>);
-    expect(container.firstChild?.nodeName).toBe('SPAN');
+  it('span shorthand renders span', () => {
+    const { container } = wrap(<Text span>X</Text>);
+    expect(container.querySelector('span')).toBeInTheDocument();
   });
 
-  it('applies size and color', () => {
+  it('size sets --text-fz CSS var', () => {
+    const { container } = wrap(<Text size="lg">X</Text>);
+    const el = container.querySelector('p') as HTMLElement;
+    expect(el.style.getPropertyValue('--text-fz')).toBe('var(--font-size-lg)');
+  });
+
+  it('lineClamp adds data-line-clamp and --text-line-clamp var', () => {
+    const { container } = wrap(<Text lineClamp={3}>X</Text>);
+    const el = container.querySelector('p') as HTMLElement;
+    expect(el.dataset.lineClamp).toBe('true');
+    expect(el.style.getPropertyValue('--text-line-clamp')).toBe('3');
+  });
+
+  it('inline / inherit / truncate modes set data attributes', () => {
+    const { container: c1 } = wrap(<Text inline>X</Text>);
+    expect((c1.querySelector('p') as HTMLElement).dataset.inline).toBe('true');
+    const { container: c2 } = wrap(<Text inherit>X</Text>);
+    expect((c2.querySelector('p') as HTMLElement).dataset.inherit).toBe('true');
+    const { container: c3 } = wrap(<Text truncate>X</Text>);
+    expect((c3.querySelector('p') as HTMLElement).dataset.truncate).toBe('end');
+    const { container: c4 } = wrap(<Text truncate="start">X</Text>);
+    expect((c4.querySelector('p') as HTMLElement).dataset.truncate).toBe('start');
+  });
+
+  it('variant=gradient emits --text-gradient var with linear-gradient(...)', () => {
     const { container } = wrap(
-      <Text size="lg" color="muted">
+      <Text variant="gradient" gradient={{ from: 'red', to: 'blue', deg: 45 }}>
         X
       </Text>,
     );
-    const el = container.firstChild as HTMLElement;
-    expect(el.dataset.size).toBe('lg');
-    expect(el.dataset.color).toBe('muted');
+    const el = container.querySelector('p') as HTMLElement;
+    expect(el.style.getPropertyValue('--text-gradient')).toBe('linear-gradient(45deg, red, blue)');
   });
 });
 
