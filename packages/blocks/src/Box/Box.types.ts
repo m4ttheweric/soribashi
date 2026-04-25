@@ -27,6 +27,8 @@ export interface BoxStyleProps {
   mr?: StyleProp<string | number>;
   ms?: StyleProp<string | number>;
   me?: StyleProp<string | number>;
+  mis?: StyleProp<string | number>;
+  mie?: StyleProp<string | number>;
   mx?: StyleProp<string | number>;
   my?: StyleProp<string | number>;
 
@@ -38,6 +40,8 @@ export interface BoxStyleProps {
   pr?: StyleProp<string | number>;
   ps?: StyleProp<string | number>;
   pe?: StyleProp<string | number>;
+  pis?: StyleProp<string | number>;
+  pie?: StyleProp<string | number>;
   px?: StyleProp<string | number>;
   py?: StyleProp<string | number>;
 
@@ -48,11 +52,15 @@ export interface BoxStyleProps {
   bdrs?: StyleProp<string | number>;
 
   // Typography
+  ff?: StyleProp<string>;
   fz?: StyleProp<string | number>;
   fw?: StyleProp<string | number>;
   lh?: StyleProp<string | number>;
   lts?: StyleProp<string | number>;
   ta?: StyleProp<CSSProperties['textAlign']>;
+  fs?: StyleProp<CSSProperties['fontStyle']>;
+  tt?: StyleProp<CSSProperties['textTransform']>;
+  td?: StyleProp<CSSProperties['textDecoration']>;
 
   // Visual
   opacity?: StyleProp<string | number>;
@@ -76,6 +84,12 @@ export interface BoxStyleProps {
 
   // Flex
   flex?: StyleProp<string | number>;
+
+  // Background
+  bgsz?: StyleProp<string | number>;
+  bgp?: StyleProp<string>;
+  bgr?: StyleProp<CSSProperties['backgroundRepeat']>;
+  bga?: StyleProp<CSSProperties['backgroundAttachment']>;
 }
 
 /**
