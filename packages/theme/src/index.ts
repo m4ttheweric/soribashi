@@ -17,4 +17,6 @@ export type {
   IntentResolverInput,
   IntentResolverResult,
   ComponentThemeConfig,
+  HeadingTokens,
+  HeadingSize,
 } from './types.ts';

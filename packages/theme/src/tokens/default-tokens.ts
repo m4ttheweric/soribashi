@@ -115,7 +115,32 @@ export const defaultTokens: ThemeTokens = {
   },
   fontFamily: {
     sans: 'Inter, ui-sans-serif, system-ui, sans-serif',
+    heading: 'Inter, ui-sans-serif, system-ui, sans-serif',
     mono: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+  },
+  fontWeight: {
+    regular: '400',
+    medium: '500',
+    semibold: '600',
+    bold: '700',
+  },
+  lineHeight: {
+    xs: '1.4',
+    sm: '1.45',
+    md: '1.55',
+    lg: '1.6',
+    xl: '1.65',
+  },
+  heading: {
+    sizes: {
+      h1: { fontSize: '2.125rem', fontWeight: '700', lineHeight: '1.3' },
+      h2: { fontSize: '1.625rem', fontWeight: '700', lineHeight: '1.35' },
+      h3: { fontSize: '1.375rem', fontWeight: '700', lineHeight: '1.4' },
+      h4: { fontSize: '1.125rem', fontWeight: '700', lineHeight: '1.45' },
+      h5: { fontSize: '1rem', fontWeight: '700', lineHeight: '1.5' },
+      h6: { fontSize: '0.875rem', fontWeight: '700', lineHeight: '1.5' },
+    },
+    textWrap: 'wrap',
   },
   shadow: {
     sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',

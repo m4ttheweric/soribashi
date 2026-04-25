@@ -20,9 +20,24 @@ export interface ThemeTokens {
   spacing: Record<string, string>;
   fontSize: Record<string, string>;
   fontFamily?: Record<string, string>;
+  fontWeight?: Record<string, string>;
+  lineHeight?: Record<string, string>;
   shadow?: Record<string, string>;
   breakpoint?: Record<string, string>;
   zIndex?: Record<string, string | number>;
+  /** Heading sizes per order (h1-h6). Used by the Title block. */
+  heading?: HeadingTokens;
+}
+
+export interface HeadingSize {
+  fontSize: string;
+  fontWeight?: string;
+  lineHeight?: string;
+}
+
+export interface HeadingTokens {
+  sizes: Record<'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', HeadingSize>;
+  textWrap?: string;
 }
 
 /**
@@ -35,9 +50,12 @@ export type PartialThemeTokens = {
   spacing?: Partial<Record<string, string>>;
   fontSize?: Partial<Record<string, string>>;
   fontFamily?: Partial<Record<string, string>>;
+  fontWeight?: Partial<Record<string, string>>;
+  lineHeight?: Partial<Record<string, string>>;
   shadow?: Partial<Record<string, string>>;
   breakpoint?: Partial<Record<string, string>>;
   zIndex?: Partial<Record<string, string | number>>;
+  heading?: Partial<HeadingTokens>;
 };
 
 // Semantic-level types

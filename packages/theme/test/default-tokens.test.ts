@@ -42,4 +42,32 @@ describe('defaultTokens', () => {
     expect(defaultDarkTokens.colors?.primary).toBeDefined();
     expect(defaultDarkTokens.colors?.neutral).toBeDefined();
   });
+
+  it('includes fontWeight scale with regular/medium/semibold/bold', () => {
+    expect(defaultTokens.fontWeight?.regular).toBe('400');
+    expect(defaultTokens.fontWeight?.medium).toBe('500');
+    expect(defaultTokens.fontWeight?.semibold).toBe('600');
+    expect(defaultTokens.fontWeight?.bold).toBe('700');
+  });
+
+  it('includes lineHeight scale with xs through xl', () => {
+    expect(defaultTokens.lineHeight?.xs).toBeDefined();
+    expect(defaultTokens.lineHeight?.sm).toBeDefined();
+    expect(defaultTokens.lineHeight?.md).toBeDefined();
+    expect(defaultTokens.lineHeight?.lg).toBeDefined();
+    expect(defaultTokens.lineHeight?.xl).toBeDefined();
+  });
+
+  it('includes fontFamily.heading', () => {
+    expect(defaultTokens.fontFamily?.heading).toBeDefined();
+  });
+
+  it('includes heading.sizes for h1-h6', () => {
+    expect(defaultTokens.heading?.sizes.h1.fontSize).toBeDefined();
+    expect(defaultTokens.heading?.sizes.h2.fontSize).toBeDefined();
+    expect(defaultTokens.heading?.sizes.h3.fontSize).toBeDefined();
+    expect(defaultTokens.heading?.sizes.h4.fontSize).toBeDefined();
+    expect(defaultTokens.heading?.sizes.h5.fontSize).toBeDefined();
+    expect(defaultTokens.heading?.sizes.h6.fontSize).toBeDefined();
+  });
 });
