@@ -16,7 +16,7 @@ import { useTheme } from '../provider/use-theme.ts';
  * order and supports the function-form defaultProps Mantine added for
  * theme-driven dynamic defaults.
  */
-export function useProps<P extends Record<string, unknown>>(
+export function useProps<P>(
   name: string,
   defaults: Partial<P> | null,
   instanceProps: P,
@@ -29,14 +29,15 @@ export function useProps<P extends Record<string, unknown>>(
       : (themeDefaultsRaw ?? {})
   ) as Partial<P>;
 
-  const merged: Partial<P> = {
-    ...(defaults ?? {}),
-    ...themeDefaults,
+  const merged: Record<string, unknown> = {
+    ...(defaults as Record<string, unknown> | null ?? {}),
+    ...(themeDefaults as Record<string, unknown>),
   };
 
-  for (const key in instanceProps) {
-    if (instanceProps[key] !== undefined) {
-      (merged as Record<string, unknown>)[key] = instanceProps[key];
+  const instance = instanceProps as Record<string, unknown>;
+  for (const key in instance) {
+    if (instance[key] !== undefined) {
+      merged[key] = instance[key];
     }
   }
 

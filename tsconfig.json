@@ -1,11 +1,14 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./packages/theme" },
-    { "path": "./packages/codegen" },
-    { "path": "./packages/factory" },
-    { "path": "./packages/blocks" },
-    { "path": "./packages/core" },
-    { "path": "./apps/playground" }
-  ]
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/test/**/*",
+    "packages/*/bin/**/*",
+    "apps/*/src/**/*"
+  ],
+  "exclude": ["**/node_modules", "**/dist", "**/build"]
 }

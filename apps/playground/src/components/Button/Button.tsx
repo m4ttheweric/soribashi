@@ -5,7 +5,8 @@ type Intent = 'primary' | 'neutral' | 'danger' | 'success' | 'warning' | 'info';
 type Variant = 'filled' | 'outline' | 'subtle' | 'ghost' | 'link';
 type Size = 'sm' | 'md' | 'lg';
 
-export interface ButtonOwnProps {
+export interface ButtonOwnProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'> {
   intent?: Intent;
   variant?: Variant;
   size?: Size;

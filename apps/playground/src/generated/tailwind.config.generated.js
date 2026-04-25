@@ -116,8 +116,22 @@ module.exports = {
       xs: 'var(--font-size-xs)',
     },
     fontFamily: {
+      heading: 'var(--font-family-heading)',
       mono: 'var(--font-family-mono)',
       sans: 'var(--font-family-sans)',
+    },
+    fontWeight: {
+      bold: 'var(--font-weight-bold)',
+      medium: 'var(--font-weight-medium)',
+      regular: 'var(--font-weight-regular)',
+      semibold: 'var(--font-weight-semibold)',
+    },
+    lineHeight: {
+      lg: 'var(--line-height-lg)',
+      md: 'var(--line-height-md)',
+      sm: 'var(--line-height-sm)',
+      xl: 'var(--line-height-xl)',
+      xs: 'var(--line-height-xs)',
     },
     boxShadow: {
       lg: 'var(--shadow-lg)',

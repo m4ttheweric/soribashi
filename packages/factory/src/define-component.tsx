@@ -38,7 +38,7 @@ export interface DefineComponentConfig<
  * The daily-use component authoring API.
  */
 export function defineComponent<
-  TOwnProps extends Record<string, unknown> = Record<string, never>,
+  TOwnProps = Record<string, never>,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
 >(config: DefineComponentConfig<TOwnProps, TSelectors, TVariants>) {
@@ -87,7 +87,9 @@ export function defineComponent<
     TOwnProps & StylesApiProps<any> & React.RefAttributes<HTMLElement>
   > & {
     extend: (cfg: any) => any;
-    withProps: (presets: Partial<TOwnProps>) => React.ComponentType<TOwnProps>;
+    withProps: (
+      presets: Partial<TOwnProps & StylesApiProps<any>>,
+    ) => React.ComponentType<TOwnProps & StylesApiProps<any>>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };

@@ -41,7 +41,7 @@ export interface DefinePolymorphicComponentConfig<
  * Polymorphic component definition with `as` prop support.
  */
 export function definePolymorphicComponent<
-  TOwnProps extends Record<string, unknown>,
+  TOwnProps,
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
@@ -91,11 +91,9 @@ export function definePolymorphicComponent<
   (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
 
-  type Props = PolymorphicComponentProps<TDefaultAs, TOwnProps & StylesApiProps<any>>;
-
-  // The withProps return type preserves polymorphism. Presets may include `as`
-  // to override the default element; the returned component remains fully
-  // polymorphic (callers can still pass `as` at the call site).
+  // The component itself is generic over the target element type.
+  // Callers can pass `as="span"` and TS instantiates TAs='span' so the
+  // resulting props correctly include span's HTML attributes.
   type PolymorphicComponentLike = (<TAs extends ElementType = TDefaultAs>(
     props: PolymorphicComponentProps<TAs, TOwnProps & StylesApiProps<any>>,
   ) => React.ReactElement | null) & {
@@ -106,7 +104,7 @@ export function definePolymorphicComponent<
     presets: Partial<TOwnProps & StylesApiProps<any>> & { as?: TAs },
   ) => PolymorphicComponentLike;
 
-  return Component as unknown as ((props: Props) => React.ReactElement | null) & {
+  return Component as unknown as PolymorphicComponentLike & {
     extend: (cfg: any) => any;
     withProps: WithPropsFn;
     classes?: Partial<Record<TSelectors[number], string>>;

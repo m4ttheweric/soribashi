@@ -23,7 +23,7 @@ export function BlocksDemo() {
             <Title level={3}>Stack</Title>
             <Stack gap="sm">
               {['One', 'Two', 'Three'].map((s) => (
-                <Box key={s} bg="raised" p="md" radius="md">
+                <Box key={s} bg="surface.raised" p="md" bdrs="md">
                   {s}
                 </Box>
               ))}
@@ -36,7 +36,7 @@ export function BlocksDemo() {
             <Title level={3}>Group</Title>
             <Group gap="sm">
               {['One', 'Two', 'Three'].map((s) => (
-                <Box key={s} bg="raised" p="md" radius="md">
+                <Box key={s} bg="surface.raised" p="md" bdrs="md">
                   {s}
                 </Box>
               ))}
@@ -49,27 +49,27 @@ export function BlocksDemo() {
             <Title level={3}>Grid</Title>
             <Grid columns={12} gap="md">
               <Grid.Col span={4}>
-                <Box bg="raised" p="md" radius="md">
+                <Box bg="surface.raised" p="md" bdrs="md">
                   span 4
                 </Box>
               </Grid.Col>
               <Grid.Col span={4}>
-                <Box bg="raised" p="md" radius="md">
+                <Box bg="surface.raised" p="md" bdrs="md">
                   span 4
                 </Box>
               </Grid.Col>
               <Grid.Col span={4}>
-                <Box bg="raised" p="md" radius="md">
+                <Box bg="surface.raised" p="md" bdrs="md">
                   span 4
                 </Box>
               </Grid.Col>
               <Grid.Col span={6}>
-                <Box bg="raised" p="md" radius="md">
+                <Box bg="surface.raised" p="md" bdrs="md">
                   span 6
                 </Box>
               </Grid.Col>
               <Grid.Col span={6}>
-                <Box bg="raised" p="md" radius="md">
+                <Box bg="surface.raised" p="md" bdrs="md">
                   span 6
                 </Box>
               </Grid.Col>
@@ -82,7 +82,7 @@ export function BlocksDemo() {
             <Title level={3}>SimpleGrid</Title>
             <SimpleGrid cols={3} gap="md">
               {['A', 'B', 'C', 'D', 'E', 'F'].map((s) => (
-                <Box key={s} bg="raised" p="md" radius="md">
+                <Box key={s} bg="surface.raised" p="md" bdrs="md">
                   {s}
                 </Box>
               ))}
@@ -106,7 +106,7 @@ export function BlocksDemo() {
           <Stack gap="md">
             <Title level={3}>Center</Title>
             <Center>
-              <Box bg="raised" p="lg" radius="md">
+              <Box bg="surface.raised" p="lg" bdrs="md">
                 Centered
               </Box>
             </Center>

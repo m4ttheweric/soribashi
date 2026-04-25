@@ -61,8 +61,8 @@ describe('defineGenericComponent', () => {
         items={users}
         value={null}
         onChange={() => {}}
-        getKey={(u) => u.id}
-        renderItem={(u) => u.name}
+        getKey={(u: User) => u.id}
+        renderItem={(u: User) => u.name}
       />,
     );
 
@@ -83,10 +83,10 @@ describe('defineGenericComponent', () => {
       <Select<User>
         items={users}
         value={null}
-        onChange={(u) => {
+        onChange={(u: User | null) => {
           captured = u;
         }}
-        getKey={(u) => u.id}
+        getKey={(u: User) => u.id}
       />,
     );
 
@@ -113,7 +113,7 @@ describe('defineGenericComponent', () => {
         items={users}
         value={null}
         onChange={() => {}}
-        getKey={(u) => u.id}
+        getKey={(u: User) => u.id}
       />,
     );
 

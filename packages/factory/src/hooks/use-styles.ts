@@ -64,7 +64,7 @@ export function useStyles<P extends FactoryPayload>(
     const styleParts: CSSProperties[] = [
       themeStyles[selector as string] ?? {},
       instanceStyles[selector as string] ?? {},
-      (builtInVars[selector] as CSSProperties | undefined) ?? {},
+      ((builtInVars as Record<string, unknown>)[selector as string] as CSSProperties | undefined) ?? {},
       (themeVarsResolverFromTheme[selector as string] as CSSProperties | undefined) ?? {},
     ];
 
