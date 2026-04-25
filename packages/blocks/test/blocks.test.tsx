@@ -62,21 +62,29 @@ describe('Box (smoke — full coverage in test/Box.test.tsx)', () => {
 });
 
 describe('Stack', () => {
-  it('renders with default md gap', () => {
+  it('renders with default md gap (CSS var on style)', () => {
     const { container } = wrap(<Stack>X</Stack>);
-    expect((container.firstChild as HTMLElement).dataset.gap).toBe('md');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Stack-root');
+    expect(el.style.getPropertyValue('--stack-gap')).toBe('var(--spacing-md)');
   });
 
-  it('applies gap, align, justify', () => {
+  it('applies gap, align, justify as CSS vars', () => {
     const { container } = wrap(
-      <Stack gap="lg" align="center" justify="between">
+      <Stack gap="lg" align="center" justify="space-between">
         X
       </Stack>,
     );
-    const el = container.firstChild as HTMLElement;
-    expect(el.dataset.gap).toBe('lg');
-    expect(el.dataset.align).toBe('center');
-    expect(el.dataset.justify).toBe('between');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--stack-gap')).toBe('var(--spacing-lg)');
+    expect(el.style.getPropertyValue('--stack-align')).toBe('center');
+    expect(el.style.getPropertyValue('--stack-justify')).toBe('space-between');
+  });
+
+  it('Stack accepts raw CSS values for gap', () => {
+    const { container } = wrap(<Stack gap="2.5rem">X</Stack>);
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--stack-gap')).toBe('2.5rem');
   });
 });
 
