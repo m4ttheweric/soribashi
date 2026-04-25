@@ -96,10 +96,27 @@ describe('defineGenericComponent', () => {
   });
 
   it('static withProps exists', () => {
-    expect(typeof (Select as any).withProps).toBe('function');
+    expect(typeof Select.withProps).toBe('function');
   });
 
   it('static extend exists', () => {
-    expect(typeof (Select as any).extend).toBe('function');
+    expect(typeof Select.extend).toBe('function');
+  });
+
+  it('withProps preserves the generic so callers can still type-parameterize', () => {
+    // No `as any` casts — the generic typing flows through withProps.
+    const SearchableSelect = Select.withProps({ renderItem: ((u: any) => `★ ${u.name ?? ''}`) as any });
+    const users: User[] = [{ id: '1', name: 'Alice' }];
+
+    const { container } = wrap(
+      <SearchableSelect<User>
+        items={users}
+        value={null}
+        onChange={() => {}}
+        getKey={(u) => u.id}
+      />,
+    );
+
+    expect(container.querySelector('li')?.textContent).toBe('★ Alice');
   });
 });

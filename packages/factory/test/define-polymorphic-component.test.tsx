@@ -76,8 +76,18 @@ describe('definePolymorphicComponent', () => {
   });
 
   it('Component.withProps preserves polymorphism', () => {
-    const SmallText = (Text as any).withProps({ size: 'sm' });
+    // No `as any` cast on Text — this validates the typing fix:
+    // withProps return type allows `as` at the call site.
+    const SmallText = Text.withProps({ size: 'sm' });
     const { container } = wrap(<SmallText as="span">Y</SmallText>);
     expect(container.querySelector('span')?.dataset.size).toBe('sm');
+  });
+
+  it('Component.withProps with as preset overrides defaultElement', () => {
+    // Presets including `as` change the default element of the resulting component.
+    const SpanText = Text.withProps({ as: 'span' });
+    const { container } = wrap(<SpanText>Z</SpanText>);
+    expect(container.querySelector('span')).toBeInTheDocument();
+    expect(container.querySelector('p')).toBeNull();
   });
 });

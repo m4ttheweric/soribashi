@@ -92,9 +92,23 @@ export function definePolymorphicComponent<
   (Component as any).withProps = makeWithProps(Component as any);
 
   type Props = PolymorphicComponentProps<TDefaultAs, TOwnProps & StylesApiProps<any>>;
+
+  // The withProps return type preserves polymorphism. Presets may include `as`
+  // to override the default element; the returned component remains fully
+  // polymorphic (callers can still pass `as` at the call site).
+  type PolymorphicComponentLike = (<TAs extends ElementType = TDefaultAs>(
+    props: PolymorphicComponentProps<TAs, TOwnProps & StylesApiProps<any>>,
+  ) => React.ReactElement | null) & {
+    displayName?: string;
+  };
+
+  type WithPropsFn = <TAs extends ElementType = TDefaultAs>(
+    presets: Partial<TOwnProps & StylesApiProps<any>> & { as?: TAs },
+  ) => PolymorphicComponentLike;
+
   return Component as unknown as ((props: Props) => React.ReactElement | null) & {
     extend: (cfg: any) => any;
-    withProps: (presets: Partial<TOwnProps>) => any;
+    withProps: WithPropsFn;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };

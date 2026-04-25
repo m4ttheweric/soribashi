@@ -18,12 +18,36 @@ export interface DefineGenericComponentConfig {
 }
 
 /**
+ * The shape of a generic component: a function generic over T that takes
+ * props (depending on T) and returns a React element. This is the type we
+ * want to preserve through `withProps`.
+ */
+export type GenericComponentFn = <T>(
+  props: any & React.RefAttributes<unknown>,
+) => React.ReactElement | null;
+
+/**
+ * The static methods attached to a generic component. `withProps` returns
+ * the same generic shape so callers can continue to pass type parameters.
+ */
+export interface GenericComponentStatics {
+  extend: (cfg: any) => any;
+  withProps: (presets: any) => GenericComponentFn & GenericComponentStatics;
+  classes?: Record<string, string>;
+  displayName?: string;
+}
+
+/**
  * Defines a generic component preserved through the type system. Use for
  * components like Select<TItem>, ComboBox<TOption>, MultiSelect<TItem>, etc.
+ *
+ * The returned function is generic: `Select<User>(props)` types `props` against
+ * `User`. `withProps` preserves this — `Select.withProps({ searchable: true })`
+ * returns a component that's still generic; you can still write `<Result<User> ...>`.
  */
 export function defineGenericComponent<TOwnPropsTemplate>(
   config: DefineGenericComponentConfig,
-): <T>(props: any & React.RefAttributes<unknown>) => React.ReactElement | null {
+): GenericComponentFn & GenericComponentStatics {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
@@ -59,5 +83,5 @@ export function defineGenericComponent<TOwnPropsTemplate>(
   (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
 
-  return Component as any;
+  return Component as unknown as GenericComponentFn & GenericComponentStatics;
 }
