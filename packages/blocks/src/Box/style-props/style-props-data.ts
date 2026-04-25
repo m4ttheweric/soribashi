@@ -27,13 +27,9 @@ const sizeOrRem: StylePropResolver = (v) => {
   return String(v);
 };
 
-const fontWeight: StylePropResolver = (v) => {
-  if (v === undefined || v === null) return undefined;
-  if (typeof v === 'number') return v.toString();
-  // accept token keys like 'regular', 'bold'
-  if (typeof v === 'string' && /^[a-z]+$/.test(v)) return `var(--font-weight-${v})`;
-  return String(v);
-};
+// font-weight is identity: CSS keywords (bold, bolder, lighter) and numeric values
+// all pass through as-is. Mantine uses the same identity approach.
+// If a consumer wants a CSS variable, they can write `var(--font-weight-bold)` explicitly.
 
 /**
  * Static map from prop name to CSS property + resolver. Mirrors Mantine's
@@ -71,7 +67,7 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
 
   // Typography
   fz: { property: 'fontSize', resolver: getFontSize as StylePropResolver },
-  fw: { property: 'fontWeight', resolver: fontWeight },
+  fw: { property: 'fontWeight', resolver: identity },
   lh: { property: 'lineHeight', resolver: getLineHeight as StylePropResolver },
   lts: { property: 'letterSpacing', resolver: sizeOrRem },
   ta: { property: 'textAlign', resolver: identity },
