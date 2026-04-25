@@ -21,6 +21,10 @@ export { createVarsResolver } from './create-vars-resolver.ts';
 // Utilities
 export { cn } from './cn.ts';
 export type { ClassValue } from './cn.ts';
+export { useRandomClassName } from './use-random-class-name.ts';
+export { hashStyleProps } from './hash-style-props.ts';
+export { InlineStyles } from './inline-styles/InlineStyles.tsx';
+export type { InlineStylesProps } from './inline-styles/InlineStyles.tsx';
 
 // Types
 export type {
