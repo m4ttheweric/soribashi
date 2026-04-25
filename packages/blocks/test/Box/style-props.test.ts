@@ -35,14 +35,14 @@ describe('parseStyleProps', () => {
     expect(result.inlineStyles.marginTop).toBe('1rem');
   });
 
-  it('resolves multi-property props (mx) to both sides', () => {
+  it('resolves mx to marginInline logical shorthand (Mantine parity)', () => {
     const result = parseStyleProps({
       styleProps: { mx: 'md' },
       data: STYLE_PROPS_DATA,
       theme,
     });
-    expect(result.inlineStyles.marginInlineStart).toBe('var(--spacing-md)');
-    expect(result.inlineStyles.marginInlineEnd).toBe('var(--spacing-md)');
+    // Mantine: mx → marginInline (not separate start/end)
+    expect(result.inlineStyles.marginInline).toBe('var(--spacing-md)');
   });
 
   it('responsive value: base goes to styles; breakpoints go to media', () => {

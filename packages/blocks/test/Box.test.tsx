@@ -61,11 +61,11 @@ describe('Box — style props', () => {
     expect(el.style.marginTop).toBe('1rem');
   });
 
-  it('mx="md" applies to both marginInlineStart and marginInlineEnd', () => {
+  it('mx="md" uses the marginInline logical shorthand', () => {
     const { container } = wrap(<Box mx="md">X</Box>);
     const el = container.querySelector('div') as HTMLElement;
-    expect(el.style.marginInlineStart).toBe('var(--spacing-md)');
-    expect(el.style.marginInlineEnd).toBe('var(--spacing-md)');
+    // Mantine parity: mx → marginInline (logical shorthand, not separate start/end)
+    expect(el.style.marginInline).toBe('var(--spacing-md)');
   });
 
   it('bg accepts theme color refs', () => {

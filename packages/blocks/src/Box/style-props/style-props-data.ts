@@ -27,13 +27,9 @@ const sizeOrRem: StylePropResolver = (v) => {
   return String(v);
 };
 
-const fontWeight: StylePropResolver = (v) => {
-  if (v === undefined || v === null) return undefined;
-  if (typeof v === 'number') return v.toString();
-  // accept token keys like 'regular', 'bold'
-  if (typeof v === 'string' && /^[a-z]+$/.test(v)) return `var(--font-weight-${v})`;
-  return String(v);
-};
+// font-weight is identity: CSS keywords (bold, bolder, lighter) and numeric values
+// all pass through as-is. Mantine uses the same identity approach.
+// If a consumer wants a CSS variable, they can write `var(--font-weight-bold)` explicitly.
 
 /**
  * Static map from prop name to CSS property + resolver. Mirrors Mantine's
@@ -49,14 +45,10 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   mr: { property: 'marginRight', resolver: getSpacing as StylePropResolver },
   ms: { property: 'marginInlineStart', resolver: getSpacing as StylePropResolver },
   me: { property: 'marginInlineEnd', resolver: getSpacing as StylePropResolver },
-  mx: {
-    property: ['marginInlineStart', 'marginInlineEnd'],
-    resolver: getSpacing as StylePropResolver,
-  },
-  my: {
-    property: ['marginTop', 'marginBottom'],
-    resolver: getSpacing as StylePropResolver,
-  },
+  mis: { property: 'marginInlineStart', resolver: getSpacing as StylePropResolver },
+  mie: { property: 'marginInlineEnd', resolver: getSpacing as StylePropResolver },
+  mx: { property: 'marginInline', resolver: getSpacing as StylePropResolver },
+  my: { property: 'marginBlock', resolver: getSpacing as StylePropResolver },
 
   // Padding
   p: { property: 'padding', resolver: getSpacing as StylePropResolver },
@@ -66,14 +58,10 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   pr: { property: 'paddingRight', resolver: getSpacing as StylePropResolver },
   ps: { property: 'paddingInlineStart', resolver: getSpacing as StylePropResolver },
   pe: { property: 'paddingInlineEnd', resolver: getSpacing as StylePropResolver },
-  px: {
-    property: ['paddingInlineStart', 'paddingInlineEnd'],
-    resolver: getSpacing as StylePropResolver,
-  },
-  py: {
-    property: ['paddingTop', 'paddingBottom'],
-    resolver: getSpacing as StylePropResolver,
-  },
+  pis: { property: 'paddingInlineStart', resolver: getSpacing as StylePropResolver },
+  pie: { property: 'paddingInlineEnd', resolver: getSpacing as StylePropResolver },
+  px: { property: 'paddingInline', resolver: getSpacing as StylePropResolver },
+  py: { property: 'paddingBlock', resolver: getSpacing as StylePropResolver },
 
   // Color
   bg: { property: 'background', resolver: getThemeColor as StylePropResolver },
@@ -82,11 +70,15 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   bdrs: { property: 'borderRadius', resolver: getRadius as StylePropResolver },
 
   // Typography
+  ff: { property: 'fontFamily', resolver: identity },
   fz: { property: 'fontSize', resolver: getFontSize as StylePropResolver },
-  fw: { property: 'fontWeight', resolver: fontWeight },
+  fw: { property: 'fontWeight', resolver: identity },
   lh: { property: 'lineHeight', resolver: getLineHeight as StylePropResolver },
   lts: { property: 'letterSpacing', resolver: sizeOrRem },
   ta: { property: 'textAlign', resolver: identity },
+  fs: { property: 'fontStyle', resolver: identity },
+  tt: { property: 'textTransform', resolver: identity },
+  td: { property: 'textDecoration', resolver: identity },
 
   // Visual
   opacity: { property: 'opacity', resolver: identity },
@@ -110,4 +102,10 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
 
   // Flex
   flex: { property: 'flex', resolver: identity },
+
+  // Background
+  bgsz: { property: 'backgroundSize', resolver: sizeOrRem },
+  bgp: { property: 'backgroundPosition', resolver: identity },
+  bgr: { property: 'backgroundRepeat', resolver: identity },
+  bga: { property: 'backgroundAttachment', resolver: identity },
 };

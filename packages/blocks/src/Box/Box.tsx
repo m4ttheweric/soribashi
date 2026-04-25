@@ -53,6 +53,12 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
       unstyled: _u,
       className: _c,
       style: instanceStyle,
+      // Visibility props — consumed here, never forwarded to the DOM
+      hiddenFrom,
+      visibleFrom,
+      lightHidden,
+      darkHidden,
+      sx: _sx,
       ...remainingProps
     } = props as any;
 
@@ -70,9 +76,23 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
       ...(parsed.inlineStyles as CSSProperties),
     };
 
-    const className = parsed.hasResponsiveStyles
-      ? `${baseStyles.className} ${responsiveClassName}`
-      : baseStyles.className;
+    // Build the class list: static root class + optional responsive class + visibility classes
+    const visibilityClasses = [
+      hiddenFrom ? `sb-hidden-from-${hiddenFrom}` : '',
+      visibleFrom ? `sb-visible-from-${visibleFrom}` : '',
+      lightHidden ? 'sb-light-hidden' : '',
+      darkHidden ? 'sb-dark-hidden' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    const className = [
+      baseStyles.className,
+      parsed.hasResponsiveStyles ? responsiveClassName : '',
+      visibilityClasses,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return (
       <>

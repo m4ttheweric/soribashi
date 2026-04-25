@@ -1,0 +1,82 @@
+/**
+ * Visibility utility classes — soribashi equivalents of Mantine's
+ * mantine-hidden-from-*, mantine-visible-from-*, mantine-light-hidden,
+ * mantine-dark-hidden.
+ *
+ * Breakpoints match the default soribashi token map:
+ *   xs: 24rem  sm: 40rem  md: 48rem  lg: 64rem  xl: 80rem
+ *
+ * Adapted from: @mantine/core  packages/@mantine/core/styles/global.css
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ */
+
+/* hidden-from-* — element is hidden AT AND ABOVE the given breakpoint */
+@media (min-width: 24rem) {
+  .sb-hidden-from-xs { display: none !important; }
+}
+
+@media (min-width: 40rem) {
+  .sb-hidden-from-sm { display: none !important; }
+}
+
+@media (min-width: 48rem) {
+  .sb-hidden-from-md { display: none !important; }
+}
+
+@media (min-width: 64rem) {
+  .sb-hidden-from-lg { display: none !important; }
+}
+
+@media (min-width: 80rem) {
+  .sb-hidden-from-xl { display: none !important; }
+}
+
+/* visible-from-* — element is hidden BELOW the given breakpoint */
+@media (max-width: calc(24rem - 0.0625rem)) {
+  .sb-visible-from-xs { display: none !important; }
+}
+
+@media (max-width: calc(40rem - 0.0625rem)) {
+  .sb-visible-from-sm { display: none !important; }
+}
+
+@media (max-width: calc(48rem - 0.0625rem)) {
+  .sb-visible-from-md { display: none !important; }
+}
+
+@media (max-width: calc(64rem - 0.0625rem)) {
+  .sb-visible-from-lg { display: none !important; }
+}
+
+@media (max-width: calc(80rem - 0.0625rem)) {
+  .sb-visible-from-xl { display: none !important; }
+}
+
+/* light/dark scheme hidden helpers */
+.sb-light-hidden {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sb-light-hidden {
+    display: revert !important;
+  }
+}
+
+.dark .sb-light-hidden {
+  display: revert !important;
+}
+
+.sb-dark-hidden {
+  display: revert !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sb-dark-hidden {
+    display: none !important;
+  }
+}
+
+.dark .sb-dark-hidden {
+  display: none !important;
+}

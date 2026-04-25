@@ -27,6 +27,8 @@ export interface BoxStyleProps {
   mr?: StyleProp<string | number>;
   ms?: StyleProp<string | number>;
   me?: StyleProp<string | number>;
+  mis?: StyleProp<string | number>;
+  mie?: StyleProp<string | number>;
   mx?: StyleProp<string | number>;
   my?: StyleProp<string | number>;
 
@@ -38,6 +40,8 @@ export interface BoxStyleProps {
   pr?: StyleProp<string | number>;
   ps?: StyleProp<string | number>;
   pe?: StyleProp<string | number>;
+  pis?: StyleProp<string | number>;
+  pie?: StyleProp<string | number>;
   px?: StyleProp<string | number>;
   py?: StyleProp<string | number>;
 
@@ -48,11 +52,15 @@ export interface BoxStyleProps {
   bdrs?: StyleProp<string | number>;
 
   // Typography
+  ff?: StyleProp<string>;
   fz?: StyleProp<string | number>;
   fw?: StyleProp<string | number>;
   lh?: StyleProp<string | number>;
   lts?: StyleProp<string | number>;
   ta?: StyleProp<CSSProperties['textAlign']>;
+  fs?: StyleProp<CSSProperties['fontStyle']>;
+  tt?: StyleProp<CSSProperties['textTransform']>;
+  td?: StyleProp<CSSProperties['textDecoration']>;
 
   // Visual
   opacity?: StyleProp<string | number>;
@@ -76,6 +84,12 @@ export interface BoxStyleProps {
 
   // Flex
   flex?: StyleProp<string | number>;
+
+  // Background
+  bgsz?: StyleProp<string | number>;
+  bgp?: StyleProp<string>;
+  bgr?: StyleProp<CSSProperties['backgroundRepeat']>;
+  bga?: StyleProp<CSSProperties['backgroundAttachment']>;
 }
 
 /**
@@ -86,4 +100,17 @@ export interface BoxOwnProps extends BoxStyleProps {
   mod?: BoxMod;
   /** Variant string passed through as `data-variant` */
   variant?: string;
+
+  // Visibility props — consumed by Box (never forwarded to the DOM)
+
+  /** Breakpoint above which the component is hidden with `display: none` */
+  hiddenFrom?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  /** Breakpoint below which the component is hidden with `display: none` */
+  visibleFrom?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  /** Hide the component in light color scheme */
+  lightHidden?: boolean;
+  /** Hide the component in dark color scheme */
+  darkHidden?: boolean;
+  /** CSS-in-JS escape hatch (consumed but not yet applied; prevents DOM leakage) */
+  sx?: Record<string, unknown>;
 }

@@ -1,4 +1,5 @@
 @import './Box/Box.css';
+@import './Box/visibility.css';
 @import './Stack/Stack.css';
 @import './Group/Group.css';
 @import './Flex/Flex.css';
