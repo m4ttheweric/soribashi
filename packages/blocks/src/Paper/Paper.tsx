@@ -1,32 +1,68 @@
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/components/Paper/Paper.tsx
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ *
+ * Soribashi changes:
+ *   - Imports retargeted to @soribashi/factory and @soribashi/blocks/utils
+ *   - Class name: 'sb-Paper-root' instead of 'mantine-Paper-root'
+ *   - Renders Box for style-prop pass-through (gives Paper polymorphism via Box)
+ *   - Drops the soribashi-specific `p` (padding) baked-in default — consumers
+ *     pass `p="md"` via Box's style props now (matches Mantine; padding is not
+ *     a Paper concern)
+ *   - Drops the soribashi-specific `bg` enum — Box's bg style prop accepts any
+ *     theme color reference (e.g., bg="surface.raised")
+ */
 import { defineComponent } from '@soribashi/factory';
+import { getRadius, getShadow } from '../utils/index.ts';
+import { Box } from '../Box/Box.tsx';
+import type { BoxOwnProps } from '../Box/Box.types.ts';
 
-export interface PaperOwnProps {
-  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
-  radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export interface PaperOwnProps extends BoxOwnProps {
+  /** Theme shadow key or any valid CSS box-shadow value */
+  shadow?: string;
+  /** Theme radius key or any valid CSS border-radius value */
+  radius?: string | number;
+  /** Adds a 1px border to the root element */
   withBorder?: boolean;
-  bg?: 'canvas' | 'default' | 'raised' | 'sunken';
-  p?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export const Paper = defineComponent<PaperOwnProps>({
   name: 'Paper',
   selectors: ['root'] as const,
   classes: { root: 'sb-Paper-root' },
-  defaults: { shadow: 'sm', radius: 'md', withBorder: false, bg: 'default', p: 'md' },
+  vars: (_theme, props) => {
+    const p = props as PaperOwnProps;
+    return {
+      root: {
+        '--paper-radius': p.radius === undefined ? '' : getRadius(p.radius) ?? '',
+        '--paper-shadow': getShadow(p.shadow as string | undefined) ?? '',
+      },
+    };
+  },
   render: ({ props, getStyles }) => {
-    const { shadow, radius, withBorder, bg, p, children, classNames, styles, vars, attributes, unstyled, className, style, ...rest } = props as any;
+    const {
+      shadow: _sh,
+      radius: _rd,
+      withBorder,
+      children,
+      mod,
+      classNames: _cn,
+      styles: _s,
+      vars: _v,
+      attributes: _a,
+      unstyled: _u,
+      ...rest
+    } = props as any;
     return (
-      <div
+      <Box
         {...getStyles('root')}
+        mod={[{ 'with-border': !!withBorder }, mod].filter(Boolean) as any}
         {...rest}
-        data-shadow={shadow}
-        data-radius={radius}
-        data-with-border={withBorder}
-        data-bg={bg}
-        data-p={p}
       >
         {children}
-      </div>
+      </Box>
     );
   },
 });

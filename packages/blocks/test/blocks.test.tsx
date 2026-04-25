@@ -89,16 +89,50 @@ describe('Stack', () => {
 });
 
 describe('Group', () => {
-  it('renders with default md gap and wrap', () => {
+  it('renders with default md gap and wrap (CSS vars)', () => {
     const { container } = wrap(<Group>X</Group>);
-    const el = container.firstChild as HTMLElement;
-    expect(el.dataset.gap).toBe('md');
-    expect(el.dataset.wrap).toBe('wrap');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Group-root');
+    expect(el.style.getPropertyValue('--group-gap')).toBe('var(--spacing-md)');
+    expect(el.style.getPropertyValue('--group-wrap')).toBe('wrap');
   });
 
-  it('applies wrap=nowrap', () => {
+  it('applies wrap=nowrap as CSS var', () => {
     const { container } = wrap(<Group wrap="nowrap">X</Group>);
-    expect((container.firstChild as HTMLElement).dataset.wrap).toBe('nowrap');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--group-wrap')).toBe('nowrap');
+  });
+
+  it('grow=true sets data-grow attribute on root', () => {
+    const { container } = wrap(<Group grow>X</Group>);
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.dataset.grow).toBe('true');
+  });
+
+  it('preventGrowOverflow computes child width', () => {
+    const { container } = wrap(
+      <Group grow gap="md">
+        <span>a</span>
+        <span>b</span>
+        <span>c</span>
+      </Group>,
+    );
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--group-child-width')).toContain('calc');
+    expect(el.style.getPropertyValue('--group-child-width')).toContain('33.333');
+  });
+
+  it('filters falsy children when computing childWidth', () => {
+    const { container } = wrap(
+      <Group grow>
+        {true && <span>a</span>}
+        {false && <span>nope</span>}
+        {null}
+        <span>b</span>
+      </Group>,
+    );
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--group-child-width')).toContain('50%');
   });
 });
 
@@ -150,51 +184,60 @@ describe('Container', () => {
 });
 
 describe('Center', () => {
-  it('renders with inline=false default', () => {
+  it('renders without data-inline by default (presence-of-attribute pattern)', () => {
     const { container } = wrap(<Center>X</Center>);
-    expect((container.firstChild as HTMLElement).dataset.inline).toBe('false');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Center-root');
+    expect(el.dataset.inline).toBeUndefined();
   });
 
-  it('respects inline prop', () => {
+  it('inline prop adds data-inline="true"', () => {
     const { container } = wrap(<Center inline>X</Center>);
-    expect((container.firstChild as HTMLElement).dataset.inline).toBe('true');
+    expect((container.querySelector('div') as HTMLElement).dataset.inline).toBe('true');
   });
 });
 
 describe('AspectRatio', () => {
-  it('renders with default 16/9 ratio', () => {
+  it('renders with default ratio (--ar-ratio CSS var on root)', () => {
     const { container } = wrap(<AspectRatio>X</AspectRatio>);
-    const el = container.firstChild as HTMLElement;
-    expect(el.style.aspectRatio).toBe(String(16 / 9));
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-AspectRatio-root');
+    expect(el.style.getPropertyValue('--ar-ratio')).toBe('1');
   });
 
   it('respects custom ratio', () => {
-    const { container } = wrap(<AspectRatio ratio={2}>X</AspectRatio>);
-    expect((container.firstChild as HTMLElement).style.aspectRatio).toBe('2');
+    const { container } = wrap(<AspectRatio ratio={16 / 9}>X</AspectRatio>);
+    expect(
+      (container.querySelector('div') as HTMLElement).style.getPropertyValue('--ar-ratio'),
+    ).toBe(String(16 / 9));
   });
 });
 
 describe('Space', () => {
-  it('renders empty div with h prop', () => {
+  it('renders a Box with sizing applied via style props', () => {
     const { container } = wrap(<Space h="md" />);
-    const el = container.firstChild as HTMLElement;
+    const el = container.querySelector('div') as HTMLElement;
     expect(el.nodeName).toBe('DIV');
-    expect(el.dataset.h).toBe('md');
+    expect(el.style.height).toBe('var(--spacing-md)');
   });
 });
 
 describe('Paper', () => {
-  it('renders with default shadow=sm radius=md p=md', () => {
-    const { container } = wrap(<Paper>X</Paper>);
-    const el = container.firstChild as HTMLElement;
-    expect(el.dataset.shadow).toBe('sm');
-    expect(el.dataset.radius).toBe('md');
-    expect(el.dataset.p).toBe('md');
+  it('renders with shadow + radius CSS vars when provided', () => {
+    const { container } = wrap(
+      <Paper shadow="sm" radius="md">
+        X
+      </Paper>,
+    );
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Paper-root');
+    expect(el.style.getPropertyValue('--paper-shadow')).toBe('var(--shadow-sm)');
+    expect(el.style.getPropertyValue('--paper-radius')).toBe('var(--radius-md)');
   });
 
-  it('respects withBorder', () => {
+  it('respects withBorder via data-with-border attribute', () => {
     const { container } = wrap(<Paper withBorder>X</Paper>);
-    expect((container.firstChild as HTMLElement).dataset.withBorder).toBe('true');
+    expect((container.querySelector('div') as HTMLElement).dataset.withBorder).toBe('true');
   });
 });
 

@@ -1,11 +1,21 @@
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/components/AspectRatio/AspectRatio.module.css
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ *
+ * Children get aspect-ratio + width:100%; img/video also get object-fit: cover.
+ */
 .sb-AspectRatio-root {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
+  --ar-ratio: 1;
+  max-width: 100%;
 }
-.sb-AspectRatio-root > * {
-  position: absolute;
-  inset: 0;
+
+.sb-AspectRatio-root > :where(*:not(style)) {
+  aspect-ratio: var(--ar-ratio);
   width: 100%;
-  height: 100%;
+}
+
+.sb-AspectRatio-root > :where(img, video) {
+  object-fit: cover;
 }

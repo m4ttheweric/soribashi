@@ -1,30 +1,30 @@
-.sb-Paper-root { box-sizing: border-box; }
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/components/Paper/Paper.module.css
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ */
+.sb-Paper-root {
+  --paper-radius: var(--radius-md);
 
-.sb-Paper-root[data-shadow='none'] { box-shadow: none; }
-.sb-Paper-root[data-shadow='sm']   { box-shadow: var(--shadow-sm); }
-.sb-Paper-root[data-shadow='md']   { box-shadow: var(--shadow-md); }
-.sb-Paper-root[data-shadow='lg']   { box-shadow: var(--shadow-lg); }
-.sb-Paper-root[data-shadow='xl']   { box-shadow: var(--shadow-xl); }
-
-.sb-Paper-root[data-radius='none'] { border-radius: 0; }
-.sb-Paper-root[data-radius='sm']   { border-radius: var(--radius-sm); }
-.sb-Paper-root[data-radius='md']   { border-radius: var(--radius-md); }
-.sb-Paper-root[data-radius='lg']   { border-radius: var(--radius-lg); }
-.sb-Paper-root[data-radius='xl']   { border-radius: var(--radius-xl); }
-.sb-Paper-root[data-radius='2xl']  { border-radius: var(--radius-2xl); }
-
-.sb-Paper-root[data-with-border='true'] {
-  border: 1px solid var(--border-default);
+  outline: 0;
+  -webkit-tap-highlight-color: transparent;
+  display: block;
+  touch-action: manipulation;
+  text-decoration: none;
+  border-radius: var(--paper-radius);
+  box-shadow: var(--paper-shadow);
+  background-color: var(--surface-default);
 }
 
-.sb-Paper-root[data-bg='canvas']  { background: var(--surface-canvas); }
-.sb-Paper-root[data-bg='default'] { background: var(--surface-default); }
-.sb-Paper-root[data-bg='raised']  { background: var(--surface-raised); }
-.sb-Paper-root[data-bg='sunken']  { background: var(--surface-sunken); }
+:root {
+  --paper-border-color: var(--color-neutral-200);
+}
 
-.sb-Paper-root[data-p='none'] { padding: 0; }
-.sb-Paper-root[data-p='xs']   { padding: var(--spacing-xs); }
-.sb-Paper-root[data-p='sm']   { padding: var(--spacing-sm); }
-.sb-Paper-root[data-p='md']   { padding: var(--spacing-md); }
-.sb-Paper-root[data-p='lg']   { padding: var(--spacing-lg); }
-.sb-Paper-root[data-p='xl']   { padding: var(--spacing-xl); }
+.dark {
+  --paper-border-color: var(--color-neutral-700);
+}
+
+.sb-Paper-root:where([data-with-border]) {
+  border: 1px solid var(--paper-border-color);
+}

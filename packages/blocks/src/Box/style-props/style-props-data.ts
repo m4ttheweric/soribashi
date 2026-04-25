@@ -100,13 +100,13 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   bottom: { property: 'bottom', resolver: sizeOrRem },
   inset: { property: 'inset', resolver: sizeOrRem },
 
-  // Sizing
-  w: { property: 'width', resolver: sizeOrRem },
-  miw: { property: 'minWidth', resolver: sizeOrRem },
-  maw: { property: 'maxWidth', resolver: sizeOrRem },
-  h: { property: 'height', resolver: sizeOrRem },
-  mih: { property: 'minHeight', resolver: sizeOrRem },
-  mah: { property: 'maxHeight', resolver: sizeOrRem },
+  // Sizing — accept spacing tokens (xs/sm/md/lg/xl/...) plus raw CSS / numbers.
+  w: { property: 'width', resolver: getSpacing as StylePropResolver },
+  miw: { property: 'minWidth', resolver: getSpacing as StylePropResolver },
+  maw: { property: 'maxWidth', resolver: getSpacing as StylePropResolver },
+  h: { property: 'height', resolver: getSpacing as StylePropResolver },
+  mih: { property: 'minHeight', resolver: getSpacing as StylePropResolver },
+  mah: { property: 'maxHeight', resolver: getSpacing as StylePropResolver },
 
   // Flex
   flex: { property: 'flex', resolver: identity },
