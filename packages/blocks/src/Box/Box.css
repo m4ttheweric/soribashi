@@ -1,47 +1,13 @@
-.sb-Box-root { box-sizing: border-box; }
-
-.sb-Box-root[data-p='none'] { padding: 0; }
-.sb-Box-root[data-p='xs']   { padding: var(--spacing-xs); }
-.sb-Box-root[data-p='sm']   { padding: var(--spacing-sm); }
-.sb-Box-root[data-p='md']   { padding: var(--spacing-md); }
-.sb-Box-root[data-p='lg']   { padding: var(--spacing-lg); }
-.sb-Box-root[data-p='xl']   { padding: var(--spacing-xl); }
-.sb-Box-root[data-p='2xl']  { padding: var(--spacing-2xl); }
-.sb-Box-root[data-p='3xl']  { padding: var(--spacing-3xl); }
-
-.sb-Box-root[data-px='none'] { padding-left: 0; padding-right: 0; }
-.sb-Box-root[data-px='xs']   { padding-left: var(--spacing-xs); padding-right: var(--spacing-xs); }
-.sb-Box-root[data-px='sm']   { padding-left: var(--spacing-sm); padding-right: var(--spacing-sm); }
-.sb-Box-root[data-px='md']   { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
-.sb-Box-root[data-px='lg']   { padding-left: var(--spacing-lg); padding-right: var(--spacing-lg); }
-.sb-Box-root[data-px='xl']   { padding-left: var(--spacing-xl); padding-right: var(--spacing-xl); }
-
-.sb-Box-root[data-py='none'] { padding-top: 0; padding-bottom: 0; }
-.sb-Box-root[data-py='xs']   { padding-top: var(--spacing-xs); padding-bottom: var(--spacing-xs); }
-.sb-Box-root[data-py='sm']   { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
-.sb-Box-root[data-py='md']   { padding-top: var(--spacing-md); padding-bottom: var(--spacing-md); }
-.sb-Box-root[data-py='lg']   { padding-top: var(--spacing-lg); padding-bottom: var(--spacing-lg); }
-.sb-Box-root[data-py='xl']   { padding-top: var(--spacing-xl); padding-bottom: var(--spacing-xl); }
-
-.sb-Box-root[data-m='none'] { margin: 0; }
-.sb-Box-root[data-m='xs']   { margin: var(--spacing-xs); }
-.sb-Box-root[data-m='sm']   { margin: var(--spacing-sm); }
-.sb-Box-root[data-m='md']   { margin: var(--spacing-md); }
-.sb-Box-root[data-m='lg']   { margin: var(--spacing-lg); }
-.sb-Box-root[data-m='xl']   { margin: var(--spacing-xl); }
-
-.sb-Box-root[data-mx='auto'] { margin-left: auto; margin-right: auto; }
-
-.sb-Box-root[data-radius='none'] { border-radius: 0; }
-.sb-Box-root[data-radius='sm']   { border-radius: var(--radius-sm); }
-.sb-Box-root[data-radius='md']   { border-radius: var(--radius-md); }
-.sb-Box-root[data-radius='lg']   { border-radius: var(--radius-lg); }
-.sb-Box-root[data-radius='xl']   { border-radius: var(--radius-xl); }
-.sb-Box-root[data-radius='2xl']  { border-radius: var(--radius-2xl); }
-.sb-Box-root[data-radius='full'] { border-radius: var(--radius-full); }
-
-.sb-Box-root[data-bg='canvas']  { background-color: var(--surface-canvas); }
-.sb-Box-root[data-bg='default'] { background-color: var(--surface-default); }
-.sb-Box-root[data-bg='raised']  { background-color: var(--surface-raised); }
-.sb-Box-root[data-bg='sunken']  { background-color: var(--surface-sunken); }
-.sb-Box-root[data-bg='overlay'] { background-color: var(--surface-overlay); }
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/core/Box/Box.module.css
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ *
+ * Box's CSS surface is intentionally minimal — the box-sizing reset is the
+ * only static rule. All visual styling flows through inline style props
+ * resolved by parseStyleProps.
+ */
+.sb-Box-root {
+  box-sizing: border-box;
+}

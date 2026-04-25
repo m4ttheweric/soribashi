@@ -25,16 +25,16 @@ const theme = createTheme({
 const wrap = (ui: React.ReactNode) =>
   render(<SoribashiProvider theme={theme}>{ui}</SoribashiProvider>);
 
-describe('Box', () => {
+describe('Box (smoke — full coverage in test/Box.test.tsx)', () => {
   it('renders div by default', () => {
     const { container } = wrap(<Box>X</Box>);
-    expect(container.firstChild?.nodeName).toBe('DIV');
-    expect((container.firstChild as HTMLElement).className).toContain('sb-Box-root');
+    expect(container.querySelector('div')).toBeInTheDocument();
+    expect((container.querySelector('div') as HTMLElement).className).toContain('sb-Box-root');
   });
 
   it('respects as prop', () => {
     const { container } = wrap(<Box as="section">X</Box>);
-    expect(container.firstChild?.nodeName).toBe('SECTION');
+    expect(container.querySelector('section')).toBeInTheDocument();
   });
 
   it('forwards arbitrary HTML attributes', () => {
@@ -43,21 +43,21 @@ describe('Box', () => {
         X
       </Box>,
     );
-    const el = container.firstChild as HTMLElement;
-    expect(el.id).toBe('test');
+    const el = container.querySelector('#test') as HTMLElement;
+    expect(el).toBeInTheDocument();
     expect(el.getAttribute('data-foo')).toBe('bar');
   });
 
-  it('applies p, radius, bg props', () => {
+  it('style props produce inline styles (new Mantine-faithful behavior)', () => {
     const { container } = wrap(
-      <Box p="md" radius="lg" bg="raised">
+      <Box p="md" bdrs="lg" bg="surface.raised">
         X
       </Box>,
     );
-    const el = container.firstChild as HTMLElement;
-    expect(el.dataset.p).toBe('md');
-    expect(el.dataset.radius).toBe('lg');
-    expect(el.dataset.bg).toBe('raised');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.padding).toBe('var(--spacing-md)');
+    expect(el.style.borderRadius).toBe('var(--radius-lg)');
+    expect(el.style.background).toBe('var(--surface-raised)');
   });
 });
 
