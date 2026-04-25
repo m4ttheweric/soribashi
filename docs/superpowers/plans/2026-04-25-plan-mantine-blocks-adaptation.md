@@ -2,6 +2,128 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+---
+
+## Handoff snapshot — 2026-04-25 (mid-execution)
+
+**State of the world:** 238 tests passing, typecheck clean, playground builds. Phases 0–6 complete; Phase 7 partially complete (Flex, Grid, SimpleGrid done; Container pending); Phases 8–9 not started.
+
+**Resume by reading:**
+1. This snapshot (you're here).
+2. The "Patterns that emerged" section below — the procedure for each remaining block.
+3. The remaining task list at the bottom.
+
+### Phase status
+
+| Phase | Subject | Status |
+|---|---|---|
+| 0 | Attribution / `THIRD-PARTY-LICENSES.md` | ✅ Done |
+| 1 | Theme tokens (`fontWeight`, `lineHeight`, `fontFamily.heading`, `heading.sizes`) | ✅ Done |
+| 2 | Helper utilities (`rem`, `getSpacing`, `getRadius`, `getSize`, `getFontSize`, `getLineHeight`, `getShadow`, `getThemeColor`) | ✅ Done |
+| 3 | Factory infrastructure (`useRandomClassName`, `hashStyleProps`, `<InlineStyles>`) | ✅ Done |
+| 4 | Box style-props machinery (`STYLE_PROPS_DATA`, `parseStyleProps`, `extractStyleProps`, `getBoxMod`) | ✅ Done |
+| 5 | Box itself — full Mantine-faithful with style-prop pipeline + responsive `StyleProp<T>` | ✅ Done |
+| 6 | Stack, Group (with grow/preventGrowOverflow + filterFalsyChildren), Center (`:where([data-inline])` pattern), AspectRatio (children-aware fix), Space (1-line Box wrapper), Paper (a11y defaults + light/dark border) | ✅ Done |
+| 7 | Flex, Grid + Grid.Col, SimpleGrid | ✅ Done; **Container pending** |
+| 8 | Text (lineClamp, gradient, inline, inherit), Title (textWrap, lineClamp, getTitleSize) | ⏳ Pending |
+| 9 | Cleanup: divergence ledger refresh, lint check for `--mantine-` references in compiled source, final smoke | ⏳ Pending |
+
+### Deviations from the original plan (deliberate)
+
+These came up during execution and are worth noting before continuing:
+
+- **Responsive `StyleProp<T>` for non-Box blocks deferred.** Box has full responsive support. Flex/Grid/SimpleGrid currently take flat values for their non-Box-overlapping props (Flex's `gap`/`align`/etc., Grid's `cols`, etc.). The infrastructure (`parseStyleProps` + `<InlineStyles>` + `useRandomClassName`) is built and proven on Box; plugging it into Flex/Grid/SimpleGrid is a follow-up task (each block needs its own `STYLE_PROPS_DATA`-shaped table for its own props). Mark this in the divergence ledger refresh.
+- **Grid context (`GridProvider`) skipped.** The original plan called for `GridProvider` so that `Grid.Col` could read responsive breakpoints from the parent Grid via context. The current Grid uses flat per-col values. `Grid.Col span={{ base: 12, md: 6 }}` is not yet supported. Note as deferred.
+- **Container's grid strategy (with `data-breakout` children) not yet implemented.** Block strategy works.
+- **Sizing style props (`w`/`h`/`miw`/`mih`/`maw`/`mah`) use `getSpacing` resolver.** This was a fix discovered when porting `Space`: Mantine treats these as size tokens but our scale is spacing-keyed. Spacing tokens like `h="md"` resolve to `var(--spacing-md)`; raw CSS (`h="100vh"`) and numbers (`h={400}` → rem) pass through.
+- **Single-config typecheck.** Composite project references and per-package `tsconfig.json` rootDir restrictions were dropped. Root `tsconfig.json` includes everything. `noEmit: true`, `allowImportingTsExtensions: true` in `tsconfig.base.json`. Run with `bun run typecheck` (= `tsc -p tsconfig.json --noEmit`).
+
+### Patterns that emerged (apply to remaining blocks)
+
+The standard recipe for each block adaptation:
+
+1. **Source files**: read `/Users/matt/Documents/GitHub/mantine/packages/@mantine/core/src/components/<Name>/{<Name>.tsx,<Name>.module.css}`.
+
+2. **TSX shape**:
+   ```tsx
+   /**
+    * Adapted from @mantine/core
+    * Source: packages/@mantine/core/src/components/<Name>/<Name>.tsx
+    * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+    * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+    *
+    * Soribashi changes:
+    *   - <list of substantive divergences>
+    */
+   import { defineComponent } from '@soribashi/factory';
+   import { Box } from '../Box/Box.tsx';
+   import type { BoxOwnProps } from '../Box/Box.types.ts';
+   // import any token getters needed: getSpacing, getRadius, etc.
+
+   export interface <Name>OwnProps extends BoxOwnProps {
+     // own props with theme-aware string|number types where appropriate
+   }
+
+   export const <Name> = defineComponent<<Name>OwnProps>({
+     name: '<Name>',
+     selectors: ['root'] as const,
+     classes: { root: 'sb-<Name>-root' },
+     defaults: { /* ... */ } as Partial<<Name>OwnProps>,
+     vars: (_theme, props) => ({
+       root: {
+         '--<name>-<key>': resolverFn(props.<prop>) ?? '',
+         // ...
+       },
+     }),
+     render: ({ props, getStyles }) => {
+       const {
+         /* destructure own props to consume them, */
+         /* destructure StylesAPI props to discard, */
+         children,
+         mod,
+         ...rest
+       } = props as any;
+       return (
+         <Box
+           {...getStyles('root')}
+           mod={[/* per-block conditional mod */, mod].filter(Boolean) as any}
+           {...rest}
+         >
+           {children}
+         </Box>
+       );
+     },
+   });
+   ```
+
+3. **CSS shape**: small file, just the static structural rules + variable-driven dynamic rules. Selectors use `:where([data-foo])` for zero specificity. CSS vars are read with fallbacks (`var(--<name>-gap, var(--spacing-md))`).
+
+4. **Test shape**: assert on `el.style.getPropertyValue('--<name>-<key>')` for theme-driven props; on `el.dataset.<x>` for mod attrs; on `el.className` for the root class.
+
+5. **Common gotchas:**
+   - The `Edit` tool requires reading the target file first in this session. If a `Write` complains "file not yet read", `Read` first.
+   - Box already does the heavy lifting — don't re-implement style-prop parsing inside another block.
+   - `mod={[<conditional>, mod].filter(Boolean) as any}` is the idiom for adding block-internal data-attrs while preserving consumer-passed mod values.
+   - Tests in `packages/blocks/test/blocks.test.tsx` mostly assert on the OLD `data-*` API. When porting a block, find its describe block and rewrite the assertions to use `style.getPropertyValue('--...')` and `el.className`.
+
+### Current uncommitted work
+
+None. Last commit: `feat(blocks): adapt Flex, Grid, SimpleGrid from Mantine`.
+
+### What to do next
+
+Continue Phase 7 (Container), then Phase 8 (Text, Title), then Phase 9 (cleanup).
+
+The remaining task headers in this plan (below) describe each block; some have superseded notes (e.g., the original Phase 7 Grid section talks about GridProvider/responsive cols which we deferred). Use the patterns section above; treat the remaining task headers as inventory rather than verbatim instruction.
+
+When all blocks are done, the cleanup pass should:
+- Update `docs/superpowers/divergences/mantine-master.md` to mark layout-block divergences closed; add new divergences for the deferred items (responsive style props on non-Box blocks, GridProvider, Container grid strategy).
+- Run `grep -r "--mantine-" packages/blocks/src/ packages/factory/src/ packages/theme/src/ apps/playground/src/ 2>&1 | grep -v ".test."` and verify it returns nothing.
+- Run all tests, typecheck, and playground build for a final smoke.
+- Update `STATUS.md` with final state.
+
+---
+
 **Goal:** Replace soribashi's stripped-down blocks with faithful adaptations of Mantine's blocks + Box style-prop machinery. MIT-licensed source; preserve attribution.
 
 **Architecture:** Read Mantine source at `/Users/matt/Documents/GitHub/mantine` as canonical reference. For each file, copy the structural pattern, substitute token names per the mapping in `docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md` § 4, retarget imports from `'../../core'` to `@soribashi/factory` / `@soribashi/theme`, replace `@mixin light`/`@mixin dark` postcss helpers with `:root`/`.dark` selectors, and prepend per-file attribution comments.
