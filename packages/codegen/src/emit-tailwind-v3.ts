@@ -37,6 +37,14 @@ export function emitTailwindV3(theme: ResolvedTheme): string {
     emitVarMap(lines, theme.tokens.fontFamily, 'fontFamily', 'font-family', 4);
   }
 
+  if (theme.tokens.fontWeight) {
+    emitVarMap(lines, theme.tokens.fontWeight, 'fontWeight', 'font-weight', 4);
+  }
+
+  if (theme.tokens.lineHeight) {
+    emitVarMap(lines, theme.tokens.lineHeight, 'lineHeight', 'line-height', 4);
+  }
+
   if (theme.tokens.shadow) {
     emitVarMap(lines, theme.tokens.shadow, 'boxShadow', 'shadow', 4);
   }

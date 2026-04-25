@@ -36,6 +36,18 @@ export function emitTailwindV4(theme: ResolvedTheme): string {
     }
   }
 
+  if (theme.tokens.fontWeight) {
+    for (const [key, value] of Object.entries(theme.tokens.fontWeight).sort(byKey)) {
+      lines.push(`  --font-weight-${key}: ${value};`);
+    }
+  }
+
+  if (theme.tokens.lineHeight) {
+    for (const [key, value] of Object.entries(theme.tokens.lineHeight).sort(byKey)) {
+      lines.push(`  --line-height-${key}: ${value};`);
+    }
+  }
+
   if (theme.tokens.shadow) {
     for (const [key, value] of Object.entries(theme.tokens.shadow).sort(byKey)) {
       lines.push(`  --shadow-${key}: ${value};`);

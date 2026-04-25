@@ -49,9 +49,33 @@ function emitTokenLines(lines: string[], tokens: ThemeTokens): void {
     }
   }
 
+  if (tokens.fontWeight) {
+    for (const [key, value] of Object.entries(tokens.fontWeight).sort(byKey)) {
+      lines.push(`  --font-weight-${key}: ${value};`);
+    }
+  }
+
+  if (tokens.lineHeight) {
+    for (const [key, value] of Object.entries(tokens.lineHeight).sort(byKey)) {
+      lines.push(`  --line-height-${key}: ${value};`);
+    }
+  }
+
   if (tokens.shadow) {
     for (const [key, value] of Object.entries(tokens.shadow).sort(byKey)) {
       lines.push(`  --shadow-${key}: ${value};`);
+    }
+  }
+
+  if (tokens.heading) {
+    for (const [order, size] of Object.entries(tokens.heading.sizes).sort(byKey)) {
+      lines.push(`  --heading-${order}-font-size: ${size.fontSize};`);
+      if (size.fontWeight !== undefined) {
+        lines.push(`  --heading-${order}-font-weight: ${size.fontWeight};`);
+      }
+      if (size.lineHeight !== undefined) {
+        lines.push(`  --heading-${order}-line-height: ${size.lineHeight};`);
+      }
     }
   }
 }

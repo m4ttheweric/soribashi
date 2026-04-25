@@ -120,4 +120,43 @@ describe('emitCss', () => {
     const css = emitCss(theme);
     expect(css.split('\n')[0]).toMatch(/auto-generated/i);
   });
+
+  it('emits font-weight, line-height, font-family-heading vars', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {}, radius: {}, spacing: {}, fontSize: {},
+        fontFamily: { sans: 'Inter', heading: 'Georgia' },
+        fontWeight: { regular: '400', bold: '700' },
+        lineHeight: { md: '1.55' },
+      },
+    });
+    const css = emitCss(theme);
+    expect(css).toContain('--font-family-heading: Georgia;');
+    expect(css).toContain('--font-weight-regular: 400;');
+    expect(css).toContain('--font-weight-bold: 700;');
+    expect(css).toContain('--line-height-md: 1.55;');
+  });
+
+  it('emits heading sizes per order as separate vars', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {}, radius: {}, spacing: {}, fontSize: {},
+        heading: {
+          sizes: {
+            h1: { fontSize: '2rem', fontWeight: '700', lineHeight: '1.3' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+    });
+    const css = emitCss(theme);
+    expect(css).toContain('--heading-h1-font-size: 2rem;');
+    expect(css).toContain('--heading-h1-font-weight: 700;');
+    expect(css).toContain('--heading-h1-line-height: 1.3;');
+    expect(css).toContain('--heading-h6-font-size: 0.875rem;');
+  });
 });
