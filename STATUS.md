@@ -2,11 +2,11 @@
 
 **As of 2026-04-25**
 
-All 5 original plans executed end-to-end. **245 tests passing** across 28 test files. Playground app builds, typecheck clean (`bun run typecheck`). **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md`.
+All 5 original plans executed end-to-end **and** the Mantine blocks adaptation pass is complete. **249 tests passing** across 27 test files. Playground app builds, typecheck clean (`bun run typecheck`). See `docs/superpowers/divergences/mantine-master.md` and `THIRD-PARTY-LICENSES.md`.
 
-## Mantine blocks adaptation — IN PROGRESS (handoff snapshot)
+## Mantine blocks adaptation — COMPLETE
 
-**Resume by reading:** `docs/superpowers/plans/2026-04-25-plan-mantine-blocks-adaptation.md` § "Handoff snapshot — 2026-04-25 (mid-execution)" at the top of the document.
+**Plan:** `docs/superpowers/plans/2026-04-25-plan-mantine-blocks-adaptation.md`. All 14 layout primitives are now full Mantine adaptations, MIT-attributed.
 
 ### Phase status
 
@@ -17,18 +17,20 @@ All 5 original plans executed end-to-end. **245 tests passing** across 28 test f
 - ✅ **Phase 4:** Box style-props machinery (`STYLE_PROPS_DATA`, `parseStyleProps`, `extractStyleProps`, `getBoxMod`)
 - ✅ **Phase 5:** Box — full style-prop pipeline + responsive `StyleProp<T>`
 - ✅ **Phase 6:** Stack, Group (grow + preventGrowOverflow + filterFalsyChildren), Center (`:where([data-inline])` pattern), AspectRatio (children-aware fix), Space (1-line Box wrapper), Paper (a11y defaults + light/dark border)
-- ✅ **Phase 7:** Flex, Grid + Grid.Col, SimpleGrid, Container (block + grid strategies + `data-breakout` children)
-- ✅ **Phase 8 (partial):** Text (lineClamp, gradient, inline, inherit, RTL truncate, span shorthand)
-- ⏳ **Phase 8 (remaining):** Title (textWrap, lineClamp, getTitleSize from `theme.heading.sizes`)
-- ⏳ **Phase 9:** Cleanup (divergence ledger refresh, `--mantine-` lint, final smoke + STATUS update)
+- ✅ **Phase 7:** Flex, Grid + Grid.Col, SimpleGrid, Container (block strategy)
+- ✅ **Phase 8:** Text (lineClamp, gradient, inline, inherit, RTL truncate, span shorthand) + Title (`order`, `size` accepts `h1`-`h6` token, `lineClamp`, `textWrap`, `getTitleSize` reading `theme.tokens.heading.sizes`)
+- ✅ **Phase 9:** Divergence ledger refreshed (`docs/superpowers/divergences/mantine-master.md`); `--mantine-` lint clean (only attribution-comment references remain); final smoke (`bunx vitest run`, `bun run typecheck`, `bun run --filter @soribashi/playground build`) all green
 
-### Deferred from original plan (recorded in plan handoff snapshot)
+### Deferred (acknowledged, not yet implemented)
 
-- Responsive `StyleProp<T>` for non-Box blocks (Flex/Grid/SimpleGrid)
-- `GridProvider` context for responsive col span/offset/order
-- SimpleGrid `type='container'` mode
+Tracked in the divergence ledger under "Deferred":
 
-Typecheck passes cleanly (root tsconfig with `noEmit: true`, `allowImportingTsExtensions: true`).
+- Responsive `StyleProp<T>` for non-Box blocks (Flex / Grid / SimpleGrid)
+- `GridProvider` context for responsive col span / offset / order
+- `Container` grid strategy (with `data-breakout` children)
+- `SimpleGrid` `type='container'` mode
+
+**Blocks adapted from Mantine** — all 14 layout primitives now full Mantine fidelity, MIT-attributed, see `docs/superpowers/divergences/mantine-master.md` and `THIRD-PARTY-LICENSES.md`.
 
 ## What was built
 

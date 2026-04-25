@@ -132,18 +132,62 @@ The single behavioral alignment from this pass: `useProps` now supports the func
   - **Headless / classNamesPrefix / static classes**: Mantine added these for runtime CSS generation. Soribashi uses static classes that codegen ensures are correct. None of this is necessary.
 - **Disposition:** Keep simpler. If a use case demonstrates the need for one of Mantine's features, add it deliberately.
 
-### Layout blocks — direct DOM rendering, no `Box` wrapper
+### ~~Layout blocks — direct DOM rendering, no `Box` wrapper~~ — **CLOSED 2026-04-25**
 
-- **Files:** `packages/blocks/src/Stack/Stack.tsx`, `Group/Group.tsx`, `Flex/Flex.tsx`, `Grid/Grid.tsx`, `SimpleGrid/SimpleGrid.tsx`, `Container/Container.tsx`, `Center/Center.tsx`, `AspectRatio/AspectRatio.tsx`, `Space/Space.tsx`, `Paper/Paper.tsx`, `Text/Text.tsx`, `Title/Title.tsx`
-- **Mantine source:** `packages/@mantine/core/src/components/{Stack,Group,...}/...tsx`
-- **Mantine behavior:** Every block is a wrapper around `<Box {...getStyles('root')} {...others} />`. Box supplies polymorphism, style props (`p`, `m`, `bg`, etc.), and the `mod` API for data attributes. Variant-driven theme overrides go through Mantine's CSS module + CSS variable mechanism.
-- **Soribashi behavior:** Each block renders the underlying DOM element directly (`<div>` for Stack/Group, `<p>`/`<span>` for Text via `definePolymorphicComponent`, `<h1>`-`<h6>` for Title). Data attributes are emitted explicitly (`data-gap={gap}`, `data-direction={direction}`, etc.). Plain CSS files reference `var(--spacing-md)`, etc.
-- **Reason for divergence:**
-  - **No `Box` middleware**: Mantine wraps every block in `Box` because Box owns polymorphic typing, the style-props parser, and the `mod` API. Soribashi puts polymorphic typing into `definePolymorphicComponent` directly and exposes a smaller, simpler block surface. Style-props (`p`, `m`, `bg`) are limited to `Box` itself; other blocks don't accept them. This is a deliberate scope reduction.
-  - **No `mod` API**: Mantine's `mod={['data-with-border', withBorder]}` syntax is replaced by direct `data-*` attributes in JSX. Less abstraction, easier to read.
-  - **CSS Modules vs plain CSS**: Mantine uses CSS Modules (`Stack.module.css`) keyed by selector; soribashi uses plain CSS with stable `sb-{Component}-{selector}` class names. The plain CSS pattern is simpler to test, debug, and integrate with build tools. CSS Modules are still supported via `defineComponent({ classes: cssModule })` for consumers that prefer them.
-- **Disposition:** Keep direct DOM rendering. The Mantine-style `Box`-wrapped pattern is achievable for any team that prefers it via `defineComponent` + `Box`, but the default block library does not require it.
-- **Spot-validated against:** `Stack.tsx`, `Paper.tsx`, `Text.tsx` (canonical examples of the three patterns: simple block, polymorphic block, polymorphic block with extensive variants).
+> **Closed:** all 14 layout blocks (Box, Stack, Group, Flex, Grid, Grid.Col, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title) are now Box-wrapped Mantine adaptations with full attribution headers. The previous direct-DOM, ad-hoc `data-*` pattern has been replaced by `Box` + `mod` + `getStyles('root')` everywhere. Source-validated against Mantine master `63dafbbf`. See "Closed (adapted from Mantine)" below for the per-block summary.
+
+---
+
+## Closed (adapted from Mantine)
+
+Per the 2026-04-25 blocks adaptation pass (see `docs/superpowers/plans/2026-04-25-plan-mantine-blocks-adaptation.md` and `THIRD-PARTY-LICENSES.md`), every block under `packages/blocks/src/` was rewritten as a faithful Mantine adaptation. Each adapted file carries an attribution header pointing at its upstream source. Behavioral differences are limited to (1) token names per the substitution table in the adaptation spec § 4, (2) framework imports targeting `@soribashi/factory` instead of Mantine's `core`, and (3) the `sb-` class-name prefix.
+
+| Block | Notes |
+|---|---|
+| `Box` | Full Mantine-faithful with style-prop pipeline + responsive `StyleProp<T>` (Box itself only). |
+| `Stack`, `Group` | Group includes `grow` / `preventGrowOverflow` / `filterFalsyChildren`. |
+| `Center` | `:where([data-inline])` zero-specificity inline mode. |
+| `AspectRatio` | Children-aware fix (Mantine's `*[data-aspect-ratio-child]` selector). |
+| `Space` | One-line `Box` wrapper (the `w` / `h` style props do all the work). |
+| `Paper` | a11y defaults plus light/dark border via `:root` / `.dark`. |
+| `Flex` | Adapted; flat values for own props (responsive `StyleProp<T>` deferred — see below). |
+| `Grid` + `Grid.Col` | Adapted; flat values for `cols`, `span`, etc. (`GridProvider` deferred). |
+| `SimpleGrid` | Block strategy fully adapted (`type='container'` mode deferred). |
+| `Container` | Block strategy adapted (grid strategy with `data-breakout` children deferred). |
+| `Text` | `lineClamp`, `gradient`, `inline`, `inherit`, RTL truncate (`truncate='start'`), `span` shorthand. |
+| `Title` | `order` (1-6), `size` accepts `h1`-`h6` token, `lineClamp`, `textWrap`, vars from `theme.tokens.heading.sizes`. |
+
+Layout blocks are now full Mantine adaptations. Behavioral parity verified by tests; remaining differences are limited to (1) token names (per § 4 of the adaptation spec), (2) framework imports targeting `@soribashi/factory` instead of Mantine's `core`, and (3) class-name prefix `sb-` instead of `mantine-`.
+
+---
+
+## Deferred (acknowledged, not yet implemented)
+
+Captured during the 2026-04-25 blocks adaptation pass — items the plan called out as out-of-scope or descoped during execution. Each is implementable later under the same recipe.
+
+### Responsive `StyleProp<T>` on non-Box blocks
+
+- **Status:** Box has full responsive style-prop support (`p={{ base: 'xs', md: 'lg' }}` generates a per-instance class with media-query rules via `<InlineStyles>`). Flex / Grid / SimpleGrid currently take flat values for their non-Box-overlapping props (Flex's `gap` / `align` / etc., Grid's `cols`, etc.).
+- **Why deferred:** The infrastructure (`parseStyleProps`, `<InlineStyles>`, `useRandomClassName`) is built and proven on Box. Plugging it into each block requires defining a `STYLE_PROPS_DATA`-shaped table for that block's own props. Mechanical but per-block; out of scope for the initial adaptation pass.
+- **To implement:** Per block, declare its own `STYLE_PROPS_DATA`-style table covering its own props, run them through the same `parseStyleProps` pipeline, render `<InlineStyles>` when responsive values are present.
+
+### `GridProvider` context for responsive col span / offset / order
+
+- **Status:** Mantine's `Grid` uses a context provider so `Grid.Col` can read responsive breakpoints from the parent `Grid`. Soribashi's `Grid.Col span={{ base: 12, md: 6 }}` is not yet supported — current `Grid` uses flat per-col values.
+- **Why deferred:** Requires the responsive `StyleProp<T>` machinery above plus a `<GridProvider>` context wrapping `Grid`. Same recipe as Mantine's `packages/@mantine/core/src/components/Grid/GridProvider.tsx`.
+- **To implement:** Port `GridProvider.tsx` and `use-grid-context.ts`, thread breakpoints through `Grid.Col`'s vars resolver.
+
+### `Container` grid strategy (with `data-breakout` children)
+
+- **Status:** Block strategy works (`Container` renders a centered max-width container). Grid strategy — where `Container strategy="grid"` lays out children with `data-breakout`-marked children spanning the full viewport — is not yet implemented.
+- **Why deferred:** Niche; scope reduction. Mantine's grid strategy is in `Container.module.css` with `:where([data-breakout])` selectors and a CSS Grid template.
+- **To implement:** Add a `strategy?: 'block' | 'grid'` prop, port the corresponding CSS Grid template, document the `data-breakout` convention.
+
+### `SimpleGrid` `type='container'` mode
+
+- **Status:** Default `type='media'` mode (responsive via media queries) works. `type='container'` (responsive via container queries) is not yet implemented.
+- **Why deferred:** Same rationale as above — niche, scope reduction.
+- **To implement:** Add the `type` prop, emit `@container` queries in addition to `@media` when `type='container'`.
 
 ---
 
