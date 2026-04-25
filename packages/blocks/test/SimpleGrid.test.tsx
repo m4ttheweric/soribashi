@@ -16,7 +16,6 @@ const wrap = (ui: React.ReactNode) =>
   render(<SoribashiProvider theme={theme}>{ui}</SoribashiProvider>);
 
 describe('SimpleGrid — prop renames (finding #8)', () => {
-  // --- minColWidth (was minColumnWidth) ---
   it('minColWidth sets --sg-min-col-width CSS var', () => {
     const { container } = wrap(<SimpleGrid minColWidth="200px">X</SimpleGrid>);
     const el = container.querySelector('div') as HTMLElement;
@@ -26,68 +25,35 @@ describe('SimpleGrid — prop renames (finding #8)', () => {
   it('minColWidth with number converts to rem', () => {
     const { container } = wrap(<SimpleGrid minColWidth={200}>X</SimpleGrid>);
     const el = container.querySelector('div') as HTMLElement;
-    // 200px → should produce a rem value via rem()
     expect(el.style.getPropertyValue('--sg-min-col-width')).toMatch(/rem$/);
   });
 
-  it('deprecated minColumnWidth still applies the value (backward-compat shim)', () => {
-    // minColumnWidth is kept as a deprecated alias until all call sites migrate.
-    const { container } = wrap(
-      <SimpleGrid minColumnWidth="300px">X</SimpleGrid>,
-    );
-    const el = container.querySelector('div') as HTMLElement;
-    // Deprecated compat: the passed value is applied via the legacy shim
-    expect(el.style.getPropertyValue('--sg-min-col-width')).toBe('300px');
-  });
-
-  // --- autoFlow (was autoCols) ---
-  it('autoFlow=auto-fill sets data-auto-cols="auto-fill"', () => {
+  it('autoFlow=auto-fill sets data-auto-flow="auto-fill"', () => {
     const { container } = wrap(
       <SimpleGrid autoFlow="auto-fill" minColWidth="200px">
         X
       </SimpleGrid>,
     );
     const el = container.querySelector('div') as HTMLElement;
-    expect(el.dataset.autoCols).toBe('auto-fill');
+    expect(el.dataset.autoFlow).toBe('auto-fill');
   });
 
-  it('autoFlow=auto-fit sets data-auto-cols="auto-fit"', () => {
+  it('autoFlow=auto-fit sets data-auto-flow="auto-fit"', () => {
     const { container } = wrap(
       <SimpleGrid autoFlow="auto-fit" minColWidth="200px">
         X
       </SimpleGrid>,
     );
     const el = container.querySelector('div') as HTMLElement;
-    expect(el.dataset.autoCols).toBe('auto-fit');
+    expect(el.dataset.autoFlow).toBe('auto-fit');
   });
 
-  it('deprecated autoCols alone (without minColWidth) does NOT set data-auto-cols', () => {
-    const { container } = wrap(
-      <SimpleGrid autoCols="auto-fill">X</SimpleGrid>,
-    );
-    const el = container.querySelector('div') as HTMLElement;
-    // Without minColWidth, the grid stays in fixed-column mode — no data-auto-cols
-    expect(el.dataset.autoCols).toBeUndefined();
-  });
-
-  // --- type='media' (was 'simple') ---
   it('type prop accepts "media" without error', () => {
-    expect(() =>
-      wrap(<SimpleGrid type="media">X</SimpleGrid>),
-    ).not.toThrow();
+    expect(() => wrap(<SimpleGrid type="media">X</SimpleGrid>)).not.toThrow();
   });
 
   it('type prop accepts "container" without error', () => {
-    expect(() =>
-      wrap(<SimpleGrid type="container">X</SimpleGrid>),
-    ).not.toThrow();
-  });
-
-  it('old type="simple" is NOT a valid type (ts-expect-error guard)', () => {
-    expect(() =>
-      // @ts-expect-error — 'simple' is no longer a valid literal
-      wrap(<SimpleGrid type="simple">X</SimpleGrid>),
-    ).not.toThrow(); // runtime still renders; only the TS type check matters
+    expect(() => wrap(<SimpleGrid type="container">X</SimpleGrid>)).not.toThrow();
   });
 });
 
@@ -148,6 +114,6 @@ describe('SimpleGrid — default cols / spacing (regression guard)', () => {
   it('when minColWidth is set without autoFlow, defaults to auto-fill', () => {
     const { container } = wrap(<SimpleGrid minColWidth="150px">X</SimpleGrid>);
     const el = container.querySelector('div') as HTMLElement;
-    expect(el.dataset.autoCols).toBe('auto-fill');
+    expect(el.dataset.autoFlow).toBe('auto-fill');
   });
 });

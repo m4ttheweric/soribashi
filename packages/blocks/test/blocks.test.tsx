@@ -187,9 +187,9 @@ describe('Grid', () => {
     expect(el.style.getPropertyValue('--col-flex-grow')).toBe('1');
   });
 
-  it('Grid.Col offset/order/alignSelf produce CSS vars', () => {
+  it('Grid.Col offset/order/align produce CSS vars', () => {
     const { container } = wrap(
-      <Grid.Col span={4} offset={2} order={3} alignSelf="end">
+      <Grid.Col span={4} offset={2} order={3} align="end">
         X
       </Grid.Col>,
     );
@@ -215,14 +215,14 @@ describe('SimpleGrid', () => {
     ).toBe('3');
   });
 
-  it('autoCols=auto-fill sets data-auto-cols attribute', () => {
+  it('autoFlow=auto-fill sets data-auto-flow attribute', () => {
     const { container } = wrap(
-      <SimpleGrid autoCols="auto-fill" minColumnWidth="200px">
+      <SimpleGrid autoFlow="auto-fill" minColWidth="200px">
         X
       </SimpleGrid>,
     );
     const el = container.querySelector('div') as HTMLElement;
-    expect(el.dataset.autoCols).toBe('auto-fill');
+    expect(el.dataset.autoFlow).toBe('auto-fill');
     expect(el.style.getPropertyValue('--sg-min-col-width')).toBe('200px');
   });
 });

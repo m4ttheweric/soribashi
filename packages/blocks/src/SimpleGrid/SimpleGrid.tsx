@@ -10,8 +10,6 @@
  *   - Renders Box for style-prop pass-through
  *   - v1 ships flat-value cols/spacing + auto-fill/auto-fit modes. Mantine's
  *     responsive cols and type='container' mode deferred.
- *   - Prop renames for Mantine parity: minColumnWidth→minColWidth,
- *     autoCols→autoFlow, type='simple'→type='media'. Added autoRows.
  */
 import { defineComponent } from '@soribashi/factory';
 import { getSpacing } from '../utils/index.ts';
@@ -29,16 +27,12 @@ export interface SimpleGridOwnProps extends BoxOwnProps {
   /** Determines type of queries used for responsive styles @default 'media' */
   type?: 'media' | 'container';
   /** Mode for grid-template-columns when minColWidth is set: auto-fill packs as many
-   *  as fit, auto-fit collapses empty tracks. @default 'auto-fill' */
+   *  as fit, auto-fit collapses empty tracks. @default 'auto-fill' (when minColWidth set) */
   autoFlow?: 'auto-fill' | 'auto-fit';
   /** Minimum column width when autoFlow is set */
   minColWidth?: string | number;
   /** Sets the size of implicitly created grid rows (grid-auto-rows) */
   autoRows?: string;
-  /** @deprecated renamed to `autoFlow` for Mantine parity — remove before v1 */
-  autoCols?: 'auto-fill' | 'auto-fit';
-  /** @deprecated renamed to `minColWidth` for Mantine parity — remove before v1 */
-  minColumnWidth?: string | number;
 }
 
 export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
@@ -49,12 +43,10 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
   vars: (_theme, props) => {
     const p = props as SimpleGridOwnProps;
     const spacing = getSpacing(p.spacing) ?? 'var(--spacing-md)';
-    // Support legacy minColumnWidth as a deprecated fallback
-    const resolvedMinColWidth = p.minColWidth ?? p.minColumnWidth;
     const minWidth =
-      typeof resolvedMinColWidth === 'number'
-        ? rem(resolvedMinColWidth) ?? '12rem'
-        : resolvedMinColWidth ?? '12rem';
+      typeof p.minColWidth === 'number'
+        ? rem(p.minColWidth) ?? '12rem'
+        : p.minColWidth ?? '12rem';
     const vars: Record<string, string> = {
       '--sg-cols': String(p.cols ?? 1),
       '--sg-spacing-x': spacing,
@@ -73,11 +65,7 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
       verticalSpacing: _vs,
       type: _ty,
       autoFlow,
-      // Support legacy autoCols as a deprecated fallback
-      autoCols: _legacyAutoCols,
       minColWidth,
-      // Support legacy minColumnWidth as a deprecated fallback
-      minColumnWidth: _legacyMinColumnWidth,
       autoRows: _ar,
       children,
       mod,
@@ -89,18 +77,13 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
       ...rest
     } = props as any;
 
-    const resolvedMinColWidth = minColWidth ?? _legacyMinColumnWidth;
-    const resolvedAutoFlow = autoFlow ?? _legacyAutoCols;
+    const autoFlowAttr =
+      minColWidth !== undefined ? autoFlow ?? 'auto-fill' : autoFlow;
 
-    // When minColWidth (or legacy minColumnWidth) is provided, default autoFlow to 'auto-fill'
-    const autoColsAttr =
-      resolvedMinColWidth !== undefined ? resolvedAutoFlow ?? 'auto-fill' : undefined;
-
-    // minColumnWidth and autoCols are already consumed above — don't forward to DOM
     return (
       <Box
         {...getStyles('root')}
-        mod={[autoColsAttr ? { 'auto-cols': autoColsAttr } : null, mod].filter(Boolean) as any}
+        mod={[autoFlowAttr ? { 'auto-flow': autoFlowAttr } : null, mod].filter(Boolean) as any}
         {...rest}
       >
         {children}

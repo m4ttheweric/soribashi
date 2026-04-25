@@ -14,7 +14,7 @@
  *   - Column math ported from Mantine's helper functions (get-column-*.ts),
  *     parameterized on the parent Grid's `columns` prop (not hardcoded 12).
  *   - `grow` prop added to Grid; propagated to Grid.Col via GridContext.
- *   - Grid.Col `align` added (Mantine parity); deprecated `alignSelf` retained
+ *   - Grid.Col `align` (Mantine parity, maps to CSS `align-self`)
  *     for migration compat and will be removed in a future release.
  */
 import { defineComponent } from '@soribashi/factory';
@@ -58,11 +58,6 @@ export interface GridColOwnProps extends BoxOwnProps {
    * Mantine parity: prop is named `align`, maps to CSS `align-self`.
    */
   align?: React.CSSProperties['alignSelf'];
-  /**
-   * @deprecated Use `align` instead. Retained for backward-compat during migration.
-   * Will be removed in a future release.
-   */
-  alignSelf?: React.CSSProperties['alignSelf'];
 }
 
 const GridRoot = defineComponent<GridOwnProps>({
@@ -123,12 +118,10 @@ const GridCol = defineComponent<GridColOwnProps>({
     // The context-aware logic is handled in the render function by injecting CSS custom
     // properties directly on the element's style. The vars() hook provides defaults.
     const p = props as GridColOwnProps;
-    // `align` takes precedence; fall back to deprecated `alignSelf` for migration compat
-    const alignValue = p.align ?? p.alignSelf;
     return {
       root: {
         '--col-order': p.order === undefined ? '' : String(p.order),
-        '--col-align-self': String(alignValue ?? ''),
+        '--col-align-self': String(p.align ?? ''),
       },
     };
   },
@@ -138,7 +131,6 @@ const GridCol = defineComponent<GridColOwnProps>({
       offset,
       order: _or,
       align: _al,
-      alignSelf: _as,
       children,
       classNames: _cn,
       styles: _s,
