@@ -6,21 +6,18 @@
  *
  * Soribashi changes:
  *   - Token names: --mantine-spacing-{key} → --spacing-{key}
- *   - KNOWN_KEYS expanded for soribashi spacing scale
+ *   - Replaced KNOWN_KEYS allowlist with open-ended token resolution via getSize;
+ *     any non-numeric, non-CSS-function string is treated as a token key.
  */
-import { rem } from './rem.ts';
-
-const KNOWN_KEYS = new Set(['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']);
+import { getSize } from './get-size.ts';
 
 /**
  * Resolves a spacing value to a CSS string:
- *   - number → rem string
- *   - known token key (xs/sm/md/lg/xl/2xl/3xl) → var(--spacing-{key})
- *   - any other string → passes through verbatim (raw CSS)
+ *   - number → rem string (e.g. 16 → '1rem')
+ *   - token key (any non-digit-leading string) → var(--spacing-{key})
+ *   - raw CSS value (digit-leading or CSS function) → pass-through
+ *   - undefined → undefined
  */
 export function getSpacing(value: string | number | undefined): string | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (typeof value === 'number') return rem(value);
-  if (KNOWN_KEYS.has(value)) return `var(--spacing-${value})`;
-  return value;
+  return getSize(value, 'spacing');
 }

@@ -15,9 +15,25 @@ describe('rem', () => {
     expect(rem(16)).toBe('1rem');
     expect(rem(8)).toBe('0.5rem');
   });
+  it('converts zero', () => {
+    expect(rem(0)).toBe('0rem');
+  });
   it('passes through strings', () => {
     expect(rem('1.5rem')).toBe('1.5rem');
     expect(rem('var(--x)')).toBe('var(--x)');
+    expect(rem('100%')).toBe('100%');
+  });
+  it('converts px strings to rem (#11)', () => {
+    expect(rem('8px')).toBe('0.5rem');
+    expect(rem('16px')).toBe('1rem');
+  });
+  it('recurses on space-separated px values (#11)', () => {
+    expect(rem('16px 32px')).toBe('1rem 2rem');
+  });
+  it('passes through calc/clamp/var/rgba strings (#11)', () => {
+    expect(rem('calc(100% - 16px)')).toBe('calc(100% - 16px)');
+    expect(rem('var(--x)')).toBe('var(--x)');
+    expect(rem('clamp(1rem, 5vw, 3rem)')).toBe('clamp(1rem, 5vw, 3rem)');
   });
   it('returns undefined for undefined', () => {
     expect(rem(undefined)).toBeUndefined();
@@ -39,6 +55,20 @@ describe('getSpacing', () => {
   it('returns undefined for undefined', () => {
     expect(getSpacing(undefined)).toBeUndefined();
   });
+  // #10a: custom keys — not in KNOWN_KEYS but should still resolve
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getSpacing('custom-key')).toBe('var(--spacing-custom-key)');
+  });
+  it('passes through raw CSS values with digits (#10a)', () => {
+    expect(getSpacing('100px')).toBe('100px');
+    expect(getSpacing('1.25rem')).toBe('1.25rem');
+    expect(getSpacing('-4')).toBe('-4');
+  });
+  // 2xl starts with '2' — digit-leading string is treated as raw CSS per Mantine heuristic
+  it('treats digit-leading strings as raw CSS (#10a edge case)', () => {
+    // '2xl' starts with '2' → raw CSS pass-through, not a token
+    expect(getSpacing('2xl')).toBe('2xl');
+  });
 });
 
 describe('getRadius', () => {
@@ -48,6 +78,17 @@ describe('getRadius', () => {
   });
   it('returns rem for numbers', () => {
     expect(getRadius(8)).toBe('0.5rem');
+  });
+  // #10b: undefined → var(--radius-md) fallback
+  it('falls back to var(--radius-md) for undefined (#10b)', () => {
+    expect(getRadius(undefined)).toBe('var(--radius-md)');
+  });
+  // #10a: custom keys
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getRadius('custom-key')).toBe('var(--radius-custom-key)');
+  });
+  it('passes through raw CSS values with digits (#10a)', () => {
+    expect(getRadius('100px')).toBe('100px');
   });
 });
 
@@ -59,11 +100,35 @@ describe('getSize', () => {
   it('returns rem for numbers regardless of prefix', () => {
     expect(getSize(20, 'whatever')).toBe('1.25rem');
   });
+  // #10a: custom keys not in STANDARD_KEYS
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getSize('custom-key', 'foo')).toBe('var(--foo-custom-key)');
+    expect(getSize('2xl', 'foo')).toBe('2xl'); // digit-leading → raw CSS
+  });
+  it('passes through raw CSS values (#10a)', () => {
+    expect(getSize('100px', 'foo')).toBe('100px');
+    expect(getSize('var(--x)', 'foo')).toBe('var(--x)');
+    expect(getSize('calc(100% - 8px)', 'foo')).toBe('calc(100% - 8px)');
+  });
+  it('returns undefined for undefined', () => {
+    expect(getSize(undefined, 'foo')).toBeUndefined();
+  });
 });
 
 describe('getFontSize', () => {
   it('returns var(--font-size-{key})', () => {
     expect(getFontSize('lg')).toBe('var(--font-size-lg)');
+  });
+  // #10a: custom keys
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getFontSize('custom-key')).toBe('var(--font-size-custom-key)');
+  });
+  it('passes through raw CSS values (#10a)', () => {
+    expect(getFontSize('100px')).toBe('100px');
+    expect(getFontSize('2rem')).toBe('2rem');
+  });
+  it('returns undefined for undefined', () => {
+    expect(getFontSize(undefined)).toBeUndefined();
   });
 });
 
