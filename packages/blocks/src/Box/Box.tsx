@@ -53,6 +53,12 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
       unstyled: _u,
       className: _c,
       style: instanceStyle,
+      // Visibility props — consumed here, never forwarded to the DOM
+      hiddenFrom: _hiddenFrom,
+      visibleFrom: _visibleFrom,
+      lightHidden: _lightHidden,
+      darkHidden: _darkHidden,
+      sx: _sx,
       ...remainingProps
     } = props as any;
 

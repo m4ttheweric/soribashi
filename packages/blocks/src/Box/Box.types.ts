@@ -86,4 +86,17 @@ export interface BoxOwnProps extends BoxStyleProps {
   mod?: BoxMod;
   /** Variant string passed through as `data-variant` */
   variant?: string;
+
+  // Visibility props — consumed by Box (never forwarded to the DOM)
+
+  /** Breakpoint above which the component is hidden with `display: none` */
+  hiddenFrom?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  /** Breakpoint below which the component is hidden with `display: none` */
+  visibleFrom?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  /** Hide the component in light color scheme */
+  lightHidden?: boolean;
+  /** Hide the component in dark color scheme */
+  darkHidden?: boolean;
+  /** CSS-in-JS escape hatch (consumed but not yet applied; prevents DOM leakage) */
+  sx?: Record<string, unknown>;
 }
