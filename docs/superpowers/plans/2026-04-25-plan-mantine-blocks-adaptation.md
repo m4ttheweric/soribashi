@@ -4,9 +4,9 @@
 
 ---
 
-## Handoff snapshot — 2026-04-25 (mid-execution)
+## Handoff snapshot — 2026-04-25 (mid-execution, second handoff)
 
-**State of the world:** 238 tests passing, typecheck clean, playground builds. Phases 0–6 complete; Phase 7 partially complete (Flex, Grid, SimpleGrid done; Container pending); Phases 8–9 not started.
+**State of the world:** 245 tests passing, typecheck clean, playground builds. Phases 0–7 complete; Phase 8 partially complete (Text done; Title pending); Phase 9 (cleanup) not started.
 
 **Resume by reading:**
 1. This snapshot (you're here).
@@ -24,9 +24,33 @@
 | 4 | Box style-props machinery (`STYLE_PROPS_DATA`, `parseStyleProps`, `extractStyleProps`, `getBoxMod`) | ✅ Done |
 | 5 | Box itself — full Mantine-faithful with style-prop pipeline + responsive `StyleProp<T>` | ✅ Done |
 | 6 | Stack, Group (with grow/preventGrowOverflow + filterFalsyChildren), Center (`:where([data-inline])` pattern), AspectRatio (children-aware fix), Space (1-line Box wrapper), Paper (a11y defaults + light/dark border) | ✅ Done |
-| 7 | Flex, Grid + Grid.Col, SimpleGrid | ✅ Done; **Container pending** |
-| 8 | Text (lineClamp, gradient, inline, inherit), Title (textWrap, lineClamp, getTitleSize) | ⏳ Pending |
-| 9 | Cleanup: divergence ledger refresh, lint check for `--mantine-` references in compiled source, final smoke | ⏳ Pending |
+| 7 | Flex, Grid + Grid.Col, SimpleGrid, Container (block + grid strategies + breakout) | ✅ Done |
+| 8 | Text (lineClamp, gradient, inline, inherit, RTL truncate, span shorthand) | ✅ Done; **Title pending** |
+| 9 | Cleanup: divergence ledger refresh, `--mantine-` lint check, final smoke + STATUS update | ⏳ Pending |
+
+### Title — what to build (Phase 8 remaining)
+
+Title is the single block remaining. Read `/Users/matt/Documents/GitHub/mantine/packages/@mantine/core/src/components/Title/Title.tsx`, `Title.module.css`, and `get-title-size.ts` for canonical reference. Adapted version should:
+
+- Render `<h1>`-`<h6>` based on `order` prop (1-6, default 1)
+- `size` prop accepts `h1`-`h6` token (e.g., `<Title order={2} size="h1">` styles an h2 like an h1)
+- Read sizing from `theme.tokens.heading.sizes` (added in Phase 1)
+- Support `lineClamp` (multi-line truncation) and `textWrap` (wrap | nowrap | balance | pretty | stable)
+- CSS uses `var(--font-family-heading)` and `var(--title-fz/fw/lh/text-wrap/line-clamp)` vars set by varsResolver
+- The block tests in `packages/blocks/test/blocks.test.tsx` describe('Title') currently asserts on h1-h6 element rendering; extend with lineClamp / textWrap / size override tests
+
+`getTitleSize(order, size)` helper: implement at `packages/blocks/src/Title/get-title-size.ts`. Given a theme + order + optional size, returns `{ fontSize, fontWeight, lineHeight }` from `theme.tokens.heading.sizes[size ?? `h${order}`]`. Falls back to default heading.sizes if not set.
+
+### Phase 9 — cleanup checklist
+
+Once Title lands:
+
+1. Update `docs/superpowers/divergences/mantine-master.md`:
+   - Move "Layout blocks — direct DOM rendering, no Box wrapper" to a new "Closed" section with a one-line summary per block ("now Box-wrapped, faithful to Mantine pattern, with these explicit deferrals: …").
+   - Add new "Deferred" entries for: responsive `StyleProp<T>` on non-Box blocks (Flex/Grid/SimpleGrid), `GridProvider` context for responsive col span/offset/order, `type='container'` mode for SimpleGrid.
+2. Run `grep -rn "--mantine-" packages/blocks/src/ packages/factory/src/ packages/theme/src/ apps/playground/src/ | grep -v ".test."` and verify it returns nothing. Any hits = a missed token substitution to fix.
+3. Run all three: `bunx vitest run`, `bun run typecheck`, `bun run --filter @soribashi/playground build`. All should pass cleanly.
+4. Update `STATUS.md` to mark the adaptation pass complete; bump test count.
 
 ### Deviations from the original plan (deliberate)
 
