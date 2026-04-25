@@ -49,14 +49,8 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   mr: { property: 'marginRight', resolver: getSpacing as StylePropResolver },
   ms: { property: 'marginInlineStart', resolver: getSpacing as StylePropResolver },
   me: { property: 'marginInlineEnd', resolver: getSpacing as StylePropResolver },
-  mx: {
-    property: ['marginInlineStart', 'marginInlineEnd'],
-    resolver: getSpacing as StylePropResolver,
-  },
-  my: {
-    property: ['marginTop', 'marginBottom'],
-    resolver: getSpacing as StylePropResolver,
-  },
+  mx: { property: 'marginInline', resolver: getSpacing as StylePropResolver },
+  my: { property: 'marginBlock', resolver: getSpacing as StylePropResolver },
 
   // Padding
   p: { property: 'padding', resolver: getSpacing as StylePropResolver },
@@ -66,14 +60,8 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   pr: { property: 'paddingRight', resolver: getSpacing as StylePropResolver },
   ps: { property: 'paddingInlineStart', resolver: getSpacing as StylePropResolver },
   pe: { property: 'paddingInlineEnd', resolver: getSpacing as StylePropResolver },
-  px: {
-    property: ['paddingInlineStart', 'paddingInlineEnd'],
-    resolver: getSpacing as StylePropResolver,
-  },
-  py: {
-    property: ['paddingTop', 'paddingBottom'],
-    resolver: getSpacing as StylePropResolver,
-  },
+  px: { property: 'paddingInline', resolver: getSpacing as StylePropResolver },
+  py: { property: 'paddingBlock', resolver: getSpacing as StylePropResolver },
 
   // Color
   bg: { property: 'background', resolver: getThemeColor as StylePropResolver },
