@@ -137,37 +137,93 @@ describe('Group', () => {
 });
 
 describe('Flex', () => {
-  it('renders with default direction=row', () => {
+  it('renders with sb-Flex-root class', () => {
     const { container } = wrap(<Flex>X</Flex>);
-    expect((container.firstChild as HTMLElement).dataset.direction).toBe('row');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Flex-root');
   });
 
-  it('respects direction=column', () => {
+  it('direction prop produces --flex-direction CSS var', () => {
     const { container } = wrap(<Flex direction="column">X</Flex>);
-    expect((container.firstChild as HTMLElement).dataset.direction).toBe('column');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--flex-direction')).toBe('column');
+  });
+
+  it('gap/align/justify produce CSS vars', () => {
+    const { container } = wrap(
+      <Flex gap="lg" align="center" justify="space-between">
+        X
+      </Flex>,
+    );
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--flex-gap')).toBe('var(--spacing-lg)');
+    expect(el.style.getPropertyValue('--flex-align')).toBe('center');
+    expect(el.style.getPropertyValue('--flex-justify')).toBe('space-between');
   });
 });
 
 describe('Grid', () => {
-  it('renders 12 columns by default', () => {
+  it('renders 12 columns by default with --grid-columns CSS var', () => {
     const { container } = wrap(<Grid>X</Grid>);
-    expect((container.firstChild as HTMLElement).dataset.columns).toBe('12');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Grid-root');
+    expect(el.style.getPropertyValue('--grid-columns')).toBe('12');
   });
 
   it('Grid.Col is a compound component', () => {
     expect(Grid.Col).toBeDefined();
   });
 
-  it('Grid.Col applies span', () => {
+  it('Grid.Col applies span as CSS vars', () => {
     const { container } = wrap(<Grid.Col span={6}>X</Grid.Col>);
-    expect((container.firstChild as HTMLElement).dataset.span).toBe('6');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-Grid-col');
+    expect(el.style.getPropertyValue('--col-flex-basis')).toContain('50%');
+  });
+
+  it('Grid.Col span="auto" sets flex-grow', () => {
+    const { container } = wrap(<Grid.Col span="auto">X</Grid.Col>);
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--col-flex-grow')).toBe('1');
+  });
+
+  it('Grid.Col offset/order/alignSelf produce CSS vars', () => {
+    const { container } = wrap(
+      <Grid.Col span={4} offset={2} order={3} alignSelf="end">
+        X
+      </Grid.Col>,
+    );
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.style.getPropertyValue('--col-offset')).toContain('16.66');
+    expect(el.style.getPropertyValue('--col-order')).toBe('3');
+    expect(el.style.getPropertyValue('--col-align-self')).toBe('end');
   });
 });
 
 describe('SimpleGrid', () => {
-  it('renders 2 cols by default', () => {
+  it('renders default cols=1 with --sg-cols CSS var', () => {
     const { container } = wrap(<SimpleGrid>X</SimpleGrid>);
-    expect((container.firstChild as HTMLElement).dataset.cols).toBe('2');
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.className).toContain('sb-SimpleGrid-root');
+    expect(el.style.getPropertyValue('--sg-cols')).toBe('1');
+  });
+
+  it('cols prop sets --sg-cols', () => {
+    const { container } = wrap(<SimpleGrid cols={3}>X</SimpleGrid>);
+    expect(
+      (container.querySelector('div') as HTMLElement).style.getPropertyValue('--sg-cols'),
+    ).toBe('3');
+  });
+
+  it('autoCols=auto-fill sets data-auto-cols attribute', () => {
+    const { container } = wrap(
+      <SimpleGrid autoCols="auto-fill" minColumnWidth="200px">
+        X
+      </SimpleGrid>,
+    );
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.dataset.autoCols).toBe('auto-fill');
+    expect(el.style.getPropertyValue('--sg-min-col-width')).toBe('200px');
   });
 });
 

@@ -1,27 +1,31 @@
-.sb-Grid-root { display: grid; }
-.sb-Grid-root[data-columns='1']  { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.sb-Grid-root[data-columns='2']  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.sb-Grid-root[data-columns='3']  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.sb-Grid-root[data-columns='4']  { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.sb-Grid-root[data-columns='6']  { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-.sb-Grid-root[data-columns='12'] { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/components/Grid/Grid.module.css
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ */
+.sb-Grid-root {
+  --grid-overflow: visible;
+  overflow: var(--grid-overflow);
+}
 
-.sb-Grid-root[data-gap='none'] { gap: 0; }
-.sb-Grid-root[data-gap='xs']   { gap: var(--spacing-xs); }
-.sb-Grid-root[data-gap='sm']   { gap: var(--spacing-sm); }
-.sb-Grid-root[data-gap='md']   { gap: var(--spacing-md); }
-.sb-Grid-root[data-gap='lg']   { gap: var(--spacing-lg); }
-.sb-Grid-root[data-gap='xl']   { gap: var(--spacing-xl); }
+.sb-Grid-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: var(--grid-justify);
+  align-items: var(--grid-align);
+  gap: var(--grid-row-gap) var(--grid-column-gap);
+}
 
-.sb-Grid-col[data-span='1']  { grid-column: span 1; }
-.sb-Grid-col[data-span='2']  { grid-column: span 2; }
-.sb-Grid-col[data-span='3']  { grid-column: span 3; }
-.sb-Grid-col[data-span='4']  { grid-column: span 4; }
-.sb-Grid-col[data-span='5']  { grid-column: span 5; }
-.sb-Grid-col[data-span='6']  { grid-column: span 6; }
-.sb-Grid-col[data-span='7']  { grid-column: span 7; }
-.sb-Grid-col[data-span='8']  { grid-column: span 8; }
-.sb-Grid-col[data-span='9']  { grid-column: span 9; }
-.sb-Grid-col[data-span='10'] { grid-column: span 10; }
-.sb-Grid-col[data-span='11'] { grid-column: span 11; }
-.sb-Grid-col[data-span='12'] { grid-column: span 12; }
+.sb-Grid-col {
+  --col-flex-grow: 0;
+  --col-offset: 0rem;
+  flex-shrink: 0;
+  order: var(--col-order);
+  flex-basis: var(--col-flex-basis);
+  width: var(--col-width);
+  max-width: var(--col-max-width);
+  flex-grow: var(--col-flex-grow);
+  margin-inline-start: var(--col-offset);
+  align-self: var(--col-align-self);
+}

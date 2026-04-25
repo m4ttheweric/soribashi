@@ -1,13 +1,19 @@
-.sb-SimpleGrid-root { display: grid; }
-.sb-SimpleGrid-root[data-cols='1']  { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.sb-SimpleGrid-root[data-cols='2']  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.sb-SimpleGrid-root[data-cols='3']  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.sb-SimpleGrid-root[data-cols='4']  { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.sb-SimpleGrid-root[data-cols='6']  { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/components/SimpleGrid/SimpleGrid.module.css
+ * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
+ * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ */
+.sb-SimpleGrid-root {
+  display: grid;
+  grid-template-columns: repeat(var(--sg-cols, 1), minmax(0, 1fr));
+  gap: var(--sg-spacing-y) var(--sg-spacing-x);
+}
 
-.sb-SimpleGrid-root[data-gap='none'] { gap: 0; }
-.sb-SimpleGrid-root[data-gap='xs']   { gap: var(--spacing-xs); }
-.sb-SimpleGrid-root[data-gap='sm']   { gap: var(--spacing-sm); }
-.sb-SimpleGrid-root[data-gap='md']   { gap: var(--spacing-md); }
-.sb-SimpleGrid-root[data-gap='lg']   { gap: var(--spacing-lg); }
-.sb-SimpleGrid-root[data-gap='xl']   { gap: var(--spacing-xl); }
+.sb-SimpleGrid-root:where([data-auto-cols='auto-fill']) {
+  grid-template-columns: repeat(auto-fill, minmax(var(--sg-min-col-width, 12rem), 1fr));
+}
+
+.sb-SimpleGrid-root:where([data-auto-cols='auto-fit']) {
+  grid-template-columns: repeat(auto-fit, minmax(var(--sg-min-col-width, 12rem), 1fr));
+}
