@@ -2,7 +2,7 @@
 
 **As of 2026-04-25**
 
-All 5 original plans executed end-to-end. **238 tests passing** across 28 test files. Playground app builds (18KB CSS, 192KB JS gzipped 61KB), typecheck clean (`bun run typecheck`). **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md`.
+All 5 original plans executed end-to-end. **245 tests passing** across 28 test files. Playground app builds, typecheck clean (`bun run typecheck`). **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md`.
 
 ## Mantine blocks adaptation — IN PROGRESS (handoff snapshot)
 
@@ -17,20 +17,18 @@ All 5 original plans executed end-to-end. **238 tests passing** across 28 test f
 - ✅ **Phase 4:** Box style-props machinery (`STYLE_PROPS_DATA`, `parseStyleProps`, `extractStyleProps`, `getBoxMod`)
 - ✅ **Phase 5:** Box — full style-prop pipeline + responsive `StyleProp<T>`
 - ✅ **Phase 6:** Stack, Group (grow + preventGrowOverflow + filterFalsyChildren), Center (`:where([data-inline])` pattern), AspectRatio (children-aware fix), Space (1-line Box wrapper), Paper (a11y defaults + light/dark border)
-- ✅ **Phase 7 (partial):** Flex, Grid + Grid.Col, SimpleGrid — flat-value adaptations
-- ⏳ **Phase 7 (remaining):** Container (block strategy works in current code, but grid strategy + breakout not yet adapted from Mantine source)
-- ⏳ **Phase 8:** Text (lineClamp, gradient, inline, inherit), Title (textWrap, lineClamp, getTitleSize)
-- ⏳ **Phase 9:** Cleanup (divergence ledger refresh, `--mantine-` lint, final smoke)
+- ✅ **Phase 7:** Flex, Grid + Grid.Col, SimpleGrid, Container (block + grid strategies + `data-breakout` children)
+- ✅ **Phase 8 (partial):** Text (lineClamp, gradient, inline, inherit, RTL truncate, span shorthand)
+- ⏳ **Phase 8 (remaining):** Title (textWrap, lineClamp, getTitleSize from `theme.heading.sizes`)
+- ⏳ **Phase 9:** Cleanup (divergence ledger refresh, `--mantine-` lint, final smoke + STATUS update)
 
 ### Deferred from original plan (recorded in plan handoff snapshot)
 
 - Responsive `StyleProp<T>` for non-Box blocks (Flex/Grid/SimpleGrid)
 - `GridProvider` context for responsive col span/offset/order
-- Container's grid strategy with `data-breakout` children
+- SimpleGrid `type='container'` mode
 
-The remaining 12 blocks still work in their original soribashi form (data-attribute selectors). Tests pass; only the Stack block currently uses the new Mantine-faithful pattern.
-
-**Pre-existing TypeScript errors surfaced:** With `tsconfig.json` properly in place again, `bun run typecheck` reveals pre-existing TS errors in `factory.tsx`, `use-styles.ts`, `Text.tsx`, `Title.tsx` that were latent because the root `tsconfig.json` had been deleted at some point earlier. These are unrelated to the Mantine adaptation and should be addressed in a focused fix pass. Tests and the playground build are unaffected.
+Typecheck passes cleanly (root tsconfig with `noEmit: true`, `allowImportingTsExtensions: true`).
 
 ## What was built
 
