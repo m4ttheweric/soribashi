@@ -153,7 +153,7 @@ Per the 2026-04-25 blocks adaptation pass (see `docs/superpowers/plans/2026-04-2
 | `Flex` | Adapted; flat values for own props (responsive `StyleProp<T>` deferred — see below). |
 | `Grid` + `Grid.Col` | Adapted; flat values for `cols`, `span`, etc. (`GridProvider` deferred). |
 | `SimpleGrid` | Block strategy fully adapted (`type='container'` mode deferred). |
-| `Container` | Block strategy adapted (grid strategy with `data-breakout` children deferred). |
+| `Container` | Both block and grid strategies implemented. Grid strategy: `strategy="grid"` renders a CSS Grid template; direct children default to the center column; children with `data-breakout` span the full viewport; `data-breakout > [data-container]` children are re-constrained to `--container-size`. |
 | `Text` | `lineClamp`, `gradient`, `inline`, `inherit`, RTL truncate (`truncate='start'`), `span` shorthand. |
 | `Title` | `order` (1-6), `size` accepts `h1`-`h6` token, `lineClamp`, `textWrap`, vars from `theme.tokens.heading.sizes`. |
 
@@ -176,12 +176,6 @@ Captured during the 2026-04-25 blocks adaptation pass — items the plan called 
 - **Status:** Mantine's `Grid` uses a context provider so `Grid.Col` can read responsive breakpoints from the parent `Grid`. Soribashi's `Grid.Col span={{ base: 12, md: 6 }}` is not yet supported — current `Grid` uses flat per-col values.
 - **Why deferred:** Requires the responsive `StyleProp<T>` machinery above plus a `<GridProvider>` context wrapping `Grid`. Same recipe as Mantine's `packages/@mantine/core/src/components/Grid/GridProvider.tsx`.
 - **To implement:** Port `GridProvider.tsx` and `use-grid-context.ts`, thread breakpoints through `Grid.Col`'s vars resolver.
-
-### `Container` grid strategy (with `data-breakout` children)
-
-- **Status:** Block strategy works (`Container` renders a centered max-width container). Grid strategy — where `Container strategy="grid"` lays out children with `data-breakout`-marked children spanning the full viewport — is not yet implemented.
-- **Why deferred:** Niche; scope reduction. Mantine's grid strategy is in `Container.module.css` with `:where([data-breakout])` selectors and a CSS Grid template.
-- **To implement:** Add a `strategy?: 'block' | 'grid'` prop, port the corresponding CSS Grid template, document the `data-breakout` convention.
 
 ### `SimpleGrid` `type='container'` mode
 
