@@ -79,4 +79,28 @@ describe('useProps', () => {
     );
     expect(result.current.size).toBe('md');
   });
+
+  it('theme defaultProps as a function receives the theme and returns dynamic defaults', () => {
+    // Validates Mantine parity: theme.components.X.defaultProps can be `(theme) => Partial<Props>`.
+    // Reference: mantine/packages/@mantine/core/src/core/MantineProvider/use-props/use-props.ts
+    const themeWithFunctionDefaults = createTheme({
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      name: 'fn-defaults',
+      components: {
+        Button: {
+          defaultProps: ((theme: any) => ({
+            size: theme.name === 'fn-defaults' ? 'lg' : 'sm',
+            variant: 'filled',
+          })) as any,
+        },
+      },
+    });
+
+    const { result } = renderHook(
+      () => useProps<ButtonProps>('Button', { size: 'sm' }, { loading: false }),
+      { wrapper: wrapper(themeWithFunctionDefaults) },
+    );
+    expect(result.current.size).toBe('lg');
+    expect(result.current.variant).toBe('filled');
+  });
 });

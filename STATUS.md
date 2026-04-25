@@ -2,7 +2,7 @@
 
 **As of 2026-04-25**
 
-All 5 plans executed end-to-end. 152 tests passing across 23 test files in 5 packages. Playground app builds and runs.
+All 5 plans executed end-to-end. **153 tests passing** across 23 test files in 5 packages. Playground app builds and runs. **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md` for the full ledger satisfying Hard Rule 13.
 
 ## What was built
 
