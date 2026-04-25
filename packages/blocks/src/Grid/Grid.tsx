@@ -13,6 +13,7 @@
  *     deferred.
  *   - Column math ported from Mantine's helper functions (get-column-*.ts),
  *     parameterized on the parent Grid's `columns` prop (not hardcoded 12).
+ *   - `grow` prop added to Grid; propagated to Grid.Col via GridContext.
  */
 import { defineComponent } from '@soribashi/factory';
 import { getSpacing } from '../utils/index.ts';
@@ -37,6 +38,8 @@ export interface GridOwnProps extends BoxOwnProps {
   justify?: React.CSSProperties['justifyContent'];
   /** `align-items` */
   align?: React.CSSProperties['alignItems'];
+  /** If set, columns in the last row expand to fill all available space @default false */
+  grow?: boolean;
   /** `overflow` CSS property @default 'visible' */
   overflow?: React.CSSProperties['overflow'];
 }
@@ -80,6 +83,7 @@ const GridRoot = defineComponent<GridOwnProps>({
       columns,
       justify: _ju,
       align: _al,
+      grow,
       overflow: _ov,
       children,
       classNames: _cn,
@@ -90,7 +94,7 @@ const GridRoot = defineComponent<GridOwnProps>({
       ...rest
     } = props as any;
     return (
-      <GridProvider value={{ columns: columns ?? 12, grow: undefined }}>
+      <GridProvider value={{ columns: columns ?? 12, grow }}>
         <Box {...getStyles('root')} {...rest}>
           <div {...getStyles('inner')}>{children}</div>
         </Box>
@@ -136,8 +140,8 @@ const GridCol = defineComponent<GridColOwnProps>({
     const ctx = useGridContext();
 
     const flexBasis = getColumnFlexBasis(span, ctx.columns);
-    const maxWidth = getColumnMaxWidth(span, ctx.columns, undefined);
-    const flexGrow = getColumnFlexGrow(span, undefined);
+    const maxWidth = getColumnMaxWidth(span, ctx.columns, ctx.grow);
+    const flexGrow = getColumnFlexGrow(span, ctx.grow);
     const colOffset = getColumnOffset(offset, ctx.columns);
     const colWidth = span === 'content' ? 'auto' : undefined;
 

@@ -1,6 +1,7 @@
 /**
  * Tests for Grid column math helpers and API parity with Mantine.
- * Covers: finding #1 (column math, parameterized columns)
+ * Covers: finding #1 (column math, parameterized columns, grow prop)
+ *         finding #8 (alignSelf → align rename)
  */
 import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
@@ -162,5 +163,43 @@ describe('Grid column math — content span', () => {
     expect(col.style.getPropertyValue('--col-flex-basis')).toBe('auto');
     expect(col.style.getPropertyValue('--col-max-width')).toBe('unset');
     expect(col.style.getPropertyValue('--col-width')).toBe('auto');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// #1 — grow prop on Grid
+// ---------------------------------------------------------------------------
+
+describe('Grid grow prop', () => {
+  it('grow prop is accepted without error', () => {
+    expect(() =>
+      wrap(
+        <Grid grow>
+          <Grid.Col span={4}>A</Grid.Col>
+          <Grid.Col span={4}>B</Grid.Col>
+        </Grid>,
+      ),
+    ).not.toThrow();
+  });
+
+  it('grow=true makes col max-width 100% (allows filling incomplete row)', () => {
+    const { container } = wrap(
+      <Grid grow>
+        <Grid.Col span={4}>A</Grid.Col>
+      </Grid>,
+    );
+    const col = container.querySelector('.sb-Grid-col') as HTMLElement;
+    const maxWidth = col.style.getPropertyValue('--col-max-width');
+    expect(maxWidth).toBe('100%');
+  });
+
+  it('grow=true makes col flex-grow 1', () => {
+    const { container } = wrap(
+      <Grid grow>
+        <Grid.Col span={4}>A</Grid.Col>
+      </Grid>,
+    );
+    const col = container.querySelector('.sb-Grid-col') as HTMLElement;
+    expect(col.style.getPropertyValue('--col-flex-grow')).toBe('1');
   });
 });
