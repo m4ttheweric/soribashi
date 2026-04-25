@@ -10,12 +10,19 @@
  *   - Renders Box for style-prop pass-through
  *   - v1 ships flat-value gap and span. Mantine's full responsive
  *     `StyleProp<T>` for col span/offset/order plus type='container' mode is
- *     deferred (the GridProvider context machinery isn't built in soribashi yet).
+ *     deferred.
+ *   - Column math ported from Mantine's helper functions (get-column-*.ts),
+ *     parameterized on the parent Grid's `columns` prop (not hardcoded 12).
  */
 import { defineComponent } from '@soribashi/factory';
 import { getSpacing } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { GridProvider, useGridContext } from './Grid.context.ts';
+import { getColumnFlexBasis } from './get-column-flex-basis.ts';
+import { getColumnMaxWidth } from './get-column-max-width.ts';
+import { getColumnFlexGrow } from './get-column-flex-grow.ts';
+import { getColumnOffset } from './get-column-offset.ts';
 
 export interface GridOwnProps extends BoxOwnProps {
   /** Gap between rows + columns. Theme spacing key or any CSS value @default 'md' */
@@ -35,7 +42,7 @@ export interface GridOwnProps extends BoxOwnProps {
 }
 
 export interface GridColOwnProps extends BoxOwnProps {
-  /** Column span (1..columns) */
+  /** Column span (1..columns), 'auto', or 'content' */
   span?: number | 'auto' | 'content';
   /** Column offset */
   offset?: number;
@@ -70,7 +77,7 @@ const GridRoot = defineComponent<GridOwnProps>({
       gap: _g,
       rowGap: _rg,
       columnGap: _cg,
-      columns: _co,
+      columns,
       justify: _ju,
       align: _al,
       overflow: _ov,
@@ -83,9 +90,11 @@ const GridRoot = defineComponent<GridOwnProps>({
       ...rest
     } = props as any;
     return (
-      <Box {...getStyles('root')} {...rest}>
-        <div {...getStyles('inner')}>{children}</div>
-      </Box>
+      <GridProvider value={{ columns: columns ?? 12, grow: undefined }}>
+        <Box {...getStyles('root')} {...rest}>
+          <div {...getStyles('inner')}>{children}</div>
+        </Box>
+      </GridProvider>
     );
   },
 });
@@ -96,26 +105,12 @@ const GridCol = defineComponent<GridColOwnProps>({
   classes: { root: 'sb-Grid-col' },
   defaults: { span: 12 } as Partial<GridColOwnProps>,
   vars: (_theme, props) => {
+    // NOTE: vars() runs outside the React tree so we cannot call useGridContext() here.
+    // The context-aware logic is handled in the render function by injecting CSS custom
+    // properties directly on the element's style. The vars() hook provides defaults.
     const p = props as GridColOwnProps;
     return {
       root: {
-        '--col-flex-basis':
-          p.span === 'auto'
-            ? 'auto'
-            : p.span === 'content'
-              ? 'auto'
-              : typeof p.span === 'number'
-                ? `calc(${(p.span / 12) * 100}% - var(--grid-column-gap, var(--spacing-md)))`
-                : '',
-        '--col-width':
-          p.span === 'content'
-            ? 'auto'
-            : typeof p.span === 'number'
-              ? `calc(${(p.span / 12) * 100}% - var(--grid-column-gap, var(--spacing-md)))`
-              : '100%',
-        '--col-max-width': p.span === 'content' ? 'unset' : '100%',
-        '--col-flex-grow': p.span === 'auto' ? '1' : '0',
-        '--col-offset': p.offset === undefined ? '' : `${(p.offset / 12) * 100}%`,
         '--col-order': p.order === undefined ? '' : String(p.order),
         '--col-align-self': String(p.alignSelf ?? ''),
       },
@@ -123,8 +118,8 @@ const GridCol = defineComponent<GridColOwnProps>({
   },
   render: ({ props, getStyles }) => {
     const {
-      span: _sp,
-      offset: _of,
+      span,
+      offset,
       order: _or,
       alignSelf: _as,
       children,
@@ -135,8 +130,34 @@ const GridCol = defineComponent<GridColOwnProps>({
       unstyled: _u,
       ...rest
     } = props as any;
+
+    // Access parent Grid context for columns
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const ctx = useGridContext();
+
+    const flexBasis = getColumnFlexBasis(span, ctx.columns);
+    const maxWidth = getColumnMaxWidth(span, ctx.columns, undefined);
+    const flexGrow = getColumnFlexGrow(span, undefined);
+    const colOffset = getColumnOffset(offset, ctx.columns);
+    const colWidth = span === 'content' ? 'auto' : undefined;
+
+    // Build the CSS variable overrides that depend on context.
+    // These are applied as inline style on the rendered element.
+    const colVars: Record<string, string> = {};
+    if (flexBasis !== undefined) colVars['--col-flex-basis'] = flexBasis;
+    if (maxWidth !== undefined) colVars['--col-max-width'] = maxWidth;
+    if (flexGrow !== undefined) colVars['--col-flex-grow'] = flexGrow;
+    if (colOffset !== undefined) colVars['--col-offset'] = colOffset;
+    if (colWidth !== undefined) colVars['--col-width'] = colWidth;
+
+    const stylesResult = getStyles('root');
+
     return (
-      <Box {...getStyles('root')} {...rest}>
+      <Box
+        {...stylesResult}
+        style={{ ...(stylesResult.style as object | undefined), ...colVars }}
+        {...rest}
+      >
         {children}
       </Box>
     );
