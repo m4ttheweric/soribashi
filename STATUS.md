@@ -2,26 +2,31 @@
 
 **As of 2026-04-25**
 
-All 5 original plans executed end-to-end. **233 tests passing** across 27 test files. Playground app builds (21KB CSS, 190KB JS gzipped 60KB) and runs. **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md` for the full ledger satisfying Hard Rule 13.
+All 5 original plans executed end-to-end. **238 tests passing** across 28 test files. Playground app builds (18KB CSS, 192KB JS gzipped 61KB), typecheck clean (`bun run typecheck`). **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md`.
 
-## Mantine blocks adaptation — IN PROGRESS
+## Mantine blocks adaptation — IN PROGRESS (handoff snapshot)
 
-A second pass to faithfully adapt Mantine's blocks (per `docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md`) is **partially complete**:
+**Resume by reading:** `docs/superpowers/plans/2026-04-25-plan-mantine-blocks-adaptation.md` § "Handoff snapshot — 2026-04-25 (mid-execution)" at the top of the document.
 
-**Completed (Phases 0–5 + Stack):**
-- ✅ Phase 0: `THIRD-PARTY-LICENSES.md` with Mantine MIT attribution
-- ✅ Phase 1: theme additions (`fontWeight`, `lineHeight`, `fontFamily.heading`, `heading.sizes`)
-- ✅ Phase 2: helper utilities (`rem`, `getSpacing`, `getRadius`, `getSize`, `getFontSize`, `getLineHeight`, `getShadow`, `getThemeColor`)
-- ✅ Phase 3: factory infrastructure (`useRandomClassName`, `hashStyleProps`, `<InlineStyles>`)
-- ✅ Phase 4: Box style-props machinery (`STYLE_PROPS_DATA`, `parseStyleProps`, `extractStyleProps`, `getBoxMod`)
-- ✅ Phase 5: Box itself — full Mantine-faithful with style-prop pipeline + responsive `StyleProp<T>` support (20 dedicated tests)
-- ✅ Phase 6 (Stack only): adapted to Box-wrapping pattern with var-based theming
+### Phase status
 
-**Remaining (Phases 6 partial + 7–9):**
-- ⏳ Group (with `grow` + `preventGrowOverflow`), Center, AspectRatio (children-aware fix), Space, Paper (a11y defaults)
-- ⏳ Flex (responsive style props), Grid + GridCol + GridProvider + responsive cols, SimpleGrid (container queries + auto-fill/auto-fit), Container (block + grid strategies + breakout)
-- ⏳ Text (lineClamp, gradient, inline, inherit), Title (text-wrap, lineClamp, getTitleSize)
-- ⏳ Final cleanup: update style.css imports, divergence ledger refresh, lint check for `--mantine-` references
+- ✅ **Phase 0:** Attribution / `THIRD-PARTY-LICENSES.md`
+- ✅ **Phase 1:** Theme tokens (`fontWeight`, `lineHeight`, `fontFamily.heading`, `heading.sizes`)
+- ✅ **Phase 2:** Helper utilities (`rem`, `getSpacing`, `getRadius`, `getSize`, `getFontSize`, `getLineHeight`, `getShadow`, `getThemeColor`)
+- ✅ **Phase 3:** Factory infrastructure (`useRandomClassName`, `hashStyleProps`, `<InlineStyles>`)
+- ✅ **Phase 4:** Box style-props machinery (`STYLE_PROPS_DATA`, `parseStyleProps`, `extractStyleProps`, `getBoxMod`)
+- ✅ **Phase 5:** Box — full style-prop pipeline + responsive `StyleProp<T>`
+- ✅ **Phase 6:** Stack, Group (grow + preventGrowOverflow + filterFalsyChildren), Center (`:where([data-inline])` pattern), AspectRatio (children-aware fix), Space (1-line Box wrapper), Paper (a11y defaults + light/dark border)
+- ✅ **Phase 7 (partial):** Flex, Grid + Grid.Col, SimpleGrid — flat-value adaptations
+- ⏳ **Phase 7 (remaining):** Container (block strategy works in current code, but grid strategy + breakout not yet adapted from Mantine source)
+- ⏳ **Phase 8:** Text (lineClamp, gradient, inline, inherit), Title (textWrap, lineClamp, getTitleSize)
+- ⏳ **Phase 9:** Cleanup (divergence ledger refresh, `--mantine-` lint, final smoke)
+
+### Deferred from original plan (recorded in plan handoff snapshot)
+
+- Responsive `StyleProp<T>` for non-Box blocks (Flex/Grid/SimpleGrid)
+- `GridProvider` context for responsive col span/offset/order
+- Container's grid strategy with `data-breakout` children
 
 The remaining 12 blocks still work in their original soribashi form (data-attribute selectors). Tests pass; only the Stack block currently uses the new Mantine-faithful pattern.
 

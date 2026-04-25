@@ -80,7 +80,7 @@ export function BlocksDemo() {
         <Paper p="lg" withBorder>
           <Stack gap="md">
             <Title level={3}>SimpleGrid</Title>
-            <SimpleGrid cols={3} gap="md">
+            <SimpleGrid cols={3} spacing="md">
               {['A', 'B', 'C', 'D', 'E', 'F'].map((s) => (
                 <Box key={s} bg="surface.raised" p="md" bdrs="md">
                   {s}
