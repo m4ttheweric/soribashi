@@ -68,6 +68,9 @@ function emitTokenLines(lines: string[], tokens: ThemeTokens): void {
   }
 
   if (tokens.heading) {
+    if (tokens.heading.textWrap !== undefined) {
+      lines.push(`  --heading-text-wrap: ${tokens.heading.textWrap};`);
+    }
     for (const [order, size] of Object.entries(tokens.heading.sizes).sort(byKey)) {
       lines.push(`  --heading-${order}-font-size: ${size.fontSize};`);
       if (size.fontWeight !== undefined) {

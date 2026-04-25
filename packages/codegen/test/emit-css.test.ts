@@ -159,4 +159,30 @@ describe('emitCss', () => {
     expect(css).toContain('--heading-h1-line-height: 1.3;');
     expect(css).toContain('--heading-h6-font-size: 0.875rem;');
   });
+
+  it('emits --heading-text-wrap when tokens.heading.textWrap is set', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {}, radius: {}, spacing: {}, fontSize: {},
+        heading: {
+          sizes: {
+            h1: { fontSize: '2rem' },
+          },
+          textWrap: 'wrap',
+        },
+      },
+    });
+    const css = emitCss(theme);
+    expect(css).toContain('--heading-text-wrap: wrap;');
+  });
+
+  it('does not emit --heading-text-wrap when tokens.heading is absent', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {}, radius: {}, spacing: {}, fontSize: {},
+      },
+    });
+    const css = emitCss(theme);
+    expect(css).not.toContain('--heading-text-wrap');
+  });
 });
