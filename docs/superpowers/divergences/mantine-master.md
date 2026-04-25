@@ -19,6 +19,24 @@ The single behavioral alignment from this pass: `useProps` now supports the func
 - **Soribashi new behavior:** Both forms supported, matching Mantine.
 - **Test added:** `packages/factory/test/use-props.test.tsx` — "theme defaultProps as a function receives the theme and returns dynamic defaults".
 
+### `definePolymorphicComponent.withProps` — preserves polymorphism through presets
+
+- **File:** `packages/factory/src/define-polymorphic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/polymorphic-factory.tsx` (`PolymorphicComponentWithProps`)
+- **Mantine behavior:** Polymorphic components have a typed `withProps` that returns a component whose `as` prop continues to typecheck. Presets may include `as` to change the default element.
+- **Soribashi previous behavior:** Used the same `makeWithProps` helper as the non-polymorphic factory; the return type was `ComponentType<TProps>`, dropping polymorphism. Tests required `as any` casts.
+- **Soribashi new behavior:** `withProps` typed as `<TAs>(presets) => PolymorphicComponentLike<TAs, OwnProps>`. Callers can pass `as` at the call site without casts. Presets may include `as` to override the default element.
+- **Test added:** `packages/factory/test/define-polymorphic-component.test.tsx` — "Component.withProps preserves polymorphism" (no `as any`) and "Component.withProps with as preset overrides defaultElement".
+
+### `defineGenericComponent.withProps` — preserves the type parameter
+
+- **File:** `packages/factory/src/define-generic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/factory.tsx` (`genericFactory`)
+- **Mantine behavior:** Generic components retain their type parameter through `withProps`.
+- **Soribashi previous behavior:** `withProps` return type stripped the generic. `Select.withProps({...})` returned a non-generic component; `<Result<User> ...>` failed typecheck.
+- **Soribashi new behavior:** `withProps` returns the same `GenericComponentFn` shape as the original component. Type parameters flow through.
+- **Test added:** `packages/factory/test/define-generic-component.test.tsx` — "withProps preserves the generic so callers can still type-parameterize".
+
 ---
 
 ## Kept (deliberate divergences from Mantine)

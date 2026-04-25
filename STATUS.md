@@ -2,7 +2,7 @@
 
 **As of 2026-04-25**
 
-All 5 plans executed end-to-end. **153 tests passing** across 23 test files in 5 packages. Playground app builds and runs. **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md` for the full ledger satisfying Hard Rule 13.
+All 5 plans executed end-to-end. **155 tests passing** across 23 test files in 5 packages. Playground app builds and runs. **Mantine validation pass complete** — see `docs/superpowers/divergences/mantine-master.md` for the full ledger satisfying Hard Rule 13. Three behavioral alignments applied (function-form `useProps` defaults, polymorphic-preserving `withProps`, generic-preserving `withProps`); all other divergences are deliberate and documented.
 
 ## What was built
 
