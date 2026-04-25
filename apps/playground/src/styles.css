@@ -1,0 +1,18 @@
+@import './generated/theme.css';
+
+@import '../../../packages/blocks/src/style.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: var(--font-family-sans);
+  background: var(--surface-canvas);
+  color: var(--text-default);
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}

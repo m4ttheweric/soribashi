@@ -11,7 +11,12 @@
     "test:watch": "vitest",
     "typecheck": "tsc --build",
     "lint": "biome check .",
-    "format": "biome format . --write"
+    "format": "biome format . --write",
+    "codegen": "bun run packages/codegen/bin/soribashi.ts build",
+    "codegen:watch": "bun run packages/codegen/bin/soribashi.ts watch",
+    "dev:playground": "bun run --filter @soribashi/playground dev",
+    "dev": "bun run codegen && bun run dev:playground",
+    "build:playground": "bun run --filter @soribashi/playground build"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
