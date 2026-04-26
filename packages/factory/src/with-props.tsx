@@ -22,6 +22,16 @@ export function makeWithProps<TProps>(
       return <Component ref={ref} {...merged} />;
     });
     Wrapped.displayName = `WithProps(${(Base as any).displayName ?? Base.name ?? 'Component'})`;
+    // Propagate extend from the parent component so callers can chain
+    // Button.withProps({...}).extend({...}) — matches Mantine factory.tsx line 91
+    // and polymorphic-factory.tsx line 44.
+    if ((Base as any).extend !== undefined) {
+      (Wrapped as any).extend = (Base as any).extend;
+    }
+    // Propagate withProps recursively so callers can chain
+    // Button.withProps({...}).withProps({...}) — matches Mantine factory.tsx:90
+    // (Extended.withProps = createWithProps(Component)).
+    (Wrapped as any).withProps = makeWithProps(Wrapped as any);
     return Wrapped as unknown as ComponentType<TProps>;
   };
 }
