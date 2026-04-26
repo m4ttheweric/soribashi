@@ -237,6 +237,50 @@ These pieces were source-validated and are functionally equivalent to Mantine.
 
 ---
 
+## Full audit pass — 2026-04-25 — Task 1.6 entries
+
+### `useRandomClassName` — `stripIdMarkers` extracted for testability (U2)
+
+- **File:** `packages/factory/src/use-random-class-name.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/Box/use-random-classname/use-random-classname.ts` (commit 63dafbbf)
+- **Mantine behavior:** Single exported function `useRandomClassName()`. The `.replace(/[:«»]/g, '')` call is inlined in the function body; no separate helper is exported.
+- **Soribashi behavior:** Two exported functions: `stripIdMarkers(id)` (the regex helper, extracted for unit testability) + `useRandomClassName()` (calls `useId()` then delegates to `stripIdMarkers`).
+- **Reason for divergence:** Soribashi extension. Extracting `stripIdMarkers` makes the stripping logic directly testable without needing to invoke a React hook. Observable contract is identical.
+- **Disposition:** Keep — soribashi addition (testability improvement)
+- **Test:** `packages/factory/test/hash-and-classname-parity.test.tsx` — "U2a: stripIdMarkers is a named export"
+
+### `useRandomClassName` — output prefix `sb-` vs `__m__-` (U4)
+
+- **File:** `packages/factory/src/use-random-class-name.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/Box/use-random-classname/use-random-classname.ts` (commit 63dafbbf)
+- **Mantine behavior:** Returns `` `__m__-${id}` `` where `id` is the stripped `useId()` value.
+- **Soribashi behavior:** Returns `` `sb-${stripIdMarkers(id)}` `` — same structure with soribashi's `sb-` prefix.
+- **Reason for divergence:** TOKEN_DIFF — `__m__` is a Mantine-internal prefix; `sb-` follows soribashi's naming convention. This was noted in the post-adaptation pass ledger item #12.
+- **Disposition:** Keep — token substitution per design spec § 4
+- **Test:** `packages/factory/test/hash-and-classname-parity.test.tsx` — "U4a: result starts with 'sb-'"
+
+### `useRandomClassName` — NOT in `@mantine/hooks`; no hook replacement
+
+- **File:** `packages/factory/src/use-random-class-name.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/Box/use-random-classname/use-random-classname.ts` (commit 63dafbbf)
+- **Hook-replacement determination:** Searched `@mantine/hooks/src/` — `useRandomClassName` is not exported from `@mantine/hooks`. It lives only inside `@mantine/core`. Per Hard Rule 14, only `@mantine/hooks` exports may be adopted as runtime deps; `@mantine/core` internals cannot be pulled in wholesale. Soribashi keeps its own implementation.
+- **Disposition:** INTENTIONAL — no hook replacement possible; no `@mantine/hooks` analog exists
+- **Test:** all tests in `packages/factory/test/hash-and-classname-parity.test.tsx`
+
+### `hashStyleProps` — Task 1.6 re-walk confirmation (H1–H11)
+
+- **File:** `packages/factory/src/hash-style-props.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/hash-styles.ts` (commit 63dafbbf)
+- **Summary:** Full re-walk in Task 1.6 confirms all HS-0x findings from Task 1.5 (HS-01 through HS-07). Three additional decision points audited in Task 1.6:
+  - **H8 (key-order sensitivity):** Both soribashi and Mantine are sensitive to property insertion order in the `styles` object. Neither normalizes. This is safe because `parseStyleProps` builds style objects deterministically. `IDENTICAL`.
+  - **H9 (collision handling):** Neither implementation handles hash collisions. Collision risk is negligible for deterministic, bounded style-prop inputs. `IDENTICAL`.
+  - **H2 (hash algorithm):** Computationally verified: `x & 0xffffffff` then `>>> 0` (Mantine) and `>>> 0` applied once (soribashi) produce identical unsigned results. `IDENTICAL`.
+- **No new findings beyond Task 1.5's HS-01 through HS-07.**
+- **Disposition:** All previously-documented divergences (file location, prefix, serialization method, types) are confirmed INTENTIONAL; no new divergences found.
+- **Test:** `packages/factory/test/hash-and-classname-parity.test.tsx` — H2a/H2b/H5a–H5c/H6a/H6b/H7a–H7c/H8a–H8b/H9a
+
+---
+
 ## Coverage statement
 
 All files in scope of `docs/superpowers/specs/2026-04-25-mantine-validation-pass-design.md` § 2 were source-validated on 2026-04-25 against Mantine master commit `63dafbbf`. One alignment was made (`useProps` function-form defaults). All other divergences are intentional, documented, and have associated tests where behaviorally observable.
