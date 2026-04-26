@@ -6,6 +6,9 @@
  */
 .sb-Grid-root {
   --grid-overflow: visible;
+  --grid-column-gap: var(--grid-gap);
+  --grid-row-gap: var(--grid-gap);
+
   overflow: var(--grid-overflow);
 }
 
