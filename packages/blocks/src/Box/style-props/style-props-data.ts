@@ -18,6 +18,7 @@ import {
 } from '../../utils/index.ts';
 import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
 import { fontFamilyResolver } from './resolvers/font-family-resolver.ts';
+import { borderResolver } from './resolvers/border-resolver.ts';
 
 const identity: StylePropResolver = (v) =>
   v === undefined || v === null ? undefined : String(v);
@@ -67,7 +68,7 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   // Color
   bg: { property: 'background', resolver: getThemeColor as StylePropResolver },
   c: { property: 'color', resolver: getThemeColor as StylePropResolver },
-  bd: { property: 'border', resolver: identity },
+  bd: { property: 'border', resolver: borderResolver },
   bdrs: { property: 'borderRadius', resolver: getRadius as StylePropResolver },
 
   // Typography

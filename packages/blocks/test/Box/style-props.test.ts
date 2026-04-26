@@ -166,3 +166,22 @@ describe('ff resolver — fontFamily aliases', () => {
     expect(result.inlineStyles.fontFamily).toBe('serif');
   });
 });
+
+describe('bd resolver — border parsing + token resolution', () => {
+  it('bd={1} → border: 0.0625rem', () => {
+    const result = parseStyleProps({ styleProps: { bd: 1 }, data: STYLE_PROPS_DATA, theme });
+    expect(result.inlineStyles.border).toBe('0.0625rem');
+  });
+  it('bd="1px solid primary.500" resolves to themed CSS var', () => {
+    const result = parseStyleProps({ styleProps: { bd: '1px solid primary.500' }, data: STYLE_PROPS_DATA, theme });
+    expect(result.inlineStyles.border).toBe('0.0625rem solid var(--color-primary-500)');
+  });
+  it('bd="2px dashed surface.raised" resolves semantic token', () => {
+    const result = parseStyleProps({ styleProps: { bd: '2px dashed surface.raised' }, data: STYLE_PROPS_DATA, theme });
+    expect(result.inlineStyles.border).toBe('0.125rem dashed var(--surface-raised)');
+  });
+  it('bd="none" passes through', () => {
+    const result = parseStyleProps({ styleProps: { bd: 'none' }, data: STYLE_PROPS_DATA, theme });
+    expect(result.inlineStyles.border).toBe('none');
+  });
+});
