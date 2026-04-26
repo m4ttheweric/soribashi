@@ -2,7 +2,39 @@
 
 **As of 2026-04-25**
 
-All 5 original plans executed end-to-end, the Mantine blocks adaptation pass is complete, **and** two follow-on validation passes (15 + 4 audits) closed all known residual divergences against Mantine `63dafbbf`. **442 vitest tests** across 42 files plus **46 Playwright browser-parity tests**. Playground app builds, typecheck clean (`bun run typecheck`). See `docs/superpowers/divergences/mantine-master.md`, `THIRD-PARTY-LICENSES.md`, and the audit reports under `docs/superpowers/audits/`.
+All 5 original plans executed end-to-end, the Mantine blocks adaptation pass is complete, **and** three full audits — two early validation passes plus the comprehensive Hard-Rule-13 full audit — have closed all known divergences against Mantine `63dafbbf`. **739 vitest tests** across 54 files plus **46 Playwright browser-parity tests** = 785 total. Playground app builds, typecheck clean. Coverage manifest covers every TS/TSX file under `packages/*/src/`. See `docs/superpowers/divergences/mantine-master.md`, `docs/superpowers/audits/2026-04-25-coverage-manifest.md`, `docs/superpowers/roadmap/mantine-derivable-future-work.md`, and `THIRD-PARTY-LICENSES.md`.
+
+## Mantine full audit pass — COMPLETE (2026-04-25)
+
+Hard Rule 13 enforcement complete across every soribashi file derivable from Mantine. Pinned to `mantinedev/mantine@63dafbbf5f0135eb36455b7add4c0ddcd0f3240a`.
+
+- **Coverage manifest:** `docs/superpowers/audits/2026-04-25-coverage-manifest.md` — every file in scope listed with status and audit-doc link.
+- **Master ledger:** `docs/superpowers/divergences/mantine-master.md` — 1090 lines, ~50 divergence entries split across `Aligned` / `Kept` / `Closed` / `Full audit pass — 2026-04-25` (Tier 1 + Tier 2 entries) / `Validated and matching` sections.
+- **Per-tier audit docs:** Tier 1 (`tier-1-{factory,polymorphic,generic,with-props,inline-styles,hash-and-classname}.md`), Tier 2 (`tier-2-{theme,provider-types,factory-additions,box-style-props,codegen}.md`), Tier 3 (`tier-3-blocks-and-utils.md`).
+- **Roadmap:** `docs/superpowers/roadmap/mantine-derivable-future-work.md` — 12 (e) "missing port" candidates surfaced, sized S/M/L for follow-up consideration.
+
+### Bugs caught by the full audit (11 total across all phases)
+
+Real behavioral bugs found and fixed via TDD across the audit:
+
+1. `useStyles` — `undefined` CSS variable values rendered as the string `"undefined"` (V2 / pre-pass; US-29)
+2. `InlineStyles` — empty `selector { }` rule emitted when `styles={}` (Tier 1 / Task 1.5; ST-05)
+3. `makeWithProps` — `withProps()` result missing `extend` propagation (Tier 1 / Task 1.1; B4)
+4. `makeWithProps` — `withProps()` result missing recursive `withProps` chaining (Tier 1 / Task 1.2; P17c)
+5. `composeTheme.mergeTokens` — silently dropping `fontWeight` / `lineHeight` / `heading` fields when child themes extend a base (Tier 2 / T2-A; CT-BUG-1..5)
+6. `getBoxMod` — numeric-`0` mod values silently dropped (`mod={{ count: 0 }}` lost) (Tier 2 / T2-D; GBM-Z1)
+7. `parseStyleProps` — `{ base: 'md' }` (only-base) treated as responsive, emitting unnecessary `<InlineStyles>` (Tier 2 / T2-D; PSP-B1)
+8. `emit-css.ts` — `tokens.breakpoint` declared in types but never emitted as `--breakpoint-*` vars (V3 + Tier 2 / T2-E; BUG-E-1)
+9. `emit-css.ts` — `emitDarkTokenLines` only handled 5 of 10 token-type fields (silent loss of fontFamily/fontWeight/lineHeight/breakpoint/heading dark overrides) (Tier 2 / T2-E; BUG-E-2)
+10. Block wrapper style-merge — consumer's inline `style` prop overwrote `vars()` output across 13 blocks (V4 / pre-pass)
+11. `--breakpoint-*` emission gap surfaced + fixed (V3 / pre-pass)
+
+### Audit phases
+
+- ✅ **Phase 1 (Tier 1, sequential):** 6 load-bearing factory primitive audits with parity tests — `factory.tsx`, polymorphic + define-polymorphic, define-generic, with-props, inline-styles bundle, hash + use-random-class-name. 161+ new parity tests.
+- ✅ **Phase 2 (Tier 2, parallel):** 5 batches over theme / provider+types / factory-additions / Box-style-props / codegen. Audit reports + ledger fragments + TDD bug fixes. 5 fragments merged into master ledger.
+- ✅ **Phase 3 (Tier 3, fast):** Confirmatory pass over 14 blocks + utils + Grid math + core barrel using existing V1/V4 infrastructure. 0 new bugs.
+- ✅ **Phase 4 (consolidation):** Coverage manifest finalized, roadmap doc populated, master ledger consolidated, STATUS + Hard Rule 13 updated, final smoke clean.
 
 ## Mantine blocks adaptation — COMPLETE
 

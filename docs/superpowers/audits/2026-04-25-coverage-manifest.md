@@ -76,3 +76,12 @@
 | packages/blocks/src/Group/filter-falsy-children.ts | Group/filter-falsy-children/filter-falsy-children.ts | 3 | matches | 2026-04-25-tier-3-blocks-and-utils.md | — |
 | packages/blocks/src/Title/get-title-size.ts | Title/get-title-size.ts | 3 | intentional divergence | 2026-04-25-tier-3-blocks-and-utils.md | getTitleSize-token-prefix (TOKEN_DIFF — --heading-h{N}-* vs --mantine-h{N}-*), getTitleSize-extra-font-sizes (soribashi adds 2xl/3xl keys) |
 | packages/core/src/index.ts | (barrel only — no logic) | 3 | matches | 2026-04-25-tier-3-blocks-and-utils.md | — |
+| packages/blocks/src/Box/style-props/style-types.ts | core/Box/style-props/style-props.types.ts | 2 | intentional divergence | 2026-04-25-tier-2-box-style-props.md | covered by Box style-props batch (T2-D); type-only file |
+| packages/factory/src/hooks/use-props.ts | core/MantineProvider/use-props/use-props.ts | 1 | drift fixed | (V2 parity — packages/factory/test/use-props-parity.test.tsx) | useProps-function-form-defaults (Aligned, pre-existing); 24 parity tests cover all 9 branches |
+| packages/factory/src/hooks/use-styles.ts | core/styles-api/use-styles/use-styles.ts | 1 | drift fixed | (V2 parity — packages/factory/test/use-styles-parity.test.tsx) | useStyles-undefined-filter (US-29 fixed, pre-existing); 51 parity tests cover all 33 branches |
+| packages/factory/src/inline-styles/InlineStyles.tsx | core/InlineStyles/InlineStyles.tsx | 1 | drift fixed | 2026-04-25-tier-1-inline-styles.md | covered by Tier 1 Task 1.5 (ST-05 fixed empty-rule emission, plus 13 INTENTIONAL entries) |
+| packages/factory/src/generic-component.tsx | (escape hatch — no Mantine analog) | 2 | soribashi addition | 2026-04-25-tier-2-factory-additions.md | escape hatch for the generic-factory pattern; covered by define-generic-component audit |
+| packages/codegen/src/build.ts | (no analog — soribashi-only build orchestrator) | 2 | soribashi addition | 2026-04-25-tier-2-codegen.md | build orchestration; codegen is a soribashi-only subsystem |
+| packages/codegen/src/cli.ts | (no analog — soribashi-only CLI) | 2 | soribashi addition | 2026-04-25-tier-2-codegen.md | CLI for build/watch; soribashi-only subsystem |
+| packages/codegen/src/types.ts | (no analog — soribashi-only types) | 2 | soribashi addition | 2026-04-25-tier-2-codegen.md | type definitions for codegen package |
+| packages/codegen/src/watch.ts | (no analog — soribashi-only watch mode) | 2 | soribashi addition | 2026-04-25-tier-2-codegen.md | dev-mode file watcher; codegen is a soribashi-only subsystem |
