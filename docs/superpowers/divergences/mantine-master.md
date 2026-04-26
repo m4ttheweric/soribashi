@@ -242,3 +242,49 @@ These pieces were source-validated and are functionally equivalent to Mantine.
 All files in scope of `docs/superpowers/specs/2026-04-25-mantine-validation-pass-design.md` § 2 were source-validated on 2026-04-25 against Mantine master commit `63dafbbf`. One alignment was made (`useProps` function-form defaults). All other divergences are intentional, documented, and have associated tests where behaviorally observable.
 
 153 tests pass after the validation pass; 0 regressions.
+
+---
+
+## Full audit pass — 2026-04-25
+
+### `makeWithProps` — `withProps()` result does not propagate `extend` or `withProps`
+
+- **File:** `packages/factory/src/with-props.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/polymorphic-factory.tsx` (commit 63dafbbf), line 44 (`Extended.extend = Component.extend`); also `factory.tsx` line 91 (`Extended.withProps = createWithProps(Component)`)
+- **Mantine behavior — `extend`:** In both `polymorphicFactory` and `factory`, the component created by `withProps(fixedProps)` receives `Extended.extend = Component.extend`. Callers can chain `Button.withProps({...}).extend({...})`.
+- **Mantine behavior — `withProps`:** At `factory.tsx:90`, `Extended.withProps = createWithProps(Component)` — the result of `withProps()` is itself a component that has a working `.withProps()` method, enabling double-wrap chains: `Button.withProps({...}).withProps({...})`.
+- **Soribashi previous behavior:** `makeWithProps` created a `forwardRef`-wrapped `Wrapped` component but did not copy `.extend` from `Base` and did not re-bind `.withProps` on the result. The `withProps()` result lacked both methods. The `extend` gap was caught by P4/P17 tests; the `withProps` gap was surfaced by the unconditional P17c test (double-wrapped chain) after the `extend` fix was applied.
+- **Soribashi new behavior:** `makeWithProps` now (1) copies `Base.extend` to `Wrapped.extend` when present (matching `polymorphic-factory.tsx:44`) and (2) sets `Wrapped.withProps = makeWithProps(Wrapped)` unconditionally (matching `factory.tsx:90`). Both fixes apply to all three callers: `factory.withProps`, `polymorphicComponent.withProps`, and `definePolymorphicComponent.withProps`.
+- **Classification:** `INCONSISTENCY` (factory/polymorphic itself had `extend` and `withProps`; the result of calling `withProps()` had neither) → aligned via TDD fix.
+- **Disposition:** Aligned
+- **Test:** `packages/factory/test/polymorphic-parity.test.tsx` — "P4a: polymorphicComponent.withProps() result has an extend method", "P17a: definePolymorphicComponent.withProps() result has an extend method", "P17c: double-wrapped withProps result also has extend"
+
+### `definePolymorphicComponent` — higher-level constructor vs Mantine's type-cast utilities
+
+- **File:** `packages/factory/src/define-polymorphic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/polymorphic-factory.tsx` + `create-polymorphic-component.ts` (commit 63dafbbf)
+- **Mantine behavior:** Two separate utilities: `polymorphicFactory(ui)` (a runtime type-cast, no Styles API integration) + `createPolymorphicComponent(component)` (a pure type-cast with no runtime behavior). Callers must wire `useProps`, `useStyles`, etc. manually inside their `ui` render function.
+- **Soribashi behavior:** A single higher-level constructor `definePolymorphicComponent(config)` integrates `useProps` + `useStyles` + `autoVars` inside the component body. The `render` callback receives a fully-resolved `{ Element, props, getStyles, ref }` context. No separate type-cast utility is needed.
+- **Reason for divergence:** Soribashi's constructor model is more ergonomic — component authors express intent (config object) rather than plumbing (manual hook calls). The trade-off is reduced flexibility for exotic patterns, which are handled by the lower-level `polymorphicComponent` escape hatch.
+- **Disposition:** Keep soribashi's higher-level constructor.
+- **Test:** `packages/factory/test/polymorphic-parity.test.tsx` — P13 / P14 group (as prop semantics, defaultElement fallback)
+
+### `definePolymorphicComponent` — `classes` static property (soribashi extension)
+
+- **File:** `packages/factory/src/define-polymorphic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/polymorphic-factory.tsx` (commit 63dafbbf)
+- **Mantine behavior:** `polymorphicFactory` does not attach a `classes` static property to the produced component.
+- **Soribashi behavior:** `definePolymorphicComponent` attaches `(Component as any).classes = config.classes`, mirroring the `factory()` convention. Callers can read `MyComponent.classes.root` to get the stable CSS class name.
+- **Reason for divergence:** Soribashi extension. The `classes` static provides a stable reference to the component's CSS class names, enabling consumers to target selectors without hardcoding strings.
+- **Disposition:** Keep soribashi's extension.
+- **Test:** `packages/factory/test/polymorphic-parity.test.tsx` — "P15a: classes static exists on the component", "P15b: classes static contains the configured class names"
+
+### `definePolymorphicComponent` — `defaultElement` as first-class config (TOKEN_DIFF + soribashi addition)
+
+- **File:** `packages/factory/src/define-polymorphic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/polymorphic-factory.tsx` (commit 63dafbbf)
+- **Mantine behavior:** `PolymorphicFactoryPayload.defaultComponent: any` (Mantine's name for the default element type). No centralized default-element fallback inside `polymorphicFactory` — callers handle the `|| 'div'` themselves inside their render function.
+- **Soribashi behavior:** `DefinePolymorphicComponentConfig.defaultElement: TDefaultAs` (typed, renamed to `defaultElement` per substitution table). `definePolymorphicComponent` centralizes the fallback: `const Element = asProp ?? config.defaultElement`.
+- **Reason for divergence:** (a) Token rename: `defaultComponent` → `defaultElement` is consistent with soribashi's `as` prop convention (prefer element-centric terminology). (b) Centralization: The default-element fallback belongs in the constructor, not scattered across every `ui` implementation.
+- **Disposition:** Keep soribashi's approach.
+- **Test:** `packages/factory/test/polymorphic-parity.test.tsx` — "P14a: renders defaultElement when as is not provided"
