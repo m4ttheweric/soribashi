@@ -123,6 +123,50 @@ function emitDarkTokenLines(lines: string[], dark: PartialThemeTokens): void {
       if (value !== undefined) lines.push(`  --shadow-${key}: ${value};`);
     }
   }
+
+  if (dark.fontFamily) {
+    for (const [key, value] of Object.entries(dark.fontFamily).sort(byKey)) {
+      if (value !== undefined) lines.push(`  --font-family-${key}: ${value};`);
+    }
+  }
+
+  if (dark.fontWeight) {
+    for (const [key, value] of Object.entries(dark.fontWeight).sort(byKey)) {
+      if (value !== undefined) lines.push(`  --font-weight-${key}: ${value};`);
+    }
+  }
+
+  if (dark.lineHeight) {
+    for (const [key, value] of Object.entries(dark.lineHeight).sort(byKey)) {
+      if (value !== undefined) lines.push(`  --line-height-${key}: ${value};`);
+    }
+  }
+
+  if (dark.breakpoint) {
+    for (const [key, value] of Object.entries(dark.breakpoint).sort(byKey)) {
+      if (value !== undefined) lines.push(`  --breakpoint-${key}: ${value};`);
+    }
+  }
+
+  if (dark.heading) {
+    if (dark.heading.textWrap !== undefined) {
+      lines.push(`  --heading-text-wrap: ${dark.heading.textWrap};`);
+    }
+    if (dark.heading.sizes) {
+      for (const [order, size] of Object.entries(dark.heading.sizes).sort(byKey)) {
+        if (size === undefined) continue;
+        if (size.fontSize !== undefined) {
+          lines.push(`  --heading-${order}-font-size: ${size.fontSize};`);
+        }
+        if (size.fontWeight !== undefined) {
+          lines.push(`  --heading-${order}-font-weight: ${size.fontWeight};`);
+        }
+        if (size.lineHeight !== undefined) {
+          lines.push(`  --heading-${order}-line-height: ${size.lineHeight};`);
+        }
+      }
+    }
+  }
 }
 
 function emitSemanticLines(lines: string[], theme: ResolvedTheme): void {
