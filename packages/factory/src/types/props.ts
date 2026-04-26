@@ -38,3 +38,14 @@ export interface StylesApiProps<P extends FactoryPayload> {
   unstyled?: boolean;
   children?: ReactNode;
 }
+
+/**
+ * Adapted from @mantine/core
+ * Source: packages/@mantine/core/src/core/styles-api/styles-api.types.ts (commit 63dafbbf)
+ *
+ * Variant of StylesApiProps for compound subcomponents (e.g., Tabs.List, Accordion.Item).
+ * Compound subcomponents inherit Styles API surface from their parent and shouldn't
+ * redeclare `unstyled` (set on the parent) or `attributes` (also set on the parent).
+ */
+export interface CompoundStylesApiProps<TPayload extends FactoryPayload>
+  extends Omit<StylesApiProps<TPayload>, 'unstyled' | 'attributes'> {}

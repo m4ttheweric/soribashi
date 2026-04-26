@@ -33,6 +33,7 @@ export type {
   FactoryStylesNames,
   FactoryVars,
   StylesApiProps,
+  CompoundStylesApiProps,
   ClassNames,
   Styles,
   Vars,
