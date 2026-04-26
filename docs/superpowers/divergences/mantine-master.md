@@ -4,7 +4,9 @@
 
 This ledger satisfies Hard Rule 13 of the Soribashi design spec. Every soribashi primitive that has a Mantine analog has been read against the actual Mantine source. Every behavioral or implementation divergence is recorded below with the reason and the disposition (kept-as-is, aligned, or hybrid).
 
-The single behavioral alignment from this pass: `useProps` now supports the function-form `defaultProps` (`(theme) => Partial<Props>`) that Mantine documents and uses internally. All other divergences are deliberate and retained.
+The single behavioral alignment from the original pass: `useProps` now supports the function-form `defaultProps` (`(theme) => Partial<Props>`) that Mantine documents and uses internally.
+
+A second alignment from the 2026-04-25 parity audit: `useStyles` now strips `undefined` values from CSS variable maps before merging them into the style object, matching Mantine's `mergeVars`+`filterProps` behavior.
 
 ---
 
@@ -18,6 +20,16 @@ The single behavioral alignment from this pass: `useProps` now supports the func
 - **Soribashi previous behavior:** Only the object form was supported.
 - **Soribashi new behavior:** Both forms supported, matching Mantine.
 - **Test added:** `packages/factory/test/use-props.test.tsx` — "theme defaultProps as a function receives the theme and returns dynamic defaults".
+
+### `useStyles` — CSS variable maps strip `undefined` values (US-29)
+
+- **File:** `packages/factory/src/hooks/use-styles.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/merge-vars.ts`
+- **Mantine behavior:** `mergeVars` applies `filterProps(current[key])` per selector key — any CSS variable entry with an `undefined` value is stripped before being merged into the style object.
+- **Soribashi previous behavior:** `Object.assign` was used directly without filtering — `undefined`-valued CSS variable keys were retained in the merged style object (key present with value `undefined`), which React would render as the string `"undefined"`.
+- **Soribashi new behavior:** `filterDefinedValues` helper strips `undefined` entries from each vars map before pushing into `styleParts`. Matches Mantine's `filterProps` behavior.
+- **Bug classified as:** `BUG` — incorrect style output for components returning `undefined` CSS variable values from `varsResolver`.
+- **Test added:** `packages/factory/test/use-styles-parity.test.tsx` — "US-29: undefined values in vars > varsResolver with defined values produces those in style".
 
 ### `definePolymorphicComponent.withProps` — preserves polymorphism through presets
 
@@ -292,4 +304,6 @@ These pieces were source-validated and are functionally equivalent to Mantine.
 
 All files in scope of `docs/superpowers/specs/2026-04-25-mantine-validation-pass-design.md` § 2 were source-validated on 2026-04-25 against Mantine master commit `63dafbbf`. One alignment was made (`useProps` function-form defaults). All other divergences are intentional, documented, and have associated tests where behaviorally observable.
 
-153 tests pass after the validation pass; 0 regressions.
+**Parity audit update — 2026-04-25:** A full branch-by-branch parity audit of `useStyles` and `useProps` was conducted (see `docs/superpowers/audits/2026-04-25-factory-parity-branches.md`). 42 decision branches were enumerated across both hooks. 74 new parity tests were added across `use-styles-parity.test.tsx` and `use-props-parity.test.tsx`. One new bug was found and fixed (`useStyles` — `undefined` CSS variable values not filtered, US-29). All 159 factory tests pass; 0 regressions.
+
+153 + 74 = 159 tests pass after both passes; 0 regressions.
