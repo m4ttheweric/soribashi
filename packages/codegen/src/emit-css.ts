@@ -67,6 +67,12 @@ function emitTokenLines(lines: string[], tokens: ThemeTokens): void {
     }
   }
 
+  if (tokens.breakpoint) {
+    for (const [key, value] of Object.entries(tokens.breakpoint).sort(byKey)) {
+      lines.push(`  --breakpoint-${key}: ${value};`);
+    }
+  }
+
   if (tokens.heading) {
     if (tokens.heading.textWrap !== undefined) {
       lines.push(`  --heading-text-wrap: ${tokens.heading.textWrap};`);

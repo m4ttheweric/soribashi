@@ -183,6 +183,57 @@ After the adaptation pass, a second-pass validation against Mantine `63dafbbf` s
 
 ---
 
+## CSS Variable Layer — 2026-04-25 Audit (emit-css.ts vs default-css-variables-resolver.ts)
+
+Full mapping at `docs/superpowers/audits/2026-04-25-css-variable-parity.md`. Summary of new INTENTIONAL_GAP entries:
+
+### Color family variant vars (INTENTIONAL_GAP — architectural)
+
+- **Mantine:** Emits `--mantine-color-{family}-{filled|filled-hover|light|light-hover|light-color|outline|outline-hover|text}` in both light and dark CSS scopes via `getCSSColorVariables()`. Components reference these CSS variables directly.
+- **Soribashi:** Computes equivalent variant colors at render time via `intentResolver`. No per-family variant CSS vars are emitted or consumed. This is the most significant architectural divergence.
+- **Count:** ~224 vars (14 families × 8 suffixes × 2 schemes)
+- **Disposition:** INTENTIONAL_GAP. The intent resolver approach is documented in the soribashi design spec as a deliberate improvement over Mantine's CSS-variable-driven component theming.
+
+### Primary color pointer vars (INTENTIONAL_GAP)
+
+- **Mantine:** Emits `--mantine-primary-color-{0-9}` and `--mantine-primary-color-{filled|filled-hover|light|light-hover|light-color}`.
+- **Soribashi:** No `primaryColor` concept at the CSS-variable layer. Components reference `--color-{intent}-{shade}` directly.
+- **Count:** 15 vars
+- **Disposition:** INTENTIONAL_GAP.
+
+### Mantine named color families (INTENTIONAL_GAP — naming divergence)
+
+- **Mantine:** Ships 14 named families (blue, cyan, dark, grape, gray, green, indigo, lime, orange, pink, red, teal, violet, yellow) with 10 shades each (0–9 numeric index).
+- **Soribashi:** Ships semantic families (primary, neutral, danger, success, warning, info) with 50–950 shade keys. The `--color-{family}-{shade}` structural pattern IS implemented; the family names and shade keys differ.
+- **Count:** 140 shade vars + 224 variant vars = 364 (all in INTENTIONAL_GAP)
+- **Disposition:** INTENTIONAL_GAP. Documented in design spec § 4 substitution table.
+
+### Runtime theme vars (INTENTIONAL_GAP)
+
+These Mantine vars have no soribashi equivalent because they reflect runtime behavior soribashi handles differently:
+
+| Mantine var | Reason for gap |
+|---|---|
+| `--mantine-scale` | Soribashi emits raw token values; no runtime scale multiplier needed. |
+| `--mantine-cursor-type` | Set via Tailwind utility classes, not a CSS variable. |
+| `--mantine-webkit-font-smoothing` / `--mantine-moz-font-smoothing` | Consumer's CSS reset responsibility. |
+| `--mantine-color-white` / `--mantine-color-black` | Covered by `colors.neutral.0/.950`. |
+| `--mantine-color-scheme` | Managed via `.dark` class on `<html>`; no CSS variable needed. |
+| `--mantine-primary-color-contrast` | Intent resolver handles contrast at render time. |
+| `--mantine-color-bright` | Covered by `colors.neutral.0/.950`. |
+| `--mantine-color-error` | Components reference `colors.danger.*` shades directly. |
+| `--mantine-color-placeholder` | Utility class in component CSS. |
+| `--mantine-color-anchor` | Intent resolver at component level. |
+| `--mantine-color-default-hover` | Intent resolver computes hover states. |
+| `--mantine-color-disabled` / `-color` / `-border` | CSS `[data-disabled]` attribute selectors. |
+| Z-index scale (5 vars) | `tokens.zIndex` exists in the type but emit-css.ts does not emit it; application-concern deferred to consumer. |
+
+### One BUG fixed (not a gap)
+
+- **`--breakpoint-xs` through `--breakpoint-xl`** were not emitted despite `tokens.breakpoint` being defined in the type. Fixed in `emit-css.ts` (see fix commit). These are now ✅ emitted.
+
+---
+
 ## Deferred (acknowledged, not yet implemented)
 
 Captured during the 2026-04-25 blocks adaptation pass — items the plan called out as out-of-scope or descoped during execution. Each is implementable later under the same recipe.
