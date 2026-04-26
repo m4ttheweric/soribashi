@@ -84,6 +84,8 @@ export const Text = defineComponent<TextOwnProps>({
       vars: _v,
       attributes: _a,
       unstyled: _u,
+      className: _className,
+      style: _style,
       ...rest
     } = props as any;
     const tag = span ? 'span' : 'p';
