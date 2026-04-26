@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTheme } from '@soribashi/theme';
+import { createTheme, defaultTokens } from '@soribashi/theme';
 import { emitCss } from '../src/emit-css.ts';
 
 describe('emitCss', () => {
@@ -189,5 +189,36 @@ describe('emitCss', () => {
     });
     const css = emitCss(theme);
     expect(css).not.toContain('--heading-text-wrap');
+  });
+});
+
+describe('emitCss with EmitCssOptions.removeDefaultVariables', () => {
+  it('produces no token vars when theme exactly matches defaults', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, { removeDefaultVariables: true });
+    // Should still have the :root shell, but no --spacing-*, --color-*, etc.
+    expect(css).not.toContain('--spacing-md:');
+    expect(css).not.toContain('--color-primary-500:');
+    expect(css).not.toContain('--radius-md:');
+  });
+
+  it('produces only overridden vars when one token is overridden', () => {
+    const theme = createTheme({ tokens: { ...defaultTokens, spacing: { ...defaultTokens.spacing, md: '20px' } } });
+    const css = emitCss(theme, { removeDefaultVariables: true });
+    expect(css).toContain('--spacing-md: 20px;');
+    expect(css).not.toContain('--spacing-xs:'); // matches default — dedup'd
+  });
+
+  it('default (no opts) emits the full theme as before', () => {
+    const theme = createTheme({ tokens: { colors: {}, radius: {}, spacing: { md: '0.75rem' }, fontSize: { md: '1rem' } } });
+    const css = emitCss(theme);
+    expect(css).toContain('--spacing-md:');
+  });
+
+  it('removeDefaultVariables: false is equivalent to omitting opts', () => {
+    const theme = createTheme({ tokens: { colors: {}, radius: {}, spacing: { md: '0.75rem' }, fontSize: { md: '1rem' } } });
+    const cssA = emitCss(theme, { removeDefaultVariables: false });
+    const cssB = emitCss(theme);
+    expect(cssA).toBe(cssB);
   });
 });
