@@ -16,3 +16,5 @@
 | Soribashi file | Mantine analog | Tier | Status | Audit doc | Ledger entries |
 |---|---|---|---|---|---|
 | packages/factory/src/factory.tsx | core/factory/factory.tsx | 1 | drift fixed | 2026-04-25-tier-1-factory.md | factory-forwardRef (pre-existing, kept), factory-withProps-undefined-filter (pre-existing, kept), makeWithProps-extend-propagation (fixed) |
+| packages/factory/src/polymorphic-component.tsx | core/factory/polymorphic-factory.tsx | 1 | drift fixed | 2026-04-25-tier-1-polymorphic.md | polymorphicFactory-forwardRef (pre-existing, kept), polymorphicFactory-as-prop (pre-existing, kept), makeWithProps-extend-propagation (fixed — shared fix with factory.tsx) |
+| packages/factory/src/define-polymorphic-component.tsx | core/factory/polymorphic-factory.tsx + create-polymorphic-component.ts | 1 | intentional divergence | 2026-04-25-tier-1-polymorphic.md | definePolymorphicComponent-higher-level-constructor (new), definePolymorphicComponent-classes-static (new), definePolymorphicComponent-defaultElement (new) |
