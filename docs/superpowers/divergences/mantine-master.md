@@ -1088,3 +1088,57 @@ No new ledger entries for `provider.tsx`, `context.ts`, or `use-theme.ts`.
 - **Mantine analog:** None. Mantine doesn't generate Tailwind v4 `@theme` blocks.
 - **Justification:** Soribashi supports Tailwind v4 usage. The v4 emitter uses Tailwind v4's CSS-as-source-of-truth model (`@theme { --color-*: ...; }`). Key namespace differences from emit-css.ts: `--text-*` for font sizes, `--font-*` for font families, `--leading-*` for line heights, `--breakpoint-*` for breakpoints — all matching Tailwind v4's built-in token resolution namespaces. No `hsl(var() / <alpha-value>)` wrapping needed because v4 handles opacity natively.
 - **Disposition:** Soribashi addition — no Mantine equivalent exists or is needed.
+
+---
+
+## Roadmap Batch 1 — 2026-04-25
+
+Five items from `docs/superpowers/roadmap/mantine-derivable-future-work.md` ported into soribashi. Spec: `docs/superpowers/specs/2026-04-25-roadmap-batch-1-design.md`. Plan: `docs/superpowers/plans/2026-04-25-plan-roadmap-batch-1.md`.
+
+### `CompoundStylesApiProps<P>` — direct port
+
+- **File:** `packages/factory/src/types/props.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/styles-api/styles-api.types.ts` (commit 63dafbbf)
+- **Mantine behavior:** `Omit<StylesApiProps, 'unstyled' | 'attributes'>` — variant for compound subcomponents.
+- **Soribashi behavior:** Identical port. Same `Omit`, same purpose.
+- **Disposition:** Aligned (added)
+- **Test:** `packages/factory/test/compound-styles-api-props.test-d.ts`
+
+### `removeDefaultVariables` — operates on `ResolvedTheme` not `ConvertCSSVariablesInput`
+
+- **File:** `packages/codegen/src/remove-default-variables.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/remove-default-variables.ts` (commit 63dafbbf)
+- **Mantine behavior:** Diffs `ConvertCSSVariablesInput` (`{variables, light, dark}`) against the default theme's emit output, key by key.
+- **Soribashi behavior:** Diffs a `ResolvedTheme` (in-memory token tree) against `defaultTokens` / `defaultDarkTokens`. Returns a diff'd `ResolvedTheme` that the existing `emitCss` pipeline consumes.
+- **Reason for divergence:** Soribashi's codegen runs at build time and operates on the in-memory token tree. Mantine's runs at render time on the post-emit CSS-var shape. Equivalent semantics, different layer.
+- **Disposition:** Aligned (added). Surface: `emitCss(theme, { removeDefaultVariables: true })`.
+- **Test:** `packages/codegen/test/remove-default-variables.test.ts` + `emit-css.test.ts` integration tests.
+
+### `cssVariablesResolver` — build-time escape hatch (not render-time)
+
+- **File:** `packages/codegen/src/emit-css.ts` (option) + `packages/codegen/src/types.ts` (type export)
+- **Mantine source:** `packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx` `cssVariablesResolver` prop (commit 63dafbbf)
+- **Mantine behavior:** Provider prop. Runs at render time, receives the theme and current color scheme, returns `{ variables, light, dark }`. Mantine merges the result with its default resolver's output.
+- **Soribashi behavior:** `EmitCssOptions.cssVariablesResolver: (theme: ResolvedTheme) => CssVariablesAddition`. Runs at codegen build time. Output appended to the `:root`, `.dark`, and (optionally) per-scope blocks.
+- **Reason for divergence:** Soribashi's codegen runs at build time. There is no provider hook to run a resolver from. The emit-time escape hatch achieves the same goal (consumer-injected vars) at the appropriate architectural layer.
+- **Disposition:** Kept (intentional architectural divergence)
+- **Test:** `packages/codegen/test/emit-css.test.ts` — `cssVariablesResolver` describe block (5 tests).
+
+### `fontFamilyResolver` — soribashi token-name adaptation
+
+- **File:** `packages/blocks/src/Box/style-props/resolvers/font-family-resolver.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/Box/style-props/resolvers/font-family-resolver/font-family-resolver.ts` (commit 63dafbbf)
+- **Mantine behavior:** Alias map for `text/mono/monospace/heading/headings` keys → corresponding Mantine font-family CSS vars.
+- **Soribashi behavior:** Same shape. Token names: `text/sans` → `var(--font-family-sans)`, `mono/monospace` → `var(--font-family-mono)`, `heading/headings` → `var(--font-family-heading)`. Soribashi adds `sans` as an alias to match the soribashi `tokens.fontFamily.sans` key.
+- **Disposition:** Aligned (TOKEN_DIFF + soribashi alias addition)
+- **Test:** `packages/blocks/test/Box/font-family-resolver.test.ts` (10 tests) + ff-resolver tests in `style-props.test.ts`.
+
+### `borderResolver` — `(value)` signature without theme
+
+- **File:** `packages/blocks/src/Box/style-props/resolvers/border-resolver.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/Box/style-props/resolvers/border-resolver/border-resolver.ts` (commit 63dafbbf)
+- **Mantine behavior:** `(value, theme) => string`. Splits `"size style color"` and calls `colorResolver(color, theme)`.
+- **Soribashi behavior:** `(value) => string | undefined`. Splits `"size style color"` and calls `getThemeColor(color)`. No `theme` arg required because `getThemeColor` returns CSS variable references resolved at paint time, not values from the theme tree.
+- **Reason for divergence:** Soribashi's `getThemeColor` is a pure function that returns `var(--color-*)` references. The runtime resolves the var; soribashi's resolver doesn't need the theme at codegen time. Color syntax: soribashi uses `primary.500` (50–950 shade scale); Mantine uses `primary.5` (0–9 shade scale).
+- **Disposition:** Kept (signature divergence; same observable behavior)
+- **Test:** `packages/blocks/test/Box/border-resolver.test.ts` (10 tests) + bd-resolver tests in `style-props.test.ts`.
