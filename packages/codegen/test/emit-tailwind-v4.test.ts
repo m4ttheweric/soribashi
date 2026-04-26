@@ -45,7 +45,8 @@ describe('emitTailwindV4', () => {
     const css = emitTailwindV4(theme);
     expect(css).toContain('--radius-md: 0.5rem;');
     expect(css).toContain('--spacing-lg: 1rem;');
-    expect(css).toContain('--font-size-md: 1rem;');
+    // Tailwind v4 reads font sizes from the --text-* namespace, not --font-size-*.
+    expect(css).toContain('--text-md: 1rem;');
   });
 
   it('output is deterministic', () => {

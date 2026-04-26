@@ -27,12 +27,12 @@ export function emitTailwindV4(theme: ResolvedTheme): string {
   }
 
   for (const [key, value] of Object.entries(theme.tokens.fontSize).sort(byKey)) {
-    lines.push(`  --font-size-${key}: ${value};`);
+    lines.push(`  --text-${key}: ${value};`);
   }
 
   if (theme.tokens.fontFamily) {
     for (const [key, value] of Object.entries(theme.tokens.fontFamily).sort(byKey)) {
-      lines.push(`  --font-family-${key}: ${value};`);
+      lines.push(`  --font-${key}: ${value};`);
     }
   }
 
@@ -44,7 +44,7 @@ export function emitTailwindV4(theme: ResolvedTheme): string {
 
   if (theme.tokens.lineHeight) {
     for (const [key, value] of Object.entries(theme.tokens.lineHeight).sort(byKey)) {
-      lines.push(`  --line-height-${key}: ${value};`);
+      lines.push(`  --leading-${key}: ${value};`);
     }
   }
 
