@@ -47,7 +47,7 @@ export function getBoxMod(value: BoxMod | undefined): Record<string, unknown> {
 
   const out: Record<string, unknown> = {};
   for (const [key, v] of Object.entries(value)) {
-    if (v === false || v === null || v === undefined || v === '' || v === 0) continue;
+    if (v === false || v === null || v === undefined || v === '') continue;
     out[transformModKey(key)] = v === true ? true : v;
   }
   return out;

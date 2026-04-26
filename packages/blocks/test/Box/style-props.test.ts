@@ -122,9 +122,12 @@ describe('getBoxMod', () => {
     expect(getBoxMod({ active: true })).toEqual({ 'data-active': true });
   });
 
-  it('handles record input — falsy values are omitted', () => {
+  it('handles record input — false/null/undefined/"" are omitted; numeric 0 is kept (Mantine parity)', () => {
+    // Mantine getMod filters: undefined, '', false, null — but NOT numeric 0.
+    // See: packages/@mantine/core/src/core/Box/get-box-mod/get-box-mod.ts (63dafbbf)
     expect(getBoxMod({ active: true, loading: false, x: null, y: undefined, z: 0, q: '' })).toEqual({
       'data-active': true,
+      'data-z': 0,
     });
   });
 
