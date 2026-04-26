@@ -242,3 +242,129 @@ These pieces were source-validated and are functionally equivalent to Mantine.
 All files in scope of `docs/superpowers/specs/2026-04-25-mantine-validation-pass-design.md` § 2 were source-validated on 2026-04-25 against Mantine master commit `63dafbbf`. One alignment was made (`useProps` function-form defaults). All other divergences are intentional, documented, and have associated tests where behaviorally observable.
 
 153 tests pass after the validation pass; 0 regressions.
+
+---
+
+## Full audit pass — 2026-04-25
+
+Captured during Task 1.5: parity audit of `packages/factory/src/inline-styles/` bundle.
+Audit document: `docs/superpowers/audits/2026-04-25-tier-1-inline-styles.md`.
+Parity tests: `packages/factory/test/inline-styles-parity.test.tsx`.
+
+### `InlineStyles` — no `nonce` prop (IS-01)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/InlineStyles.tsx`
+- **Mantine behavior:** Calls `useMantineStyleNonce()` and passes the result to `<style nonce={...}>` for CSP compliance.
+- **Soribashi behavior:** No nonce support; `<style>` rendered without any `nonce` attribute.
+- **Reason for divergence:** Soribashi's static CSS (emitted by `@soribashi/codegen`) doesn't require CSP nonces at runtime. The component is used for responsive style-prop overrides; adding nonce support is a deferred concern.
+- **Disposition:** Keep as-is. Tracked in file header comment.
+
+### `InlineStyles` — no `deduplicate` prop (IS-02)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/InlineStyles.tsx`
+- **Mantine behavior:** When `deduplicate=true`, renders a React 19 resource-style `<style href="mantine-{hash}" precedence="mantine">` element, which React deduplicates in SSR and hydration.
+- **Soribashi behavior:** No `deduplicate` prop; always renders an inline `<style>` with children.
+- **Reason for divergence:** Soribashi's use of `InlineStyles` is always at per-instance class scope (every call site produces a unique selector), so deduplication via React 19 resource hoisting is not needed. If identical styles appear, the hash-based class name already deduplicates via class reuse at the component level.
+- **Disposition:** Keep as-is.
+
+### `InlineStyles` — no `data-mantine-styles` attribute (IS-03)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/InlineStyles.tsx`
+- **Mantine behavior:** Adds `data-mantine-styles="inline"` on the non-deduplicated `<style>` element (used by Mantine's static class cleanup logic).
+- **Soribashi behavior:** No `data-*` attribute on the rendered `<style>` element.
+- **Reason for divergence:** Soribashi has no static class cleanup system. The attribute would have no consumers.
+- **Disposition:** Keep as-is.
+
+### `InlineStyles` — CSS output format with spaces (IS-04 / IS-10)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/css-object-to-string/css-object-to-string.ts`
+- **Mantine behavior:** Compact format: `selector{prop:value;}` — no spaces. `@media(query){...}`.
+- **Soribashi behavior:** Readable format: `selector { prop: value; }` — spaces after colons and inside braces. `@media (query) { ... }`.
+- **Reason for divergence:** Cosmetic preference; functionally equivalent.
+- **Disposition:** Keep as-is.
+
+### `InlineStyles` — `media` prop is a Record, not an array (IS-05)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/styles-to-string/styles-to-string.ts`
+- **Mantine behavior:** `media?: Array<{ query: string; styles: CSSProperties }>` — ordered array; allows duplicate queries.
+- **Soribashi behavior:** `media: Record<string, Record<string, unknown>>` — a query→styles map; order follows `Object.entries` insertion order; duplicate query keys are not possible.
+- **Reason for divergence:** Soribashi's callers (Box style-prop pipeline) build a breakpoint map keyed by query string. Array form would require wrapping in `Object.entries` at call sites. Map form is more ergonomic for the actual call pattern.
+- **Disposition:** Keep as-is.
+
+### `InlineStyles` — no `container` queries (IS-06)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/styles-to-string/styles-to-string.ts`
+- **Mantine behavior:** `container?: Array<{ query: string; styles: CSSProperties }>` — generates `@container` rules.
+- **Soribashi behavior:** No `container` prop.
+- **Reason for divergence:** Container query support was deferred (see also: `SimpleGrid type='container'` deferred entry above).
+- **Disposition:** Deferred.
+
+### `InlineStyles` — `styles` type is `Record<string, unknown>` (IS-07)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/styles-to-string/styles-to-string.ts`
+- **Mantine behavior:** `styles?: React.CSSProperties` — strict typed CSS object.
+- **Soribashi behavior:** `styles: Record<string, unknown>` — looser type that accepts CSS custom properties and arbitrary string values without casts.
+- **Reason for divergence:** Soribashi's Box pipeline injects CSS custom properties (e.g., `--padding-xs`) as style values. Using `React.CSSProperties` would require `as any` casts at every call site.
+- **Disposition:** Keep as-is.
+
+### `camelToKebab` — CSS custom properties pass through unchanged (IS-08 / CO-03)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/utils/camel-to-kebab-case/camel-to-kebab-case.ts`
+- **Mantine behavior:** `camelToKebabCase('--myColor')` → `'--my-color'` — the uppercase transform still applies to `--` prefixed strings, potentially renaming CSS custom properties.
+- **Soribashi behavior:** `camelToKebab('--myColor')` → `'--myColor'` — short-circuits at `--` prefix; custom properties pass through unchanged.
+- **Reason for divergence:** CSS custom properties are case-sensitive. `--myColor` and `--my-color` are different variables. Applying camelCase→kebab conversion to them is incorrect. Soribashi's guard is more correct.
+- **Disposition:** Keep soribashi's behavior (superior).
+- **Test:** `inline-styles-parity.test.tsx` IS-08a, IS-08b.
+
+### `rulesFromStyles` — null values are filtered (IS-09 / CO-05)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/css-object-to-string/css-object-to-string.ts`
+- **Mantine behavior:** `css[rule] !== undefined` — filters only `undefined`; `null` values would be serialized as the string `"null"` (invalid CSS).
+- **Soribashi behavior:** `value !== undefined && value !== null` — filters both.
+- **Reason for divergence:** Soribashi is more defensive. Emitting `prop:null;` is invalid CSS that browsers silently ignore, but it's unnecessary bytes and confusing in dev tools. Filtering `null` is the correct behavior.
+- **Disposition:** Keep soribashi's behavior (superior).
+- **Test:** `inline-styles-parity.test.tsx` IS-09a.
+
+### `InlineStyles` — `styles` prop required vs optional (ST-02)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/styles-to-string/styles-to-string.ts`
+- **Mantine behavior:** `styles?: React.CSSProperties` — optional; base rule omitted when absent.
+- **Soribashi behavior:** `styles: Record<string, unknown>` — required; callers pass `{}` for media-only usage.
+- **Reason for divergence:** All soribashi call sites provide `styles` explicitly. Making it optional adds no practical benefit and would require adding a null check. A future alignment is trivial.
+- **Disposition:** Keep as-is. Low priority.
+
+### `InlineStyles` — empty `styles` emitted empty base rule (ST-05 — FIXED)
+
+- **File:** `packages/factory/src/inline-styles/InlineStyles.tsx`
+- **Mantine behavior:** When `styles` is empty or falsy, no base rule is emitted in the output CSS.
+- **Soribashi previous behavior:** Always emitted `selector { }` even when `styles` was `{}` or all values were null/undefined — a wasteful empty CSS rule.
+- **Fix:** Added a guard: `const baseDecls = rulesFromStyles(styles); const baseRule = baseDecls ? \`...\` : '';` — base rule is only emitted when there are actual declarations.
+- **Disposition:** Fixed. Tests: `inline-styles-parity.test.tsx` ST-05a–ST-05d.
+
+### `hashStyleProps` — file location and serialization method (HS-01 / HS-07)
+
+- **File:** `packages/factory/src/hash-style-props.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/hash-styles.ts`
+- **Mantine behavior:** Located inside `InlineStyles/` bundle; serializes styles via `cssObjectToString()` (camel→kebab + prop:value format).
+- **Soribashi behavior:** Located at factory root (not inside `inline-styles/`); serializes via `JSON.stringify()`.
+- **Reason for divergence:** File placement reflects soribashi's organizational choice (hash is a factory-level utility, not InlineStyles-specific). JSON serialization is simpler and sufficient for hashing — exact CSS format doesn't affect uniqueness.
+- **Disposition:** Keep as-is.
+
+### `hashStyleProps` — output prefix (HS-06)
+
+- **File:** `packages/factory/src/hash-style-props.ts`
+- **Mantine source:** `packages/@mantine/core/src/core/InlineStyles/hash-styles.ts`
+- **Mantine behavior:** Output prefix `__mdi__-`.
+- **Soribashi behavior:** Output prefix `sb-h-`.
+- **Reason for divergence:** Soribashi uses its own prefix convention; `__mdi__` is Mantine-internal.
+- **Disposition:** Keep as-is.

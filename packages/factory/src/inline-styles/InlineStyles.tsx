@@ -35,14 +35,19 @@ function rulesFromStyles(styles: Record<string, unknown>): string {
  * Renders a `<style>` block scoped to a selector with optional media-query rules.
  * Used by Box / Flex / Grid / SimpleGrid / Container to support responsive
  * `StyleProp<T>` props (`p={{ base: 'xs', md: 'lg' }}`).
+ *
+ * Parity note (ST-05): when `styles` is empty or all values are undefined/null,
+ * no base rule is emitted — matches Mantine's behavior of omitting empty rules.
  */
 export function InlineStyles({ selector, styles, media }: InlineStylesProps) {
-  const baseRule = `${selector} { ${rulesFromStyles(styles)} }`;
+  const baseDecls = rulesFromStyles(styles);
+  const baseRule = baseDecls ? `${selector} { ${baseDecls} }` : '';
   const mediaRules = Object.entries(media)
     .map(
       ([query, mStyles]) =>
         `@media ${query} { ${selector} { ${rulesFromStyles(mStyles)} } }`,
     )
     .join(' ');
-  return <style>{`${baseRule} ${mediaRules}`}</style>;
+  const css = [baseRule, mediaRules].filter(Boolean).join(' ');
+  return <style>{css}</style>;
 }
