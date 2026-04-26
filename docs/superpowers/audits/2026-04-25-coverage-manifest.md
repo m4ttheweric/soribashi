@@ -85,3 +85,6 @@
 | packages/codegen/src/cli.ts | (no analog — soribashi-only CLI) | 2 | soribashi addition | 2026-04-25-tier-2-codegen.md | CLI for build/watch; soribashi-only subsystem |
 | packages/codegen/src/types.ts | (no analog — soribashi-only types) | 2 | soribashi addition | 2026-04-25-tier-2-codegen.md | type definitions for codegen package |
 | packages/codegen/src/watch.ts | (no analog — soribashi-only watch mode) | 2 | soribashi addition | 2026-04-25-tier-2-codegen.md | dev-mode file watcher; codegen is a soribashi-only subsystem |
+| packages/codegen/src/remove-default-variables.ts | core/MantineProvider/MantineCssVariables/remove-default-variables.ts | 2 | aligned (added) | (Roadmap Batch 1 — tier-2-codegen.md) | removeDefaultVariables-resolved-theme-vs-cssvarinput (Aligned, new) |
+| packages/blocks/src/Box/style-props/resolvers/font-family-resolver.ts | core/Box/style-props/resolvers/font-family-resolver/font-family-resolver.ts | 2 | aligned (added) | (Roadmap Batch 1 — tier-2-box-style-props.md) | fontFamilyResolver-token-names-and-sans-alias (Aligned, new) |
+| packages/blocks/src/Box/style-props/resolvers/border-resolver.ts | core/Box/style-props/resolvers/border-resolver/border-resolver.ts | 2 | aligned (added) | (Roadmap Batch 1 — tier-2-box-style-props.md) | borderResolver-no-theme-arg (Kept, new) |
