@@ -304,6 +304,19 @@ These pieces were source-validated and are functionally equivalent to Mantine.
 
 All files in scope of `docs/superpowers/specs/2026-04-25-mantine-validation-pass-design.md` § 2 were source-validated on 2026-04-25 against Mantine master commit `63dafbbf`. One alignment was made (`useProps` function-form defaults). All other divergences are intentional, documented, and have associated tests where behaviorally observable.
 
-**Parity audit update — 2026-04-25:** A full branch-by-branch parity audit of `useStyles` and `useProps` was conducted (see `docs/superpowers/audits/2026-04-25-factory-parity-branches.md`). 42 decision branches were enumerated across both hooks. 74 new parity tests were added across `use-styles-parity.test.tsx` and `use-props-parity.test.tsx`. One new bug was found and fixed (`useStyles` — `undefined` CSS variable values not filtered, US-29). All 159 factory tests pass; 0 regressions.
+**Parity audit update — 2026-04-25:** A full branch-by-branch parity audit of `useStyles` and `useProps` was conducted (see `docs/superpowers/audits/2026-04-25-factory-parity-branches.md`). 42 decision branches were enumerated across both hooks. 74 new parity tests were added across `use-styles-parity.test.tsx` and `use-props-parity.test.tsx`. One new bug was found and fixed (`useStyles` — `undefined` CSS variable values not filtered, US-29). 159 factory tests pass after both passes; 0 regressions.
 
-153 + 74 = 159 tests pass after both passes; 0 regressions.
+---
+
+## Full audit pass — 2026-04-25
+
+### `factory()` / `makeWithProps` — `withProps()` result does not propagate `extend`
+
+- **File:** `packages/factory/src/with-props.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/factory.tsx` (commit 63dafbbf), line 91
+- **Mantine behavior:** The component created by `withProps(fixedProps)` receives `Extended.extend = Component.extend`, so the result of `.withProps()` has the same `extend` method as the parent. Callers can chain `Button.withProps({...}).extend({...})`.
+- **Soribashi previous behavior:** `makeWithProps` created a `forwardRef`-wrapped `Wrapped` component but did not copy `.extend` from `Base`. The `withProps()` result lacked an `extend` method; calling it would throw `TypeError: (...).extend is not a function`.
+- **Soribashi new behavior:** `makeWithProps` now copies `Base.extend` to `Wrapped.extend` when present, matching Mantine's behavior.
+- **Classification:** `INCONSISTENCY` (factory itself had `extend`; `withProps` result did not) → aligned via TDD fix.
+- **Disposition:** Aligned
+- **Test:** `packages/factory/test/factory-parity.test.tsx` — "B4a: withProps() result has an extend method" and "B4b: withProps() result extend is identity"

@@ -22,6 +22,11 @@ export function makeWithProps<TProps>(
       return <Component ref={ref} {...merged} />;
     });
     Wrapped.displayName = `WithProps(${(Base as any).displayName ?? Base.name ?? 'Component'})`;
+    // Propagate extend from the parent component so callers can chain
+    // Button.withProps({...}).extend({...}) — matches Mantine factory.tsx line 91.
+    if ((Base as any).extend !== undefined) {
+      (Wrapped as any).extend = (Base as any).extend;
+    }
     return Wrapped as unknown as ComponentType<TProps>;
   };
 }

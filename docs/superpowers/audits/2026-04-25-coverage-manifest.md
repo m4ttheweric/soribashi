@@ -15,4 +15,4 @@
 
 | Soribashi file | Mantine analog | Tier | Status | Audit doc | Ledger entries |
 |---|---|---|---|---|---|
-| _(rows added during execution)_ | | | | | |
+| packages/factory/src/factory.tsx | core/factory/factory.tsx | 1 | drift fixed | 2026-04-25-tier-1-factory.md | factory-forwardRef (pre-existing, kept), factory-withProps-undefined-filter (pre-existing, kept), makeWithProps-extend-propagation (fixed) |
