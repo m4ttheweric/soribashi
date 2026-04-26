@@ -64,8 +64,12 @@ export function useStyles<P extends FactoryPayload>(
     const styleParts: CSSProperties[] = [
       themeStyles[selector as string] ?? {},
       instanceStyles[selector as string] ?? {},
-      ((builtInVars as Record<string, unknown>)[selector as string] as CSSProperties | undefined) ?? {},
-      (themeVarsResolverFromTheme[selector as string] as CSSProperties | undefined) ?? {},
+      filterDefinedValues(
+        ((builtInVars as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
+      ) as CSSProperties,
+      filterDefinedValues(
+        (themeVarsResolverFromTheme[selector as string] as Record<string, unknown> | undefined) ?? {},
+      ) as CSSProperties,
     ];
 
     if (isRoot && config.style) styleParts.push(config.style);
@@ -119,4 +123,21 @@ function resolveStyles<P extends FactoryPayload>(
 
 function mergeStyles(parts: CSSProperties[]): CSSProperties {
   return parts.reduce((acc, p) => Object.assign(acc, p), {} as CSSProperties);
+}
+
+/**
+ * Strips keys with `undefined` values from a plain object.
+ * Mirrors Mantine's `filterProps` used in `mergeVars` to ensure CSS variable
+ * maps never pass `undefined` values into the style object.
+ *
+ * Reference: mantine/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/merge-vars.ts
+ */
+function filterDefinedValues(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const key in obj) {
+    if (obj[key] !== undefined) {
+      result[key] = obj[key];
+    }
+  }
+  return result;
 }

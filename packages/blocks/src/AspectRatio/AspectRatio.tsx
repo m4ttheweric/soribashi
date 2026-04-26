@@ -38,6 +38,8 @@ export const AspectRatio = defineComponent<AspectRatioOwnProps>({
       vars: _v,
       attributes: _a,
       unstyled: _u,
+      className: _className,
+      style: _style,
       ...rest
     } = props as any;
     return (

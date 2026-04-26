@@ -16,6 +16,11 @@ type BreakpointKey = (typeof BREAKPOINT_KEYS)[number];
 function isResponsiveValue(value: unknown): value is Record<string, unknown> {
   if (value === null || typeof value !== 'object') return false;
   const keys = Object.keys(value as Record<string, unknown>);
+  // Mirror Mantine's hasResponsiveStyles: a base-only object is NOT responsive
+  // (it's equivalent to the flat value). Only treat as responsive when at least
+  // one named breakpoint key is present.
+  // Source: parse-style-props.ts@63dafbbf — hasResponsiveStyles() check
+  if (keys.length === 1 && keys[0] === 'base') return false;
   return keys.some((k) => k === 'base' || (BREAKPOINT_KEYS as readonly string[]).includes(k));
 }
 
@@ -44,11 +49,26 @@ export interface ParseStylePropsInput {
 }
 
 /**
+ * Extracts the effective "base" value from a style prop that may be either a
+ * flat value or a base-only responsive object (e.g. `{ base: 'md' }`).
+ *
+ * Mirrors Mantine's `getBaseValue` (parse-style-props.ts@63dafbbf).
+ */
+function getBaseValue(value: unknown): unknown {
+  if (value !== null && typeof value === 'object' && 'base' in value) {
+    return (value as Record<string, unknown>).base;
+  }
+  return value;
+}
+
+/**
  * Walks a styleProps record and produces resolved CSS.
  *
  *   - Static values go into `inlineStyles` (applied via the element's `style` attr)
  *   - Responsive object values are split: `base` goes into `styles`, each
  *     breakpoint goes into `media[<query>]`
+ *   - base-only objects (`{ base: 'md' }`) are treated as non-responsive and
+ *     land in `inlineStyles` (matches Mantine's hasResponsiveStyles check)
  */
 export function parseStyleProps(input: ParseStylePropsInput): ParsedStyleProps {
   const inlineStyles: Record<string, string> = {};
@@ -79,7 +99,10 @@ export function parseStyleProps(input: ParseStylePropsInput): ParsedStyleProps {
         applyToProperty(media[query]!, def.property, resolved);
       }
     } else {
-      const resolved = def.resolver(propValue);
+      // For base-only objects like { base: 'md' }, extract the base value before resolving.
+      const flatValue = getBaseValue(propValue);
+      if (flatValue === undefined || flatValue === null) continue;
+      const resolved = def.resolver(flatValue);
       if (resolved !== undefined) applyToProperty(inlineStyles, def.property, resolved);
     }
   }

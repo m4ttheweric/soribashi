@@ -38,9 +38,25 @@ function mergeTokens(base: ThemeTokens, child: ThemeTokens): ThemeTokens {
     spacing: { ...(base.spacing ?? {}), ...(child.spacing ?? {}) },
     fontSize: { ...(base.fontSize ?? {}), ...(child.fontSize ?? {}) },
     fontFamily: { ...(base.fontFamily ?? {}), ...(child.fontFamily ?? {}) },
+    fontWeight: { ...(base.fontWeight ?? {}), ...(child.fontWeight ?? {}) },
+    lineHeight: { ...(base.lineHeight ?? {}), ...(child.lineHeight ?? {}) },
     shadow: { ...(base.shadow ?? {}), ...(child.shadow ?? {}) },
     breakpoint: { ...(base.breakpoint ?? {}), ...(child.breakpoint ?? {}) },
     zIndex: { ...(base.zIndex ?? {}), ...(child.zIndex ?? {}) },
+    heading: mergeHeadingTokens(base.heading, child.heading),
+  };
+}
+
+function mergeHeadingTokens(
+  base: ThemeTokens['heading'],
+  child: ThemeTokens['heading'],
+): ThemeTokens['heading'] {
+  if (!base && !child) return undefined;
+  if (!base) return child;
+  if (!child) return base;
+  return {
+    sizes: { ...base.sizes, ...child.sizes },
+    textWrap: child.textWrap ?? base.textWrap,
   };
 }
 

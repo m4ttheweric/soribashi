@@ -2,7 +2,7 @@
 
 **As of 2026-04-25**
 
-All 5 original plans executed end-to-end, the Mantine blocks adaptation pass is complete, **and** a follow-on validation pass closed all 15 residual divergences against Mantine `63dafbbf`. **347 tests passing** across 37 test files. Playground app builds, typecheck clean (`bun run typecheck`). See `docs/superpowers/divergences/mantine-master.md` and `THIRD-PARTY-LICENSES.md`.
+All 5 original plans executed end-to-end, the Mantine blocks adaptation pass is complete, **and** two follow-on validation passes (15 + 4 audits) closed all known residual divergences against Mantine `63dafbbf`. **442 vitest tests** across 42 files plus **46 Playwright browser-parity tests**. Playground app builds, typecheck clean (`bun run typecheck`). See `docs/superpowers/divergences/mantine-master.md`, `THIRD-PARTY-LICENSES.md`, and the audit reports under `docs/superpowers/audits/`.
 
 ## Mantine blocks adaptation — COMPLETE
 
@@ -20,7 +20,12 @@ All 5 original plans executed end-to-end, the Mantine blocks adaptation pass is 
 - ✅ **Phase 7:** Flex, Grid + Grid.Col, SimpleGrid, Container (block strategy)
 - ✅ **Phase 8:** Text (lineClamp, gradient, inline, inherit, RTL truncate, span shorthand) + Title (`order`, `size` accepts `h1`-`h6` token, `lineClamp`, `textWrap`, `getTitleSize` reading `theme.tokens.heading.sizes`)
 - ✅ **Phase 9:** Divergence ledger refreshed (`docs/superpowers/divergences/mantine-master.md`); `--mantine-` lint clean (only attribution-comment references remain); final smoke (`bunx vitest run`, `bun run typecheck`, `bun run --filter @soribashi/playground build`) all green
-- ✅ **Validation pass (post-Phase 9):** 15 residual divergences against Mantine `63dafbbf` closed in a parallel-batch fix run — Grid math parameterized on `columns`, full Box style-prop parity (`hiddenFrom`/`visibleFrom`/12 missing props/logical-shorthand `mx`/`my`), `getBoxMod` kebab-cases mod keys, utility resolvers drop the `STANDARD_KEYS` allowlist, `rem` accepts px-strings, codegen emits `--heading-text-wrap`, `useRandomClassName` handles React 19 IDs, Paper border var scoped, SimpleGrid renames + selector specificity. See `mantine-master.md` § "Post-adaptation validation pass" for the full table.
+- ✅ **Validation pass 1 (post-Phase 9):** 15 residual divergences against Mantine `63dafbbf` closed in a parallel-batch fix run — Grid math parameterized on `columns`, full Box style-prop parity (`hiddenFrom`/`visibleFrom`/12 missing props/logical-shorthand `mx`/`my`), `getBoxMod` kebab-cases mod keys, utility resolvers drop the `STANDARD_KEYS` allowlist, `rem` accepts px-strings, codegen emits `--heading-text-wrap`, `useRandomClassName` handles React 19 IDs, Paper border var scoped, SimpleGrid renames + selector specificity. See `mantine-master.md` § "Post-adaptation validation pass" for the full table.
+- ✅ **Validation pass 2 (4 evidence-based audits):** Four parallel agents produced runnable artifacts and caught 5 more real bugs:
+  - **V1 — CSS structural diff:** parser-based audit script (`packages/blocks/scripts/css-parity-audit.ts`) + parity test with allowlist. Found 28 IDENTICAL / 1 TOKEN_DIFF / 5 DECL_DIFF / 5 MISSING / 5 EXTRA across 14 blocks; fixed missing `--grid-column-gap`/`--grid-row-gap` defaults on `.sb-Grid-root` and missing `[dir="rtl"]` override on Text `truncate='start'`.
+  - **V2 — Factory parity:** enumerated 42 decision branches in `useStyles` + `useProps`; wrote 74 parity tests (one per branch) — 41/42 confirmed equivalent to Mantine. Fixed US-29: `undefined` CSS-variable values were not filtered from the merged style object (would have rendered the literal string "undefined" to DOM).
+  - **V3 — Codegen variable parity:** mapped 64/64 canonical Mantine vars to soribashi equivalents (100%); documented 288 intentional gaps (mostly Mantine's pre-computed color-variant vars which soribashi computes at render time via the intent resolver). Fixed silent `--breakpoint-*` emission gap that would have broken `visibility.css` at runtime.
+  - **V4 — Browser-parity smoke:** 46 Playwright computed-style tests across all 14 blocks; surfaced and led to fixing a systemic bug across 13 blocks where consumer's inline `style` prop overwrote `vars()` output (test: `packages/blocks/test/Box/wrapper-style-merge.test.tsx`).
 
 ### Deferred (acknowledged, not yet implemented)
 
