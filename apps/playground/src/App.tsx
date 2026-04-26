@@ -3,8 +3,10 @@ import { SoribashiProvider, Container, Group, Title } from '@soribashi/core';
 import { theme } from './theme/index.ts';
 import { ThemeLab } from './pages/ThemeLab.tsx';
 import { BlocksDemo } from './pages/BlocksDemo.tsx';
+import { Tenants } from './pages/Tenants.tsx';
+import { Button } from './components/Button/Button.tsx';
 
-type Page = 'theme-lab' | 'blocks';
+type Page = 'theme-lab' | 'blocks' | 'tenants';
 
 export function App() {
   const [page, setPage] = useState<Page>('theme-lab');
@@ -24,9 +26,42 @@ export function App() {
             <Group justify="between">
               <Title order={3}>Soribashi</Title>
               <Group>
-                <button onClick={() => setPage('theme-lab')}>Theme Lab</button>
-                <button onClick={() => setPage('blocks')}>Blocks</button>
-                <button onClick={() => setDark(!dark)}>{dark ? '☀ Light' : '☾ Dark'}</button>
+                <Button
+                  size="sm"
+                  intent="neutral"
+                  variant={page === 'theme-lab' ? 'filled' : 'subtle'}
+                  aria-current={page === 'theme-lab' ? 'page' : undefined}
+                  onClick={() => setPage('theme-lab')}
+                >
+                  Theme Lab
+                </Button>
+                <Button
+                  size="sm"
+                  intent="neutral"
+                  variant={page === 'blocks' ? 'filled' : 'subtle'}
+                  aria-current={page === 'blocks' ? 'page' : undefined}
+                  onClick={() => setPage('blocks')}
+                >
+                  Blocks
+                </Button>
+                <Button
+                  size="sm"
+                  intent="neutral"
+                  variant={page === 'tenants' ? 'filled' : 'subtle'}
+                  aria-current={page === 'tenants' ? 'page' : undefined}
+                  onClick={() => setPage('tenants')}
+                >
+                  Tenants
+                </Button>
+                <Button
+                  size="sm"
+                  intent="neutral"
+                  variant="outline"
+                  aria-pressed={dark}
+                  onClick={() => setDark(!dark)}
+                >
+                  {dark ? '☀ Light' : '☾ Dark'}
+                </Button>
               </Group>
             </Group>
           </Container>
@@ -35,6 +70,7 @@ export function App() {
         <main style={{ padding: '2rem 0' }}>
           {page === 'theme-lab' && <ThemeLab />}
           {page === 'blocks' && <BlocksDemo />}
+          {page === 'tenants' && <Tenants />}
         </main>
       </div>
     </SoribashiProvider>

@@ -1,4 +1,5 @@
 @import './generated/theme.css';
+@import './generated/tenants.css';
 
 @import '../../../packages/blocks/src/style.css';
 

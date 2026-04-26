@@ -14,8 +14,9 @@
     "format": "biome format . --write",
     "codegen": "bun run packages/codegen/bin/soribashi.ts build",
     "codegen:watch": "bun run packages/codegen/bin/soribashi.ts watch",
+    "codegen:tenants": "bun run --filter @soribashi/playground codegen:tenants",
     "dev:playground": "bun run --filter @soribashi/playground dev",
-    "dev": "bun run codegen && bun run dev:playground",
+    "dev": "bun run codegen && bun run codegen:tenants && bun run dev:playground",
     "build:playground": "bun run --filter @soribashi/playground build"
   },
   "devDependencies": {
