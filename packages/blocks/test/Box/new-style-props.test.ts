@@ -40,8 +40,8 @@ describe('new style props — padding inline axis (pis / pie)', () => {
 });
 
 describe('new style props — typography (ff / fs / tt / td)', () => {
-  it('ff="monospace" → fontFamily: monospace (identity)', () => {
-    expect(parse({ ff: 'monospace' }).inlineStyles.fontFamily).toBe('monospace');
+  it('ff="monospace" → fontFamily: var(--font-family-mono) via fontFamilyResolver', () => {
+    expect(parse({ ff: 'monospace' }).inlineStyles.fontFamily).toBe('var(--font-family-mono)');
   });
 
   it('fs="italic" → fontStyle: italic (identity)', () => {

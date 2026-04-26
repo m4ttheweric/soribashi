@@ -151,3 +151,18 @@ describe('getBoxMod', () => {
     expect(getBoxMod(undefined)).toEqual({});
   });
 });
+
+describe('ff resolver — fontFamily aliases', () => {
+  it('ff="mono" → fontFamily: var(--font-family-mono)', () => {
+    const result = parseStyleProps({ styleProps: { ff: 'mono' }, data: STYLE_PROPS_DATA, theme });
+    expect(result.inlineStyles.fontFamily).toBe('var(--font-family-mono)');
+  });
+  it('ff="heading" → fontFamily: var(--font-family-heading)', () => {
+    const result = parseStyleProps({ styleProps: { ff: 'heading' }, data: STYLE_PROPS_DATA, theme });
+    expect(result.inlineStyles.fontFamily).toBe('var(--font-family-heading)');
+  });
+  it('ff="serif" passes through', () => {
+    const result = parseStyleProps({ styleProps: { ff: 'serif' }, data: STYLE_PROPS_DATA, theme });
+    expect(result.inlineStyles.fontFamily).toBe('serif');
+  });
+});

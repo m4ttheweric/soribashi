@@ -17,6 +17,7 @@ import {
   rem,
 } from '../../utils/index.ts';
 import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
+import { fontFamilyResolver } from './resolvers/font-family-resolver.ts';
 
 const identity: StylePropResolver = (v) =>
   v === undefined || v === null ? undefined : String(v);
@@ -70,7 +71,7 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   bdrs: { property: 'borderRadius', resolver: getRadius as StylePropResolver },
 
   // Typography
-  ff: { property: 'fontFamily', resolver: identity },
+  ff: { property: 'fontFamily', resolver: fontFamilyResolver },
   fz: { property: 'fontSize', resolver: getFontSize as StylePropResolver },
   fw: { property: 'fontWeight', resolver: identity },
   lh: { property: 'lineHeight', resolver: getLineHeight as StylePropResolver },
