@@ -40,7 +40,7 @@ export interface ParsedStyleProps {
   hasResponsiveStyles: boolean;
   /** Static (non-responsive) styles to apply inline */
   inlineStyles: Record<string, string>;
-  /** Base styles from responsive props (the `base` breakpoint or single-value) */
+  /** Base styles from genuinely responsive props (the `base` breakpoint value when other breakpoints are also present) */
   styles: Record<string, string>;
   /** Per-media-query styles, keyed by full @media expression */
   media: Record<string, Record<string, string>>;
