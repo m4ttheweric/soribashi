@@ -192,6 +192,61 @@ describe('emitCss', () => {
   });
 });
 
+describe('emitCss with EmitCssOptions.cssVariablesResolver', () => {
+  it('appends `root` vars to the :root block', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, {
+      cssVariablesResolver: () => ({ root: { '--my-custom': 'red' } }),
+    });
+    expect(css).toContain('--my-custom: red;');
+    // Should be inside the :root block (matches scope), so before first .dark { ... }
+    const rootBlock = css.split('.dark')[0]!;
+    expect(rootBlock).toContain('--my-custom: red;');
+  });
+
+  it('appends `dark` vars to the .dark block', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, {
+      cssVariablesResolver: () => ({ dark: { '--my-custom-dark': 'blue' } }),
+    });
+    expect(css).toContain('--my-custom-dark: blue;');
+    const rootBlock = css.split('.dark')[0]!;
+    expect(rootBlock).not.toContain('--my-custom-dark:');
+  });
+
+  it('consumer var overrides default-emitted var on key conflict (later wins via cascade)', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, {
+      cssVariablesResolver: () => ({ root: { '--spacing-md': '99px' } }),
+    });
+    // Both lines exist in the :root block; the later one (consumer's) is the cascade winner.
+    const rootBlock = css.split('.dark')[0]!;
+    const lastIndex = rootBlock.lastIndexOf('--spacing-md:');
+    const lastLine = rootBlock.substring(lastIndex).split(';')[0]!
+    expect(lastLine).toBe('--spacing-md: 99px');
+  });
+
+  it('no resolver passed → emit output is identical to current behavior', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const cssA = emitCss(theme);
+    const cssB = emitCss(theme, {});
+    expect(cssA).toBe(cssB);
+  });
+
+  it('resolver receives the resolved theme', () => {
+    const theme = createTheme({ tokens: defaultTokens, name: 'my-theme' });
+    let received: { name?: string } | null = null;
+    emitCss(theme, {
+      cssVariablesResolver: (t) => {
+        received = t;
+        return {};
+      },
+    });
+    expect(received).not.toBeNull();
+    expect((received as { name?: string } | null)?.name).toBe('my-theme');
+  });
+});
+
 describe('emitCss with EmitCssOptions.removeDefaultVariables', () => {
   it('produces no token vars when theme exactly matches defaults', () => {
     const theme = createTheme({ tokens: defaultTokens });
