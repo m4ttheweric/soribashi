@@ -16,7 +16,7 @@ export interface BuildResult {
 export async function build(config: CodegenConfig): Promise<BuildResult> {
   const written: string[] = [];
 
-  await writeFileEnsureDir(config.output.css, emitCss(config.theme));
+  await writeFileEnsureDir(config.output.css, emitCss(config.theme, config.emit));
   written.push(config.output.css);
 
   if (config.output.tailwind) {

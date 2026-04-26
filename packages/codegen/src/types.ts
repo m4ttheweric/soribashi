@@ -17,6 +17,8 @@ export interface CodegenConfig {
   output: CodegenOutput;
   /** Glob patterns to watch in dev mode */
   watch?: string[];
+  /** Optional codegen knobs passed to emitCss. */
+  emit?: EmitCssOptions;
 }
 
 /**
