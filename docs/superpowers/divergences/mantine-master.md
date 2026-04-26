@@ -316,11 +316,11 @@ All files in scope of `docs/superpowers/specs/2026-04-25-mantine-validation-pass
 - **Mantine source:** `packages/@mantine/core/src/core/factory/polymorphic-factory.tsx` (commit 63dafbbf), line 44 (`Extended.extend = Component.extend`); also `factory.tsx` line 91 (`Extended.withProps = createWithProps(Component)`)
 - **Mantine behavior — `extend`:** In both `polymorphicFactory` and `factory`, the component created by `withProps(fixedProps)` receives `Extended.extend = Component.extend`. Callers can chain `Button.withProps({...}).extend({...})`.
 - **Mantine behavior — `withProps`:** At `factory.tsx:90`, `Extended.withProps = createWithProps(Component)` — the result of `withProps()` is itself a component that has a working `.withProps()` method, enabling double-wrap chains: `Button.withProps({...}).withProps({...})`.
-- **Soribashi previous behavior:** `makeWithProps` created a `forwardRef`-wrapped `Wrapped` component but did not copy `.extend` from `Base` and did not re-bind `.withProps` on the result. The `withProps()` result lacked both methods. The `extend` gap was first caught by Task 1.1 (`B4a` test); the `withProps` gap was surfaced by Task 1.2's unconditional P17c double-wrap test after the `extend` fix was applied.
-- **Soribashi new behavior:** `makeWithProps` now (1) copies `Base.extend` to `Wrapped.extend` when present (matching `polymorphic-factory.tsx:44`) and (2) sets `Wrapped.withProps = makeWithProps(Wrapped)` unconditionally (matching `factory.tsx:90`). Both fixes apply to all three callers: `factory.withProps`, `polymorphicComponent.withProps`, and `definePolymorphicComponent.withProps`.
-- **Classification:** `INCONSISTENCY` (factory/polymorphic itself had `extend` and `withProps`; the result of calling `withProps()` had neither) → aligned via TDD fix.
+- **Soribashi previous behavior:** `makeWithProps` created a `forwardRef`-wrapped `Wrapped` component but did not copy `.extend` from `Base` and did not re-bind `.withProps` on the result. The `withProps()` result lacked both methods. The `extend` gap was first caught by Task 1.1 (`B4a` test); the `withProps` gap was surfaced by Task 1.2's unconditional P17c double-wrap test after the `extend` fix was applied; confirmed again by Task 1.3's G5a–G5e tests.
+- **Soribashi new behavior:** `makeWithProps` now (1) copies `Base.extend` to `Wrapped.extend` when present (matching `polymorphic-factory.tsx:44`) and (2) sets `Wrapped.withProps = makeWithProps(Wrapped)` unconditionally (matching `factory.tsx:90`). Both fixes apply to all four callers: `factory.withProps`, `polymorphicComponent.withProps`, `definePolymorphicComponent.withProps`, and `defineGenericComponent.withProps`.
+- **Classification:** `INCONSISTENCY` (factory/polymorphic/generic itself had `extend` and `withProps`; the result of calling `withProps()` had neither) → aligned via TDD fix.
 - **Disposition:** Aligned
-- **Tests:** `packages/factory/test/factory-parity.test.tsx` — "B4a: withProps() result has an extend method"; `packages/factory/test/polymorphic-parity.test.tsx` — "P4a: polymorphicComponent.withProps() result has an extend method", "P17a: definePolymorphicComponent.withProps() result has an extend method", "P17c: double-wrapped withProps result also has extend"
+- **Tests:** `packages/factory/test/factory-parity.test.tsx` — "B4a: withProps() result has an extend method"; `packages/factory/test/polymorphic-parity.test.tsx` — "P4a: polymorphicComponent.withProps() result has an extend method", "P17a: definePolymorphicComponent.withProps() result has an extend method", "P17c: double-wrapped withProps result also has extend"; `packages/factory/test/generic-parity.test.tsx` — "G5a: withProps() result has an extend method", "G5c: withProps() result has a withProps method"
 
 ### `definePolymorphicComponent` — higher-level constructor vs Mantine's type-cast utilities
 
@@ -351,3 +351,43 @@ All files in scope of `docs/superpowers/specs/2026-04-25-mantine-validation-pass
 - **Reason for divergence:** (a) Token rename: `defaultComponent` → `defaultElement` is consistent with soribashi's `as` prop convention (prefer element-centric terminology). (b) Centralization: The default-element fallback belongs in the constructor, not scattered across every `ui` implementation.
 - **Disposition:** Keep soribashi's approach.
 - **Test:** `packages/factory/test/polymorphic-parity.test.tsx` — "P14a: renders defaultElement when as is not provided"
+
+### `defineGenericComponent` — constructor model vs Mantine's `genericFactory` type-cast
+
+- **File:** `packages/factory/src/define-generic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/factory.tsx` (`genericFactory` at line 99, commit 63dafbbf)
+- **Mantine behavior:** `genericFactory(ui)` is a 3-line wrapper: calls `factory(ui as any)` and re-casts the result to `Payload['signature'] & MantineComponentStaticProperties<Payload>`. No hook integration; callers must call `useProps`, `useStyles`, etc. manually inside their `ui` render function.
+- **Soribashi behavior:** `defineGenericComponent(config)` is a full constructor that integrates `useProps` + `useStyles` + `autoVars` inside the component body. Callers provide a high-level `config.render` callback that receives a fully-resolved `{ props, getStyles, ref }` context.
+- **Reason for divergence:** Same rationale as `definePolymorphicComponent` vs `polymorphicFactory`: soribashi's constructor model is more ergonomic — component authors express intent (config object) rather than plumbing (manual hook calls). The trade-off is reduced flexibility for exotic patterns, which can use the lower-level `factory()` escape hatch.
+- **Disposition:** Keep soribashi's constructor model.
+- **Test:** `packages/factory/test/generic-parity.test.tsx` — "G1: defineGenericComponent — constructor model" group
+
+### `defineGenericComponent` — `GenericComponentFn` type vs Mantine's `Payload['signature']`
+
+- **File:** `packages/factory/src/define-generic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/factory.tsx` (`FactoryPayload.signature?: any`, commit 63dafbbf)
+- **Mantine behavior:** The generic component signature is carried via `FactoryPayload.signature?: any` and re-applied via a type cast at the `genericFactory` call site (e.g., `signature: <Value extends Primitive = string>(props: RadioGroupProps<Value>) => JSX.Element`). The component itself is a plain function (Mantine does not use `forwardRef`), so `typeof result === 'function'`.
+- **Soribashi behavior:** `GenericComponentFn = <T>(props: any & React.RefAttributes<unknown>) => React.ReactElement | null`. The component is created with `forwardRef`, so `typeof result === 'object'` (a React.ForwardRefExoticComponent). The `TOwnPropsTemplate` type parameter on `defineGenericComponent<TOwnPropsTemplate>` serves as a documentation/IDE hint only — it is not used at runtime.
+- **Reason for divergence:** (1) Type-only difference in practice: both are renderable as JSX and callable. (2) The `typeof 'object'` consequence is an artifact of the `forwardRef` divergence (G2), which is intentional. Mantine's `genericFactory` approach requires callers to manually write the generic signature in `FactoryPayload.signature`; soribashi's approach encapsulates this by making the component's external type generic through `GenericComponentFn`.
+- **Disposition:** Keep soribashi's approach. Type-level only; no runtime behavior difference for callers.
+- **Test:** `packages/factory/test/generic-parity.test.tsx` — "G8: GenericComponentFn type — runtime shape"
+
+### `defineGenericComponent` — `classes` static unconditionally attached
+
+- **File:** `packages/factory/src/define-generic-component.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/factory.tsx` (commit 63dafbbf)
+- **Mantine behavior:** `ComponentClasses<Payload>` is a type-only construct — `{ classes: Record<string, string> }` when `Payload['stylesNames']` is a string. At runtime, `genericFactory` does not unconditionally attach a `classes` property; it flows from `factory()` which also doesn't set it.
+- **Soribashi behavior:** `defineGenericComponent` always sets `(Component as any).classes = config.classes`. Callers can read `Select.classes.root` to get the stable CSS class name without hardcoding strings.
+- **Reason for divergence:** Soribashi extension consistent with `definePolymorphicComponent` (already in ledger). The `classes` static provides stable class-name references, enabling consumers to target component selectors without hardcoding strings.
+- **Disposition:** Keep soribashi's extension.
+- **Test:** `packages/factory/test/generic-parity.test.tsx` — "G10: classes static attached to the component"
+
+### `makeWithProps` — stacks wrappers vs Mantine sharing the base component
+
+- **File:** `packages/factory/src/with-props.tsx`
+- **Mantine source:** `packages/@mantine/core/src/core/factory/factory.tsx` (`factory.tsx:90` — `Extended.withProps = createWithProps(Component)`, commit 63dafbbf)
+- **Mantine behavior:** `Extended.withProps = createWithProps(Component)` — Mantine passes the original `Component` (not `Extended`) to `createWithProps`. In a double-wrap chain `A.withProps({x:1}).withProps({x:2})`, the second `withProps` call still renders into the original `Component`, and `{x:1}` from the first level is not inherited — the second call's presets fully replace the first.
+- **Soribashi behavior:** `(Wrapped as any).withProps = makeWithProps(Wrapped)` — soribashi passes the WRAPPED component. Each level of wrapping stacks presets incrementally. In a double-wrap chain `A.withProps({x:1}).withProps({x:2})`, the second renders into the first wrapper, which renders into the original; `{x:2}` presets override `{x:1}` presets (but neither overrides explicit instance props). The undefined-filter means only truly undefined instance slots fall through to the next level.
+- **Reason for divergence:** Consequence of soribashi's undefined-filter design — the filter happens at each wrapper layer, so the preset-stacking approach is more natural. Observable difference only for 3+ levels of wrapping (exotic pattern); for the common 1- and 2-level cases, both approaches produce equivalent visible behavior.
+- **Disposition:** Keep soribashi's stacking approach.
+- **Test:** `packages/factory/test/generic-parity.test.tsx` — "G13: withProps stacking — preset accumulation"
