@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { SoribashiProvider } from '@soribashi/core';
 import { theme } from './theme/index.ts';
 import { TokenReview } from './pages/TokenReview.tsx';
+import { ScreenReplica } from './pages/ScreenReplica.tsx';
 
 type Page = 'tokens' | 'screen' | 'buttons';
 
@@ -39,7 +40,7 @@ export function App() {
 
         <main>
           {page === 'tokens' && <TokenReview />}
-          {page === 'screen' && <div style={{ padding: '2rem' }}>ScreenReplica added in task 0.9</div>}
+          {page === 'screen' && <ScreenReplica />}
           {page === 'buttons' && <div style={{ padding: '2rem' }}>ButtonMatrix added in task 1.7</div>}
         </main>
       </div>
