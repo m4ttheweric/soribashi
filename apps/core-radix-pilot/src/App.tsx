@@ -3,6 +3,7 @@ import { SoribashiProvider } from '@soribashi/core';
 import { theme } from './theme/index.ts';
 import { TokenReview } from './pages/TokenReview.tsx';
 import { ScreenReplica } from './pages/ScreenReplica.tsx';
+import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 
 type Page = 'tokens' | 'screen' | 'buttons';
 
@@ -41,7 +42,7 @@ export function App() {
         <main>
           {page === 'tokens' && <TokenReview />}
           {page === 'screen' && <ScreenReplica />}
-          {page === 'buttons' && <div style={{ padding: '2rem' }}>ButtonMatrix added in task 1.7</div>}
+          {page === 'buttons' && <ButtonMatrix />}
         </main>
       </div>
     </SoribashiProvider>
