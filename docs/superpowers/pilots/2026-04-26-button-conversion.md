@@ -48,6 +48,8 @@ CVI uses Radix Slot (`asChild` prop). Wave 1 uses soribashi's `definePolymorphic
 
 This is a meaningful API divergence — flag in the journal as a finding for design review.
 
+**CVI footgun:** `asChild` is silently ignored when combined with `isLoading`, `leftIcon`, or `rightIcon`. The implementation guard at `apps/core-radix-pilot/src/reference/core-radix-button/Button.tsx:144` reads `if (asChild && !isLoading && !leftIcon && !rightIcon)` — when any of those props is set, execution falls through to the regular `<button>` branch with no warning, no dev-mode log, no type error. The `as` prop replacement in Wave 1 avoids this class of bug because polymorphism is independent of icon/loading rendering — `<Button as="a" loading leftIcon={...}>` correctly renders an `<a>` with both leftIcon and a spinner.
+
 ## 2. Consolidated Button shape (Task 1.3)
 
 _Populated as recipe is authored._
