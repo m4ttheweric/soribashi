@@ -69,6 +69,10 @@ function emitTokenLines(lines: string[], tokens: ThemeTokens): void {
   for (const [family, scale] of Object.entries(tokens.colors).sort(byKey)) {
     for (const [shade, value] of Object.entries(scale).sort(byKey)) {
       lines.push(`  --color-${family}-${shade}: ${value};`);
+      const bare = stripHslWrapper(value);
+      if (bare !== null) {
+        lines.push(`  --color-${family}-${shade}-hsl: ${bare};`);
+      }
     }
   }
 
@@ -136,6 +140,10 @@ function emitDarkTokenLines(lines: string[], dark: PartialThemeTokens): void {
       for (const [shade, value] of Object.entries(scale ?? {}).sort(byKey)) {
         if (value !== undefined) {
           lines.push(`  --color-${family}-${shade}: ${value};`);
+          const bare = stripHslWrapper(value);
+          if (bare !== null) {
+            lines.push(`  --color-${family}-${shade}-hsl: ${bare};`);
+          }
         }
       }
     }
@@ -245,4 +253,23 @@ function semanticToVar(ref: string): string {
 
 function byKey([a]: [string, unknown], [b]: [string, unknown]): number {
   return a.localeCompare(b);
+}
+
+/**
+ * Extracts bare HSL components from an `hsl(...)` wrapped color string.
+ *   'hsl(221.2 83.2% 53.3%)'        → '221.2 83.2% 53.3%'
+ *   'hsl(221.2, 83.2%, 53.3%)'      → '221.2, 83.2%, 53.3%'  (legacy syntax)
+ *   'hsl(221 83% 53% / 0.5)'        → '221 83% 53% / 0.5'
+ *
+ * Returns `null` for non-hsl values (rgb, hex, named colors, var(), currentColor, etc.)
+ * — those values can't usefully participate in Tailwind's <alpha-value> pattern.
+ *
+ * The `-hsl` companion var lets consumers use `hsl(var(--color-X-Y-hsl) / 0.5)`
+ * for translucency and lets Tailwind's alpha-value utility classes work via
+ * `hsl(var(--color-X-Y-hsl) / <alpha-value>)`. The canonical wrapped var
+ * (`--color-X-Y`) remains the default for direct CSS consumption.
+ */
+function stripHslWrapper(value: string): string | null {
+  const match = value.match(/^hsl\((.*)\)$/i);
+  return match && match[1] !== undefined ? match[1].trim() : null;
 }

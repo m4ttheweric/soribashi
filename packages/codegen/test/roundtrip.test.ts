@@ -50,7 +50,7 @@ describe('token roundtrip integration', () => {
 
     const tw = readFileSync(tailwindPath, 'utf-8');
     expect(tw).toContain('brand:');
-    expect(tw).toContain("'500': 'hsl(var(--color-brand-500) / <alpha-value>)'");
+    expect(tw).toContain("'500': 'hsl(var(--color-brand-500-hsl) / <alpha-value>)'");
   });
 
   it('a removed color family disappears from outputs', async () => {

@@ -31,9 +31,9 @@ describe('emitTailwindV3', () => {
 
     const config = emitTailwindV3(theme);
     expect(config).toContain('primary: {');
-    expect(config).toContain("'500': 'hsl(var(--color-primary-500) / <alpha-value>)'");
+    expect(config).toContain("'500': 'hsl(var(--color-primary-500-hsl) / <alpha-value>)'");
     expect(config).toContain('brand: {');
-    expect(config).toContain("'500': 'hsl(var(--color-brand-500) / <alpha-value>)'");
+    expect(config).toContain("'500': 'hsl(var(--color-brand-500-hsl) / <alpha-value>)'");
   });
 
   it('maps radius and spacing to var references (without alpha pattern)', () => {

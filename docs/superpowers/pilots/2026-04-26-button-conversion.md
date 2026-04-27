@@ -84,14 +84,21 @@ _Populated as recipe is authored._
 
 The four entries below aggregate gaps surfaced during Phase 1 (Tasks 1.2 – 1.8). The codegen `hsl(...)` wrapper gap is the Button-recipe-side mirror of token-consolidation journal § 6's third bullet — cross-referenced rather than duplicated. CVI's `asChild` footgun (Task 1.2) is **not** a soribashi-framework gap and stays in § 1.4 above as a CVI finding.
 
-### Gap 1: Codegen emits `hsl(...)`-wrapped var values
+### Gap 1: Codegen emits `hsl(...)`-wrapped var values — RESOLVED (post-Wave-1)
 
-**Severity:** important
+**Severity:** ~~important~~ → **resolved**
 **Where surfaced:** Phase 0 Task 0.8 (TokenReview review); recurred as a tax in Phase 1 Tasks 1.5 (Button.css), 1.6 (ButtonMatrix), 1.8 (Playwright resolver)
 **What we needed:** CSS vars whose values are bare HSL components (e.g. `--color-primary-500: 221.2 83.2% 53.3%;`) so consumer code can write `hsl(var(--color-primary-500))` for direct use and `hsl(var(--color-primary-500) / <alpha-value>)` for Tailwind alpha utilities.
-**What soribashi has today:** `packages/codegen/src/emit-css.ts` emits each var value as a complete `hsl(...)` string (`--color-primary-500: hsl(221.2 83.2% 53.3%);`). Consumers that re-wrap with `hsl(var(--x))` produce invalid `hsl(hsl(...))` which resolves transparent. The Tailwind `<alpha-value>` pattern is unreachable from this format.
-**Worked around by:** Every Button-pilot consumer (`Button.css`, `ButtonMatrix.css`, the Playwright `getComputedStyle` resolver) writes `var(--color-...)` directly without `hsl()` wrapping. Works for opaque references; does not enable `bg-primary-500/50`-style alpha utilities.
-**Recommended resolution for soribashi:** Add a codegen emit mode (default it on after migration) that produces bare HSL components. Cross-references token-consolidation journal § 6 ("Codegen emits `hsl(...)`-wrapped var values") and the spec's C → A bridge in `docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md` § 3.
+**What soribashi had:** `packages/codegen/src/emit-css.ts` emitted each var value as a complete `hsl(...)` string. Consumers re-wrapping with `hsl(var(--x))` produced invalid `hsl(hsl(...))` resolving transparent. The Tailwind `<alpha-value>` pattern was unreachable from this format.
+**Worked around by (during Wave 1):** Every Button-pilot consumer (`Button.css`, `ButtonMatrix.css`, the Playwright `getComputedStyle` resolver) wrote `var(--color-...)` directly without `hsl()` wrapping. Worked for opaque references; did not enable `bg-primary-500/50`-style alpha utilities.
+
+**Resolution shipped (post-Wave-1):** Implemented as a **dual-emit** pattern rather than the bare-only switch originally proposed. The bare-only approach would have broken ~146 existing consumers across `packages/blocks` (Paper.css), `get-theme-color.ts`, and the Mantine-adapted code that all assume `--color-X-Y` resolves to a usable color. The codegen now emits **both** the canonical wrapped var AND a `-hsl` bare-component companion:
+- `--color-primary-500: hsl(221.2 83.2% 53.3%);` (canonical, unchanged)
+- `--color-primary-500-hsl: 221.2 83.2% 53.3%;` (companion, for alpha use)
+
+The Tailwind config's `<alpha-value>` pattern uses the `-hsl` companion: `'500': 'hsl(var(--color-primary-500-hsl) / <alpha-value>)'`. **Zero breaking changes** to existing consumers. Tailwind alpha utilities (`bg-primary-500/50`) now work correctly. Implementation: `packages/codegen/src/emit-css.ts` (`stripHslWrapper` helper + dual-emit in `emitTokenLines` and `emitDarkTokenLines`); `packages/codegen/src/emit-tailwind-v3.ts` (companion-var reference). Tests added in `packages/codegen/test/emit-css.test.ts`. The C → A bridge in the playbook is unblocked.
+
+**Implication for future waves:** Wave 2-4 recipes can use either pattern. Direct opaque colors stay simple (`var(--color-X-Y)`); alpha-needing surfaces (modal scrim, focus rings, hover tints) use the `-hsl` companion (`hsl(var(--color-X-Y-hsl) / 0.4)`) or Tailwind alpha utilities (`bg-X-Y/40`).
 
 ### Gap 2: `definePolymorphicComponent` `render` does not strip styles-API props
 
@@ -270,7 +277,11 @@ These feed Phase 2 Task 2.3 (the playbook's § 2.1 — Pure styled primitive aut
 
 3. **Style approach: CSS data-attribute rules over local CSS vars.** For each (variant, intent) pair, write one selector that sets 4-5 local `--cr-{component}-*` vars (bg, fg, border, hover-bg, active-bg). The root rule pulls from those vars. Avoid Tailwind class concatenation across the matrix — 30 cells of `cva` produces a class-name explosion that's hard to inspect in DevTools and impossible for designers to edit. Wave 1's Button.css collapses 30 cells to one root rule + 30 four-line override blocks (§ 3 Easy + § 3 Surprises).
 
-4. **Token consumption: direct `var(--color-...)`, never `hsl(var(--color-...))`.** The codegen wraps every var value in `hsl(...)` already, so re-wrapping resolves transparent (Gap 1). The `bg-primary-500/50` Tailwind alpha-utility pattern is unreachable from the current emit format; until the codegen ships a bare-HSL emit mode, write opacity as a separate CSS rule. **Never hand-set hex; never reference legacy fragmented tokens.** Hover and active states walk one step deeper in the scale (500 → 600 → 700 for filled; 50 → 100 → 200 for subtle).
+4. **Token consumption: pick the right var by use case.** Codegen emits two vars per color (Gap 1, RESOLVED post-Wave-1):
+    - **Canonical wrapped** (`--color-primary-500`): use directly for opaque chrome — `background: var(--color-primary-500)`. **Don't** wrap in `hsl()` — that produces `hsl(hsl(...))` and resolves transparent.
+    - **Bare-component companion** (`--color-primary-500-hsl`): use when you need alpha — `background: hsl(var(--color-primary-500-hsl) / 0.4)`. Tailwind alpha utilities (`bg-primary-500/50`, `text-success-700/80`, `border-danger-500/30`) work out of the box because the generated config wires the `-hsl` companion into the `<alpha-value>` pattern.
+
+    **Never hand-set hex; never reference legacy fragmented tokens.** Hover and active states either walk one step deeper in the scale (500 → 600 → 700 for filled; 50 → 100 → 200 for subtle) OR use a tinted alpha overlay (`hsl(var(--color-primary-500-hsl) / 0.1)` for subtle hover lift).
 
 5. **State props: `disabled`, `loading`, plus component-specific (`fullWidth` for Button).** Loading must propagate `disabled` and suppress `onClick` *in the recipe* — don't push that to the consumer. **Polymorphic + disabled:** when `as` is non-button, use `aria-disabled={true}` + `e.preventDefault()` for click suppression; the HTML `disabled` attribute is button-only (anchor tags ignore it). Wave 1's Button does both branches correctly — copy the pattern.
 

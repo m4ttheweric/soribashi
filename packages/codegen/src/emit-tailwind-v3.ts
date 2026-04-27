@@ -20,8 +20,11 @@ export function emitTailwindV3(theme: ResolvedTheme): string {
       lines.push(`      ${family}: {`);
       const shades = Object.entries(scale).sort(byKey);
       for (const [shade, _] of shades) {
+        // Use the bare-component companion var (`-hsl` suffix) so Tailwind's
+        // `<alpha-value>` substitution produces valid CSS. The canonical
+        // wrapped var (`--color-${family}-${shade}`) remains for direct CSS use.
         lines.push(
-          `        '${shade}': 'hsl(var(--color-${family}-${shade}) / <alpha-value>)',`,
+          `        '${shade}': 'hsl(var(--color-${family}-${shade}-hsl) / <alpha-value>)',`,
         );
       }
       lines.push('      },');

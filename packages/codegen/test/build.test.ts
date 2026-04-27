@@ -60,7 +60,7 @@ describe('build', () => {
     expect(existsSync(configPath)).toBe(true);
     const content = readFileSync(configPath, 'utf-8');
     expect(content).toContain('module.exports');
-    expect(content).toContain('hsl(var(--color-primary-500)');
+    expect(content).toContain('hsl(var(--color-primary-500-hsl)');
   });
 
   it('writes Tailwind v4 css when mode=v4', async () => {
