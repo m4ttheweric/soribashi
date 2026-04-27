@@ -27,118 +27,118 @@ All HSL values are written as raw `H S% L%` triples (no `hsl()` wrapper) — tha
 
 Rows are grouped by flavor; within each flavor, by source-file declaration order.
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `--background` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | shad-* |
-| `--foreground` | `222.2 84% 4.9%` | `210 40% 98%` | `claimview-islands.css` | shad-* |
-| `--card` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | shad-* |
-| `--card-foreground` | `222.2 84% 4.9%` | `210 40% 98%` | `claimview-islands.css` | shad-* |
-| `--popover` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | shad-* |
-| `--popover-foreground` | `222.2 84% 4.9%` | `210 40% 98%` | `claimview-islands.css` | shad-* |
-| `--primary` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` | `claimview-islands.css` | shad-* |
-| `--primary-foreground` | `210 40% 98%` | `222.2 47.4% 11.2%` | `claimview-islands.css` | shad-* |
-| `--secondary` | `210 40% 96.1%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* |
-| `--secondary-foreground` | `222.2 47.4% 11.2%` | `210 40% 98%` | `claimview-islands.css` | shad-* |
-| `--muted` | `210 40% 96.1%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* |
-| `--muted-foreground` | `215.4 16.3% 46.9%` | `215 20.2% 65.1%` | `claimview-islands.css` | shad-* |
-| `--accent` | `210 40% 96.1%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* |
-| `--accent-foreground` | `222.2 47.4% 11.2%` | `210 40% 98%` | `claimview-islands.css` | shad-* |
-| `--destructive` | `0 84.2% 60.2%` | `0 62.8% 30.6%` | `claimview-islands.css` | shad-* |
-| `--destructive-foreground` | `210 40% 98%` | `210 40% 98%` | `claimview-islands.css` | shad-* |
-| `--border` | `214.3 31.8% 91.4%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* |
-| `--input` | `214.3 31.8% 91.4%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* |
-| `--ring` | `221.2 83.2% 53.3%` | `224.3 76.3% 48%` | `claimview-islands.css` | shad-* |
-| `--radius` | `0.5rem` | — *(no override; light value reused)* | `claimview-islands.css` | shad-* |
-| `--chart-1` | `12 76% 61%` | `220 70% 50%` | `claimview-islands.css` | chart |
-| `--chart-2` | `173 58% 39%` | `160 60% 45%` | `claimview-islands.css` | chart |
-| `--chart-3` | `197 37% 24%` | `30 80% 55%` | `claimview-islands.css` | chart |
-| `--chart-4` | `43 74% 66%` | `280 65% 60%` | `claimview-islands.css` | chart |
-| `--chart-5` | `27 87% 67%` | `340 75% 55%` | `claimview-islands.css` | chart |
-| `--color-primary` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-50` | `240 100% 98%` | `217 91% 15%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-100` | `240 100% 96%` | `217 91% 20%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-200` | `240 100% 92%` | `217 91% 25%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-300` | `240 100% 85%` | `217 91% 30%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-400` | `240 100% 75%` | `217 91% 40%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-500` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-600` | `221.2 83.2% 45%` | `217 91% 65%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-700` | `221.2 83.2% 38%` | `217 91% 70%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-800` | `221.2 83.2% 30%` | `217 91% 75%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-900` | `221.2 83.2% 22%` | `217 91% 80%` | `claimview-islands.css` | Figma scale |
-| `--color-primary-950` | `221.2 83.2% 15%` | `217 91% 85%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-50` | `210 40% 98%` | `222 47% 11%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-100` | `210 40% 96%` | `217 33% 17%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-200` | `214 32% 91%` | `215 25% 27%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-300` | `213 27% 84%` | `215 19% 35%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-400` | `215 20% 65%` | `215 16% 47%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-500` | `215 16% 47%` | `215 20% 65%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-600` | `215 19% 35%` | `213 27% 84%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-700` | `215 25% 27%` | `214 32% 91%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-800` | `217 33% 17%` | `210 40% 96%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-900` | `222 47% 11%` | `210 40% 98%` | `claimview-islands.css` | Figma scale |
-| `--color-neutral-950` | `222 84% 5%` | `0 0% 100%` | `claimview-islands.css` | Figma scale |
-| `--color-success` | `142 76% 36%` | `142 71% 45%` | `claimview-islands.css` | Figma scale |
-| `--color-success-50` | `138 76% 97%` | `145 80% 10%` | `claimview-islands.css` | Figma scale |
-| `--color-success-100` | `141 84% 93%` | `144 61% 20%` | `claimview-islands.css` | Figma scale |
-| `--color-success-200` | `141 79% 85%` | `143 62% 20%` | `claimview-islands.css` | Figma scale |
-| `--color-success-300` | `142 77% 73%` | `142 64% 24%` | `claimview-islands.css` | Figma scale |
-| `--color-success-400` | `142 71% 45%` | `142 72% 29%` | `claimview-islands.css` | Figma scale |
-| `--color-success-500` | `142 76% 36%` | `142 71% 45%` | `claimview-islands.css` | Figma scale |
-| `--color-success-600` | `142 72% 29%` | `142 77% 73%` | `claimview-islands.css` | Figma scale |
-| `--color-success-700` | `142 64% 24%` | `141 79% 85%` | `claimview-islands.css` | Figma scale |
-| `--color-success-800` | `143 62% 20%` | `141 84% 93%` | `claimview-islands.css` | Figma scale |
-| `--color-success-900` | `144 61% 20%` | `138 76% 97%` | `claimview-islands.css` | Figma scale |
-| `--color-success-950` | `145 80% 10%` | `138 100% 99%` | `claimview-islands.css` | Figma scale |
-| `--color-warning` | `38 92% 50%` | `49 98% 48%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-50` | `48 96% 89%` | `26 83% 14%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-100` | `48 96% 77%` | `22 78% 26%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-200` | `48 97% 63%` | `23 83% 31%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-300` | `49 98% 48%` | `26 90% 37%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-400` | `49 96% 47%` | `32 95% 44%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-500` | `38 92% 50%` | `49 98% 48%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-600` | `32 95% 44%` | `49 97% 63%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-700` | `26 90% 37%` | `48 97% 77%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-800` | `23 83% 31%` | `48 96% 89%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-900` | `22 78% 26%` | `48 100% 96%` | `claimview-islands.css` | Figma scale |
-| `--color-warning-950` | `26 83% 14%` | `48 100% 98%` | `claimview-islands.css` | Figma scale |
-| `--color-error` | `0 84% 60%` | `0 72% 51%` | `claimview-islands.css` | Figma scale |
-| `--color-error-50` | `0 93% 94%` | `0 75% 15%` | `claimview-islands.css` | Figma scale |
-| `--color-error-100` | `0 96% 89%` | `0 63% 31%` | `claimview-islands.css` | Figma scale |
-| `--color-error-200` | `0 97% 85%` | `0 70% 35%` | `claimview-islands.css` | Figma scale |
-| `--color-error-300` | `0 94% 82%` | `0 74% 42%` | `claimview-islands.css` | Figma scale |
-| `--color-error-400` | `0 91% 71%` | `0 72% 51%` | `claimview-islands.css` | Figma scale |
-| `--color-error-500` | `0 84% 60%` | `0 84% 60%` | `claimview-islands.css` | Figma scale |
-| `--color-error-600` | `0 72% 51%` | `0 91% 71%` | `claimview-islands.css` | Figma scale |
-| `--color-error-700` | `0 74% 42%` | `0 94% 82%` | `claimview-islands.css` | Figma scale |
-| `--color-error-800` | `0 70% 35%` | `0 97% 85%` | `claimview-islands.css` | Figma scale |
-| `--color-error-900` | `0 63% 31%` | `0 96% 89%` | `claimview-islands.css` | Figma scale |
-| `--color-error-950` | `0 75% 15%` | `0 93% 94%` | `claimview-islands.css` | Figma scale |
-| `--color-info` | `199 89% 48%` | `188 86% 53%` | `claimview-islands.css` | Figma scale |
-| `--color-info-50` | `183 100% 96%` | `204 80% 16%` | `claimview-islands.css` | Figma scale |
-| `--color-info-100` | `185 96% 90%` | `202 80% 24%` | `claimview-islands.css` | Figma scale |
-| `--color-info-200` | `186 94% 81%` | `201 90% 27%` | `claimview-islands.css` | Figma scale |
-| `--color-info-300` | `187 92% 69%` | `201 96% 32%` | `claimview-islands.css` | Figma scale |
-| `--color-info-400` | `188 86% 53%` | `200 98% 39%` | `claimview-islands.css` | Figma scale |
-| `--color-info-500` | `199 89% 48%` | `188 86% 53%` | `claimview-islands.css` | Figma scale |
-| `--color-info-600` | `200 98% 39%` | `187 92% 69%` | `claimview-islands.css` | Figma scale |
-| `--color-info-700` | `201 96% 32%` | `186 94% 81%` | `claimview-islands.css` | Figma scale |
-| `--color-info-800` | `201 90% 27%` | `185 96% 90%` | `claimview-islands.css` | Figma scale |
-| `--color-info-900` | `202 80% 24%` | `183 100% 96%` | `claimview-islands.css` | Figma scale |
-| `--color-info-950` | `204 80% 16%` | `183 100% 98%` | `claimview-islands.css` | Figma scale |
-| `--color-accent-feedback` | `300 40% 55%` | `300 45% 68%` | `claimview-islands.css` | direct semantic |
-| `--color-background` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | direct semantic |
-| `--color-background-secondary` | `210 40% 98%` | `217 33% 17%` | `claimview-islands.css` | direct semantic |
-| `--color-background-tertiary` | `210 40% 96%` | `215 25% 27%` | `claimview-islands.css` | direct semantic |
-| `--color-border-islands` | `214 32% 91%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | direct semantic |
-| `--color-text-primary` | `222 47% 11%` | `210 40% 98%` | `claimview-islands.css` | direct semantic |
-| `--color-text-secondary` | `215 19% 35%` | `213 27% 84%` | `claimview-islands.css` | direct semantic |
-| `--color-text-tertiary` | `215 20% 65%` | `215 20% 65%` | `claimview-islands.css` | direct semantic |
-| `--color-text-disabled` | `213 27% 84%` | `215 19% 35%` | `claimview-islands.css` | direct semantic |
-| `--cvi-search-highlight-bg` | `#fdd835` | `#f9a825` | `claimview-islands.css` (declared on `:root` and `.dark`, not on `.claim-view-islands`) | other |
-| `--cvi-search-highlight-text` | `black` | `black` | `claimview-islands.css` (`:root` / `.dark`) | other |
-| `--cvi-search-active-bg` | `#ff6d00` | `#e65100` | `claimview-islands.css` (`:root` / `.dark`) | other |
-| `--cvi-search-active-text` | `white` | `white` | `claimview-islands.css` (`:root` / `.dark`) | other |
-| `--glow-color` | _(not declared as a default; consumed by `.glowing` keyframe with fallback `currentColor`; set dynamically via inline style from JS)_ | — | `claimview-islands.css` (referenced inside `@keyframes glow`) | other |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `--background` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | shad-* | hack |
+| `--foreground` | `222.2 84% 4.9%` | `210 40% 98%` | `claimview-islands.css` | shad-* | hack |
+| `--card` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | shad-* | hack |
+| `--card-foreground` | `222.2 84% 4.9%` | `210 40% 98%` | `claimview-islands.css` | shad-* | hack |
+| `--popover` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | shad-* | hack |
+| `--popover-foreground` | `222.2 84% 4.9%` | `210 40% 98%` | `claimview-islands.css` | shad-* | hack |
+| `--primary` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` | `claimview-islands.css` | shad-* | hack |
+| `--primary-foreground` | `210 40% 98%` | `222.2 47.4% 11.2%` | `claimview-islands.css` | shad-* | hack |
+| `--secondary` | `210 40% 96.1%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* | hack |
+| `--secondary-foreground` | `222.2 47.4% 11.2%` | `210 40% 98%` | `claimview-islands.css` | shad-* | hack |
+| `--muted` | `210 40% 96.1%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* | hack |
+| `--muted-foreground` | `215.4 16.3% 46.9%` | `215 20.2% 65.1%` | `claimview-islands.css` | shad-* | hack |
+| `--accent` | `210 40% 96.1%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* | hack |
+| `--accent-foreground` | `222.2 47.4% 11.2%` | `210 40% 98%` | `claimview-islands.css` | shad-* | hack |
+| `--destructive` | `0 84.2% 60.2%` | `0 62.8% 30.6%` | `claimview-islands.css` | shad-* | hack |
+| `--destructive-foreground` | `210 40% 98%` | `210 40% 98%` | `claimview-islands.css` | shad-* | hack |
+| `--border` | `214.3 31.8% 91.4%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* | hack |
+| `--input` | `214.3 31.8% 91.4%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | shad-* | hack |
+| `--ring` | `221.2 83.2% 53.3%` | `224.3 76.3% 48%` | `claimview-islands.css` | shad-* | hack |
+| `--radius` | `0.5rem` | — *(no override; light value reused)* | `claimview-islands.css` | shad-* | hack |
+| `--chart-1` | `12 76% 61%` | `220 70% 50%` | `claimview-islands.css` | chart | deferred |
+| `--chart-2` | `173 58% 39%` | `160 60% 45%` | `claimview-islands.css` | chart | deferred |
+| `--chart-3` | `197 37% 24%` | `30 80% 55%` | `claimview-islands.css` | chart | deferred |
+| `--chart-4` | `43 74% 66%` | `280 65% 60%` | `claimview-islands.css` | chart | deferred |
+| `--chart-5` | `27 87% 67%` | `340 75% 55%` | `claimview-islands.css` | chart | deferred |
+| `--color-primary` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` | `claimview-islands.css` | Figma scale | duplication → `--color-primary-500` |
+| `--color-primary-50` | `240 100% 98%` | `217 91% 15%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-100` | `240 100% 96%` | `217 91% 20%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-200` | `240 100% 92%` | `217 91% 25%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-300` | `240 100% 85%` | `217 91% 30%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-400` | `240 100% 75%` | `217 91% 40%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-500` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-600` | `221.2 83.2% 45%` | `217 91% 65%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-700` | `221.2 83.2% 38%` | `217 91% 70%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-800` | `221.2 83.2% 30%` | `217 91% 75%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-900` | `221.2 83.2% 22%` | `217 91% 80%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-primary-950` | `221.2 83.2% 15%` | `217 91% 85%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-50` | `210 40% 98%` | `222 47% 11%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-100` | `210 40% 96%` | `217 33% 17%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-200` | `214 32% 91%` | `215 25% 27%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-300` | `213 27% 84%` | `215 19% 35%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-400` | `215 20% 65%` | `215 16% 47%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-500` | `215 16% 47%` | `215 20% 65%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-600` | `215 19% 35%` | `213 27% 84%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-700` | `215 25% 27%` | `214 32% 91%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-800` | `217 33% 17%` | `210 40% 96%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-900` | `222 47% 11%` | `210 40% 98%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-neutral-950` | `222 84% 5%` | `0 0% 100%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success` | `142 76% 36%` | `142 71% 45%` | `claimview-islands.css` | Figma scale | duplication → `--color-success-500` |
+| `--color-success-50` | `138 76% 97%` | `145 80% 10%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-100` | `141 84% 93%` | `144 61% 20%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-200` | `141 79% 85%` | `143 62% 20%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-300` | `142 77% 73%` | `142 64% 24%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-400` | `142 71% 45%` | `142 72% 29%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-500` | `142 76% 36%` | `142 71% 45%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-600` | `142 72% 29%` | `142 77% 73%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-700` | `142 64% 24%` | `141 79% 85%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-800` | `143 62% 20%` | `141 84% 93%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-900` | `144 61% 20%` | `138 76% 97%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-success-950` | `145 80% 10%` | `138 100% 99%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning` | `38 92% 50%` | `49 98% 48%` | `claimview-islands.css` | Figma scale | duplication → `--color-warning-500` |
+| `--color-warning-50` | `48 96% 89%` | `26 83% 14%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-100` | `48 96% 77%` | `22 78% 26%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-200` | `48 97% 63%` | `23 83% 31%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-300` | `49 98% 48%` | `26 90% 37%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-400` | `49 96% 47%` | `32 95% 44%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-500` | `38 92% 50%` | `49 98% 48%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-600` | `32 95% 44%` | `49 97% 63%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-700` | `26 90% 37%` | `48 97% 77%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-800` | `23 83% 31%` | `48 96% 89%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-900` | `22 78% 26%` | `48 100% 96%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-warning-950` | `26 83% 14%` | `48 100% 98%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error` | `0 84% 60%` | `0 72% 51%` | `claimview-islands.css` | Figma scale | duplication → `--color-error-500` |
+| `--color-error-50` | `0 93% 94%` | `0 75% 15%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-100` | `0 96% 89%` | `0 63% 31%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-200` | `0 97% 85%` | `0 70% 35%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-300` | `0 94% 82%` | `0 74% 42%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-400` | `0 91% 71%` | `0 72% 51%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-500` | `0 84% 60%` | `0 84% 60%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-600` | `0 72% 51%` | `0 91% 71%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-700` | `0 74% 42%` | `0 94% 82%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-800` | `0 70% 35%` | `0 97% 85%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-900` | `0 63% 31%` | `0 96% 89%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-error-950` | `0 75% 15%` | `0 93% 94%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info` | `199 89% 48%` | `188 86% 53%` | `claimview-islands.css` | Figma scale | duplication → `--color-info-500` |
+| `--color-info-50` | `183 100% 96%` | `204 80% 16%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-100` | `185 96% 90%` | `202 80% 24%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-200` | `186 94% 81%` | `201 90% 27%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-300` | `187 92% 69%` | `201 96% 32%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-400` | `188 86% 53%` | `200 98% 39%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-500` | `199 89% 48%` | `188 86% 53%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-600` | `200 98% 39%` | `187 92% 69%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-700` | `201 96% 32%` | `186 94% 81%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-800` | `201 90% 27%` | `185 96% 90%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-900` | `202 80% 24%` | `183 100% 96%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-info-950` | `204 80% 16%` | `183 100% 98%` | `claimview-islands.css` | Figma scale | signal |
+| `--color-accent-feedback` | `300 40% 55%` | `300 45% 68%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-background` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-background-secondary` | `210 40% 98%` | `217 33% 17%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-background-tertiary` | `210 40% 96%` | `215 25% 27%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-border-islands` | `214 32% 91%` | `217.2 32.6% 17.5%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-text-primary` | `222 47% 11%` | `210 40% 98%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-text-secondary` | `215 19% 35%` | `213 27% 84%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-text-tertiary` | `215 20% 65%` | `215 20% 65%` | `claimview-islands.css` | direct semantic | signal |
+| `--color-text-disabled` | `213 27% 84%` | `215 19% 35%` | `claimview-islands.css` | direct semantic | signal |
+| `--cvi-search-highlight-bg` | `#fdd835` | `#f9a825` | `claimview-islands.css` (declared on `:root` and `.dark`, not on `.claim-view-islands`) | other | deferred |
+| `--cvi-search-highlight-text` | `black` | `black` | `claimview-islands.css` (`:root` / `.dark`) | other | deferred |
+| `--cvi-search-active-bg` | `#ff6d00` | `#e65100` | `claimview-islands.css` (`:root` / `.dark`) | other | deferred |
+| `--cvi-search-active-text` | `white` | `white` | `claimview-islands.css` (`:root` / `.dark`) | other | deferred |
+| `--glow-color` | _(not declared as a default; consumed by `.glowing` keyframe with fallback `currentColor`; set dynamically via inline style from JS)_ | — | `claimview-islands.css` (referenced inside `@keyframes glow`) | other | deferred |
 
 CSS-var declaration count sanity check: `grep -c "^    --" claimview-islands.css` returns **209** lines, which matches **104 declarations × 2 modes (light + dark) + 1 light-only (`--radius`)** = 209. The four `--cvi-search-*` vars are declared at the `:root` / `.dark` selectors with a different indentation and are not part of the `^    --` count.
 
@@ -150,208 +150,208 @@ Row order mirrors `tailwind.config.js` source order — `DEFAULT` is interleaved
 
 #### 1.2.1 `colors.shad.*` (shad-* alias group)
 
-| Token name (Tailwind path) | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.shad.background` | `hsl(var(--background) / <alpha-value>)` ↳ underlies `--background` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.foreground` | `hsl(var(--foreground) / <alpha-value>)` ↳ underlies `--foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.card` | `hsl(var(--card) / <alpha-value>)` ↳ underlies `--card` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.card-foreground` | `hsl(var(--card-foreground) / <alpha-value>)` ↳ underlies `--card-foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.popover` | `hsl(var(--popover) / <alpha-value>)` ↳ underlies `--popover` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.popover-foreground` | `hsl(var(--popover-foreground) / <alpha-value>)` ↳ underlies `--popover-foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.primary` | `hsl(var(--primary) / <alpha-value>)` ↳ underlies `--primary` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.primary-foreground` | `hsl(var(--primary-foreground) / <alpha-value>)` ↳ underlies `--primary-foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.secondary` | `hsl(var(--secondary) / <alpha-value>)` ↳ underlies `--secondary` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.secondary-foreground` | `hsl(var(--secondary-foreground) / <alpha-value>)` ↳ underlies `--secondary-foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.muted` | `hsl(var(--muted) / <alpha-value>)` ↳ underlies `--muted` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.muted-foreground` | `hsl(var(--muted-foreground) / <alpha-value>)` ↳ underlies `--muted-foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.accent` | `hsl(var(--accent) / <alpha-value>)` ↳ underlies `--accent` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.accent-foreground` | `hsl(var(--accent-foreground) / <alpha-value>)` ↳ underlies `--accent-foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.destructive` | `hsl(var(--destructive) / <alpha-value>)` ↳ underlies `--destructive` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.destructive-foreground` | `hsl(var(--destructive-foreground) / <alpha-value>)` ↳ underlies `--destructive-foreground` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.border` | `hsl(var(--border) / <alpha-value>)` ↳ underlies `--border` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.input` | `hsl(var(--input) / <alpha-value>)` ↳ underlies `--input` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.ring` | `hsl(var(--ring) / <alpha-value>)` ↳ underlies `--ring` | (same) | `tailwind.config.js` | shad-* |
-| `colors.shad.chart-1` | `hsl(var(--chart-1) / <alpha-value>)` ↳ underlies `--chart-1` | (same) | `tailwind.config.js` | chart |
-| `colors.shad.chart-2` | `hsl(var(--chart-2) / <alpha-value>)` ↳ underlies `--chart-2` | (same) | `tailwind.config.js` | chart |
-| `colors.shad.chart-3` | `hsl(var(--chart-3) / <alpha-value>)` ↳ underlies `--chart-3` | (same) | `tailwind.config.js` | chart |
-| `colors.shad.chart-4` | `hsl(var(--chart-4) / <alpha-value>)` ↳ underlies `--chart-4` | (same) | `tailwind.config.js` | chart |
-| `colors.shad.chart-5` | `hsl(var(--chart-5) / <alpha-value>)` ↳ underlies `--chart-5` | (same) | `tailwind.config.js` | chart |
+| Token name (Tailwind path) | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.shad.background` | `hsl(var(--background) / <alpha-value>)` ↳ underlies `--background` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.foreground` | `hsl(var(--foreground) / <alpha-value>)` ↳ underlies `--foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.card` | `hsl(var(--card) / <alpha-value>)` ↳ underlies `--card` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.card-foreground` | `hsl(var(--card-foreground) / <alpha-value>)` ↳ underlies `--card-foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.popover` | `hsl(var(--popover) / <alpha-value>)` ↳ underlies `--popover` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.popover-foreground` | `hsl(var(--popover-foreground) / <alpha-value>)` ↳ underlies `--popover-foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.primary` | `hsl(var(--primary) / <alpha-value>)` ↳ underlies `--primary` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.primary-foreground` | `hsl(var(--primary-foreground) / <alpha-value>)` ↳ underlies `--primary-foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.secondary` | `hsl(var(--secondary) / <alpha-value>)` ↳ underlies `--secondary` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.secondary-foreground` | `hsl(var(--secondary-foreground) / <alpha-value>)` ↳ underlies `--secondary-foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.muted` | `hsl(var(--muted) / <alpha-value>)` ↳ underlies `--muted` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.muted-foreground` | `hsl(var(--muted-foreground) / <alpha-value>)` ↳ underlies `--muted-foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.accent` | `hsl(var(--accent) / <alpha-value>)` ↳ underlies `--accent` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.accent-foreground` | `hsl(var(--accent-foreground) / <alpha-value>)` ↳ underlies `--accent-foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.destructive` | `hsl(var(--destructive) / <alpha-value>)` ↳ underlies `--destructive` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.destructive-foreground` | `hsl(var(--destructive-foreground) / <alpha-value>)` ↳ underlies `--destructive-foreground` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.border` | `hsl(var(--border) / <alpha-value>)` ↳ underlies `--border` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.input` | `hsl(var(--input) / <alpha-value>)` ↳ underlies `--input` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.ring` | `hsl(var(--ring) / <alpha-value>)` ↳ underlies `--ring` | (same) | `tailwind.config.js` | shad-* | hack |
+| `colors.shad.chart-1` | `hsl(var(--chart-1) / <alpha-value>)` ↳ underlies `--chart-1` | (same) | `tailwind.config.js` | chart | deferred |
+| `colors.shad.chart-2` | `hsl(var(--chart-2) / <alpha-value>)` ↳ underlies `--chart-2` | (same) | `tailwind.config.js` | chart | deferred |
+| `colors.shad.chart-3` | `hsl(var(--chart-3) / <alpha-value>)` ↳ underlies `--chart-3` | (same) | `tailwind.config.js` | chart | deferred |
+| `colors.shad.chart-4` | `hsl(var(--chart-4) / <alpha-value>)` ↳ underlies `--chart-4` | (same) | `tailwind.config.js` | chart | deferred |
+| `colors.shad.chart-5` | `hsl(var(--chart-5) / <alpha-value>)` ↳ underlies `--chart-5` | (same) | `tailwind.config.js` | chart | deferred |
 
 #### 1.2.2 Top-level palette colors (no CSS-var indirection)
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.current` | `currentColor` | — | `tailwind.config.js` | other |
-| `colors.transparent` | `transparent` | — | `tailwind.config.js` | other |
-| `colors.white` | `#ffffff` | — | `tailwind.config.js` | other |
-| `colors.black` | `#000000` | — | `tailwind.config.js` | other |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.current` | `currentColor` | — | `tailwind.config.js` | other | signal |
+| `colors.transparent` | `transparent` | — | `tailwind.config.js` | other | signal |
+| `colors.white` | `#ffffff` | — | `tailwind.config.js` | other | signal |
+| `colors.black` | `#000000` | — | `tailwind.config.js` | other | signal |
 
 #### 1.2.3 `colors.primary.*` — Figma scale primary
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.primary.50` | `hsl(var(--color-primary-50) / <alpha-value>)` ↳ underlies `--color-primary-50` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.100` | `hsl(var(--color-primary-100) / <alpha-value>)` ↳ underlies `--color-primary-100` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.200` | `hsl(var(--color-primary-200) / <alpha-value>)` ↳ underlies `--color-primary-200` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.300` | `hsl(var(--color-primary-300) / <alpha-value>)` ↳ underlies `--color-primary-300` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.400` | `hsl(var(--color-primary-400) / <alpha-value>)` ↳ underlies `--color-primary-400` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.500` | `hsl(var(--color-primary-500) / <alpha-value>)` ↳ underlies `--color-primary-500` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.DEFAULT` | `hsl(var(--color-primary) / <alpha-value>)` ↳ underlies `--color-primary` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.600` | `hsl(var(--color-primary-600) / <alpha-value>)` ↳ underlies `--color-primary-600` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.700` | `hsl(var(--color-primary-700) / <alpha-value>)` ↳ underlies `--color-primary-700` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.800` | `hsl(var(--color-primary-800) / <alpha-value>)` ↳ underlies `--color-primary-800` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.900` | `hsl(var(--color-primary-900) / <alpha-value>)` ↳ underlies `--color-primary-900` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.primary.950` | `hsl(var(--color-primary-950) / <alpha-value>)` ↳ underlies `--color-primary-950` | (same) | `tailwind.config.js` | Figma scale |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.primary.50` | `hsl(var(--color-primary-50) / <alpha-value>)` ↳ underlies `--color-primary-50` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.100` | `hsl(var(--color-primary-100) / <alpha-value>)` ↳ underlies `--color-primary-100` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.200` | `hsl(var(--color-primary-200) / <alpha-value>)` ↳ underlies `--color-primary-200` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.300` | `hsl(var(--color-primary-300) / <alpha-value>)` ↳ underlies `--color-primary-300` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.400` | `hsl(var(--color-primary-400) / <alpha-value>)` ↳ underlies `--color-primary-400` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.500` | `hsl(var(--color-primary-500) / <alpha-value>)` ↳ underlies `--color-primary-500` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.DEFAULT` | `hsl(var(--color-primary) / <alpha-value>)` ↳ underlies `--color-primary` | (same) | `tailwind.config.js` | Figma scale | duplication → `colors.primary.500` |
+| `colors.primary.600` | `hsl(var(--color-primary-600) / <alpha-value>)` ↳ underlies `--color-primary-600` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.700` | `hsl(var(--color-primary-700) / <alpha-value>)` ↳ underlies `--color-primary-700` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.800` | `hsl(var(--color-primary-800) / <alpha-value>)` ↳ underlies `--color-primary-800` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.900` | `hsl(var(--color-primary-900) / <alpha-value>)` ↳ underlies `--color-primary-900` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.primary.950` | `hsl(var(--color-primary-950) / <alpha-value>)` ↳ underlies `--color-primary-950` | (same) | `tailwind.config.js` | Figma scale | signal |
 
 #### 1.2.4 `colors.neutral.*` — Figma scale neutral
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.neutral.50` | `hsl(var(--color-neutral-50) / <alpha-value>)` ↳ underlies `--color-neutral-50` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.100` | `hsl(var(--color-neutral-100) / <alpha-value>)` ↳ underlies `--color-neutral-100` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.200` | `hsl(var(--color-neutral-200) / <alpha-value>)` ↳ underlies `--color-neutral-200` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.300` | `hsl(var(--color-neutral-300) / <alpha-value>)` ↳ underlies `--color-neutral-300` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.400` | `hsl(var(--color-neutral-400) / <alpha-value>)` ↳ underlies `--color-neutral-400` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.500` | `hsl(var(--color-neutral-500) / <alpha-value>)` ↳ underlies `--color-neutral-500` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.600` | `hsl(var(--color-neutral-600) / <alpha-value>)` ↳ underlies `--color-neutral-600` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.DEFAULT` | `hsl(var(--color-neutral-600) / <alpha-value>)` ↳ underlies `--color-neutral-600` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.700` | `hsl(var(--color-neutral-700) / <alpha-value>)` ↳ underlies `--color-neutral-700` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.800` | `hsl(var(--color-neutral-800) / <alpha-value>)` ↳ underlies `--color-neutral-800` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.900` | `hsl(var(--color-neutral-900) / <alpha-value>)` ↳ underlies `--color-neutral-900` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.neutral.950` | `hsl(var(--color-neutral-950) / <alpha-value>)` ↳ underlies `--color-neutral-950` | (same) | `tailwind.config.js` | Figma scale |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.neutral.50` | `hsl(var(--color-neutral-50) / <alpha-value>)` ↳ underlies `--color-neutral-50` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.100` | `hsl(var(--color-neutral-100) / <alpha-value>)` ↳ underlies `--color-neutral-100` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.200` | `hsl(var(--color-neutral-200) / <alpha-value>)` ↳ underlies `--color-neutral-200` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.300` | `hsl(var(--color-neutral-300) / <alpha-value>)` ↳ underlies `--color-neutral-300` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.400` | `hsl(var(--color-neutral-400) / <alpha-value>)` ↳ underlies `--color-neutral-400` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.500` | `hsl(var(--color-neutral-500) / <alpha-value>)` ↳ underlies `--color-neutral-500` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.600` | `hsl(var(--color-neutral-600) / <alpha-value>)` ↳ underlies `--color-neutral-600` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.DEFAULT` | `hsl(var(--color-neutral-600) / <alpha-value>)` ↳ underlies `--color-neutral-600` | (same) | `tailwind.config.js` | Figma scale | duplication → `colors.neutral.600` |
+| `colors.neutral.700` | `hsl(var(--color-neutral-700) / <alpha-value>)` ↳ underlies `--color-neutral-700` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.800` | `hsl(var(--color-neutral-800) / <alpha-value>)` ↳ underlies `--color-neutral-800` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.900` | `hsl(var(--color-neutral-900) / <alpha-value>)` ↳ underlies `--color-neutral-900` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.neutral.950` | `hsl(var(--color-neutral-950) / <alpha-value>)` ↳ underlies `--color-neutral-950` | (same) | `tailwind.config.js` | Figma scale | signal |
 
 #### 1.2.5 `colors.success.*` — Figma scale success
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.success.50` | `hsl(var(--color-success-50) / <alpha-value>)` ↳ underlies `--color-success-50` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.100` | `hsl(var(--color-success-100) / <alpha-value>)` ↳ underlies `--color-success-100` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.200` | `hsl(var(--color-success-200) / <alpha-value>)` ↳ underlies `--color-success-200` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.300` | `hsl(var(--color-success-300) / <alpha-value>)` ↳ underlies `--color-success-300` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.400` | `hsl(var(--color-success-400) / <alpha-value>)` ↳ underlies `--color-success-400` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.500` | `hsl(var(--color-success-500) / <alpha-value>)` ↳ underlies `--color-success-500` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.DEFAULT` | `hsl(var(--color-success) / <alpha-value>)` ↳ underlies `--color-success` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.600` | `hsl(var(--color-success-600) / <alpha-value>)` ↳ underlies `--color-success-600` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.700` | `hsl(var(--color-success-700) / <alpha-value>)` ↳ underlies `--color-success-700` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.800` | `hsl(var(--color-success-800) / <alpha-value>)` ↳ underlies `--color-success-800` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.900` | `hsl(var(--color-success-900) / <alpha-value>)` ↳ underlies `--color-success-900` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.success.950` | `hsl(var(--color-success-950) / <alpha-value>)` ↳ underlies `--color-success-950` | (same) | `tailwind.config.js` | Figma scale |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.success.50` | `hsl(var(--color-success-50) / <alpha-value>)` ↳ underlies `--color-success-50` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.100` | `hsl(var(--color-success-100) / <alpha-value>)` ↳ underlies `--color-success-100` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.200` | `hsl(var(--color-success-200) / <alpha-value>)` ↳ underlies `--color-success-200` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.300` | `hsl(var(--color-success-300) / <alpha-value>)` ↳ underlies `--color-success-300` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.400` | `hsl(var(--color-success-400) / <alpha-value>)` ↳ underlies `--color-success-400` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.500` | `hsl(var(--color-success-500) / <alpha-value>)` ↳ underlies `--color-success-500` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.DEFAULT` | `hsl(var(--color-success) / <alpha-value>)` ↳ underlies `--color-success` | (same) | `tailwind.config.js` | Figma scale | duplication → `colors.success.500` |
+| `colors.success.600` | `hsl(var(--color-success-600) / <alpha-value>)` ↳ underlies `--color-success-600` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.700` | `hsl(var(--color-success-700) / <alpha-value>)` ↳ underlies `--color-success-700` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.800` | `hsl(var(--color-success-800) / <alpha-value>)` ↳ underlies `--color-success-800` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.900` | `hsl(var(--color-success-900) / <alpha-value>)` ↳ underlies `--color-success-900` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.success.950` | `hsl(var(--color-success-950) / <alpha-value>)` ↳ underlies `--color-success-950` | (same) | `tailwind.config.js` | Figma scale | signal |
 
 #### 1.2.6 `colors.warning.*` — Figma scale warning
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.warning.50` | `hsl(var(--color-warning-50) / <alpha-value>)` ↳ underlies `--color-warning-50` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.100` | `hsl(var(--color-warning-100) / <alpha-value>)` ↳ underlies `--color-warning-100` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.200` | `hsl(var(--color-warning-200) / <alpha-value>)` ↳ underlies `--color-warning-200` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.300` | `hsl(var(--color-warning-300) / <alpha-value>)` ↳ underlies `--color-warning-300` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.400` | `hsl(var(--color-warning-400) / <alpha-value>)` ↳ underlies `--color-warning-400` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.500` | `hsl(var(--color-warning-500) / <alpha-value>)` ↳ underlies `--color-warning-500` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.DEFAULT` | `hsl(var(--color-warning) / <alpha-value>)` ↳ underlies `--color-warning` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.600` | `hsl(var(--color-warning-600) / <alpha-value>)` ↳ underlies `--color-warning-600` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.700` | `hsl(var(--color-warning-700) / <alpha-value>)` ↳ underlies `--color-warning-700` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.800` | `hsl(var(--color-warning-800) / <alpha-value>)` ↳ underlies `--color-warning-800` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.900` | `hsl(var(--color-warning-900) / <alpha-value>)` ↳ underlies `--color-warning-900` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.warning.950` | `hsl(var(--color-warning-950) / <alpha-value>)` ↳ underlies `--color-warning-950` | (same) | `tailwind.config.js` | Figma scale |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.warning.50` | `hsl(var(--color-warning-50) / <alpha-value>)` ↳ underlies `--color-warning-50` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.100` | `hsl(var(--color-warning-100) / <alpha-value>)` ↳ underlies `--color-warning-100` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.200` | `hsl(var(--color-warning-200) / <alpha-value>)` ↳ underlies `--color-warning-200` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.300` | `hsl(var(--color-warning-300) / <alpha-value>)` ↳ underlies `--color-warning-300` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.400` | `hsl(var(--color-warning-400) / <alpha-value>)` ↳ underlies `--color-warning-400` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.500` | `hsl(var(--color-warning-500) / <alpha-value>)` ↳ underlies `--color-warning-500` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.DEFAULT` | `hsl(var(--color-warning) / <alpha-value>)` ↳ underlies `--color-warning` | (same) | `tailwind.config.js` | Figma scale | duplication → `colors.warning.500` |
+| `colors.warning.600` | `hsl(var(--color-warning-600) / <alpha-value>)` ↳ underlies `--color-warning-600` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.700` | `hsl(var(--color-warning-700) / <alpha-value>)` ↳ underlies `--color-warning-700` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.800` | `hsl(var(--color-warning-800) / <alpha-value>)` ↳ underlies `--color-warning-800` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.900` | `hsl(var(--color-warning-900) / <alpha-value>)` ↳ underlies `--color-warning-900` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.warning.950` | `hsl(var(--color-warning-950) / <alpha-value>)` ↳ underlies `--color-warning-950` | (same) | `tailwind.config.js` | Figma scale | signal |
 
 #### 1.2.7 `colors.error.*` — Figma scale error
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.error.50` | `hsl(var(--color-error-50) / <alpha-value>)` ↳ underlies `--color-error-50` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.100` | `hsl(var(--color-error-100) / <alpha-value>)` ↳ underlies `--color-error-100` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.200` | `hsl(var(--color-error-200) / <alpha-value>)` ↳ underlies `--color-error-200` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.300` | `hsl(var(--color-error-300) / <alpha-value>)` ↳ underlies `--color-error-300` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.400` | `hsl(var(--color-error-400) / <alpha-value>)` ↳ underlies `--color-error-400` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.500` | `hsl(var(--color-error-500) / <alpha-value>)` ↳ underlies `--color-error-500` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.DEFAULT` | `hsl(var(--color-error) / <alpha-value>)` ↳ underlies `--color-error` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.600` | `hsl(var(--color-error-600) / <alpha-value>)` ↳ underlies `--color-error-600` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.700` | `hsl(var(--color-error-700) / <alpha-value>)` ↳ underlies `--color-error-700` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.800` | `hsl(var(--color-error-800) / <alpha-value>)` ↳ underlies `--color-error-800` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.900` | `hsl(var(--color-error-900) / <alpha-value>)` ↳ underlies `--color-error-900` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.error.950` | `hsl(var(--color-error-950) / <alpha-value>)` ↳ underlies `--color-error-950` | (same) | `tailwind.config.js` | Figma scale |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.error.50` | `hsl(var(--color-error-50) / <alpha-value>)` ↳ underlies `--color-error-50` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.100` | `hsl(var(--color-error-100) / <alpha-value>)` ↳ underlies `--color-error-100` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.200` | `hsl(var(--color-error-200) / <alpha-value>)` ↳ underlies `--color-error-200` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.300` | `hsl(var(--color-error-300) / <alpha-value>)` ↳ underlies `--color-error-300` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.400` | `hsl(var(--color-error-400) / <alpha-value>)` ↳ underlies `--color-error-400` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.500` | `hsl(var(--color-error-500) / <alpha-value>)` ↳ underlies `--color-error-500` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.DEFAULT` | `hsl(var(--color-error) / <alpha-value>)` ↳ underlies `--color-error` | (same) | `tailwind.config.js` | Figma scale | duplication → `colors.error.500` |
+| `colors.error.600` | `hsl(var(--color-error-600) / <alpha-value>)` ↳ underlies `--color-error-600` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.700` | `hsl(var(--color-error-700) / <alpha-value>)` ↳ underlies `--color-error-700` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.800` | `hsl(var(--color-error-800) / <alpha-value>)` ↳ underlies `--color-error-800` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.900` | `hsl(var(--color-error-900) / <alpha-value>)` ↳ underlies `--color-error-900` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.error.950` | `hsl(var(--color-error-950) / <alpha-value>)` ↳ underlies `--color-error-950` | (same) | `tailwind.config.js` | Figma scale | signal |
 
 #### 1.2.8 `colors.info.*` — Figma scale info
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.info.50` | `hsl(var(--color-info-50) / <alpha-value>)` ↳ underlies `--color-info-50` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.100` | `hsl(var(--color-info-100) / <alpha-value>)` ↳ underlies `--color-info-100` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.200` | `hsl(var(--color-info-200) / <alpha-value>)` ↳ underlies `--color-info-200` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.300` | `hsl(var(--color-info-300) / <alpha-value>)` ↳ underlies `--color-info-300` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.400` | `hsl(var(--color-info-400) / <alpha-value>)` ↳ underlies `--color-info-400` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.500` | `hsl(var(--color-info-500) / <alpha-value>)` ↳ underlies `--color-info-500` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.DEFAULT` | `hsl(var(--color-info) / <alpha-value>)` ↳ underlies `--color-info` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.600` | `hsl(var(--color-info-600) / <alpha-value>)` ↳ underlies `--color-info-600` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.700` | `hsl(var(--color-info-700) / <alpha-value>)` ↳ underlies `--color-info-700` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.800` | `hsl(var(--color-info-800) / <alpha-value>)` ↳ underlies `--color-info-800` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.900` | `hsl(var(--color-info-900) / <alpha-value>)` ↳ underlies `--color-info-900` | (same) | `tailwind.config.js` | Figma scale |
-| `colors.info.950` | `hsl(var(--color-info-950) / <alpha-value>)` ↳ underlies `--color-info-950` | (same) | `tailwind.config.js` | Figma scale |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.info.50` | `hsl(var(--color-info-50) / <alpha-value>)` ↳ underlies `--color-info-50` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.100` | `hsl(var(--color-info-100) / <alpha-value>)` ↳ underlies `--color-info-100` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.200` | `hsl(var(--color-info-200) / <alpha-value>)` ↳ underlies `--color-info-200` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.300` | `hsl(var(--color-info-300) / <alpha-value>)` ↳ underlies `--color-info-300` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.400` | `hsl(var(--color-info-400) / <alpha-value>)` ↳ underlies `--color-info-400` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.500` | `hsl(var(--color-info-500) / <alpha-value>)` ↳ underlies `--color-info-500` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.DEFAULT` | `hsl(var(--color-info) / <alpha-value>)` ↳ underlies `--color-info` | (same) | `tailwind.config.js` | Figma scale | duplication → `colors.info.500` |
+| `colors.info.600` | `hsl(var(--color-info-600) / <alpha-value>)` ↳ underlies `--color-info-600` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.700` | `hsl(var(--color-info-700) / <alpha-value>)` ↳ underlies `--color-info-700` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.800` | `hsl(var(--color-info-800) / <alpha-value>)` ↳ underlies `--color-info-800` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.900` | `hsl(var(--color-info-900) / <alpha-value>)` ↳ underlies `--color-info-900` | (same) | `tailwind.config.js` | Figma scale | signal |
+| `colors.info.950` | `hsl(var(--color-info-950) / <alpha-value>)` ↳ underlies `--color-info-950` | (same) | `tailwind.config.js` | Figma scale | signal |
 
 #### 1.2.9 Direct semantic Tailwind keys
 
-| Token name | Light value | Dark value | Where defined | Flavor |
-|---|---|---|---|---|
-| `colors.background.DEFAULT` | `hsl(var(--color-background) / <alpha-value>)` ↳ underlies `--color-background` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.background.secondary` | `hsl(var(--color-background-secondary) / <alpha-value>)` ↳ underlies `--color-background-secondary` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.background.tertiary` | `hsl(var(--color-background-tertiary) / <alpha-value>)` ↳ underlies `--color-background-tertiary` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.borderColor.DEFAULT` | `hsl(var(--color-border-islands) / <alpha-value>)` ↳ underlies `--color-border-islands` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.text.primary` | `hsl(var(--color-text-primary) / <alpha-value>)` ↳ underlies `--color-text-primary` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.text.secondary` | `hsl(var(--color-text-secondary) / <alpha-value>)` ↳ underlies `--color-text-secondary` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.text.tertiary` | `hsl(var(--color-text-tertiary) / <alpha-value>)` ↳ underlies `--color-text-tertiary` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.text.disabled` | `hsl(var(--color-text-disabled) / <alpha-value>)` ↳ underlies `--color-text-disabled` | (same) | `tailwind.config.js` | direct semantic |
-| `colors.accent.feedback` | `hsl(var(--color-accent-feedback) / <alpha-value>)` ↳ underlies `--color-accent-feedback` | (same) | `tailwind.config.js` | direct semantic |
+| Token name | Light value | Dark value | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `colors.background.DEFAULT` | `hsl(var(--color-background) / <alpha-value>)` ↳ underlies `--color-background` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.background.secondary` | `hsl(var(--color-background-secondary) / <alpha-value>)` ↳ underlies `--color-background-secondary` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.background.tertiary` | `hsl(var(--color-background-tertiary) / <alpha-value>)` ↳ underlies `--color-background-tertiary` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.borderColor.DEFAULT` | `hsl(var(--color-border-islands) / <alpha-value>)` ↳ underlies `--color-border-islands` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.text.primary` | `hsl(var(--color-text-primary) / <alpha-value>)` ↳ underlies `--color-text-primary` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.text.secondary` | `hsl(var(--color-text-secondary) / <alpha-value>)` ↳ underlies `--color-text-secondary` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.text.tertiary` | `hsl(var(--color-text-tertiary) / <alpha-value>)` ↳ underlies `--color-text-tertiary` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.text.disabled` | `hsl(var(--color-text-disabled) / <alpha-value>)` ↳ underlies `--color-text-disabled` | (same) | `tailwind.config.js` | direct semantic | signal |
+| `colors.accent.feedback` | `hsl(var(--color-accent-feedback) / <alpha-value>)` ↳ underlies `--color-accent-feedback` | (same) | `tailwind.config.js` | direct semantic | signal |
 
 > Note: `colors.borderColor.DEFAULT` is misplaced — it sits inside `theme.extend.colors` but Tailwind expects `borderColor` at the top of `theme.extend`, not nested under `colors`. As declared, it generates a `bg-borderColor` / `text-borderColor` color utility, not the intended default border color. CVI works around this by hand-applying `border-color: hsl(var(--color-border-islands))` in the universal selector at line 271. Flagged for the open-questions section but not "fixed" here — Task 0.2 is read-only.
 
 #### 1.2.10 `spacing.*` extensions
 
-| Token name | Value | Where defined | Flavor |
-|---|---|---|---|
-| `spacing.18` | `4.5rem` (72px) | `tailwind.config.js` | other |
-| `spacing.88` | `22rem` (352px) | `tailwind.config.js` | other |
-| `spacing.100` | `25rem` (400px) | `tailwind.config.js` | other |
-| `spacing.112` | `28rem` (448px) | `tailwind.config.js` | other |
-| `spacing.128` | `32rem` (512px) | `tailwind.config.js` | other |
+| Token name | Value | Where defined | Flavor | Class |
+|---|---|---|---|---|
+| `spacing.18` | `4.5rem` (72px) | `tailwind.config.js` | other | deferred |
+| `spacing.88` | `22rem` (352px) | `tailwind.config.js` | other | deferred |
+| `spacing.100` | `25rem` (400px) | `tailwind.config.js` | other | deferred |
+| `spacing.112` | `28rem` (448px) | `tailwind.config.js` | other | deferred |
+| `spacing.128` | `32rem` (512px) | `tailwind.config.js` | other | deferred |
 
 #### 1.2.11 `borderRadius.*` overrides
 
-| Token name | Value | Where defined | Flavor |
-|---|---|---|---|
-| `borderRadius.sm` | `0.25rem` | `tailwind.config.js` | other |
-| `borderRadius.DEFAULT` | `0.375rem` | `tailwind.config.js` | other |
-| `borderRadius.md` | `0.5rem` | `tailwind.config.js` | other |
-| `borderRadius.lg` | `0.75rem` | `tailwind.config.js` | other |
-| `borderRadius.xl` | `1rem` | `tailwind.config.js` | other |
-| `borderRadius.2xl` | `1.5rem` | `tailwind.config.js` | other |
+| Token name | Value | Where defined | Flavor | Class |
+|---|---|---|---|---|
+| `borderRadius.sm` | `0.25rem` | `tailwind.config.js` | other | signal |
+| `borderRadius.DEFAULT` | `0.375rem` | `tailwind.config.js` | other | signal |
+| `borderRadius.md` | `0.5rem` | `tailwind.config.js` | other | signal |
+| `borderRadius.lg` | `0.75rem` | `tailwind.config.js` | other | signal |
+| `borderRadius.xl` | `1rem` | `tailwind.config.js` | other | signal |
+| `borderRadius.2xl` | `1.5rem` | `tailwind.config.js` | other | signal |
 
 #### 1.2.12 `boxShadow.*` overrides
 
-| Token name | Value | Where defined | Flavor |
-|---|---|---|---|
-| `boxShadow.popover` | `0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)` | `tailwind.config.js` | other |
-| `boxShadow.sm` | `0 1px 2px 0 rgba(0,0,0,0.05)` | `tailwind.config.js` | other |
-| `boxShadow.md` | `0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)` | `tailwind.config.js` | other |
-| `boxShadow.lg` | `0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)` | `tailwind.config.js` | other |
-| `boxShadow.xl` | `0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)` | `tailwind.config.js` | other |
+| Token name | Value | Where defined | Flavor | Class |
+|---|---|---|---|---|
+| `boxShadow.popover` | `0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)` | `tailwind.config.js` | other | duplication → `boxShadow.lg` |
+| `boxShadow.sm` | `0 1px 2px 0 rgba(0,0,0,0.05)` | `tailwind.config.js` | other | signal |
+| `boxShadow.md` | `0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)` | `tailwind.config.js` | other | signal |
+| `boxShadow.lg` | `0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)` | `tailwind.config.js` | other | signal |
+| `boxShadow.xl` | `0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)` | `tailwind.config.js` | other | signal |
 
 #### 1.2.13 `fontSize.*` overrides
 
-| Token name | Font size | Line height | Where defined | Flavor |
-|---|---|---|---|---|
-| `fontSize.xs` | `0.75rem` (12px) | `1rem` | `tailwind.config.js` | other |
-| `fontSize.sm` | `0.875rem` (14px) | `1.25rem` | `tailwind.config.js` | other |
-| `fontSize.base` | `1rem` (16px) | `1.5rem` | `tailwind.config.js` | other |
-| `fontSize.lg` | `1.125rem` (18px) | `1.75rem` | `tailwind.config.js` | other |
-| `fontSize.xl` | `1.25rem` (20px) | `1.75rem` | `tailwind.config.js` | other |
-| `fontSize.2xl` | `1.5rem` (24px) | `2rem` | `tailwind.config.js` | other |
-| `fontSize.3xl` | `1.875rem` (30px) | `2.25rem` | `tailwind.config.js` | other |
+| Token name | Font size | Line height | Where defined | Flavor | Class |
+|---|---|---|---|---|---|
+| `fontSize.xs` | `0.75rem` (12px) | `1rem` | `tailwind.config.js` | other | signal |
+| `fontSize.sm` | `0.875rem` (14px) | `1.25rem` | `tailwind.config.js` | other | signal |
+| `fontSize.base` | `1rem` (16px) | `1.5rem` | `tailwind.config.js` | other | signal |
+| `fontSize.lg` | `1.125rem` (18px) | `1.75rem` | `tailwind.config.js` | other | signal |
+| `fontSize.xl` | `1.25rem` (20px) | `1.75rem` | `tailwind.config.js` | other | signal |
+| `fontSize.2xl` | `1.5rem` (24px) | `2rem` | `tailwind.config.js` | other | signal |
+| `fontSize.3xl` | `1.875rem` (30px) | `2.25rem` | `tailwind.config.js` | other | signal |
 
 #### 1.2.14 `fontFamily.*` overrides
 
-| Token name | Value | Where defined | Flavor |
-|---|---|---|---|
-| `fontFamily.sans` | `Inter, system-ui, -apple-system, sans-serif` | `tailwind.config.js` | other |
+| Token name | Value | Where defined | Flavor | Class |
+|---|---|---|---|---|
+| `fontFamily.sans` | `Inter, system-ui, -apple-system, sans-serif` | `tailwind.config.js` | other | signal |
 
 ### 1.3 Usage counts (order-of-magnitude across CVI)
 
@@ -487,7 +487,30 @@ This is the source-of-truth dataset for the classification pass in Task 0.3 and 
 
 ## 2. Classification (Task 0.3)
 
-_Populated below._
+### 2.1 Distribution
+
+Across all 243 inventoried rows (110 in § 1.1 + 133 in § 1.2.1–§ 1.2.14):
+
+| Class | Count | Notes |
+|---|---:|---|
+| `signal` | 172 | Real design intent — kept in the consolidated theme. Dominated by the Figma scales (`primary`, `neutral`, `success`, `warning`, `error`, `info` × 11 numbered steps × {CSS var + Tailwind key} = 132), the direct-semantic vars + Tailwind keys (text/background/border/accent.feedback × 2 layers), the spacing-free non-color tokens (borderRadius, boxShadow, fontSize, fontFamily), and the four base palette primitives (`current`, `transparent`, `white`, `black`). |
+| `hack` | 39 | The complete shad-* layer: 20 CSS vars (`--background`, `--foreground`, `--card[-foreground]`, `--popover[-foreground]`, `--primary[-foreground]`, `--secondary[-foreground]`, `--muted[-foreground]`, `--accent[-foreground]`, `--destructive[-foreground]`, `--border`, `--input`, `--ring`, `--radius`) and the matching 19 `colors.shad.*` Tailwind keys (chart-* keys are excluded — they are `deferred`, not `hack`). The user has confirmed wholesale deprecation. |
+| `deferred` | 20 | `--chart-1..5` and `colors.shad.chart-1..5` (10), the 4 `--cvi-search-*` highlight vars, the implicit `--glow-color` runtime var, and the 5 unused custom `spacing.*` extensions (zero utility hits in CVI). Documented but not consolidated in Wave 1. |
+| `duplication` | 12 | Six aliasing pairs and one shadow alias: `--color-{primary,success,warning,error,info}` collapse into the matching `--color-{family}-500` (5); `colors.{primary,success,warning,error,info}.DEFAULT` collapse into `colors.{family}.500` (5); `colors.neutral.DEFAULT` collapses into `colors.neutral.600` (1; note this family aliases the 600 step rather than the 500 step — see § 5 Q3 in the original pre-seeded items, now Q6 below); `boxShadow.popover` is byte-identical to `boxShadow.lg` (1). |
+
+### 2.2 Patterns observed
+
+- **The shad-* layer is a complete shadow of the Figma scale and adds no information.** It declares its own `--primary` (the same blue as `--color-primary-500`), its own `--destructive` (the same red as `--color-error-500`), its own `--background` (the same value as `--color-background`), and so on. Usage telemetry from § 1.3 backs the deprecation: `shad-*` Tailwind utilities total 14 hits across 6 files (and most are `bg-shad-{back,fore}ground` — the actual shadcn-named slots like `bg-shad-primary`, `bg-shad-destructive`, etc. are at zero). The whole layer can drop with negligible churn.
+- **The Figma scale's `DEFAULT` slot is a solved problem and a dropped problem at once.** Five of six families define `DEFAULT` via a separate `--color-{family}` CSS var that holds the same value as the `500` step; the sixth (neutral) has no separate var at all and points `DEFAULT` at the `600`-step var. The CSS-var indirection adds zero expressiveness — once the consolidated theme picks a single canonical step per family for `DEFAULT`, both the side-variable and the asymmetry disappear. Wave 1 default: `DEFAULT = 500` for all six families, with neutral's choice flagged as a design question (Q6 below).
+- **Chart vars are different from the rest of the shad-* layer.** `--chart-1..5` and `colors.shad.chart-1..5` are usage-zero in CVI. They're tagged `deferred`, not `hack`, because (a) they're not duplicates of any other token, (b) the spec explicitly defers chart consolidation to a future pass, and (c) the design owner may want a distinct palette for charts that doesn't follow the intent ramps.
+- **Non-color "other" tokens are mostly signal except where unused or duplicated.** All borderRadius / fontSize / fontFamily entries earned `signal`; the five custom `spacing.*` extensions earned `deferred` because § 1.3 confirms zero utility hits; `boxShadow.popover` earned `duplication` because its bytes match `boxShadow.lg` exactly.
+
+### 2.3 Judgment calls and edge cases
+
+- **`--radius` (shad var, value `0.5rem`) tagged `hack`, not `duplication`.** It is technically also a duplicate of `borderRadius.md` (`0.5rem`), but the spec's classification rules explicitly fold "`--radius` if it duplicates a scale" into the shad-* deprecation block. Tagging as `hack` keeps the deprecation list clean — the duplication relationship is captured here rather than as a `→` annotation that would otherwise imply we want to preserve a CSS-var route into the radius scale.
+- **`colors.borderColor.DEFAULT` tagged `signal`, not `hack`.** The intent is real (give CVI a default border color tied to `--color-border-islands`). The misplacement (it's nested under `colors.*` rather than declared at `theme.extend.borderColor`) is a Tailwind-config bug that's been worked around with a universal `border-color: hsl(var(--color-border-islands))` rule. Wave 1 keeps the intent and lets the consolidated theme decide whether to route via a properly-placed `borderColor.DEFAULT`, an explicit `border-default` token, or just keeping the universal selector reset. Captured as Q7 below.
+- **`--glow-color` tagged `deferred`, not `hack`.** It has no static declaration — only a `@keyframes glow` reference with `currentColor` fallback and a JS-driven inline-style assignment. It's not part of the shad-* deprecation block, but it also isn't ready to live in the consolidated theme without a design decision about whether to declare a static fallback. Deferring is the right call.
+- **`--cvi-search-*` (4 vars) tagged `deferred`.** Mode-toggleable but selector-scoped to `:root` / `.dark` (not `.claim-view-islands`) because of how `::highlight()` resolves — a real architectural one-off that doesn't belong in the Wave 1 consolidated theme. Future pass.
 
 ## 3. Consolidated theme decisions (Task 0.4)
 
@@ -499,11 +522,81 @@ _Populated below._
 
 ## 5. Open design questions
 
-- `colors.borderColor.DEFAULT` is declared inside `theme.extend.colors` rather than at `theme.extend.borderColor`. As written it produces a `borderColor`-named **color** utility (`bg-borderColor`, etc.) rather than the intended default border color. CVI compensates by hand-applying `border-color: hsl(var(--color-border-islands))` to the universal selector. Flag for the consolidated theme: decide whether to keep the universal border-color reset, fix the misplacement, or replace both with an explicit `border-default` token.
-- The Figma-scale colors include both numbered steps (`50…950`) and an unnumbered `DEFAULT` for primary / success / warning / error / info / neutral. For `primary`, `success`, `warning`, `error`, `info` the `DEFAULT` maps to `--color-{family}` (a separate CSS var). For `neutral`, `DEFAULT` aliases the `600` step's CSS var directly (no separate `--color-neutral` declared). Decide whether the consolidated theme normalises this asymmetry.
-- The `--cvi-search-*` highlights are declared on `:root` and `.dark`, NOT inside `.claim-view-islands`. The comment on line 602 explains why (the `::highlight()` pseudo doesn't inherit from `.claim-view-islands`). When porting to soribashi, decide where these belong in the layer architecture.
-- `--glow-color` is referenced inside `@keyframes glow` with a `currentColor` fallback and is set dynamically via inline style from JS (no static declaration). Decide whether the consolidated theme treats it as a runtime-only var or adds an explicit declaration with a documented fallback.
-- The `colors.shad.chart-*` keys point at the shad chart vars (`--chart-1…5`) but the spec lumps charts as a separate flavor. Decide whether they live under `shad-*` (shadcn convention) or get split into a `chart` family of their own.
+The five spec § 6.3 questions are reproduced below in the Q template format (Q1–Q5), followed by the Wave-1-specific questions surfaced during inventory and classification (Q6–Q10). All carry a defensible Wave 1 default so the pilot can proceed without blocking; the design owner re-decides during the integration project.
+
+### Q1: Surface tokens — collapse `card` + `popover` or keep two?
+
+**Status:** open
+**Wave 1 default:** Collapse to a single `surface` token. Both CVI variants currently hold the same value (`0 0% 100%` / `222.2 84% 4.9%`); two names with one value is pure duplication.
+**Rationale:** Keeping `card` and `popover` separate preserves the option to differentiate elevation later, but until that differentiation is needed the names cost cognitive overhead with no payoff. A single `surface` (with optional `surface.elevated` later) reads more clearly.
+**For design review:** Confirm the consolidated theme can ship with one surface token, or commit to a near-term elevation differentiation that justifies keeping two from the start.
+
+### Q2: Primary ramp — is the hue drift intentional or vestigial?
+
+**Status:** open
+**Wave 1 default:** Regenerate the ramp coherently from the `500` anchor (`221.2 83.2% 53.3%`).
+**Rationale:** The current `--color-primary-50..400` steps sit at hue `240` while the `500..950` steps sit at hue `221.2`. A 19-degree hue jump between `400` and `500` looks like an accidental seed-from-Tailwind-defaults artifact rather than a designed crossfade. CVI usage data (`bg-primary-100` × 30, `bg-primary-50` × 11) shows the lighter steps are in production, so visual change is real.
+**For design review:** Confirm the hue drift is unintentional, then sign off on regenerating `50..400` from the `500` anchor. If the drift is intentional, document the design rationale in the consolidated theme.
+
+### Q3: Foreground vs text — `foreground` + shades or `text.{primary,secondary,...}`?
+
+**Status:** open
+**Wave 1 default:** Prefer `foreground` + optional `foreground.muted` / `foreground.subtle` shades.
+**Rationale:** The four-level text taxonomy (`text.primary/secondary/tertiary/disabled`) maps cleanly to scale lookups via the intent resolver; reducing to `foreground` + a small set of muted modifiers cuts the surface area without losing expressiveness. Both `--foreground` (shad) and `--color-text-primary` (semantic) currently exist for the same role.
+**For design review:** Confirm whether the four-step text taxonomy is load-bearing semantically (i.e., real meaning behind primary/secondary/tertiary/disabled) or whether it's a layered-opacity expression that `foreground` + shades captures more cleanly.
+
+### Q4: Naming convention — keep `--color-` prefix or drop it?
+
+**Status:** open
+**Wave 1 default:** Keep the `--color-` prefix (so `--color-primary-500` rather than `--primary-500`).
+**Rationale:** The `--color-` prefix is redundant in isolation — every var in the consolidated set holds a color — but matches the existing CVI naming and minimizes cognitive distance for the eventual integration project. Renaming during Wave 1 would force every CVI consumer to track a name change for zero functional benefit.
+**For design review:** Confirm the consolidated theme inherits the `--color-` prefix, or pre-commit to a rename now while consumer surface area is small.
+
+### Q5: Dark scoping — `.dark` (Wave 1) or `.dark .claim-view-islands` (CVI)?
+
+**Status:** open
+**Wave 1 default:** Wave 1 emits dark vars under `.dark` (the standard Tailwind dark-mode selector).
+**Rationale:** The pilot lives in an isolated Vite app with no host-page chrome, so the broader selector is correct. CVI's production scope is `.dark .claim-view-islands` because it's an island inside a host page that has its own theming; the integration project (not Wave 1) reconciles by either tightening the pilot scope or loosening the CVI scope.
+**For design review:** Confirm the integration project owns the reconciliation. No Wave 1 action needed beyond documenting the divergence in the playbook.
+
+---
+
+The remaining questions surfaced during inventory (Task 0.2) and classification (Task 0.3). They are observations that *do* need a design decision — the Task 0.2 pre-seeded items have been promoted into the Q template here. Pure observations that don't require a decision are folded into § 2's prose instead of being repeated.
+
+### Q6: Figma-scale `DEFAULT` — anchor at `500` or preserve `neutral`'s `600` outlier?
+
+**Status:** open
+**Wave 1 default:** Anchor every family's `DEFAULT` at the `500` step. (Drops the separate `--color-{family}` CSS vars; collapses neutral's outlier.)
+**Rationale:** Five of six families (`primary`, `success`, `warning`, `error`, `info`) map `DEFAULT` to a side-channel CSS var (`--color-{family}`) that holds the same value as the `500` step — pure duplication, classified accordingly. The sixth (`neutral`) maps `DEFAULT` to `--color-neutral-600` directly with no side var. Normalizing to `500` for all six is the obvious move; the only loss is whatever intent lay behind neutral's `600` choice (likely "neutral text wants to be a little darker than mid-scale").
+**For design review:** Confirm `DEFAULT = 500` for all families. If neutral specifically wants `600`, document why and we keep that one outlier.
+
+### Q7: `colors.borderColor.DEFAULT` misplacement — fix, replace, or keep the workaround?
+
+**Status:** open
+**Wave 1 default:** Fix the misplacement — declare a properly-located `theme.extend.borderColor.DEFAULT` and remove the universal `border-color` reset from CVI's CSS.
+**Rationale:** As declared, `colors.borderColor.DEFAULT` sits inside `theme.extend.colors` and produces a `bg-borderColor` / `text-borderColor` color utility instead of the intended default border color. CVI compensates by hand-applying `border-color: hsl(var(--color-border-islands))` on the universal selector at `claimview-islands.css:271`. Three options: (a) fix the placement; (b) replace with an explicit `border-default` token + keep the universal reset; (c) keep both the misplacement and the workaround as-is. Option (a) is cleanest and removes a bug.
+**For design review:** Confirm the consolidated theme moves `borderColor.DEFAULT` to its proper location and removes the universal-selector workaround.
+
+### Q8: `--cvi-search-*` highlight vars — where in the layer architecture?
+
+**Status:** open
+**Wave 1 default:** Continue declaring on `:root` / `.dark` (not on `.claim-view-islands`). Keep the four vars in the consolidated theme as a small "global escapes" group documented as such.
+**Rationale:** The vars are declared at `:root` because `::highlight()` pseudo-elements don't inherit from `.claim-view-islands` (per the comment at `claimview-islands.css:602`). This is a hard browser constraint, not a design choice — moving them under `.claim-view-islands` would silently break highlight rendering. Wave 1 doesn't render search highlights, so the pilot can defer; the consolidated theme should document the escape pattern.
+**For design review:** Confirm the escape pattern is acceptable and that the consolidated theme owns these four tokens (rather than punting them to a separate "host integration" module).
+
+### Q9: `--glow-color` — runtime-only or static fallback?
+
+**Status:** open
+**Wave 1 default:** Treat as runtime-only. Keep the `currentColor` fallback inside `@keyframes glow`. No static declaration in the consolidated theme.
+**Rationale:** The var has no static declaration in CVI today — JS sets it inline per-element, and the keyframe falls back to `currentColor`. Adding a static declaration would either (a) shadow the JS-set value when JS is missing (unlikely failure mode worth designing for), or (b) provide a declared default the JS would always overwrite (no value). Documenting the runtime-only contract is enough.
+**For design review:** Confirm runtime-only is fine, or specify a static fallback color we should document alongside the keyframe.
+
+### Q10: Chart vars — keep under `shad-*` or split into a `chart` family?
+
+**Status:** open
+**Wave 1 default:** Defer. No Wave 1 action — chart vars are tagged `deferred` and ride along in their current shape until charts get a dedicated pass.
+**Rationale:** `--chart-1..5` and `colors.shad.chart-1..5` are zero-usage in CVI per § 1.3. Splitting them into a `chart` family of their own is correct architecturally (charts don't follow intent ramps) but blocks on chart-ramp design that's out of scope for Wave 1.
+**For design review:** No Wave 1 decision required. Flagged so the future chart pass starts with this open.
 
 ## 6. Codegen / theme-model gaps surfaced
 
