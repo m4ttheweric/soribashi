@@ -33,7 +33,7 @@ Tag each token as:
 - **duplication** — same value under multiple names. Collapsed to one canonical.
 - **deferred** — chart colors, ad-hoc one-offs. Documented but out of scope for this consolidation pass.
 
-**Output:** add a `Class` column to the inventory table. Surface open questions in a separate section. (See journal § 2 for distribution stats and § 4 for the deprecation list grouped by class.)
+**Output:** add a `Class` column to the inventory table. Surface open questions in a separate section. (See consolidation journal § 2 for distribution stats and § 4 for the deprecation list grouped by class.)
 
 **Why:** without forcing classification, "everything is signal" creeps in and the consolidation loses value.
 
@@ -44,7 +44,7 @@ Build the soribashi theme via `createTheme()`. Express:
 - **Semantic tokens** via `semantic.{text, surface, border}` references to scale anchors — never parallel hand-set values.
 - **Dark variants** via the `dark` partial.
 
-**Output:** `theme/index.ts` — the consolidated theme. (See journal § 3 for the Wave 1 decisions: families included, scale regenerations, duplicates collapsed, semantic surface choices.)
+**Output:** `theme/index.ts` — the consolidated theme. (See consolidation journal § 3 for the Wave 1 decisions: families included, scale regenerations, duplicates collapsed, semantic surface choices.)
 
 **Why:** soribashi's intent resolver gives you a clean home for "semantic name → scale lookup." Resist the urge to hand-set semantic colors.
 
@@ -71,7 +71,7 @@ module.exports = {
 
 Build a `TokenReview` swatch page (every consolidated token rendered as a labeled swatch in light + dark) and a `ScreenReplica` (static markup of one representative screen using only consolidated tokens). Compare the replica against a screenshot of the original.
 
-**Output:** visual review findings in the journal. (See journal § 7 for the Wave 1 intent-parity sign-off, expected drift, and unexpected drift findings.)
+**Output:** visual review findings in the journal. (See consolidation journal § 7 for the Wave 1 intent-parity sign-off, expected drift, and unexpected drift findings.)
 
 **Why:** **intent parity, not pixel parity.** Drift wherever consolidation deliberately changed something is expected and good. Drift you didn't expect is a finding.
 
@@ -79,7 +79,7 @@ Build a `TokenReview` swatch page (every consolidated token rendered as a labele
 
 For every open design question surfaced during steps 2-5: pick a defensible default, document the rationale, flag for human design review. The pilot doesn't block on design's blessing — the playbook escalates.
 
-**Output:** the open-questions section of the journal, ready for design owner review. (See journal § 5 for the Wave 1 questions Q1-Q10.)
+**Output:** the open-questions section of the journal, ready for design owner review. (See consolidation journal § 5 for the Wave 1 questions Q1-Q10.)
 
 ### What this methodology assumes
 
@@ -100,7 +100,7 @@ Pattern for components with no Radix anatomy, no portal, no controlled state —
 #### Recipe shape
 
 1. **API split: variant × intent.** Always. `variant` is visual style (`filled`, `outline`, `subtle`, `ghost`, `link`). `intent` is semantic role (`primary`, `neutral`, `success`, `warning`, `danger`, `info`). Never mix them on a single prop. Conflating them produces the variant-explosion + meaning-collision the Button pilot caught in CVI (where `primary`/`secondary` are role and `outline`/`ghost` are style on the same axis — see `docs/superpowers/pilots/2026-04-26-button-conversion.md` § 1.1).
-2. **Authoring primitive:** `definePolymorphicComponent` whenever `as=` is plausible (buttons-as-links is the canonical case). `defineComponent` only for components that genuinely have one element (Skeleton, Dot). The polymorphic primitive is more typesafe than CVI's `asChild` + `Slot` and avoids CVI's silent-ignore footgun (see journal § 1.4) where `asChild` is dropped when combined with `isLoading` / `leftIcon` / `rightIcon`. **Type-param order is `<TOwnProps, TDefaultAs>`** — the reverse compiles but produces confusing-but-not-erroring types (journal § 3 Hard).
+2. **Authoring primitive:** `definePolymorphicComponent` whenever `as=` is plausible (buttons-as-links is the canonical case). `defineComponent` only for components that genuinely have one element (Skeleton, Dot). The polymorphic primitive is more typesafe than CVI's `asChild` + `Slot` and avoids CVI's silent-ignore footgun (see conversion journal § 1.4) where `asChild` is dropped when combined with `isLoading` / `leftIcon` / `rightIcon`. **Type-param order is `<TOwnProps, TDefaultAs>`** — the reverse compiles but produces confusing-but-not-erroring types (conversion journal § 3 Hard).
 3. **Selectors:** keep a small, named parts list. For Button: `['root', 'label', 'icon', 'spinner']`. Each part gets its own class (`cr-Button-root`, `cr-Button-label`, …) so downstream styling targets parts, not deep selector chains.
 4. **Defaults:** set sensible defaults so consumers can drop the component in without ceremony. Wave 1's Button defaults: `intent: 'primary', variant: 'filled', size: 'md', loading: false, fullWidth: false`.
 
@@ -129,26 +129,26 @@ Use CSS data-attribute rules over local CSS variables. For each (variant, intent
 
 This collapses 30 (variant × intent) cells to: one root rule + 30 four-line override blocks. If any cell needs more than that, it's a smell — re-evaluate. (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.css`.)
 
-> **Codegen quirk (Gap 1):** the current codegen emits CSS vars whose values are already complete `hsl(...)` strings (e.g., `--color-primary-500: hsl(221.2 83.2% 53.3%);`). Reference them as `var(--color-...)` directly — wrapping in `hsl(var(...))` produces invalid `hsl(hsl(...))` and resolves to transparent. The Tailwind `bg-primary-500/50` alpha-utility pattern is unreachable from this emit format until soribashi ships a bare-HSL emit mode (journal § 4 Gap 1).
+> **Codegen quirk (Gap 1):** the current codegen emits CSS vars whose values are already complete `hsl(...)` strings (e.g., `--color-primary-500: hsl(221.2 83.2% 53.3%);`). Reference them as `var(--color-...)` directly — wrapping in `hsl(var(...))` produces invalid `hsl(hsl(...))` and resolves to transparent. The Tailwind `bg-primary-500/50` alpha-utility pattern is unreachable from this emit format until soribashi ships a bare-HSL emit mode (conversion journal § 4 Gap 1).
 
 #### State handling
 
 - `disabled` and `loading` should both be visually distinguishable from default. Loading must propagate the `disabled` attribute and suppress click handlers **in the recipe** — don't push that to the consumer. Wave 1's Button computes `isDisabled = disabled || loading` and short-circuits `onClick` before delegating.
 - **Polymorphic + disabled:** when `as` is non-button, use `aria-disabled={true}` and `e.preventDefault()` to suppress click. The HTML `disabled` attribute is button-only (anchor tags ignore it). Wave 1's Button branches on `Element === 'button'` to emit `disabled` vs `aria-disabled`; copy the pattern.
-- **Strip the seven styles-API props before spreading `...rest` onto the rendered element** (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`). This is implicit knowledge today and not enforced by types (journal § 4 Gap 2). Lift the destructure block verbatim from Wave 1's Button recipe until soribashi ships a `splitStylesApiProps` helper.
+- **Strip the seven styles-API props before spreading `...rest` onto the rendered element** (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`). This is implicit knowledge today and not enforced by types (conversion journal § 4 Gap 2). Lift the destructure block verbatim from Wave 1's Button recipe until soribashi ships a `splitStylesApiProps` helper.
 
 #### Token consumption
 
 - ONLY consolidated theme tokens. Never hand-set hex; never reference legacy fragmented tokens (no `--background`, no shad-* vars, no `claimview-islands.css` vars).
 - Hover and active states walk one step deeper in the scale (e.g., `500` default → `600` hover → `700` active for filled; `50` → `100` → `200` for subtle).
 - Subtle/ghost variants consume the lighter shades (50/100 backgrounds, 700/800 text).
-- **Focus-indicator footgun:** routing the focus outline through the same `--cr-{component}-bg` var that powers the background makes the outline disappear whenever bg is `transparent` (ghost / link / outline variants). Use a dedicated `--cr-{component}-focus-ring` var that falls back to the intent's border or text color on transparent variants. Wave 1's Button defers this for ghost / link / outline (browser default ring stays); a future polish pass should add the dedicated ring var (journal § 4 Gap 4). Don't repeat the mistake in IconButton or any sibling primitive.
+- **Focus-indicator footgun:** routing the focus outline through the same `--cr-{component}-bg` var that powers the background makes the outline disappear whenever bg is `transparent` (ghost / link / outline variants). Use a dedicated `--cr-{component}-focus-ring` var that falls back to the intent's border or text color on transparent variants. Wave 1's Button defers this for ghost / link / outline (browser default ring stays); a future polish pass should add the dedicated ring var (conversion journal § 4 Gap 4). Don't repeat the mistake in IconButton or any sibling primitive.
 
 #### Tests
 
-- **Vitest behavior** (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` — 11 tests): rendering, default props, click handling **in both directions** (disabled/loading suppression AND default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Requires `@testing-library/jest-dom/vitest` wired via `setupFiles` (journal § 4 Gap 3) — copy the wiring from `packages/factory/test/setup.ts`.
+- **Vitest behavior** (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` — 11 tests): rendering, default props, click handling **in both directions** (disabled/loading suppression AND default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Requires `@testing-library/jest-dom/vitest` wired via `setupFiles` (conversion journal § 4 Gap 3) — copy the wiring from `packages/factory/test/setup.ts`.
 - **Playwright parity** (Wave 1 reference: `apps/core-radix-pilot/tests/Button.parity.spec.ts`): smoke the high-frequency cells, not all 30. For Button: filled × all six intents (computed `background-color`); three sizes (computed height); disabled (opacity); loading (spinner present + disabled set).
-- Don't aim for 30-cell exhaustiveness in Playwright — the parity tests are smoke for the pattern, not exhaustive proof. **Visual review remains non-optional**; the focus-ring regression (journal § 3 Surprises) didn't surface in either test layer.
+- Don't aim for 30-cell exhaustiveness in Playwright — the parity tests are smoke for the pattern, not exhaustive proof. **Visual review remains non-optional**; the focus-ring regression (conversion journal § 3 Surprises) didn't surface in either test layer.
 
 #### Recipe code snippet
 
@@ -206,7 +206,7 @@ Wave 1 surfaced no `blocking` gaps — every gap had a viable in-pilot workaroun
 | 2 | `definePolymorphicComponent` `render` ctx surfaces the seven styles-API framework keys (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`) on `props`, requiring a hand-written destructure block before spreading `...rest` onto a DOM element | important | Conversion journal § 4 Gap 2 — Phase 1 Task 1.5 (Button recipe GREEN). Hidden in the factory's own test by a `...rest as any` cast (`packages/factory/test/define-polymorphic-component.test.tsx:18`); no type, jsdoc, runtime warning, or doc page calls out the requirement | `@soribashi/factory`: either (a) `useProps` / `useStyles` consume those keys and `render` exposes a pre-cleaned `props`; or (b) ship a `splitStylesApiProps(props)` helper plus a documented `render` snippet. Option (a) is more ergonomic; option (b) is non-breaking. Either prevents every recipe author across Waves 2–4 from rediscovering the destructure-or-leak footgun. |
 | 3 | Pilot-app vitest config template lacks `setupFiles` wiring for `@testing-library/jest-dom/vitest`; jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, etc.) fail with `Invalid Chai property` until manually wired | important | Conversion journal § 4 Gap 3 — Phase 1 Task 1.5 (10/11 tests green; `disabled-on-loading` failed). Convention exists at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` but did not propagate across the `packages/*` → `apps/*` boundary | Harness wiring rather than a published-package gap, but bites every recipe pilot. Update the pilot-app / consumer-app vitest config template (and any future scaffold) to include `setupFiles: ['./test/setup.ts']` plus a one-line `import '@testing-library/jest-dom/vitest';` setup file by default. |
 | 4 | `accent.feedback` semantic token has no clean home in the soribashi `SemanticTokens` shape (`text`, `surface`, `border` only — no `accent` slot) | nice-to-have | Consolidation journal § 6 (first bullet) — Phase 0 Task 0.4 (theme expression). Wave 1 omits the token; pilot doesn't render the feedback UI | `@soribashi/theme`: pick one of (a) extend `SemanticTokens` with a free-form `accent: Record<string, SemanticReference>` slot, (b) promote it to a sibling top-level color family (`colors.accent`), or (c) fold it into a future "decorative" namespace. Not a Wave 1 blocker; flagged for the integration project that wires the consolidated theme into CVI's existing 115 importers. |
-| 5 | Border-default reset has no in-theme expression: CVI's `colors.borderColor.DEFAULT` Tailwind-config bug is currently worked around via a universal-selector reset in `claimview-islands.css`; the soribashi theme expresses `semantic.border.default → colors.neutral.200` but doesn't emit a corresponding universal `border-color` reset | nice-to-have | Consolidation journal § 6 (second bullet) — Phase 0 Task 0.4 (theme expression); cross-references journal § 5 Q7 | `@soribashi/codegen` (or `@soribashi/theme`): make the architectural choice — either codegen emits a universal `* { border-color: var(--color-border-default); }` reset when a `semantic.border.default` is set, or document that consumers are expected to apply `border-default` explicitly. Not a Wave 1 blocker; surfaced for the integration project. |
+| 5 | Border-default reset has no in-theme expression: CVI's `colors.borderColor.DEFAULT` Tailwind-config bug is currently worked around via a universal-selector reset in `claimview-islands.css`; the soribashi theme expresses `semantic.border.default → colors.neutral.200` but doesn't emit a corresponding universal `border-color` reset | nice-to-have | Consolidation journal § 6 (second bullet) — Phase 0 Task 0.4 (theme expression); cross-references consolidation journal § 5 Q7 | `@soribashi/codegen` (or `@soribashi/theme`): make the architectural choice — either codegen emits a universal `* { border-color: var(--color-border-default); }` reset when a `semantic.border.default` is set, or document that consumers are expected to apply `border-default` explicitly. Not a Wave 1 blocker; surfaced for the integration project. |
 | 6 | Focus indicator authoring footgun: routing focus color through the same `--cr-{recipe}-bg` var that powers the background makes the outline invisible whenever bg resolves to `transparent` (ghost / link / outline variants) | nice-to-have | Conversion journal § 4 Gap 4 — Phase 1 Task 1.5 review. Wave 1 ships browser default `:focus-visible` ring on the transparent variants; tinted outline only on filled / subtle | Recipe-authoring guidance, not a soribashi-package gap. Already documented in this playbook § 2.1 ("Focus-indicator footgun") — route focus color through a dedicated `--cr-{recipe}-focus-ring` var that falls back to the intent's border or text color on transparent variants. No code change needed in any soribashi package. |
 
 ### The C → A bridge
@@ -239,8 +239,8 @@ Pull from `docs/superpowers/pilots/2026-04-26-token-consolidation.md` § 4 (depr
 
 ### Phasing (rough sizing)
 
-- **Phase A — `shad-*` rip-out (S/M).** Every reference to the 39 shad-layer tokens cataloged in journal § 4.1 (CSS vars `--background`, `--foreground`, `--primary`, `--card`, `--popover`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, `--radius` and their `colors.shad.*` Tailwind aliases). Each row in § 4.1 carries an explicit migration target. Mostly mechanical. ~50 file touches estimated.
-- **Phase B — Scale renames (S).** `--color-error-*` → `--color-danger-*` and `colors.error.*` → `colors.danger.*` (the family rename per journal § 4.4 — 22 informational rows). Plus the duplication-class `DEFAULT` collapses from journal § 4.2 (e.g. `colors.primary.DEFAULT` → `colors.primary.500`). All mechanical.
+- **Phase A — `shad-*` rip-out (S/M).** Every reference to the 39 shad-layer tokens cataloged in consolidation journal § 4.1 (CSS vars `--background`, `--foreground`, `--primary`, `--card`, `--popover`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, `--radius` and their `colors.shad.*` Tailwind aliases). Each row in § 4.1 carries an explicit migration target. Mostly mechanical. ~50 file touches estimated.
+- **Phase B — Scale renames (S).** `--color-error-*` → `--color-danger-*` and `colors.error.*` → `colors.danger.*` (the family rename per consolidation journal § 4.4 — 22 informational rows). Plus the duplication-class `DEFAULT` collapses from consolidation journal § 4.2 (e.g. `colors.primary.DEFAULT` → `colors.primary.500`). All mechanical.
 - **Phase C — Variant taxonomy migration on Button usages (M).** Every `<Button variant="primary">` becomes `<Button intent="primary" variant="filled">` (and analogous splits across the 30-cell intent × variant matrix the Wave 1 recipe lands — see § 2.1 and `docs/superpowers/pilots/2026-04-26-button-conversion.md` § 1.1). Codemod-friendly. ~80-100 call sites.
 - **Phase D — Visual review per page (M/L).** After A-C, render each CVI page in the consolidated theme; capture findings; iterate. Mirrors the Wave 1 Phase 0 Task 0.10 visual-review loop, but at CVI-page scale rather than a single ScreenReplica.
 - **Phase E — Deprecation of the legacy `claimview-islands.css` var declarations (S).** Once nothing references the legacy vars, delete them from the CVI host CSS and from the Tailwind config's `theme.extend` block.
