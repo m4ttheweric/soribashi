@@ -1,0 +1,316 @@
+/**
+ * Button recipe styles — Wave 1 pilot (pure-styled-primitive category).
+ *
+ * Consumes ONLY the consolidated theme tokens emitted by codegen
+ * (apps/core-radix-pilot/src/generated/theme.css). No shad-* vars,
+ * no hand-set hex.
+ *
+ * IMPORTANT — codegen var format note (journal § 6, gap row 3):
+ * The current codegen emits CSS vars whose values are already
+ * complete `hsl(...)` strings, e.g.
+ *   --color-primary-500: hsl(221.2 83.2% 53.3%);
+ * Therefore consumers MUST reference them as `var(--color-...)`
+ * directly. Wrapping in `hsl(var(...))` produces invalid
+ * `hsl(hsl(...))` and resolves to transparent.
+ *
+ * The `cr-` prefix is the recipe's class namespace
+ * — short for "core-radix recipe."
+ */
+
+/* ─── root ──────────────────────────────────────────────────────────── */
+.cr-Button-root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-family-sans);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  border: 1px solid transparent;
+
+  /* intent + variant resolve via data-intent / data-variant rules below */
+  background: var(--cr-button-bg);
+  color: var(--cr-button-color);
+  border-color: var(--cr-button-border);
+}
+
+.cr-Button-root:hover {
+  background: var(--cr-button-hover-bg, var(--cr-button-bg));
+}
+
+.cr-Button-root:active {
+  background: var(--cr-button-active-bg, var(--cr-button-bg));
+}
+
+.cr-Button-root:focus-visible {
+  outline: 2px solid var(--cr-button-bg);
+  outline-offset: 2px;
+}
+
+.cr-Button-root:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── sizes ─────────────────────────────────────────────────────────── */
+.cr-Button-root[data-size='sm'] {
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: var(--font-size-sm);
+}
+
+.cr-Button-root[data-size='md'] {
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: var(--font-size-base);
+}
+
+.cr-Button-root[data-size='lg'] {
+  height: 3rem;
+  padding: 0 1.5rem;
+  font-size: var(--font-size-lg);
+}
+
+.cr-Button-root[data-full-width='true'] {
+  width: 100%;
+}
+
+/* ─── intent × variant resolution ───────────────────────────────────── */
+/* Each (variant, intent) cell sets the local --cr-button-* vars only.   */
+/* 5 variants × 6 intents = 30 cells. data-variant=filled is the         */
+/* default surface; outline keeps the border as the intent ring; subtle  */
+/* uses a low-saturation tinted fill; ghost is transparent until hover;  */
+/* link is unstyled chrome with an underline.                            */
+
+/* ── primary ────────────────────────────────────────────────────────── */
+.cr-Button-root[data-variant='filled'][data-intent='primary'] {
+  --cr-button-bg: var(--color-primary-500);
+  --cr-button-color: var(--color-neutral-0);
+  --cr-button-border: var(--color-primary-500);
+  --cr-button-hover-bg: var(--color-primary-600);
+  --cr-button-active-bg: var(--color-primary-700);
+}
+.cr-Button-root[data-variant='outline'][data-intent='primary'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-primary-700);
+  --cr-button-border: var(--color-primary-500);
+  --cr-button-hover-bg: var(--color-primary-50);
+}
+.cr-Button-root[data-variant='subtle'][data-intent='primary'] {
+  --cr-button-bg: var(--color-primary-100);
+  --cr-button-color: var(--color-primary-800);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-primary-200);
+}
+.cr-Button-root[data-variant='ghost'][data-intent='primary'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-primary-700);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-primary-50);
+}
+.cr-Button-root[data-variant='link'][data-intent='primary'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-primary-700);
+  --cr-button-border: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ── neutral ────────────────────────────────────────────────────────── */
+.cr-Button-root[data-variant='filled'][data-intent='neutral'] {
+  --cr-button-bg: var(--color-neutral-500);
+  --cr-button-color: var(--color-neutral-0);
+  --cr-button-border: var(--color-neutral-500);
+  --cr-button-hover-bg: var(--color-neutral-600);
+  --cr-button-active-bg: var(--color-neutral-700);
+}
+.cr-Button-root[data-variant='outline'][data-intent='neutral'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-neutral-700);
+  --cr-button-border: var(--color-neutral-500);
+  --cr-button-hover-bg: var(--color-neutral-50);
+}
+.cr-Button-root[data-variant='subtle'][data-intent='neutral'] {
+  --cr-button-bg: var(--color-neutral-100);
+  --cr-button-color: var(--color-neutral-800);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-neutral-200);
+}
+.cr-Button-root[data-variant='ghost'][data-intent='neutral'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-neutral-700);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-neutral-50);
+}
+.cr-Button-root[data-variant='link'][data-intent='neutral'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-neutral-700);
+  --cr-button-border: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ── success ────────────────────────────────────────────────────────── */
+.cr-Button-root[data-variant='filled'][data-intent='success'] {
+  --cr-button-bg: var(--color-success-500);
+  --cr-button-color: var(--color-neutral-0);
+  --cr-button-border: var(--color-success-500);
+  --cr-button-hover-bg: var(--color-success-600);
+  --cr-button-active-bg: var(--color-success-700);
+}
+.cr-Button-root[data-variant='outline'][data-intent='success'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-success-700);
+  --cr-button-border: var(--color-success-500);
+  --cr-button-hover-bg: var(--color-success-50);
+}
+.cr-Button-root[data-variant='subtle'][data-intent='success'] {
+  --cr-button-bg: var(--color-success-100);
+  --cr-button-color: var(--color-success-800);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-success-200);
+}
+.cr-Button-root[data-variant='ghost'][data-intent='success'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-success-700);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-success-50);
+}
+.cr-Button-root[data-variant='link'][data-intent='success'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-success-700);
+  --cr-button-border: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ── warning ────────────────────────────────────────────────────────── */
+.cr-Button-root[data-variant='filled'][data-intent='warning'] {
+  --cr-button-bg: var(--color-warning-500);
+  --cr-button-color: var(--color-neutral-0);
+  --cr-button-border: var(--color-warning-500);
+  --cr-button-hover-bg: var(--color-warning-600);
+  --cr-button-active-bg: var(--color-warning-700);
+}
+.cr-Button-root[data-variant='outline'][data-intent='warning'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-warning-700);
+  --cr-button-border: var(--color-warning-500);
+  --cr-button-hover-bg: var(--color-warning-50);
+}
+.cr-Button-root[data-variant='subtle'][data-intent='warning'] {
+  --cr-button-bg: var(--color-warning-100);
+  --cr-button-color: var(--color-warning-800);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-warning-200);
+}
+.cr-Button-root[data-variant='ghost'][data-intent='warning'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-warning-700);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-warning-50);
+}
+.cr-Button-root[data-variant='link'][data-intent='warning'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-warning-700);
+  --cr-button-border: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ── danger ─────────────────────────────────────────────────────────── */
+.cr-Button-root[data-variant='filled'][data-intent='danger'] {
+  --cr-button-bg: var(--color-danger-500);
+  --cr-button-color: var(--color-neutral-0);
+  --cr-button-border: var(--color-danger-500);
+  --cr-button-hover-bg: var(--color-danger-600);
+  --cr-button-active-bg: var(--color-danger-700);
+}
+.cr-Button-root[data-variant='outline'][data-intent='danger'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-danger-700);
+  --cr-button-border: var(--color-danger-500);
+  --cr-button-hover-bg: var(--color-danger-50);
+}
+.cr-Button-root[data-variant='subtle'][data-intent='danger'] {
+  --cr-button-bg: var(--color-danger-100);
+  --cr-button-color: var(--color-danger-800);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-danger-200);
+}
+.cr-Button-root[data-variant='ghost'][data-intent='danger'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-danger-700);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-danger-50);
+}
+.cr-Button-root[data-variant='link'][data-intent='danger'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-danger-700);
+  --cr-button-border: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ── info ───────────────────────────────────────────────────────────── */
+.cr-Button-root[data-variant='filled'][data-intent='info'] {
+  --cr-button-bg: var(--color-info-500);
+  --cr-button-color: var(--color-neutral-0);
+  --cr-button-border: var(--color-info-500);
+  --cr-button-hover-bg: var(--color-info-600);
+  --cr-button-active-bg: var(--color-info-700);
+}
+.cr-Button-root[data-variant='outline'][data-intent='info'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-info-700);
+  --cr-button-border: var(--color-info-500);
+  --cr-button-hover-bg: var(--color-info-50);
+}
+.cr-Button-root[data-variant='subtle'][data-intent='info'] {
+  --cr-button-bg: var(--color-info-100);
+  --cr-button-color: var(--color-info-800);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-info-200);
+}
+.cr-Button-root[data-variant='ghost'][data-intent='info'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-info-700);
+  --cr-button-border: transparent;
+  --cr-button-hover-bg: var(--color-info-50);
+}
+.cr-Button-root[data-variant='link'][data-intent='info'] {
+  --cr-button-bg: transparent;
+  --cr-button-color: var(--color-info-700);
+  --cr-button-border: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ─── parts ─────────────────────────────────────────────────────────── */
+.cr-Button-label {
+  display: inline-block;
+}
+
+.cr-Button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cr-Button-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: cr-button-spin 600ms linear infinite;
+}
+
+@keyframes cr-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
