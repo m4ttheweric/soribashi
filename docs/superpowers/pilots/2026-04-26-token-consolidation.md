@@ -25,6 +25,8 @@ All HSL values are written as raw `H S% L%` triples (no `hsl()` wrapper) — tha
 
 ### 1.1 CSS variables — declared in `claimview-islands.css`
 
+Rows are grouped by flavor; within each flavor, by source-file declaration order.
+
 | Token name | Light value | Dark value | Where defined | Flavor |
 |---|---|---|---|---|
 | `--background` | `0 0% 100%` | `222.2 84% 4.9%` | `claimview-islands.css` | shad-* |
@@ -144,12 +146,14 @@ CSS-var declaration count sanity check: `grep -c "^    --" claimview-islands.css
 
 Tokens here that map to a CSS var are listed alongside their underlying CSS var, since the runtime value is owned by the CSS layer.
 
+Row order mirrors `tailwind.config.js` source order — `DEFAULT` is interleaved at the position where the source config declares it (e.g., between `500` and `600` for `primary`; between `600` and `700` for `neutral`).
+
 #### 1.2.1 `colors.shad.*` (shad-* alias group)
 
 | Token name (Tailwind path) | Light value | Dark value | Where defined | Flavor |
 |---|---|---|---|---|
-| `colors.shad.background` | `hsl(var(--background) / <alpha-value>)` ↳ underlies `--background` | (same — resolved via CSS var) | `tailwind.config.js` | shad-* |
-| `colors.shad.foreground` | `hsl(var(--foreground) / <alpha-value>)` ↳ underlies `--foreground` | (same — resolved via CSS var) | `tailwind.config.js` | shad-* |
+| `colors.shad.background` | `hsl(var(--background) / <alpha-value>)` ↳ underlies `--background` | (same) | `tailwind.config.js` | shad-* |
+| `colors.shad.foreground` | `hsl(var(--foreground) / <alpha-value>)` ↳ underlies `--foreground` | (same) | `tailwind.config.js` | shad-* |
 | `colors.shad.card` | `hsl(var(--card) / <alpha-value>)` ↳ underlies `--card` | (same) | `tailwind.config.js` | shad-* |
 | `colors.shad.card-foreground` | `hsl(var(--card-foreground) / <alpha-value>)` ↳ underlies `--card-foreground` | (same) | `tailwind.config.js` | shad-* |
 | `colors.shad.popover` | `hsl(var(--popover) / <alpha-value>)` ↳ underlies `--popover` | (same) | `tailwind.config.js` | shad-* |
@@ -186,7 +190,7 @@ Tokens here that map to a CSS var are listed alongside their underlying CSS var,
 
 | Token name | Light value | Dark value | Where defined | Flavor |
 |---|---|---|---|---|
-| `colors.primary.50` | `hsl(var(--color-primary-50) / <alpha-value>)` ↳ underlies `--color-primary-50` | (resolved via CSS var) | `tailwind.config.js` | Figma scale |
+| `colors.primary.50` | `hsl(var(--color-primary-50) / <alpha-value>)` ↳ underlies `--color-primary-50` | (same) | `tailwind.config.js` | Figma scale |
 | `colors.primary.100` | `hsl(var(--color-primary-100) / <alpha-value>)` ↳ underlies `--color-primary-100` | (same) | `tailwind.config.js` | Figma scale |
 | `colors.primary.200` | `hsl(var(--color-primary-200) / <alpha-value>)` ↳ underlies `--color-primary-200` | (same) | `tailwind.config.js` | Figma scale |
 | `colors.primary.300` | `hsl(var(--color-primary-300) / <alpha-value>)` ↳ underlies `--color-primary-300` | (same) | `tailwind.config.js` | Figma scale |
@@ -353,6 +357,8 @@ Tokens here that map to a CSS var are listed alongside their underlying CSS var,
 
 Counts come from grepping `apps/adjuster/src/components/ClaimViewIslands` (`.tsx`/`.ts`/`.css`). Buckets: `<10`, `10–100`, `100+`.
 
+Counts prefixed `~` indicate approximate values from greps that span multiple quote/attribute contexts; exact counts have no prefix.
+
 #### 1.3.1 Color-utility class counts (Tailwind utilities consumed in source)
 
 Top consumed Figma-scale utility classes (raw uniq counts of class fragments):
@@ -473,7 +479,7 @@ Notes:
 
 ### 1.4 Inventory totals
 
-- **CSS vars declared in `claimview-islands.css`:** 105 (104 inside `.claim-view-islands` × 2 modes including the light-only `--radius`, plus 4 `--cvi-search-*` vars on `:root`/`.dark`, plus 1 implicit `--glow-color` referenced inside `@keyframes glow` with no top-level declaration → counted once each above for a total of 105 distinct identifiers; 209 declaration lines accounting for both modes).
+- **CSS vars declared in `claimview-islands.css`:** 110 distinct identifiers = 105 inside `.claim-view-islands` (104 declared in both modes + 1 light-only `--radius`) + 4 `--cvi-search-*` vars on `:root`/`.dark` + 1 implicit `--glow-color` referenced inside `@keyframes glow` with no top-level declaration. Declaration line count = 209 (105 light + 104 dark inside `.claim-view-islands`; the four `--cvi-search-*` vars are declared at a different indentation on `:root`/`.dark` and are not part of that 209-line count).
 - **Tailwind config color tokens (resolved keys, including DEFAULT and underlying-var aliases):** 24 shad-* keys + 4 base palette (current/transparent/white/black) + 13 primary + 13 neutral + 13 success + 13 warning + 13 error + 13 info + 9 direct-semantic (background.{DEFAULT,secondary,tertiary} + borderColor.DEFAULT + text.{primary,secondary,tertiary,disabled} + accent.feedback) = **115 color keys**.
 - **Tailwind config non-color tokens:** 5 spacing + 6 borderRadius + 5 boxShadow + 7 fontSize + 1 fontFamily = **24 keys**.
 
