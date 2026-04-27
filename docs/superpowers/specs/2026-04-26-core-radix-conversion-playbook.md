@@ -191,7 +191,43 @@ _To be populated by Wave 4._
 
 ## 3. Soribashi gaps surfaced
 
-_Populated in Task 2.4._
+Every gap surfaced during Wave 1 Phases 0 + 1 is collected here, deduplicated across the two journals, and tagged with severity. The C → A bridge subsection at the end identifies which entries gate the north-star integration model (spec § 3).
+
+**Severity rubric:**
+- **blocking** — would have prevented the pilot from completing without a workaround that hides the gap. Future waves WILL hit this gap; needs to be fixed in soribashi before a sane rollout.
+- **important** — surfaced friction; workaround was viable for Wave 1 but the gap will compound. Fix before Wave 4 (Select) at the latest.
+- **nice-to-have** — surfaced but the workaround is fine indefinitely. Optional cleanup.
+
+Wave 1 surfaced no `blocking` gaps — every gap had a viable in-pilot workaround. Four `important` and two `nice-to-have` made the cut.
+
+| # | Gap | Severity | Surfaced in | Recommended resolution |
+|---|---|---|---|---|
+| 1 | Codegen emits `hsl(...)`-wrapped var values; bare-HSL emit needed for Tailwind `<alpha-value>` and `hsl(var(--x))` consumer patterns | important | Consolidation journal § 6 (third bullet) AND conversion journal § 4 Gap 1 — same root cause, surfaced first in Phase 0 Task 0.8 (TokenReview), recurred as a tax in Phase 1 Tasks 1.5 / 1.6 / 1.8 | `@soribashi/codegen`: add (or default-on) a bare-HSL emit mode in `packages/codegen/src/emit-css.ts` so each var holds raw HSL components (`--color-primary-500: 221.2 83.2% 53.3%;`). Consumers then write `hsl(var(--color-primary-500))` for opaque use and `hsl(var(--color-primary-500) / <alpha-value>)` for Tailwind alpha utilities. Wave 1 worked around by referencing `var(--color-...)` directly without re-wrapping, which loses the alpha-utility pattern. **This is the gap that gates Option A — see C → A bridge below.** |
+| 2 | `definePolymorphicComponent` `render` ctx surfaces the seven styles-API framework keys (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`) on `props`, requiring a hand-written destructure block before spreading `...rest` onto a DOM element | important | Conversion journal § 4 Gap 2 — Phase 1 Task 1.5 (Button recipe GREEN). Hidden in the factory's own test by a `...rest as any` cast (`packages/factory/test/define-polymorphic-component.test.tsx:18`); no type, jsdoc, runtime warning, or doc page calls out the requirement | `@soribashi/factory`: either (a) `useProps` / `useStyles` consume those keys and `render` exposes a pre-cleaned `props`; or (b) ship a `splitStylesApiProps(props)` helper plus a documented `render` snippet. Option (a) is more ergonomic; option (b) is non-breaking. Either prevents every recipe author across Waves 2–4 from rediscovering the destructure-or-leak footgun. |
+| 3 | Pilot-app vitest config template lacks `setupFiles` wiring for `@testing-library/jest-dom/vitest`; jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, etc.) fail with `Invalid Chai property` until manually wired | important | Conversion journal § 4 Gap 3 — Phase 1 Task 1.5 (10/11 tests green; `disabled-on-loading` failed). Convention exists at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` but did not propagate across the `packages/*` → `apps/*` boundary | Harness wiring rather than a published-package gap, but bites every recipe pilot. Update the pilot-app / consumer-app vitest config template (and any future scaffold) to include `setupFiles: ['./test/setup.ts']` plus a one-line `import '@testing-library/jest-dom/vitest';` setup file by default. |
+| 4 | `accent.feedback` semantic token has no clean home in the soribashi `SemanticTokens` shape (`text`, `surface`, `border` only — no `accent` slot) | nice-to-have | Consolidation journal § 6 (first bullet) — Phase 0 Task 0.4 (theme expression). Wave 1 omits the token; pilot doesn't render the feedback UI | `@soribashi/theme`: pick one of (a) extend `SemanticTokens` with a free-form `accent: Record<string, SemanticReference>` slot, (b) promote it to a sibling top-level color family (`colors.accent`), or (c) fold it into a future "decorative" namespace. Not a Wave 1 blocker; flagged for the integration project that wires the consolidated theme into CVI's existing 115 importers. |
+| 5 | Border-default reset has no in-theme expression: CVI's `colors.borderColor.DEFAULT` Tailwind-config bug is currently worked around via a universal-selector reset in `claimview-islands.css`; the soribashi theme expresses `semantic.border.default → colors.neutral.200` but doesn't emit a corresponding universal `border-color` reset | nice-to-have | Consolidation journal § 6 (second bullet) — Phase 0 Task 0.4 (theme expression); cross-references journal § 5 Q7 | `@soribashi/codegen` (or `@soribashi/theme`): make the architectural choice — either codegen emits a universal `* { border-color: var(--color-border-default); }` reset when a `semantic.border.default` is set, or document that consumers are expected to apply `border-default` explicitly. Not a Wave 1 blocker; surfaced for the integration project. |
+| 6 | Focus indicator authoring footgun: routing focus color through the same `--cr-{recipe}-bg` var that powers the background makes the outline invisible whenever bg resolves to `transparent` (ghost / link / outline variants) | nice-to-have | Conversion journal § 4 Gap 4 — Phase 1 Task 1.5 review. Wave 1 ships browser default `:focus-visible` ring on the transparent variants; tinted outline only on filled / subtle | Recipe-authoring guidance, not a soribashi-package gap. Already documented in this playbook § 2.1 ("Focus-indicator footgun") — route focus color through a dedicated `--cr-{recipe}-focus-ring` var that falls back to the intent's border or text color on transparent variants. No code change needed in any soribashi package. |
+
+### The C → A bridge
+
+Wave 1 ships against Option C (soribashi emits a Tailwind partial; host config composes — see § 1 Step 4 and spec § 3). The north star is Option A (soribashi owns the entire Tailwind config — dark-mode selector, `preflight` setting, plugin pass-through, content globs).
+
+The gaps that must close to make A real:
+
+- **Gap 1 (codegen `hsl(...)` wrapper).** This is the only Wave 1 gap whose resolution gates Option A directly. Tailwind's `<alpha-value>` pattern requires the var to hold bare HSL components so the utility can splice the alpha in (`bg-primary-500/50` → `hsl(var(--color-primary-500) / 0.5)`). Until codegen emits bare HSL, soribashi can't own the Tailwind config in a way that supports alpha utilities — the host has to either accept losing alpha utilities or hand-roll a parallel set of vars. Either undercuts the value of A.
+
+The other Wave 1 gaps (#2 styles-API prop strip, #3 vitest template, #4 accent.feedback, #5 border-default reset, #6 focus indicator) are about recipe authoring ergonomics, theme-shape coverage, or harness wiring — none of them block A's "soribashi owns the full Tailwind config" promise. They're either wave-internal friction or integration-project concerns.
+
+A is also gated on two **codegen feature additions** that Wave 1 did not need but the spec called out: configurable dark-mode selector (so the host's `.dark .claim-view-islands` scope can be expressed) and config-level pass-through for `corePlugins.preflight`, plugins, and content globs. Wave 1 didn't surface either as a friction point because Option C composes them at the host layer; both are pure additions to the codegen's emit shape rather than gaps revealed by the pilot.
+
+Once Gap 1 closes (and the two additive codegen features ship), the pilot's `tailwind.config.js` collapses to:
+
+```js
+module.exports = require('./src/generated/tailwind.config.generated.js');
+```
+
+and the soribashi theme owns dark-mode selector, preflight setting, plugin pass-through, and content globs — the Option A north star.
 
 ## 4. Legacy-token migration strategy stub
 
