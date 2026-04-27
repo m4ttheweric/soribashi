@@ -6,6 +6,7 @@ module.exports = {
   content: [
     './index.html',
     './src/**/*.{ts,tsx}',
+    '!./src/reference/**',
   ],
   darkMode: 'class', // Wave 1 default; CVI's `.dark .claim-view-islands` deferred to north-star A
   corePlugins: {
