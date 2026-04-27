@@ -514,7 +514,109 @@ Across all 243 inventoried rows (110 in § 1.1 + 133 in § 1.2.1–§ 1.2.14):
 
 ## 3. Consolidated theme decisions (Task 0.4)
 
-_Populated below._
+The Wave 1 design artifact lives at `apps/core-radix-pilot/src/theme/index.ts` as a single `createTheme()` call. This section documents the choices that produced it.
+
+### 3.1 Color families included
+
+Six families, each with the soribashi standard 11-step ramp (`50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950`); `neutral` additionally carries a `0` step (white in light, near-black in dark) used by `surface.default`.
+
+| Family | Light `500` anchor | Dark `500` anchor | Origin in CVI |
+|---|---|---|---|
+| `primary` | `hsl(221.2 83.2% 53.3%)` | `hsl(217.2 91.2% 59.8%)` | `--color-primary-500` |
+| `neutral` | `hsl(215 16% 47%)` | `hsl(215 20% 65%)` | `--color-neutral-500` |
+| `success` | `hsl(142 76% 36%)` | `hsl(142 71% 45%)` | `--color-success-500` |
+| `warning` | `hsl(38 92% 50%)` | `hsl(49 98% 48%)` | `--color-warning-500` |
+| `danger` | `hsl(0 84% 60%)` | `hsl(0 84% 60%)` | `--color-error-500` (renamed) |
+| `info` | `hsl(199 89% 48%)` | `hsl(188 86% 53%)` | `--color-info-500` |
+
+### 3.2 Scale regenerations
+
+Only the **primary** family was regenerated, on the light `50..400` and dark `50..400` steps.
+
+**Light side regeneration:**
+
+| Step | CVI value | Wave 1 value | Reason |
+|---|---|---|---|
+| `50` | `hsl(240 100% 98%)` | `hsl(221 83% 97%)` | Hue/sat shifted to anchor; lightness preserved |
+| `100` | `hsl(240 100% 96%)` | `hsl(221 83% 93%)` | Hue/sat shifted to anchor; lightness preserved |
+| `200` | `hsl(240 100% 92%)` | `hsl(221 83% 86%)` | Hue/sat shifted to anchor; lightness ramped |
+| `300` | `hsl(240 100% 85%)` | `hsl(221 83% 75%)` | Hue/sat shifted to anchor; lightness ramped |
+| `400` | `hsl(240 100% 75%)` | `hsl(221 83% 65%)` | Hue/sat shifted to anchor; lightness ramped |
+| `500` | `hsl(221.2 83.2% 53.3%)` | (preserved verbatim) | Anchor untouched |
+| `600..950` | (anchor hue, varying lightness) | (preserved verbatim) | Already coherent |
+
+**Dark side regeneration:** Same logic applied to dark `50..400`. CVI dark held the same hue 217 across `500..950` but jumped the lighter steps; Wave 1 holds hue 217 / sat 91 across all dark steps for `primary`.
+
+**Method.** Hue + saturation locked to the `500` anchor's values; lightness preserved from CVI's existing ramp (since the lightness gradient was already monotone and tonally readable). No families with already-coherent ramps (`neutral`, `success`, `warning`, `danger`, `info`) were touched. Note that `warning` and `info` *do* have a hue jump at `500`, but the journal § 5 notes them as plausible designed crossfades rather than the obvious seed-from-defaults artifact that primary's 240→221 jump represents — so they were preserved.
+
+### 3.3 Duplicates collapsed
+
+Per the inventory's `duplication` class (12 rows in § 2.1):
+
+| What was duplicated | Now lives as |
+|---|---|
+| `--color-primary` / `colors.primary.DEFAULT` | `colors.primary.500` |
+| `--color-success` / `colors.success.DEFAULT` | `colors.success.500` |
+| `--color-warning` / `colors.warning.DEFAULT` | `colors.warning.500` |
+| `--color-error` / `colors.error.DEFAULT` | `colors.danger.500` (renamed family) |
+| `--color-info` / `colors.info.DEFAULT` | `colors.info.500` |
+| `colors.neutral.DEFAULT` (→ `--color-neutral-600`) | `colors.neutral.500` (anchored to `500` per Q6 default) |
+| `boxShadow.popover` | `shadow.lg` (byte-identical) |
+
+The shad-* layer (39 hack rows) is dropped wholesale — see § 4 for the deprecation list.
+
+### 3.4 Family rename
+
+`error` → `danger`. CVI's full error scale (light + dark, all 11 steps) is preserved verbatim under the new family name. This matches the soribashi `defaultTokens` and the playground theme's intent list.
+
+### 3.5 Semantic surface choices
+
+**Surface taxonomy:** five layers — `canvas`, `default`, `raised`, `sunken`, `overlay`. The CVI `card` and `popover` shad-* tokens (which held identical values in both light and dark) collapse into `surface.default`. Per Q1 Wave 1 default; flagged for design review whether to differentiate elevation later.
+
+| Slot | Reference | Origin |
+|---|---|---|
+| `surface.canvas` | `colors.neutral.50` | CVI `--color-background-secondary` |
+| `surface.default` | `colors.neutral.0` | CVI `--color-background` (white) |
+| `surface.raised` | `colors.neutral.100` | CVI `--color-background-tertiary` |
+| `surface.sunken` | `colors.neutral.50` | CVI `--color-background-secondary` (echo) |
+| `surface.overlay` | `colors.neutral.900` | overlay default — soribashi convention |
+
+**Text taxonomy:** four layers — `default`, `muted`, `subtle`, `disabled`. Per Q3 Wave 1 default, the four-step shape from CVI's `text.{primary,secondary,tertiary,disabled}` is preserved but routes through neutral-scale anchors rather than dedicated CSS vars.
+
+| Slot | Reference | Closest CVI origin |
+|---|---|---|
+| `text.default` | `colors.neutral.900` | `--color-text-primary` (`hsl(222 47% 11%)` ↔ `neutral.900`) |
+| `text.muted` | `colors.neutral.700` | `--color-text-secondary` (`hsl(215 19% 35%)` ↔ `neutral.600`/`700`) |
+| `text.subtle` | `colors.neutral.500` | `--color-text-tertiary` (`hsl(215 20% 65%)` ↔ `neutral.400`/`500`) |
+| `text.disabled` | `colors.neutral.400` | `--color-text-disabled` (`hsl(213 27% 84%)` ↔ `neutral.300`/`400`) |
+
+**Border taxonomy:** three layers — `default`, `strong`, `muted`. CVI's single `--color-border-islands` (`hsl(214 32% 91%)`) maps cleanly to `border.default → colors.neutral.200`. Strong / muted derived from the ramp per soribashi convention.
+
+### 3.6 Intent + variant lists
+
+Per spec § 7.1 step 2:
+
+- **Intents:** `['primary', 'neutral', 'success', 'warning', 'danger', 'info']`
+- **Variants:** `['filled', 'outline', 'subtle', 'ghost', 'link']`
+
+Intent ordering puts `primary` and `neutral` first (the foundation roles), then the four feedback intents in CVI's source-file declaration order (`success, warning, error, info` — with `error` rebadged to `danger` in its spot). The variant list matches the soribashi `defaultIntentResolver` defaults.
+
+### 3.7 Non-color token decisions
+
+| Group | Wave 1 choice | Notes |
+|---|---|---|
+| `radius` | `sm/md/lg/xl/2xl/3xl` (CVI mapping with `2xl` → `3xl` rename for ramp consistency) | shad's `--radius` (`0.5rem`) is byte-identical to CVI's `borderRadius.md` (`0.5rem`); collapse is automatic since shad-* drops wholesale. CVI's `borderRadius.DEFAULT` (`0.375rem`) becomes `radius.md`. |
+| `spacing` | soribashi default scale (`xs..3xl`) | CVI's five custom keys (`spacing.{18,88,100,112,128}`) tagged `deferred` — § 1.3.2 confirms zero utility usage. |
+| `fontSize` | `xs/sm/base/lg/xl/2xl/3xl` (CVI verbatim) | Kept CVI's `base` slot rather than soribashi's `md` to minimize integration-project churn. Same naming-stability logic as Q4. |
+| `lineHeight` | matched to fontSize keys | CVI declares fontSize as paired tuples in Tailwind; soribashi splits font-size and line-height into two records keyed identically. |
+| `fontFamily` | `sans` only | CVI declares only `fontFamily.sans`. |
+| `shadow` | `sm/md/lg/xl` (CVI verbatim) | `popover` collapsed into `lg` (duplicate). |
+
+### 3.8 Dark scope
+
+Per Q5: emitted under `.dark` (the soribashi default). The pilot is a standalone Vite app with no host-page island chrome. CVI's production scope is `.dark .claim-view-islands` because of host-page integration; reconciliation is owned by the integration project, not Wave 1.
+
+
 
 ## 4. Deprecation list (Task 0.5)
 
@@ -600,7 +702,9 @@ The remaining questions surfaced during inventory (Task 0.2) and classification 
 
 ## 6. Codegen / theme-model gaps surfaced
 
-- _Populated as encountered. Promoted to the playbook in Phase 2._
+- **`accent.feedback` has no clean home in the soribashi semantic shape.** CVI declares `--color-accent-feedback` (light `hsl(300 40% 55%)`, dark `hsl(300 45% 68%)`) and exposes it as the `colors.accent.feedback` Tailwind utility. The soribashi `SemanticTokens` shape only models `text`, `surface`, and `border` — there is no `accent` slot, and the value isn't a simple text/surface/border role (it's a one-off magenta highlight used for "feedback" UI in CVI). Wave 1 omits it from the consolidated theme. **Resolution paths:** (a) extend `SemanticTokens` with a free-form `accent: Record<string, SemanticReference>` slot, (b) promote it to a sibling top-level color family (`colors.accent`), or (c) fold it into a future "decorative" namespace. Not blocking for Wave 1 since the pilot doesn't render the feedback UI; flagged for the integration project.
+- **`borderColor.DEFAULT` misplacement (Q7) has no in-theme expression yet.** CVI's `colors.borderColor.DEFAULT` is a Tailwind-config bug worked around via a universal-selector reset in `claimview-islands.css`. The soribashi theme model expresses border defaults via `semantic.border.default → colors.neutral.200` (which Wave 1 does), but doesn't currently emit a corresponding universal `border-color` reset rule. Whether the codegen should emit such a reset, or whether consumers are expected to apply `border-default` explicitly, is an architectural choice that's not yet documented. Not blocking for Wave 1; surfaced for the integration project.
+- _Additional items will be appended as encountered. Promoted to the playbook in Phase 2._
 
 ## 7. Visual review findings (Task 0.10)
 
