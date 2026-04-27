@@ -58,6 +58,12 @@ export const theme = createTheme({
         '800': 'hsl(221.2 83.2% 30%)',
         '900': 'hsl(221.2 83.2% 22%)',
         '950': 'hsl(221.2 83.2% 15%)',
+        // foreground = text color when this family is the background.
+        // Convention from soribashi defaults / playground theme; CVI does
+        // not declare per-family foreground tokens (verified § 1.2.3-1.2.8).
+        // Required so downstream intent resolvers can derive
+        // IntentResolverResult.color — undefined otherwise.
+        foreground: 'hsl(0 0% 100%)',
       },
       neutral: {
         // CVI ramp preserved verbatim. Adds `0` for surface.default (white)
@@ -74,6 +80,7 @@ export const theme = createTheme({
         '800': 'hsl(217 33% 17%)',
         '900': 'hsl(222 47% 11%)',
         '950': 'hsl(222 84% 5%)',
+        foreground: 'hsl(0 0% 100%)',
       },
       success: {
         // CVI ramp preserved verbatim — anchors and steps already coherent.
@@ -88,6 +95,7 @@ export const theme = createTheme({
         '800': 'hsl(143 62% 20%)',
         '900': 'hsl(144 61% 20%)',
         '950': 'hsl(145 80% 10%)',
+        foreground: 'hsl(0 0% 100%)',
       },
       warning: {
         // CVI ramp preserved verbatim. Note: CVI's `500` anchor sits at
@@ -105,6 +113,8 @@ export const theme = createTheme({
         '800': 'hsl(23 83% 31%)',
         '900': 'hsl(22 78% 26%)',
         '950': 'hsl(26 83% 14%)',
+        // black on warning yellow for legibility — matches playground.
+        foreground: 'hsl(0 0% 0%)',
       },
       danger: {
         // RENAMED from CVI's `error` family per soribashi convention.
@@ -120,6 +130,7 @@ export const theme = createTheme({
         '800': 'hsl(0 70% 35%)',
         '900': 'hsl(0 63% 31%)',
         '950': 'hsl(0 75% 15%)',
+        foreground: 'hsl(0 0% 100%)',
       },
       info: {
         // CVI ramp preserved verbatim. Note: like warning, the `500` anchor
@@ -138,6 +149,7 @@ export const theme = createTheme({
         '800': 'hsl(201 90% 27%)',
         '900': 'hsl(202 80% 24%)',
         '950': 'hsl(204 80% 16%)',
+        foreground: 'hsl(0 0% 100%)',
       },
     },
     // CVI's borderRadius extend, preserved. Note: shad's `--radius` (0.5rem)
@@ -150,6 +162,7 @@ export const theme = createTheme({
       xl: '0.75rem',
       '2xl': '1rem',
       '3xl': '1.5rem', // CVI's borderRadius.2xl, renamed for ramp consistency
+      full: '9999px', // not in CVI but standard for pill shapes — needed for some Button variants
     },
     // soribashi default spacing scale. CVI's five custom spacing extensions
     // (18, 88, 100, 112, 128) are DEFERRED — § 1.3.2 confirms zero utility
@@ -176,17 +189,28 @@ export const theme = createTheme({
       '2xl': '1.5rem',
       '3xl': '1.875rem',
     },
-    // CVI declares fontSize line-heights as paired tuples in tailwind
-    // (`['0.75rem', '1rem']`). The soribashi token model splits font-size
-    // and line-height into two records keyed identically. Pairings preserved.
+    // Unitless multipliers, matching the soribashi default-tokens convention
+    // (`packages/theme/src/tokens/default-tokens.ts:127`). CVI declares
+    // fontSize line-heights as paired tuples in tailwind (e.g.
+    // `['0.75rem', '1rem']`); each multiplier here is the CVI absolute
+    // line-height divided by its paired fontSize, preserving the visual
+    // metric while matching the standard CSS unitless-multiplier convention.
+    // Computations:
+    //   xs:   16/12 = 1.333
+    //   sm:   20/14 = 1.429
+    //   base: 24/16 = 1.5
+    //   lg:   28/18 = 1.556
+    //   xl:   28/20 = 1.4
+    //   2xl:  32/24 = 1.333
+    //   3xl:  36/30 = 1.2
     lineHeight: {
-      xs: '1rem',
-      sm: '1.25rem',
-      base: '1.5rem',
-      lg: '1.75rem',
-      xl: '1.75rem',
-      '2xl': '2rem',
-      '3xl': '2.25rem',
+      xs: '1.333',
+      sm: '1.429',
+      base: '1.5',
+      lg: '1.556',
+      xl: '1.4',
+      '2xl': '1.333',
+      '3xl': '1.2',
     },
     fontFamily: {
       sans: 'Inter, system-ui, -apple-system, sans-serif',

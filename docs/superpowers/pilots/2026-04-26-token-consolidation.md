@@ -518,7 +518,7 @@ The Wave 1 design artifact lives at `apps/core-radix-pilot/src/theme/index.ts` a
 
 ### 3.1 Color families included
 
-Six families, each with the soribashi standard 11-step ramp (`50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950`); `neutral` additionally carries a `0` step (white in light, near-black in dark) used by `surface.default`.
+Six families, each with the soribashi standard 11-step ramp (`50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950`); `neutral` additionally carries a `0` step (white in light, near-black in dark) used by `surface.default`. Each family also declares a `foreground` slot (white for five families, black for `warning` so light text on yellow stays legible) so downstream intent resolvers can derive `IntentResolverResult.color` rather than getting `undefined`. CVI does not declare per-family foregrounds in its tailwind config (verified § 1.2.3-1.2.8); the white/black defaults match the playground theme convention. No dark-mode foreground overrides — the yellow-warning legibility argument holds in dark too (dark `warning.500` is `hsl(49 98% 48%)`, also high-lightness yellow).
 
 | Family | Light `500` anchor | Dark `500` anchor | Origin in CVI |
 |---|---|---|---|
@@ -605,10 +605,10 @@ Intent ordering puts `primary` and `neutral` first (the foundation roles), then 
 
 | Group | Wave 1 choice | Notes |
 |---|---|---|
-| `radius` | `sm/md/lg/xl/2xl/3xl` (CVI mapping with `2xl` → `3xl` rename for ramp consistency) | shad's `--radius` (`0.5rem`) is byte-identical to CVI's `borderRadius.md` (`0.5rem`); collapse is automatic since shad-* drops wholesale. CVI's `borderRadius.DEFAULT` (`0.375rem`) becomes `radius.md`. |
+| `radius` | `sm/md/lg/xl/2xl/3xl/full` (CVI mapping with `2xl` → `3xl` rename for ramp consistency; `full` added) | shad's `--radius` (`0.5rem`) is byte-identical to CVI's `borderRadius.md` (`0.5rem`); collapse is automatic since shad-* drops wholesale. CVI's `borderRadius.DEFAULT` (`0.375rem`) becomes `radius.md`. `radius.full = 9999px` is added (not in CVI) to support pill-shaped Button variants in Task 1.5. |
 | `spacing` | soribashi default scale (`xs..3xl`) | CVI's five custom keys (`spacing.{18,88,100,112,128}`) tagged `deferred` — § 1.3.2 confirms zero utility usage. |
 | `fontSize` | `xs/sm/base/lg/xl/2xl/3xl` (CVI verbatim) | Kept CVI's `base` slot rather than soribashi's `md` to minimize integration-project churn. Same naming-stability logic as Q4. |
-| `lineHeight` | matched to fontSize keys | CVI declares fontSize as paired tuples in Tailwind; soribashi splits font-size and line-height into two records keyed identically. |
+| `lineHeight` | unitless multipliers, keyed identically to fontSize | CVI declares fontSize as paired tuples in Tailwind (e.g. `['0.75rem', '1rem']`); soribashi's `LineHeightTokens` is a flat `Record<string, string>` with no machine-readable pairing to `fontSize`. **Wave 1 converts CVI's absolute rem line-heights to unitless multipliers** (light-height ÷ paired font-size) to match the soribashi default-tokens convention (`packages/theme/src/tokens/default-tokens.ts:127`, all unitless). Computed multipliers: `xs 1.333`, `sm 1.429`, `base 1.5`, `lg 1.556`, `xl 1.4`, `2xl 1.333`, `3xl 1.2`. The visual metric is preserved at the body-default size; non-base sizes drift slightly when consumers pair a multiplier with a non-matching fontSize, but the multiplier model is the standard CSS convention and the slight drift is acceptable in exchange for consistency with the rest of the theme model. |
 | `fontFamily` | `sans` only | CVI declares only `fontFamily.sans`. |
 | `shadow` | `sm/md/lg/xl` (CVI verbatim) | `popover` collapsed into `lg` (duplicate). |
 
