@@ -231,8 +231,50 @@ and the soribashi theme owns dark-mode selector, preflight setting, plugin pass-
 
 ## 4. Legacy-token migration strategy stub
 
-_Populated in Task 2.5._
+**Scope:** the integration project's job — migrate CVI's existing 115 importers from fragmented tokens to the consolidated vocabulary. Sized here, not designed.
+
+### Migration surface
+
+Pull from `docs/superpowers/pilots/2026-04-26-token-consolidation.md` § 4 (deprecation list — 71 deprecated rows across `hack` / `duplication` / `deferred` classes plus the 22-row informational `error → danger` family rename in § 4.4). Every dropped or collapsed token has a named target written in the consolidated theme's vocabulary. The migration is fundamentally a find/replace at the token-name level, plus visual review.
+
+### Phasing (rough sizing)
+
+- **Phase A — `shad-*` rip-out (S/M).** Every reference to the 39 shad-layer tokens cataloged in journal § 4.1 (CSS vars `--background`, `--foreground`, `--primary`, `--card`, `--popover`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, `--radius` and their `colors.shad.*` Tailwind aliases). Each row in § 4.1 carries an explicit migration target. Mostly mechanical. ~50 file touches estimated.
+- **Phase B — Scale renames (S).** `--color-error-*` → `--color-danger-*` and `colors.error.*` → `colors.danger.*` (the family rename per journal § 4.4 — 22 informational rows). Plus the duplication-class `DEFAULT` collapses from journal § 4.2 (e.g. `colors.primary.DEFAULT` → `colors.primary.500`). All mechanical.
+- **Phase C — Variant taxonomy migration on Button usages (M).** Every `<Button variant="primary">` becomes `<Button intent="primary" variant="filled">` (and analogous splits across the 30-cell intent × variant matrix the Wave 1 recipe lands — see § 2.1 and `docs/superpowers/pilots/2026-04-26-button-conversion.md` § 1.1). Codemod-friendly. ~80-100 call sites.
+- **Phase D — Visual review per page (M/L).** After A-C, render each CVI page in the consolidated theme; capture findings; iterate. Mirrors the Wave 1 Phase 0 Task 0.10 visual-review loop, but at CVI-page scale rather than a single ScreenReplica.
+- **Phase E — Deprecation of the legacy `claimview-islands.css` var declarations (S).** Once nothing references the legacy vars, delete them from the CVI host CSS and from the Tailwind config's `theme.extend` block.
+
+The integration project gets its own brainstorm + spec + plan. This stub is the input — it sizes the work and points to the row-by-row migration targets in the journal, but does not design the project.
 
 ## 5. Future waves outlined
 
-_Populated in Task 2.5._
+Each wave reuses the consolidated theme from Wave 1. None redoes the token work. Each produces its own pilot + journal + playbook extension (added to § 2.X above). Cross-reference: this list mirrors and extends `docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md` § 11.
+
+### Wave 2 — Tooltip (transient overlay compound)
+
+**Why:** answers "how do I author a Radix-anatomy compound" — the open question Wave 1 deliberately deferred. Forces soribashi to address slot styling, portal handling, `data-state`-driven styling, and surface tokens (popover bg / border / shadow).
+
+**Pre-work:** likely needs a soribashi compound-authoring helper. Design-and-spec is part of Wave 2, not Wave 1.
+
+**Sizing:** M.
+
+### Wave 3 — Tabs (persistent navigational compound)
+
+**Why:** tests slot story at higher part-count (Root / List / Trigger / Content) and with controlled state passthrough.
+
+**Pre-work:** Wave 2 lands the compound primitive; Wave 3 stresses it.
+
+**Sizing:** M.
+
+### Wave 4 — Select (form control)
+
+**Why:** the heaviest anatomy in core-radix. Field composition (label / help / error slots), controlled state, keyboard a11y, trigger-vs-content surface tokens, option rendering.
+
+**Pre-work:** Waves 2 and 3 lock the compound + slot patterns. Wave 4 also exercises field composition (label / help / error slots).
+
+**Sizing:** L.
+
+### After Wave 4
+
+The playbook covers all four authoring categories. The remaining ~20 core-radix component groups can be sequenced as a sweep, leaning on the pattern most appropriate per category. Pure-styled-primitive siblings of Wave 1's Button (IconButton, ButtonDropdown — sketched in conversion journal § 5) slot directly into the § 2.1 pattern without further authoring research; they're sequencing for that sweep, not playbook extensions. Bundling vs one-by-one is a sequencing question for that project.
