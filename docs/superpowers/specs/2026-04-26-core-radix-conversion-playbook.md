@@ -198,7 +198,7 @@ Every gap surfaced during Wave 1 Phases 0 + 1 is collected here, deduplicated ac
 - **important** — surfaced friction; workaround was viable for Wave 1 but the gap will compound. Fix before Wave 4 (Select) at the latest.
 - **nice-to-have** — surfaced but the workaround is fine indefinitely. Optional cleanup.
 
-Wave 1 surfaced no `blocking` gaps — every gap had a viable in-pilot workaround. Four `important` and two `nice-to-have` made the cut.
+Wave 1 surfaced no `blocking` gaps — every gap had a viable in-pilot workaround. Three `important` and three `nice-to-have` made the cut.
 
 | # | Gap | Severity | Surfaced in | Recommended resolution |
 |---|---|---|---|---|
