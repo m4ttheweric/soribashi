@@ -186,8 +186,8 @@
   --text-subtle: var(--color-neutral-500);
   --surface-canvas: var(--color-neutral-50);
   --surface-default: var(--color-neutral-0);
-  --surface-overlay: var(--color-neutral-900);
   --surface-raised: var(--color-neutral-100);
+  --surface-scrim: var(--color-neutral-900);
   --surface-sunken: var(--color-neutral-50);
   --border-default: var(--color-neutral-200);
   --border-muted: var(--color-neutral-100);

@@ -27,7 +27,7 @@ const SEMANTIC_TOKENS: ReadonlyArray<readonly [label: string, cssVar: string]> =
   ['surface.default', '--surface-default'],
   ['surface.raised', '--surface-raised'],
   ['surface.sunken', '--surface-sunken'],
-  ['surface.overlay', '--surface-overlay'],
+  ['surface.scrim', '--surface-scrim'],
   ['text.default', '--text-default'],
   ['text.muted', '--text-muted'],
   ['text.subtle', '--text-subtle'],

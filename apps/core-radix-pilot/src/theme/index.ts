@@ -337,12 +337,15 @@ export const theme = createTheme({
     },
     surface: {
       // Per Q1 Wave 1 default: card + popover collapsed into `default`.
-      // Mirrors the playground theme's surface taxonomy.
       canvas: 'colors.neutral.50',
       default: 'colors.neutral.0',
       raised: 'colors.neutral.100',
       sunken: 'colors.neutral.50',
-      overlay: 'colors.neutral.900',
+      // Backdrop scrim for modals/dialogs. Renamed from `overlay` to `scrim`
+      // to reserve `overlay`/`floating` naming for Wave 2's floating-UI
+      // surface (tooltips, dropdown menus, popover content) — distinct from
+      // "scrim behind a modal." See journal § 5 Q11.
+      scrim: 'colors.neutral.900',
     },
     border: {
       // CVI's `--color-border-islands` (light hsl(214 32% 91%)) maps cleanly

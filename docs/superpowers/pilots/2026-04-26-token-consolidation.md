@@ -571,7 +571,7 @@ The shad-* layer (39 hack rows) is dropped wholesale — see § 4 for the deprec
 
 ### 3.5 Semantic surface choices
 
-**Surface taxonomy:** five layers — `canvas`, `default`, `raised`, `sunken`, `overlay`. The CVI `card` and `popover` shad-* tokens (which held identical values in both light and dark) collapse into `surface.default`. Per Q1 Wave 1 default; flagged for design review whether to differentiate elevation later.
+**Surface taxonomy:** five layers — `canvas`, `default`, `raised`, `sunken`, `scrim`. The CVI `card` and `popover` shad-* tokens (which held identical values in both light and dark) collapse into `surface.default`. Per Q1 Wave 1 default; flagged for design review whether to differentiate elevation later. The fifth slot was renamed from `overlay` → `scrim` (post-Wave-1) to reserve `overlay`/`floating` naming for Wave 2's floating-UI surface (tooltips, dropdown menus, popover content) — distinct from "scrim behind a modal." See § 5 Q11.
 
 | Slot | Reference | Origin |
 |---|---|---|
@@ -579,7 +579,7 @@ The shad-* layer (39 hack rows) is dropped wholesale — see § 4 for the deprec
 | `surface.default` | `colors.neutral.0` | CVI `--color-background` (white) |
 | `surface.raised` | `colors.neutral.100` | CVI `--color-background-tertiary` |
 | `surface.sunken` | `colors.neutral.50` | CVI `--color-background-secondary` (echo) |
-| `surface.overlay` | `colors.neutral.900` | overlay default — soribashi convention |
+| `surface.scrim` | `colors.neutral.900` | modal-backdrop default — soribashi convention |
 
 **Text taxonomy:** four layers — `default`, `muted`, `subtle`, `disabled`. Per Q3 Wave 1 default, the four-step shape from CVI's `text.{primary,secondary,tertiary,disabled}` is preserved but routes through neutral-scale anchors rather than dedicated CSS vars.
 
@@ -835,6 +835,13 @@ The remaining questions surfaced during inventory (Task 0.2) and classification 
 **Wave 1 default:** Defer. No Wave 1 action — chart vars are tagged `deferred` and ride along in their current shape until charts get a dedicated pass.
 **Rationale:** `--chart-1..5` and `colors.shad.chart-1..5` are zero-usage in CVI per § 1.3. Splitting them into a `chart` family of their own is correct architecturally (charts don't follow intent ramps) but blocks on chart-ramp design that's out of scope for Wave 1.
 **For design review:** No Wave 1 decision required. Flagged so the future chart pass starts with this open.
+
+### Q11: Surface ↔ foreground pairing — formalize per-surface, or rely on usage-site discipline?
+
+**Status:** open
+**Wave 1 default:** Informal. The consolidated theme has `surface.{canvas, default, raised, sunken, scrim}` and `text.{default, muted, subtle, disabled}` as **two independent axes**, with the implicit assumption "any text token works on any surface token." Wave 1 ships against this assumption and it holds — every surface is light-ish in light mode and dark-ish in dark mode, so default text reads correctly everywhere.
+**Rationale:** Formalizing per-surface foreground (e.g., `surface.default` paired with `surface-default-foreground`, mirroring CVI's old `--card-foreground` / `--popover-foreground` pattern) would couple the two axes and make every new surface require a paired foreground decision. Wave 1's informal pairing is simpler and matches Tailwind's "use scale anchors directly" idiom — but it relies on every consumer eyeballing contrast at usage site.
+**For design review:** does the design owner want the contract "any text on any surface" to be guaranteed by the theme model (formalize), or is consumer discipline at usage site sufficient (keep informal)? The cost of formalizing surfaces later (after Wave 2-4 ship recipes against the informal model) is a meaningful rename — every `text.default` reference becomes `surface.X.foreground`. Easier to decide now than to walk back. **Especially relevant if Wave 2-4 introduces a surface with meaningfully different lightness from `surface.default` / `surface.raised` / `surface.canvas`** (e.g., a "highlighted" surface in light mode, or a darker tooltip surface). At that point informal pairing breaks first.
 
 ## 6. Codegen / theme-model gaps surfaced
 
