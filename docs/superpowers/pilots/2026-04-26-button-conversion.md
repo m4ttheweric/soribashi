@@ -121,8 +121,165 @@ The four entries below aggregate gaps surfaced during Phase 1 (Tasks 1.2 – 1.8
 
 ## 5. IconButton + ButtonDropdown extension sketch (Task 1.10)
 
-_Populated below._
+These are sketches, not implementations. The point is to confirm — before Phase 2's playbook synthesis — that the recipe shape arrived at in §§ 1 – 4 generalises to the next two CVI button siblings. If either sketch had required a new soribashi primitive or an awkward shape-twist, that would be a finding worth blocking on. Neither does.
+
+### 5.1 IconButton
+
+**Reference (vendored CVI):** `apps/core-radix-pilot/src/reference/core-radix-button/IconButton.tsx`
+
+CVI's IconButton is a square Button with one mandatory icon and one mandatory `aria-label`. CVI's distinctive shape:
+- Shares the focus-ring / disabled / transition base styles with Button but ships its own `cva` rather than composing the Button recipe.
+- Adds an **XL size** (`h-12 w-12`) that the parent Button doesn't have.
+- Adds a **dot indicator** (`dot` + `dotClassName` props) — an absolute-positioned slot in the top-right for unread/notification badges; only honored when `asChild` is false.
+- Drops the `secondary` / `danger` / `success` variants — only `primary` / `outline` / `ghost`.
+- Uses CVI's icon system (`IconKey` + `IconFlatRenderer`) so the consumer passes a key, not a node.
+
+**Recipe shape (Wave 1 vocabulary):**
+- **Reuses:** the entire intent × variant system from § 2's Button recipe; the `[data-variant][data-intent]` CSS rules over local `--cr-iconbutton-*` vars; the `disabled` / `loading` state handling; the polymorphic `as` prop story.
+- **Constrains:** no `children`. One `icon: ReactNode` prop. `aria-label: string` is required at the type level. No `leftIcon` / `rightIcon` / `fullWidth` props (square; one icon only).
+- **Adds:** square sizing (h = w; sm/md/lg/xl — picks up CVI's xl). An optional `dot?: ReactNode` slot rendered absolute-positioned in the root via a fourth selector. Aspect-ratio + padding routed through size-keyed CSS like Button's height tokens.
+- **Slots / selectors:** `['root', 'icon', 'dot']`. (Button's `label` and `spinner` selectors don't apply — no label, and the spinner replaces the icon in-place rather than rendering alongside it.)
+- **Defaults:** `intent: 'neutral', variant: 'outline', size: 'md', loading: false`. (CVI's `defaultVariants` are `outline` + `md` — keep that vibe; intent defaults to neutral because the dominant icon-button use is "secondary action in a toolbar".)
+
+**Sketch:**
+
+```tsx
+type IconButtonOwnProps = {
+  intent?: Intent;                 // reuse Button's Intent union
+  variant?: Variant;               // reuse Button's Variant union
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  icon: ReactNode;                 // mandatory; one icon, no children
+  'aria-label': string;            // mandatory at the type level
+  loading?: boolean;
+  dot?: ReactNode;                 // optional notification slot
+};
+
+export const IconButton = definePolymorphicComponent<IconButtonOwnProps, 'button'>({
+  name: 'IconButton',
+  defaultElement: 'button',
+  selectors: ['root', 'icon', 'dot'] as const,
+  variants: ['filled', 'outline', 'subtle', 'ghost'] as const, // no `link` for icon-only
+  classes: {
+    root: 'cr-IconButton-root',
+    icon: 'cr-IconButton-icon',
+    dot: 'cr-IconButton-dot',
+  },
+  defaults: { intent: 'neutral', variant: 'outline', size: 'md', loading: false },
+  render: ({ Element, props, getStyles }) => {
+    // styles-api destructure block per § 4 Gap 2 — same seven keys as Button.
+    const { intent, variant, size, icon, loading, dot, disabled, onClick,
+      /* + the seven styles-api keys */ ...rest } = props;
+
+    const isDisabled = Boolean(disabled) || Boolean(loading);
+    const isButton = Element === 'button';
+
+    return (
+      <Element
+        type={isButton ? 'button' : undefined}
+        {...getStyles('root')}
+        {...rest}
+        data-intent={intent}
+        data-variant={variant}
+        data-size={size}
+        data-loading={loading ? 'true' : undefined}
+        disabled={isButton ? isDisabled : undefined}
+        aria-disabled={!isButton && isDisabled ? true : undefined}
+        onClick={(e) => { if (isDisabled) { e.preventDefault(); return; } onClick?.(e); }}
+      >
+        <span {...getStyles('icon')} data-part="icon" aria-hidden>
+          {loading ? <Spinner /> : icon}
+        </span>
+        {dot && (
+          <span {...getStyles('dot')} data-part="dot" aria-hidden>
+            {dot}
+          </span>
+        )}
+      </Element>
+    );
+  },
+});
+```
+
+**Conclusion:** the recipe shape extends cleanly. **No new soribashi primitives needed.** The XL size is one extra row in the size-keyed CSS; the `dot` slot is a fourth `selectors` entry. The pattern transfers without any factory-level change.
+
+The same four soribashi gaps from § 4 will apply to this recipe (codegen `hsl(...)` wrapper, styles-API destructure, jest-dom wiring on the pilot template, focus indicator on transparent variants). None of them grow worse for IconButton; they just recur. That's evidence the gaps are pattern-level, not Button-specific — supporting their inclusion in the playbook (§ 3 of the playbook spec).
+
+### 5.2 ButtonDropdown
+
+**Reference (vendored CVI):** `apps/core-radix-pilot/src/reference/core-radix-button/ButtonDropdown.tsx`
+
+CVI's ButtonDropdown is a Button with a chevron + a Radix DropdownMenu attached. Distinctive shape:
+- Trigger is a `<button>` styled with the same `buttonVariants` `cva` as Button — composition by class-name reuse, not component reuse.
+- Wraps `@radix-ui/react-dropdown-menu` (Root / Trigger / Portal / Content) with its own `dropdownContentVariants` for width (`sm`/`md`/`lg`/`auto`) and border color.
+- Manages local `open` state to drive a `rotate-180` chevron animation.
+- Forces a chevron icon (inline SVG), forbids `rightIcon`, forbids `asChild`.
+- Receives the dropdown body as a `dropdownContent: ReactNode` prop — slot, not children.
+
+**Recipe shape (Wave 1 vocabulary):**
+
+The Button half: composes the existing Button recipe directly (`<Button rightIcon={<Chevron />} aria-expanded={open}>`). Reuses intent × variant × size × loading × disabled — no duplication. The chevron rotation is one CSS rule keyed on `[aria-expanded='true']`.
+
+The Dropdown half: this is **the** Wave-2-or-later overlay-compound work. It needs:
+- An overlay-compound authoring primitive for the soribashi factory (Trigger / Portal / Content / Item parts wired through `getStyles` and shared context).
+- A converted `core-radix/DropdownMenu` recipe — Wave 1 doesn't have one, and authoring it inline inside ButtonDropdown would prejudge the overlay-compound playbook entry that Wave 2 is meant to write.
+- A pattern for content-positioning props (`align`, `side`, `sideOffset`, `width`) that maps to Radix Popper without leaking Radix-specific types into the soribashi API.
+
+**Sketch (Phase 2 / Wave 2 — illustrative only):**
+
+```tsx
+// Hypothetical — assumes a Wave 2 DropdownMenu recipe exists.
+type ButtonDropdownOwnProps = Omit<ButtonOwnProps, 'rightIcon'> & {
+  dropdownContent: ReactNode;
+  dropdownAlign?: 'start' | 'end';
+  width?: 'sm' | 'md' | 'lg' | 'auto';
+};
+
+export const ButtonDropdown = (props: ButtonDropdownOwnProps) => {
+  const { dropdownContent, dropdownAlign = 'start', width = 'md', ...buttonProps } = props;
+  const [open, setOpen] = useState(false);
+
+  return (
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <DropdownMenu.Trigger asChild>
+        <Button
+          {...buttonProps}
+          aria-expanded={open}
+          rightIcon={<Chevron data-rotate={open ? 'true' : undefined} />}
+        />
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content align={dropdownAlign} data-width={width}>
+        {dropdownContent}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  );
+};
+```
+
+**Conclusion:** the recipe shape composes cleanly — Button stays untouched, ButtonDropdown is a thin wrapper. **But it depends on a converted DropdownMenu, which is the Wave 2 overlay-compound work.** Authoring ButtonDropdown today would either inline an ad-hoc Radix wrapper (which prejudges the overlay-compound pattern Wave 2 should derive from Tooltip first) or hand-import `@radix-ui/react-dropdown-menu` directly (which leaks Radix into the recipe layer). Neither is acceptable.
+
+**Defer ButtonDropdown until Wave 2 lands the overlay-compound pattern.** Captured here as evidence that the pattern composes when the overlay primitive exists.
 
 ## 6. Recommended playbook entries — pure-styled-primitive category (Task 1.10)
 
-_Populated below._
+These feed Phase 2 Task 2.3 (the playbook's § 2.1 — Pure styled primitive authoring pattern). Each entry below is grounded in a specific Wave 1 finding cited inline.
+
+1. **API split: `variant` × `intent`. Always.** Visual style and semantic role are orthogonal axes; conflating them on a single prop produces the variant-explosion + meaning-collision that § 1.1 caught in CVI (`primary` / `secondary` are role; `outline` / `ghost` are style; `danger` / `success` are role). Wave 1's split: `variant` ∈ {filled, outline, subtle, ghost, link}; `intent` ∈ {primary, neutral, success, warning, danger, info}. One component expresses all 30 cells without a one-off variant per combination.
+
+2. **Authoring primitive: `definePolymorphicComponent` whenever `as=` is plausible.** Buttons-as-links (`as="a"`) is the canonical case. Use `defineComponent` only for components that genuinely have one element (Skeleton, Dot). The polymorphic primitive is more typesafe than CVI's `asChild` + `Slot` and avoids CVI's silent-ignore footgun (§ 1.4) where `asChild` is dropped when combined with `isLoading` / `leftIcon` / `rightIcon`. **Type-param order is `<TOwnProps, TDefaultAs>`** — the reverse compiles but produces confusing-but-not-erroring types (§ 3 Hard).
+
+3. **Style approach: CSS data-attribute rules over local CSS vars.** For each (variant, intent) pair, write one selector that sets 4-5 local `--cr-{component}-*` vars (bg, fg, border, hover-bg, active-bg). The root rule pulls from those vars. Avoid Tailwind class concatenation across the matrix — 30 cells of `cva` produces a class-name explosion that's hard to inspect in DevTools and impossible for designers to edit. Wave 1's Button.css collapses 30 cells to one root rule + 30 four-line override blocks (§ 3 Easy + § 3 Surprises).
+
+4. **Token consumption: direct `var(--color-...)`, never `hsl(var(--color-...))`.** The codegen wraps every var value in `hsl(...)` already, so re-wrapping resolves transparent (Gap 1). The `bg-primary-500/50` Tailwind alpha-utility pattern is unreachable from the current emit format; until the codegen ships a bare-HSL emit mode, write opacity as a separate CSS rule. **Never hand-set hex; never reference legacy fragmented tokens.** Hover and active states walk one step deeper in the scale (500 → 600 → 700 for filled; 50 → 100 → 200 for subtle).
+
+5. **State props: `disabled`, `loading`, plus component-specific (`fullWidth` for Button).** Loading must propagate `disabled` and suppress `onClick` *in the recipe* — don't push that to the consumer. **Polymorphic + disabled:** when `as` is non-button, use `aria-disabled={true}` + `e.preventDefault()` for click suppression; the HTML `disabled` attribute is button-only (anchor tags ignore it). Wave 1's Button does both branches correctly — copy the pattern.
+
+6. **Slots / selectors: keep the parts list small and named.** Button's `['root', 'label', 'icon', 'spinner']` covers every override consumers actually need. Each part gets its own class (`cr-Button-root`, `cr-Button-label`, …) so downstream styling targets parts, not deep selector chains. **Strip the seven styles-API props before spreading `...rest` onto the rendered element** (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`) — this is implicit knowledge today and not enforced by types (Gap 2). Lift the destructure block verbatim from Wave 1's Button recipe until soribashi ships a `splitStylesApiProps` helper.
+
+7. **Focus indicator on transparent variants is a recipe-authoring footgun.** Routing the focus outline through the same `--cr-{component}-bg` var that powers the background makes the outline disappear whenever bg is `transparent` (ghost / link / outline variants). Use a dedicated `--cr-{component}-focus-ring` var that falls back to the intent's border or text color on transparent variants. Wave 1's Button defers this for ghost / link / outline (browser default ring stays); a future polish pass should add the dedicated ring var (Gap 4). Don't repeat the mistake in IconButton or any sibling.
+
+**Test scope for the category:**
+- **Vitest behavior** (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` — 11 tests): default props, click handling in both directions (disabled / loading suppress; default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Requires `@testing-library/jest-dom/vitest` wired via `setupFiles` (Gap 3) — copy the wiring from `packages/factory/test/setup.ts`.
+- **Playwright parity** (Wave 1 reference: `apps/core-radix-pilot/tests/Button.parity.spec.ts`): smoke the high-frequency cells, not all 30. For Button: filled × all six intents (background-color), three sizes (height), disabled (opacity), loading (spinner present + disabled set). Reuses the matrix-snapshot pattern from Phase 0 Task 0.10 ScreenReplica — same `webServer`, same fixture style.
+- Don't aim for 30-cell exhaustiveness in Playwright; the parity tests are smoke for the pattern, not exhaustive proof. **Visual review remains non-optional** — the focus-ring regression (§ 3 Surprises) didn't surface in either test layer.
+
+The playbook (Phase 2 Task 2.3) will expand each of these with rationale and the corresponding code excerpts from `apps/core-radix-pilot/src/recipes/Button/`.
