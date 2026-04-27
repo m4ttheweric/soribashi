@@ -1,8 +1,48 @@
+import { useState } from 'react';
+import { SoribashiProvider } from '@soribashi/core';
+import { theme } from './theme/index.ts';
+import { TokenReview } from './pages/TokenReview.tsx';
+
+type Page = 'tokens' | 'screen' | 'buttons';
+
 export function App() {
+  const [page, setPage] = useState<Page>('tokens');
+  const [dark, setDark] = useState(false);
+
   return (
-    <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
-      <h1>Core-Radix Pilot</h1>
-      <p>Phase 0 scaffolding. Theme + pages added in subsequent tasks.</p>
-    </div>
+    <SoribashiProvider theme={theme}>
+      <div className={dark ? 'dark' : ''}>
+        <header
+          style={{
+            borderBottom: '1px solid var(--border-default)',
+            padding: '0.75rem 1.5rem',
+            background: 'var(--surface-default)',
+            display: 'flex',
+            gap: '0.75rem',
+            alignItems: 'center',
+          }}
+        >
+          <strong style={{ fontFamily: 'var(--font-family-sans)' }}>core-radix pilot</strong>
+          <button onClick={() => setPage('tokens')} aria-current={page === 'tokens' ? 'page' : undefined}>
+            Tokens
+          </button>
+          <button onClick={() => setPage('screen')} aria-current={page === 'screen' ? 'page' : undefined}>
+            Screen replica
+          </button>
+          <button onClick={() => setPage('buttons')} aria-current={page === 'buttons' ? 'page' : undefined}>
+            Button matrix
+          </button>
+          <span style={{ marginLeft: 'auto' }}>
+            <button onClick={() => setDark(!dark)}>{dark ? 'Light' : 'Dark'}</button>
+          </span>
+        </header>
+
+        <main>
+          {page === 'tokens' && <TokenReview />}
+          {page === 'screen' && <div style={{ padding: '2rem' }}>ScreenReplica added in task 0.9</div>}
+          {page === 'buttons' && <div style={{ padding: '2rem' }}>ButtonMatrix added in task 1.7</div>}
+        </main>
+      </div>
+    </SoribashiProvider>
   );
 }
