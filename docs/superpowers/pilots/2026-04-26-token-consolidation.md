@@ -620,7 +620,143 @@ Per Q5: emitted under `.dark` (the soribashi default). The pilot is a standalone
 
 ## 4. Deprecation list (Task 0.5)
 
-_Populated below._
+This list covers every CVI token classed `hack`, `duplication`, or `deferred` in § 1 (39 + 12 + 20 = 71 rows). For each row: a one-line reason and the consolidated theme target that CVI usages should migrate to. Targets are written using the consolidated theme's identifiers (CSS-var name as emitted from `apps/core-radix-pilot/src/theme/index.ts`, or the Tailwind path under that theme's emitted config). Tokens classed `deferred` carry `(none — deferred)` because Wave 1 does not consolidate them.
+
+The list is organized by class (hack → duplication → deferred) so the cross-check against § 1 is mechanical. A trailing informational subsection (§ 4.4) captures the `error` → `danger` family rename, since the per-step rows are classed `signal` (preserved verbatim) and would otherwise be invisible in this list even though every CVI consumer must migrate the family name.
+
+### 4.1 `hack` rows — the shad-* layer (39 rows)
+
+The shad-* layer is dropped wholesale (per § 2.2 and Q1). Every CSS var is consumed only by its matching `colors.shad.*` Tailwind alias (or the universal-selector reset for `--radius`); migration follows the value semantics each shad name implied in shadcn/ui, mapped onto the consolidated `colors` / `semantic` tokens.
+
+#### 4.1.1 CSS vars (`claimview-islands.css`) — 20 rows
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `--background` | shad-* layer deprecated; semantic surface owns this role | `--surface-default` (from `semantic.surface.default → colors.neutral.0`) |
+| `--foreground` | shad-* layer deprecated; semantic text owns this role | `--text-default` (from `semantic.text.default → colors.neutral.900`) |
+| `--card` | shad-* layer deprecated; `card` collapsed into `surface.default` per Q1 (CVI's `--card` and `--background` held identical values) | `--surface-default` |
+| `--card-foreground` | shad-* layer deprecated; collapsed into the single text default | `--text-default` |
+| `--popover` | shad-* layer deprecated; `popover` collapsed into `surface.default` per Q1 | `--surface-default` |
+| `--popover-foreground` | shad-* layer deprecated; collapsed into the single text default | `--text-default` |
+| `--primary` | shad-* layer deprecated; byte-identical to `--color-primary-500` | `--color-primary-500` |
+| `--primary-foreground` | shad-* layer deprecated; the soribashi primary family carries its own foreground slot | `--color-primary-foreground` (from `colors.primary.foreground = hsl(0 0% 100%)`) |
+| `--secondary` | shad-* layer deprecated; the "secondary surface" role collapses into `surface.raised` (next-elevation neutral, per Q1 surface taxonomy) | `--surface-raised` (from `semantic.surface.raised → colors.neutral.100`) |
+| `--secondary-foreground` | shad-* layer deprecated; secondary surface uses the default text color in Wave 1 | `--text-default` |
+| `--muted` | shad-* layer deprecated; "muted surface" maps onto `surface.raised` (same role as `secondary` in CVI; both held the identical `210 40% 96.1%` light value) | `--surface-raised` |
+| `--muted-foreground` | shad-* layer deprecated; replaced by the `muted` text slot | `--text-muted` (from `semantic.text.muted → colors.neutral.700`) |
+| `--accent` | shad-* layer deprecated; CVI's shad `--accent` and `--muted`/`--secondary` shared the same value (`210 40% 96.1%`) — collapses to `surface.raised` | `--surface-raised` |
+| `--accent-foreground` | shad-* layer deprecated | `--text-default` |
+| `--destructive` | shad-* layer deprecated; "destructive" intent maps to the renamed `danger` family at the 500 step | `--color-danger-500` |
+| `--destructive-foreground` | shad-* layer deprecated; danger family carries its own foreground | `--color-danger-foreground` (from `colors.danger.foreground = hsl(0 0% 100%)`) |
+| `--border` | shad-* layer deprecated; CVI also has the (correctly intended but misplaced) `--color-border-islands`; consolidate onto the semantic border default per Q7 | `--border-default` (from `semantic.border.default → colors.neutral.200`) |
+| `--input` | shad-* layer deprecated; input borders collapse onto the same border default in Wave 1 | `--border-default` |
+| `--ring` | shad-* layer deprecated; focus ring uses primary at the 500 step | `--color-primary-500` |
+| `--radius` | shad-* layer deprecated; byte-identical to `borderRadius.md` (`0.5rem`); see § 2.3 — the duplication-with-radius relationship is folded into the shad-* drop here | `--radius-lg` (the consolidated theme renames CVI's `borderRadius.md = 0.5rem` to `radius.lg`; CVI's old `borderRadius.md` ↔ Wave 1 `radius.lg` because the consolidated radius scale shifts CVI's `DEFAULT (0.375rem)` → `radius.md` and `borderRadius.md (0.5rem)` → `radius.lg`) |
+
+#### 4.1.2 Tailwind keys (`tailwind.config.js`) — 19 rows
+
+The shad Tailwind aliases mirror the CSS vars above. Migration targets are the consolidated theme's Tailwind paths (which the codegen emits onto `theme.colors.*`, replacing — not extending — Tailwind defaults; see § 3 and Task 0.7 step 1).
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `colors.shad.background` | shad-* layer deprecated; mirrors `--background` deprecation | `surface.default` (Tailwind utility: `bg-surface-default`) |
+| `colors.shad.foreground` | shad-* layer deprecated; mirrors `--foreground` | `text.default` (utility: `text-text-default`) |
+| `colors.shad.card` | shad-* layer deprecated; collapsed into `surface.default` per Q1 | `surface.default` |
+| `colors.shad.card-foreground` | shad-* layer deprecated; collapsed into the text default | `text.default` |
+| `colors.shad.popover` | shad-* layer deprecated; collapsed into `surface.default` per Q1 | `surface.default` |
+| `colors.shad.popover-foreground` | shad-* layer deprecated | `text.default` |
+| `colors.shad.primary` | shad-* layer deprecated; duplicates `colors.primary.500` | `colors.primary.500` (utility: `bg-primary-500`) |
+| `colors.shad.primary-foreground` | shad-* layer deprecated; primary family carries `foreground` in the soribashi shape | `colors.primary.foreground` |
+| `colors.shad.secondary` | shad-* layer deprecated; "secondary surface" → `surface.raised` per Q1 | `surface.raised` |
+| `colors.shad.secondary-foreground` | shad-* layer deprecated | `text.default` |
+| `colors.shad.muted` | shad-* layer deprecated; "muted surface" → `surface.raised` (same as `secondary` and `accent`; all held identical CVI values) | `surface.raised` |
+| `colors.shad.muted-foreground` | shad-* layer deprecated; replaced by the muted text slot | `text.muted` |
+| `colors.shad.accent` | shad-* layer deprecated; → `surface.raised` (same value as `muted`/`secondary` in CVI) | `surface.raised` |
+| `colors.shad.accent-foreground` | shad-* layer deprecated | `text.default` |
+| `colors.shad.destructive` | shad-* layer deprecated; "destructive" intent → renamed `danger` family at 500 | `colors.danger.500` |
+| `colors.shad.destructive-foreground` | shad-* layer deprecated | `colors.danger.foreground` |
+| `colors.shad.border` | shad-* layer deprecated; → semantic `border.default` per Q7 | `border.default` (utility: `border-border-default` once Q7 is resolved) |
+| `colors.shad.input` | shad-* layer deprecated; input borders collapse onto `border.default` in Wave 1 | `border.default` |
+| `colors.shad.ring` | shad-* layer deprecated; focus ring uses primary 500 | `colors.primary.500` |
+
+### 4.2 `duplication` rows (12 rows)
+
+#### 4.2.1 CSS vars — 5 rows
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `--color-primary` | duplicates `--color-primary-500` (byte-identical light + dark values); side-channel collapsed per Q6 | `--color-primary-500` |
+| `--color-success` | duplicates `--color-success-500`; side-channel collapsed per Q6 | `--color-success-500` |
+| `--color-warning` | duplicates `--color-warning-500`; side-channel collapsed per Q6 | `--color-warning-500` |
+| `--color-error` | duplicates `--color-error-500`; side-channel collapsed per Q6; family also renamed `error` → `danger` per § 3.4 | `--color-danger-500` |
+| `--color-info` | duplicates `--color-info-500`; side-channel collapsed per Q6 | `--color-info-500` |
+
+#### 4.2.2 Tailwind `DEFAULT` aliases — 6 rows
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `colors.primary.DEFAULT` | duplicates `colors.primary.500` via the `--color-primary` side-channel; collapsed per Q6 | `colors.primary.500` |
+| `colors.neutral.DEFAULT` | Q6 outlier: CVI pointed it at `--color-neutral-600`. Wave 1 normalizes every family's `DEFAULT` to `500`. (If design later wants neutral specifically at `600`, document and re-add — flagged in Q6.) | `colors.neutral.500` |
+| `colors.success.DEFAULT` | duplicates `colors.success.500` via `--color-success`; collapsed per Q6 | `colors.success.500` |
+| `colors.warning.DEFAULT` | duplicates `colors.warning.500` via `--color-warning`; collapsed per Q6 | `colors.warning.500` |
+| `colors.error.DEFAULT` | duplicates `colors.error.500` via `--color-error`; collapsed per Q6; family also renamed `error` → `danger` | `colors.danger.500` |
+| `colors.info.DEFAULT` | duplicates `colors.info.500` via `--color-info`; collapsed per Q6 | `colors.info.500` |
+
+#### 4.2.3 Non-color duplication — 1 row
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `boxShadow.popover` | byte-identical to `boxShadow.lg` (same `0 10px 15px -3px ..., 0 4px 6px -2px ...` definition) | `shadow.lg` (utility: `shadow-lg`) |
+
+### 4.3 `deferred` rows (20 rows)
+
+These are not consolidated in Wave 1; they have no Wave 1 migration target. The integration project (or a later wave) must revisit each. CVI usages should remain on the existing names until then.
+
+#### 4.3.1 Chart vars (10 rows)
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `--chart-1` | deferred — chart palette is out of Wave 1 scope (Q10); usage zero in CVI | (none — deferred; Q10 owns the chart-palette pass) |
+| `--chart-2` | deferred — see Q10 | (none — deferred) |
+| `--chart-3` | deferred — see Q10 | (none — deferred) |
+| `--chart-4` | deferred — see Q10 | (none — deferred) |
+| `--chart-5` | deferred — see Q10 | (none — deferred) |
+| `colors.shad.chart-1` | deferred — chart palette out of Wave 1 scope; classed `deferred` not `hack` (§ 2.2) | (none — deferred) |
+| `colors.shad.chart-2` | deferred — see Q10 | (none — deferred) |
+| `colors.shad.chart-3` | deferred — see Q10 | (none — deferred) |
+| `colors.shad.chart-4` | deferred — see Q10 | (none — deferred) |
+| `colors.shad.chart-5` | deferred — see Q10 | (none — deferred) |
+
+#### 4.3.2 Search-highlight + glow runtime vars (5 rows)
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `--cvi-search-highlight-bg` | deferred — selector-scoped to `:root`/`.dark` because `::highlight()` doesn't inherit from `.claim-view-islands`; Q8 owns the architectural decision | (none — deferred; Q8) |
+| `--cvi-search-highlight-text` | deferred — see Q8 | (none — deferred) |
+| `--cvi-search-active-bg` | deferred — see Q8 | (none — deferred) |
+| `--cvi-search-active-text` | deferred — see Q8 | (none — deferred) |
+| `--glow-color` | deferred — runtime-only var (no static declaration; JS sets per-element with `currentColor` keyframe fallback); Q9 covers whether to add a static fallback | (none — deferred; Q9) |
+
+#### 4.3.3 Unused spacing extensions (5 rows)
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `spacing.18` (4.5rem) | deferred — § 1.3.2 confirms zero utility usage in CVI; not promoted into the consolidated `spacing` scale | (none — deferred; re-evaluate when a real consumer appears) |
+| `spacing.88` (22rem) | deferred — zero utility usage | (none — deferred) |
+| `spacing.100` (25rem) | deferred — zero utility usage | (none — deferred) |
+| `spacing.112` (28rem) | deferred — zero utility usage | (none — deferred) |
+| `spacing.128` (32rem) | deferred — zero utility usage | (none — deferred) |
+
+### 4.4 Family rename (informational — `signal`-classed rows)
+
+The 22 `error` family steps (11 CSS vars `--color-error-50..950` + 11 Tailwind `colors.error.50..950`) are classed `signal` in § 1, so they are not part of the deprecation list proper. They are preserved verbatim under the new family name `danger`. Documenting here so CVI integrators know to migrate the family name even though no values change.
+
+| Dropped / collapsed token | Reason | Migrate CVI usages to |
+|---|---|---|
+| `--color-error-*` (entire 11-step scale) | family renamed `error` → `danger` per § 3.4 (matches soribashi `defaultTokens` and the playground theme) | `--color-danger-*` (same step number; values preserved verbatim) |
+| `colors.error.*` (entire Tailwind family) | family renamed `error` → `danger` per § 3.4 | `colors.danger.*` (utility: `bg-error-500` → `bg-danger-500`, etc.) |
+
+**Coverage check (Task 0.5 Step 2):** 39 hack + 12 duplication + 20 deferred = 71 rows above (counted as: 20 § 4.1.1 + 19 § 4.1.2 + 5 § 4.2.1 + 6 § 4.2.2 + 1 § 4.2.3 + 10 § 4.3.1 + 5 § 4.3.2 + 5 § 4.3.3 = 71). Every § 1 row classed `hack`, `duplication`, or `deferred` traces to a row here; every row here traces back to an inventory row. The two § 4.4 entries are informational and cover all 22 `signal`-classed `error`-family rows that the family rename touches.
 
 ## 5. Open design questions
 
