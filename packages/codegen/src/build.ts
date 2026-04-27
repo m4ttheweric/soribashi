@@ -16,7 +16,16 @@ export interface BuildResult {
 export async function build(config: CodegenConfig): Promise<BuildResult> {
   const written: string[] = [];
 
-  await writeFileEnsureDir(config.output.css, emitCss(config.theme, config.emit));
+  // Resolve the `--__hsl-` companion-emit policy. Default ('auto') skips the
+  // companion in v4-only Tailwind setups (where Tailwind v4's color-mix() runtime
+  // doesn't need bare HSL components) and emits in all other cases (v3, both,
+  // or no Tailwind at all). Explicit `true`/`false` overrides the auto-detect.
+  const requested = config.emit?.emitCompanionHsl ?? 'auto';
+  const resolvedCompanion: boolean =
+    requested === 'auto' ? config.output.tailwind?.mode !== 'v4' : requested;
+  const emitOpts = { ...config.emit, emitCompanionHsl: resolvedCompanion };
+
+  await writeFileEnsureDir(config.output.css, emitCss(config.theme, emitOpts));
   written.push(config.output.css);
 
   if (config.output.tailwind) {

@@ -60,7 +60,7 @@ describe('build', () => {
     expect(existsSync(configPath)).toBe(true);
     const content = readFileSync(configPath, 'utf-8');
     expect(content).toContain('module.exports');
-    expect(content).toContain('hsl(var(--color-primary-500-hsl)');
+    expect(content).toContain('hsl(var(--__hsl-color-primary-500)');
   });
 
   it('writes Tailwind v4 css when mode=v4', async () => {
@@ -136,5 +136,107 @@ describe('build', () => {
     });
 
     expect(result.written).toContain(cssPath);
+  });
+
+  it('emits --__hsl- companion vars when no Tailwind output is configured (auto)', async () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: {}, spacing: {}, fontSize: {},
+      },
+    });
+    const cssPath = join(tempDir, 'theme.css');
+    await build({ theme, output: { css: cssPath } });
+    const content = readFileSync(cssPath, 'utf-8');
+    expect(content).toContain('--__hsl-color-primary-500: 0 0% 50%;');
+  });
+
+  it('emits --__hsl- companion vars when Tailwind mode=v3 (auto)', async () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: {}, spacing: {}, fontSize: {},
+      },
+    });
+    const cssPath = join(tempDir, 'theme.css');
+    const configPath = join(tempDir, 'tailwind.config.generated.js');
+    await build({
+      theme,
+      output: { css: cssPath, tailwind: { mode: 'v3', configPath } },
+    });
+    const content = readFileSync(cssPath, 'utf-8');
+    expect(content).toContain('--__hsl-color-primary-500: 0 0% 50%;');
+  });
+
+  it('SKIPS --__hsl- companion vars when Tailwind mode=v4 (auto — v4 uses color-mix())', async () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: {}, spacing: {}, fontSize: {},
+      },
+    });
+    const cssPath = join(tempDir, 'theme.css');
+    const themeCssPath = join(tempDir, 'theme.tailwind.css');
+    await build({
+      theme,
+      output: { css: cssPath, tailwind: { mode: 'v4', themeCssPath } },
+    });
+    const content = readFileSync(cssPath, 'utf-8');
+    expect(content).toContain('--color-primary-500: hsl(0 0% 50%);');
+    expect(content).not.toContain('--__hsl-color-primary-500');
+  });
+
+  it('emits --__hsl- companion vars when Tailwind mode=both (auto)', async () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: {}, spacing: {}, fontSize: {},
+      },
+    });
+    const cssPath = join(tempDir, 'theme.css');
+    const configPath = join(tempDir, 'tailwind.config.generated.js');
+    const themeCssPath = join(tempDir, 'theme.tailwind.css');
+    await build({
+      theme,
+      output: { css: cssPath, tailwind: { mode: 'both', configPath, themeCssPath } },
+    });
+    const content = readFileSync(cssPath, 'utf-8');
+    expect(content).toContain('--__hsl-color-primary-500: 0 0% 50%;');
+  });
+
+  it('honors explicit emit.emitCompanionHsl=false even with v3 Tailwind', async () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: {}, spacing: {}, fontSize: {},
+      },
+    });
+    const cssPath = join(tempDir, 'theme.css');
+    const configPath = join(tempDir, 'tailwind.config.generated.js');
+    await build({
+      theme,
+      output: { css: cssPath, tailwind: { mode: 'v3', configPath } },
+      emit: { emitCompanionHsl: false },
+    });
+    const content = readFileSync(cssPath, 'utf-8');
+    expect(content).not.toContain('--__hsl-color-primary-500');
+  });
+
+  it('honors explicit emit.emitCompanionHsl=true even with v4-only Tailwind', async () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: {}, spacing: {}, fontSize: {},
+      },
+    });
+    const cssPath = join(tempDir, 'theme.css');
+    const themeCssPath = join(tempDir, 'theme.tailwind.css');
+    await build({
+      theme,
+      output: { css: cssPath, tailwind: { mode: 'v4', themeCssPath } },
+      emit: { emitCompanionHsl: true },
+    });
+    const content = readFileSync(cssPath, 'utf-8');
+    expect(content).toContain('--__hsl-color-primary-500: 0 0% 50%;');
   });
 });
