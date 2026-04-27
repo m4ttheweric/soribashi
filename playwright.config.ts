@@ -10,9 +10,6 @@ import { defineConfig, devices } from '@playwright/test';
  * Run:  bunx playwright test
  */
 export default defineConfig({
-  testDir: './tests/browser-parity',
-  testMatch: '**/*.spec.ts',
-
   /* Run tests in files in parallel */
   fullyParallel: true,
 
@@ -30,22 +27,37 @@ export default defineConfig({
   use: {
     /* Viewport wide enough that "hiddenFrom=md" fires (≥ 768px = 48rem) */
     viewport: { width: 1280, height: 800 },
-    baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
   },
 
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'blocks',
+      testDir: './tests/browser-parity',
+      testMatch: '**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5173' },
+    },
+    {
+      name: 'core-radix-pilot',
+      testDir: './apps/core-radix-pilot/tests',
+      testMatch: '**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5174' },
     },
   ],
 
-  /* Boot the playground dev server before the tests */
-  webServer: {
-    command: 'bun run --filter @soribashi/playground dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
+  /* Boot both apps in parallel */
+  webServer: [
+    {
+      command: 'bun run --filter @soribashi/playground dev',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+    {
+      command: 'bun run --filter @soribashi/core-radix-pilot dev',
+      url: 'http://localhost:5174',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+  ],
 });
