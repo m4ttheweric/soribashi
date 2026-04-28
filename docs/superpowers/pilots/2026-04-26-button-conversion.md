@@ -118,6 +118,21 @@ The Tailwind config's `<alpha-value>` pattern uses the `--__hsl-` companion: `'5
 **Worked around by:** Task 1.5 added `apps/core-radix-pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and `setupFiles: ['./test/setup.ts']` in the pilot's `vitest.config.ts`.
 **Recommended resolution for soribashi:** Update the pilot-app / consumer-app vitest config template (and any future scaffold) to include the setup wiring by default. This is harness wiring rather than a published-package gap, but it bites every recipe pilot that uses jest-dom matchers — which will be most of them.
 
+### Gap 7: `definePolymorphicComponent` `render` ctx surfaces `ref`, but recipes silently drop it — RESOLVED (post-Wave-1)
+
+**Severity:** important
+**Where surfaced:** Codex code review of PR #1 (2026-04-27), `docs/superpowers/reviews/2026-04-27-pr-1-review.md` finding **P2**. Caught in independent review; not surfaced by Wave 1's own implementation pass.
+**What we needed:** The polymorphic primitive provides `ref: Ref<unknown>` in the `render` ctx. Recipes must thread `ref={ref}` to the rendered `<Element>` so consumers can `useRef` to focus, measure, or integrate with ref-based libraries (`react-aria`, focus-trap, etc.). This is implicit knowledge — there's no type, jsdoc, or runtime warning that the recipe forgot to forward ref.
+**What soribashi has today:** `definePolymorphicComponent` (`packages/factory/src/define-polymorphic-component.tsx:32`) declares `ref: Ref<unknown>` in the render-ctx type. The factory wires `forwardRef(...)` around the render output and passes the consumer's `ref` through. But the recipe author has to actively destructure `ref` from the ctx AND pass `ref={ref}` to the JSX element. **Wave 1's Button recipe missed step 2 entirely** — `ref` was never destructured from `render({ Element, props, getStyles })`, and the rendered `<Element>` never received `ref={ref}`. Consumers' `<Button ref={...}>` was a silent no-op. Three test layers (vitest behavior, Playwright parity, visual review) didn't catch it because none asserted `ref.current !== null`.
+**Worked around by (during Wave 1):** Nothing — bug shipped.
+**Resolution shipped (post-Wave-1):** `Button.tsx` now destructures `ref` from the render ctx and passes `ref={ref}` to `<Element>`. Three new vitest tests in `Button.test.tsx` cover ref forwarding to (a) the default `<button>` element, (b) the polymorphic `as="a"` path, and (c) imperative focus via the forwarded ref.
+
+**Secondary type-ergonomics issue (still open).** During the test-writing pass, `createRef<HTMLButtonElement>()` failed to assign to `<Button ref={...}>` with a type error: `Type 'RefObject<HTMLButtonElement>' is not assignable to type 'RefObject<HTMLButtonElement> & RefObject<((instance: HTMLButtonElement | null) => void) | RefObject<HTMLButtonElement> | null>'`. The polymorphic-component `ref` prop types as a tangled intersection that doesn't accept a plain `RefObject<T>`. The Button tests cast through a small `refProp(ref)` helper to bypass the type wonkiness; future recipes will hit the same friction.
+
+**Recommended resolution for soribashi:** Two layers.
+- **Runtime / authoring guidance:** Document the "must thread `ref` through" requirement in playbook § 2.1 and in `define-polymorphic-component.tsx` jsdoc. Strongly consider a dev-mode runtime warning: if the render output is a React element AND its props don't include `ref` AND the consumer passed `ref`, log a warning. Or — better — change the factory so the framework injects `ref` into the rendered element automatically (would require the render API to change shape; investigate trade-offs). Either prevents every Wave 2-4 recipe from rediscovering this footgun.
+- **Type ergonomics:** Audit the `PolymorphicComponentProps` ref type and replace the tangled intersection with `Ref<T> | undefined` (or whatever React's polymorphic-ref convention is in React 19+). Currently consumers can't use `createRef`/`useRef` ergonomically.
+
 ### Gap 4: Focus indicator invisible on transparent recipe variants — RESOLVED (post-Wave-1)
 
 **Severity:** ~~nice-to-have~~ → **resolved**

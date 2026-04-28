@@ -47,7 +47,7 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
     loading: false,
     fullWidth: false,
   },
-  render: ({ Element, props, getStyles }) => {
+  render: ({ Element, props, getStyles, ref }) => {
     const {
       intent,
       variant,
@@ -94,6 +94,7 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
 
     return (
       <Element
+        ref={ref}
         type={isButton ? 'button' : undefined}
         {...getStyles('root')}
         {...rest}
