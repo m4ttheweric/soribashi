@@ -19,6 +19,12 @@
 
 /* ─── root ──────────────────────────────────────────────────────────── */
 .cr-Button-root {
+  /* `position: relative` anchors the absolutely-positioned spinner; */
+  /* `overflow: hidden` clips the inner wrapper as it slides off-screen */
+  /* during the loading transition (Mantine pattern). */
+  position: relative;
+  overflow: hidden;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -34,6 +40,30 @@
   background: var(--cr-button-bg);
   color: var(--cr-button-color);
   border-color: var(--cr-button-border);
+}
+
+/*
+ * Loading-veil pseudo-element. When `[data-loading]` is set on the root, this
+ * translucent layer slides down from above the button (covering it with a
+ * subtle blur) to signal "this button is busy." Ported from Mantine's
+ * Button.module.css `.root::before` block. The slight blur + low opacity
+ * gives a tactile "frosted" feel without obscuring the button entirely.
+ */
+.cr-Button-root::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  transform: translateY(-100%);
+  opacity: 0;
+  filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.15);
+  transition: transform 150ms ease, opacity 100ms ease;
+}
+
+.dark .cr-Button-root::before {
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
 .cr-Button-root:hover {
@@ -89,6 +119,27 @@
 .cr-Button-root:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/*
+ * Loading state. Root: cursor + reset any active translate. Veil: slide in
+ * from above. Inner: slide down + fade out, revealing the spinner. Mantine
+ * parity (Button.module.css `&:where([data-loading])` block).
+ *
+ * The opacity rule on the disabled root above would also fade the loading
+ * button to 50% — which we don't want when loading (the loading state is
+ * itself the visual cue, full opacity reads better with the veil). Override
+ * it back to 1 here.
+ */
+.cr-Button-root[data-loading='true'] {
+  opacity: 1;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cr-Button-root[data-loading='true']::before {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 /* ─── sizes ─────────────────────────────────────────────────────────── */
@@ -326,8 +377,37 @@
 }
 
 /* ─── parts ─────────────────────────────────────────────────────────── */
+
+/*
+ * Inner wrapper holds the icon + label + icon row. On loading, it slides
+ * down and fades out as a single block, revealing the spinner at the
+ * button's center. Mantine parity (`.inner` in Button.module.css).
+ */
+.cr-Button-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 100%;
+  transition: transform 150ms ease, opacity 100ms ease;
+}
+
+.cr-Button-root[data-loading='true'] .cr-Button-inner {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
 .cr-Button-label {
   display: inline-block;
+}
+
+/*
+ * Belt-and-suspenders label fade — the inner wrapper above already goes to
+ * opacity 0 during loading, but Mantine sets the label to opacity 0.2 as a
+ * safety in case a consumer overrides inner. Match the Mantine pattern.
+ */
+.cr-Button-label[data-loading='true'] {
+  opacity: 0.2;
 }
 
 .cr-Button-icon {
@@ -336,14 +416,45 @@
   justify-content: center;
 }
 
+/*
+ * Spinner is rendered unconditionally and positioned absolutely at the
+ * button's geometric center. Default state is hidden above center; on
+ * loading it animates IN via a transform on the OUTER `.cr-Button-spinner`,
+ * while the rotation animation runs on the INNER `::before` so the two
+ * transforms don't compete. (CSS animations override regular transform
+ * property values, so combining slide-in + spin on the same element fails.)
+ *
+ * Animating IN and OUT via pure CSS requires unconditional rendering —
+ * conditional mount/unmount would skip the exit transition. Mantine uses a
+ * JS Transition component for the same effect; this nested-element approach
+ * achieves equivalent behavior with a permanent DOM node.
+ */
 .cr-Button-spinner {
-  display: inline-block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: 1em;
   height: 1em;
+  /* default (not loading): off-screen above center */
+  opacity: 0;
+  transform: translate(-50%, -200%);
+  transition: transform 150ms ease, opacity 100ms ease;
+}
+
+.cr-Button-spinner::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
   animation: cr-button-spin 600ms linear infinite;
+}
+
+.cr-Button-root[data-loading='true'] .cr-Button-spinner {
+  opacity: 1;
+  transform: translate(-50%, calc(-50% + 1px));
 }
 
 @keyframes cr-button-spin {

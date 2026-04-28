@@ -32,10 +32,11 @@ export interface ButtonOwnProps {
 export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
   name: 'Button',
   defaultElement: 'button',
-  selectors: ['root', 'label', 'icon', 'spinner'] as const,
+  selectors: ['root', 'inner', 'label', 'icon', 'spinner'] as const,
   variants: ['filled', 'outline', 'subtle', 'ghost', 'link'] as const,
   classes: {
     root: 'cr-Button-root',
+    inner: 'cr-Button-inner',
     label: 'cr-Button-label',
     icon: 'cr-Button-icon',
     spinner: 'cr-Button-spinner',
@@ -108,20 +109,34 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
         aria-disabled={!isButton && isDisabled ? true : undefined}
         onClick={handleClick}
       >
-        {leftIcon && (
-          <span {...getStyles('icon')} data-part="icon" data-position="left">
-            {leftIcon}
+        {/*
+          Spinner rendered unconditionally and positioned absolutely so the
+          loading transition can animate IN and OUT smoothly via CSS — pure
+          conditional mount/unmount would skip the exit animation. The
+          [data-loading] attr on the root drives the visible state.
+        */}
+        <span {...getStyles('spinner')} data-part="spinner" aria-hidden />
+
+        {/*
+          Inner wrapper so the icons + label can slide down + fade out as a
+          single block when loading, revealing the spinner at center. Pattern
+          ported from Mantine's Button (`.inner` wrapper + transitions).
+        */}
+        <span {...getStyles('inner')} data-part="inner">
+          {leftIcon && (
+            <span {...getStyles('icon')} data-part="icon" data-position="left">
+              {leftIcon}
+            </span>
+          )}
+          <span {...getStyles('label')} data-part="label" data-loading={loading ? 'true' : undefined}>
+            {children}
           </span>
-        )}
-        <span {...getStyles('label')} data-part="label">
-          {children}
+          {rightIcon && (
+            <span {...getStyles('icon')} data-part="icon" data-position="right">
+              {rightIcon}
+            </span>
+          )}
         </span>
-        {rightIcon && (
-          <span {...getStyles('icon')} data-part="icon" data-position="right">
-            {rightIcon}
-          </span>
-        )}
-        {loading && <span {...getStyles('spinner')} data-part="spinner" aria-hidden />}
       </Element>
     );
   },

@@ -32,17 +32,22 @@ describe('Button — rendering', () => {
     expect(screen.getByRole('button').getAttribute('data-size')).toBe('lg');
   });
 
-  it('renders leftIcon before label and rightIcon after', () => {
+  it('renders leftIcon before label and rightIcon after (inside the inner wrapper)', () => {
     wrap(
       <Button leftIcon={<span data-testid="left">L</span>} rightIcon={<span data-testid="right">R</span>}>
         label
       </Button>,
     );
     const btn = screen.getByRole('button');
-    const children = Array.from(btn.children);
-    const leftIdx = children.findIndex((c) => c.querySelector('[data-testid="left"]') !== null);
-    const labelIdx = children.findIndex((c) => c.textContent === 'label');
-    const rightIdx = children.findIndex((c) => c.querySelector('[data-testid="right"]') !== null);
+    // Mantine-parity loading transition needs an inner wrapper that can slide
+    // out as a single block (Gap-7-adjacent decision). Icons + label live
+    // inside `[data-part="inner"]`; spinner lives at the root level (absolute).
+    const inner = btn.querySelector('[data-part="inner"]');
+    expect(inner).not.toBeNull();
+    const innerChildren = Array.from(inner!.children);
+    const leftIdx = innerChildren.findIndex((c) => c.querySelector('[data-testid="left"]') !== null);
+    const labelIdx = innerChildren.findIndex((c) => c.textContent === 'label');
+    const rightIdx = innerChildren.findIndex((c) => c.querySelector('[data-testid="right"]') !== null);
     expect(leftIdx).toBeGreaterThanOrEqual(0);
     expect(labelIdx).toBeGreaterThan(leftIdx);
     expect(rightIdx).toBeGreaterThan(labelIdx);
@@ -71,9 +76,25 @@ describe('Button — interactivity', () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it('renders the spinner when loading', () => {
+  it('sets data-loading="true" on the root when loading and the spinner is in the DOM', () => {
+    // The spinner is rendered unconditionally so its CSS in/out transition
+    // can animate (mounts always; visibility driven by [data-loading] attr).
+    // The meaningful loading-state assertion is the root's data-loading attr,
+    // which selectively reveals the spinner + slides out the inner via CSS.
     wrap(<Button loading>x</Button>);
     const btn = screen.getByRole('button');
+    expect(btn.getAttribute('data-loading')).toBe('true');
+    expect(btn.querySelector('[data-part="spinner"]')).not.toBeNull();
+    // Inner wrapper present too (children slide as a block).
+    expect(btn.querySelector('[data-part="inner"]')).not.toBeNull();
+  });
+
+  it('does NOT set data-loading on the root when loading is false (default)', () => {
+    wrap(<Button>x</Button>);
+    const btn = screen.getByRole('button');
+    expect(btn.hasAttribute('data-loading')).toBe(false);
+    // Spinner element still in DOM (unconditional render) but its CSS leaves
+    // it offscreen + opacity 0 unless [data-loading] flips it visible.
     expect(btn.querySelector('[data-part="spinner"]')).not.toBeNull();
   });
 
