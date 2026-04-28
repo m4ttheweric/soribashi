@@ -142,7 +142,21 @@ This collapses 30 (variant × intent) cells to: one root rule + 30 four-line ove
 - ONLY consolidated theme tokens. Never hand-set hex; never reference legacy fragmented tokens (no `--background`, no shad-* vars, no `claimview-islands.css` vars).
 - Hover and active states walk one step deeper in the scale (e.g., `500` default → `600` hover → `700` active for filled; `50` → `100` → `200` for subtle).
 - Subtle/ghost variants consume the lighter shades (50/100 backgrounds, 700/800 text).
-- **Focus-indicator footgun:** routing the focus outline through the same `--cr-{component}-bg` var that powers the background makes the outline disappear whenever bg is `transparent` (ghost / link / outline variants). Use a dedicated `--cr-{component}-focus-ring` var that falls back to the intent's border or text color on transparent variants. Wave 1's Button defers this for ghost / link / outline (browser default ring stays); a future polish pass should add the dedicated ring var (conversion journal § 4 Gap 4). Don't repeat the mistake in IconButton or any sibling primitive.
+- **Focus-indicator pattern (Gap 4 — RESOLVED post-Wave-1):** routing the focus outline through the same `--cr-{component}-bg` var that powers the background makes the outline disappear whenever bg is `transparent` (ghost / link / outline variants). Resolved via a variant-scoped override that re-routes the outline to `--cr-{component}-color` (the cell's text color, always opaque) for transparent variants only:
+
+  ```css
+  .cr-Button-root:focus-visible {
+    outline: 2px solid var(--cr-button-bg);
+    outline-offset: 2px;
+  }
+  .cr-Button-root[data-variant='ghost']:focus-visible,
+  .cr-Button-root[data-variant='link']:focus-visible,
+  .cr-Button-root[data-variant='outline']:focus-visible {
+    outline-color: var(--cr-button-color);
+  }
+  ```
+
+  Filled and subtle keep the bg-coherent ring; transparent variants get the text-coherent ring. Reuse this pattern in IconButton, ButtonDropdown, and any future primitive with a transparent variant set. (Conversion journal § 4 Gap 4 — RESOLVED.)
 
 #### Tests
 
@@ -198,7 +212,7 @@ Every gap surfaced during Wave 1 Phases 0 + 1 is collected here, deduplicated ac
 - **important** — surfaced friction; workaround was viable for Wave 1 but the gap will compound. Fix before Wave 4 (Select) at the latest.
 - **nice-to-have** — surfaced but the workaround is fine indefinitely. Optional cleanup.
 
-Wave 1 surfaced no `blocking` gaps — every gap had a viable in-pilot workaround. Three `important` and three `nice-to-have` made the cut. **Gap 1 was resolved post-Wave-1** via a follow-up dual-emit codegen change; Option A's Tailwind-alpha blocker is closed.
+Wave 1 surfaced no `blocking` gaps — every gap had a viable in-pilot workaround. Three `important` and three `nice-to-have` made the cut. **Two have been resolved post-Wave-1:** Gap 1 (codegen `hsl(...)` wrapper, was important) via a dual-emit codegen change unblocking Option A's Tailwind-alpha pattern; and Gap 6 (focus indicator on transparent variants, was nice-to-have) via a variant-scoped focus override in Button.css. Four gaps remain: #2 (styles-API prop strip), #3 (vitest template), #4 (`accent.feedback`), #5 (border-default reset).
 
 | # | Gap | Severity | Surfaced in | Recommended resolution |
 |---|---|---|---|---|
@@ -207,7 +221,7 @@ Wave 1 surfaced no `blocking` gaps — every gap had a viable in-pilot workaroun
 | 3 | Pilot-app vitest config template lacks `setupFiles` wiring for `@testing-library/jest-dom/vitest`; jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, etc.) fail with `Invalid Chai property` until manually wired | important | Conversion journal § 4 Gap 3 — Phase 1 Task 1.5 (10/11 tests green; `disabled-on-loading` failed). Convention exists at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` but did not propagate across the `packages/*` → `apps/*` boundary | Harness wiring rather than a published-package gap, but bites every recipe pilot. Update the pilot-app / consumer-app vitest config template (and any future scaffold) to include `setupFiles: ['./test/setup.ts']` plus a one-line `import '@testing-library/jest-dom/vitest';` setup file by default. |
 | 4 | `accent.feedback` semantic token has no clean home in the soribashi `SemanticTokens` shape (`text`, `surface`, `border` only — no `accent` slot) | nice-to-have | Consolidation journal § 6 (first bullet) — Phase 0 Task 0.4 (theme expression). Wave 1 omits the token; pilot doesn't render the feedback UI | `@soribashi/theme`: pick one of (a) extend `SemanticTokens` with a free-form `accent: Record<string, SemanticReference>` slot, (b) promote it to a sibling top-level color family (`colors.accent`), or (c) fold it into a future "decorative" namespace. Not a Wave 1 blocker; flagged for the integration project that wires the consolidated theme into CVI's existing 115 importers. |
 | 5 | Border-default reset has no in-theme expression: CVI's `colors.borderColor.DEFAULT` Tailwind-config bug is currently worked around via a universal-selector reset in `claimview-islands.css`; the soribashi theme expresses `semantic.border.default → colors.neutral.200` but doesn't emit a corresponding universal `border-color` reset | nice-to-have | Consolidation journal § 6 (second bullet) — Phase 0 Task 0.4 (theme expression); cross-references consolidation journal § 5 Q7 | `@soribashi/codegen` (or `@soribashi/theme`): make the architectural choice — either codegen emits a universal `* { border-color: var(--color-border-default); }` reset when a `semantic.border.default` is set, or document that consumers are expected to apply `border-default` explicitly. Not a Wave 1 blocker; surfaced for the integration project. |
-| 6 | Focus indicator authoring footgun: routing focus color through the same `--cr-{recipe}-bg` var that powers the background makes the outline invisible whenever bg resolves to `transparent` (ghost / link / outline variants) | nice-to-have | Conversion journal § 4 Gap 4 — Phase 1 Task 1.5 review. Wave 1 ships browser default `:focus-visible` ring on the transparent variants; tinted outline only on filled / subtle | Recipe-authoring guidance, not a soribashi-package gap. Already documented in this playbook § 2.1 ("Focus-indicator footgun") — route focus color through a dedicated `--cr-{recipe}-focus-ring` var that falls back to the intent's border or text color on transparent variants. No code change needed in any soribashi package. |
+| 6 | Focus indicator authoring footgun: routing focus color through the same `--cr-{recipe}-bg` var that powers the background makes the outline invisible whenever bg resolves to `transparent` (ghost / link / outline variants) | ~~nice-to-have~~ → **resolved** | Conversion journal § 4 Gap 4 — Phase 1 Task 1.5 review. Wave 1 originally shipped browser default `:focus-visible` ring on the transparent variants; tinted outline only on filled / subtle | **RESOLVED post-Wave-1.** Variant-scoped override in `Button.css` reroutes `outline-color` to `--cr-button-color` (the intent-coherent text color, always opaque) for ghost / link / outline. Four lines, no per-cell edits. Pattern documented in playbook § 2.1 for reuse in IconButton, ButtonDropdown, and any future recipe with transparent variants. |
 
 ### The C → A bridge
 

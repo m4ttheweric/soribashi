@@ -49,6 +49,19 @@
   outline-offset: 2px;
 }
 
+/*
+ * Transparent-bg variants (ghost / link / outline) would render an invisible
+ * focus outline if it inherited `--cr-button-bg` (transparent). Route their
+ * focus ring through `--cr-button-color` (the intent's text color) instead,
+ * which is always opaque and intent-coherent. Resolves Gap 4 from the Wave 1
+ * conversion journal.
+ */
+.cr-Button-root[data-variant='ghost']:focus-visible,
+.cr-Button-root[data-variant='link']:focus-visible,
+.cr-Button-root[data-variant='outline']:focus-visible {
+  outline-color: var(--cr-button-color);
+}
+
 .cr-Button-root:disabled {
   opacity: 0.5;
   cursor: not-allowed;

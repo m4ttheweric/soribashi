@@ -118,14 +118,24 @@ The Tailwind config's `<alpha-value>` pattern uses the `--__hsl-` companion: `'5
 **Worked around by:** Task 1.5 added `apps/core-radix-pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and `setupFiles: ['./test/setup.ts']` in the pilot's `vitest.config.ts`.
 **Recommended resolution for soribashi:** Update the pilot-app / consumer-app vitest config template (and any future scaffold) to include the setup wiring by default. This is harness wiring rather than a published-package gap, but it bites every recipe pilot that uses jest-dom matchers — which will be most of them.
 
-### Gap 4: Focus indicator invisible on transparent recipe variants
+### Gap 4: Focus indicator invisible on transparent recipe variants — RESOLVED (post-Wave-1)
 
-**Severity:** nice-to-have
+**Severity:** ~~nice-to-have~~ → **resolved**
 **Where surfaced:** Phase 1 Task 1.5 review; deferred from Task 1.5 GREEN
 **What we needed:** A focus indicator pattern for recipes that publish a `--cr-{recipe}-bg` local var, that remains visible when `bg` resolves to `transparent` (ghost / link / outline variants).
-**What soribashi has today:** No documented recipe-authoring guidance on focus indicators. The Button recipe's first cut wrote `outline: 2px solid var(--cr-button-bg)` which derives the focus color from the background — invisible whenever the background is transparent.
-**Worked around by:** Wave 1 leaves the browser's default `:focus-visible` ring intact on the transparent variants and ships a tinted outline only on filled / subtle. Visible-on-keyboard but not intent-coded for the transparent set. Deferred polish.
-**Recommended resolution for soribashi:** Treat this as a recipe-authoring footgun rather than a framework bug — document the pattern (route focus color through a dedicated `--cr-{recipe}-focus-ring` var that falls back to the intent's border or text color on transparent variants) in the playbook's pure-styled-primitive entry (Task 1.10 § 6). Not a soribashi-package gap; recorded here as input to the playbook only.
+**What soribashi had:** No documented recipe-authoring guidance on focus indicators. The Button recipe's first cut wrote `outline: 2px solid var(--cr-button-bg)` which derived the focus color from the background — invisible whenever the background was transparent.
+**Worked around by (during Wave 1):** Browser's default `:focus-visible` ring intact on transparent variants; tinted outline only on filled / subtle.
+
+**Resolution shipped (post-Wave-1):** Added a variant-scoped focus override in `Button.css`:
+```css
+.cr-Button-root[data-variant='ghost']:focus-visible,
+.cr-Button-root[data-variant='link']:focus-visible,
+.cr-Button-root[data-variant='outline']:focus-visible {
+  outline-color: var(--cr-button-color);
+}
+```
+
+The base rule (`outline: 2px solid var(--cr-button-bg)`) still drives filled and subtle variants — both have a saturated background that doubles as a coherent ring color. The override targets only the three transparent variants and routes their outline to `--cr-button-color` (the cell's intent-coherent text color, always opaque). Four lines, no per-cell edits across the 30 (variant × intent) cells, since `--cr-button-color` is already set per-cell. Pattern documented in the playbook's pure-styled-primitive entry as a reusable convention for IconButton, ButtonDropdown, and any future recipe with a transparent variant set.
 
 ## 5. IconButton + ButtonDropdown extension sketch (Task 1.10)
 
@@ -287,7 +297,15 @@ These feed Phase 2 Task 2.3 (the playbook's § 2.1 — Pure styled primitive aut
 
 6. **Slots / selectors: keep the parts list small and named.** Button's `['root', 'label', 'icon', 'spinner']` covers every override consumers actually need. Each part gets its own class (`cr-Button-root`, `cr-Button-label`, …) so downstream styling targets parts, not deep selector chains. **Strip the seven styles-API props before spreading `...rest` onto the rendered element** (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`) — this is implicit knowledge today and not enforced by types (Gap 2). Lift the destructure block verbatim from Wave 1's Button recipe until soribashi ships a `splitStylesApiProps` helper.
 
-7. **Focus indicator on transparent variants is a recipe-authoring footgun.** Routing the focus outline through the same `--cr-{component}-bg` var that powers the background makes the outline disappear whenever bg is `transparent` (ghost / link / outline variants). Use a dedicated `--cr-{component}-focus-ring` var that falls back to the intent's border or text color on transparent variants. Wave 1's Button defers this for ghost / link / outline (browser default ring stays); a future polish pass should add the dedicated ring var (Gap 4). Don't repeat the mistake in IconButton or any sibling.
+7. **Focus indicator on transparent variants — pattern (Gap 4 RESOLVED post-Wave-1).** The first cut routed `outline-color` through the same `--cr-{component}-bg` var that powered the background, which made the outline invisible whenever bg was `transparent` (ghost / link / outline variants). Resolved via a variant-scoped override that re-routes `outline-color` to `--cr-{component}-color` (the intent-coherent text color, always opaque) for the three transparent variants:
+    ```css
+    .cr-Button-root[data-variant='ghost']:focus-visible,
+    .cr-Button-root[data-variant='link']:focus-visible,
+    .cr-Button-root[data-variant='outline']:focus-visible {
+      outline-color: var(--cr-button-color);
+    }
+    ```
+    Filled and subtle keep the bg-coherent ring. Reuse this pattern in IconButton, ButtonDropdown, and any future recipe with a transparent variant set.
 
 **Test scope for the category:**
 - **Vitest behavior** (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` — 11 tests): default props, click handling in both directions (disabled / loading suppress; default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Requires `@testing-library/jest-dom/vitest` wired via `setupFiles` (Gap 3) — copy the wiring from `packages/factory/test/setup.ts`.
