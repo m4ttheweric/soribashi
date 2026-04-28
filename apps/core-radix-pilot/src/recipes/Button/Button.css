@@ -40,8 +40,20 @@
   background: var(--cr-button-hover-bg, var(--cr-button-bg));
 }
 
+/*
+ * Active-state fallback chain (active-bg → hover-bg → bg):
+ * Filled cells define `--cr-button-active-bg` explicitly (one step deeper than
+ * hover, e.g. primary 500→600→700). Outline / ghost / link / subtle cells do
+ * NOT — they fall back to `--cr-button-hover-bg` so the hover tint persists
+ * through the click rather than vanishing back to transparent (which made
+ * click feel unresponsive on outline / ghost / link). Mantine's
+ * Button.module.css defines no `:active` at all and relies on the
+ * still-applied hover state for click feedback; this fallback chain matches
+ * that behavior for transparent variants while preserving the explicit
+ * 3-step gradient on filled cells.
+ */
 .cr-Button-root:active {
-  background: var(--cr-button-active-bg, var(--cr-button-bg));
+  background: var(--cr-button-active-bg, var(--cr-button-hover-bg, var(--cr-button-bg)));
 }
 
 .cr-Button-root:focus-visible {
