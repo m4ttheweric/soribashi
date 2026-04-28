@@ -143,22 +143,30 @@
 }
 
 /* ─── sizes ─────────────────────────────────────────────────────────── */
+/*
+ * Each size sets `--cr-button-spinner-size` to roughly button-height / 2,
+ * matching Mantine's calc(button-height / 1.8) ratio. Larger spinner reads
+ * better in the button and de-emphasizes the partial-ring asymmetry.
+ */
 .cr-Button-root[data-size='sm'] {
   height: 2rem;
   padding: 0 0.75rem;
   font-size: var(--font-size-sm);
+  --cr-button-spinner-size: 1rem;
 }
 
 .cr-Button-root[data-size='md'] {
   height: 2.5rem;
   padding: 0 1rem;
   font-size: var(--font-size-base);
+  --cr-button-spinner-size: 1.25rem;
 }
 
 .cr-Button-root[data-size='lg'] {
   height: 3rem;
   padding: 0 1.5rem;
   font-size: var(--font-size-lg);
+  --cr-button-spinner-size: 1.5rem;
 }
 
 .cr-Button-root[data-full-width='true'] {
@@ -431,10 +439,23 @@
  */
 .cr-Button-spinner {
   position: absolute;
+  /*
+   * Centered via the negative-translate-half-self idiom: the element's
+   * top-left sits at the button's geometric center (left/top: 50%), then
+   * translates back by half its own width/height to align centers. The
+   * +1px Y offset matches Mantine's loader transition for a slight visual
+   * rest below center.
+   *
+   * Spinner size is set per data-size below (rather than `1em`) so the
+   * spinner reads at roughly half the button's height — Mantine ships
+   * `calc(button-height / 1.8)`. A 1em spinner inside a 2.5rem button
+   * (md) was visually small enough that the partial-ring asymmetry read
+   * as "off-center."
+   */
   left: 50%;
   top: 50%;
-  width: 1em;
-  height: 1em;
+  width: var(--cr-button-spinner-size, 1.25rem);
+  height: var(--cr-button-spinner-size, 1.25rem);
   /* default (not loading): off-screen above center */
   opacity: 0;
   transform: translate(-50%, -200%);
