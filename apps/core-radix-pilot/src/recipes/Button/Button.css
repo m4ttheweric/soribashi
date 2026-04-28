@@ -477,7 +477,9 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: cr-button-spin 600ms linear infinite;
+  /* 1s feels calm; 600ms read as anxious. Common design-system range:
+     Tailwind UI 1s, Mantine ~1.2s, Material ~1.4s. */
+  animation: cr-button-spin 1s linear infinite;
 }
 
 .cr-Button-root[data-loading='true'] .cr-Button-spinner {
