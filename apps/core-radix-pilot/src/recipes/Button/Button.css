@@ -51,9 +51,21 @@
  * still-applied hover state for click feedback; this fallback chain matches
  * that behavior for transparent variants while preserving the explicit
  * 3-step gradient on filled cells.
+ *
+ * The 1px downward translate adds tactile press feedback. Ported from
+ * Mantine's `.mantine-active` mixin (see
+ * `packages/@mantine/core/src/core/MantineProvider/global.css:44`).
+ * Intentionally NOT in the `transition` list — the press should snap
+ * instantly; only background/border/color animate.
  */
 .cr-Button-root:active {
   background: var(--cr-button-active-bg, var(--cr-button-hover-bg, var(--cr-button-bg)));
+  transform: translateY(1px);
+}
+
+/* Reset the press translate when disabled (Mantine parity) */
+.cr-Button-root:where(:disabled, [aria-disabled='true']):active {
+  transform: none;
 }
 
 .cr-Button-root:focus-visible {
