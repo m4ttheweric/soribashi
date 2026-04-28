@@ -4,12 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
+html {
+  font-size: 12px;
   font-family: var(--font-family-sans);
+  margin: 0;
   background: var(--surface-default);
   color: var(--text-default);
 }
+
 
 * {
   box-sizing: border-box;
