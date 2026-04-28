@@ -465,6 +465,13 @@
 .cr-Button-spinner::before {
   content: '';
   display: block;
+  /*
+   * `box-sizing: border-box` set explicitly here because the global
+   * `* { box-sizing: border-box }` reset in styles.css matches actual
+   * elements only, NOT pseudo-elements. Without it, the 2px border would
+   * add to the 100% width and overflow the parent spinner span by 4px.
+   */
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
   border: 2px solid currentColor;
