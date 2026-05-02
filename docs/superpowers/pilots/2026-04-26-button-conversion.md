@@ -100,14 +100,23 @@ The Tailwind config's `<alpha-value>` pattern uses the `--__hsl-` companion: `'5
 
 **Implication for future waves:** Wave 2-4 recipes can use either pattern. Direct opaque colors stay simple (`var(--color-X-Y)`); alpha-needing surfaces (modal scrim, focus rings, hover tints) use the `--__hsl-` companion (`hsl(var(--__hsl-color-X-Y) / 0.4)`) or Tailwind alpha utilities (`bg-X-Y/40`).
 
-### Gap 2: `definePolymorphicComponent` `render` does not strip styles-API props
+### Gap 2: `definePolymorphicComponent` `render` does not strip styles-API props — DOCUMENTED AS CONVENTION (post-Wave-1)
 
-**Severity:** important
+**Severity:** ~~important~~ → **documented as convention**
 **Where surfaced:** Phase 1 Task 1.5 (Button recipe GREEN)
-**What we needed:** The `props` argument passed to `render({ Element, props, getStyles })` should arrive pre-stripped of styles-API framework keys (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`) so a recipe author can spread `...rest` onto a DOM element without surfacing React unknown-prop warnings.
-**What soribashi has today:** Those seven keys still flow through to `render`. The Button recipe explicitly destructures all seven before spreading `...rest`. The factory's own test (`packages/factory/test/define-polymorphic-component.test.tsx:18`) hides the issue with a `...rest as any` cast. No type, jsdoc, runtime warning, or doc page calls out the requirement.
+**What we needed (Wave 1 framing):** The `props` argument passed to `render({ Element, props, getStyles })` should arrive pre-stripped of styles-API framework keys (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`) so a recipe author can spread `...rest` onto a DOM element without surfacing React unknown-prop warnings.
+**What soribashi has today:** Those seven keys still flow through to `render`. The Button recipe explicitly destructures all seven before spreading `...rest`. The factory's own test (`packages/factory/test/define-polymorphic-component.test.tsx:18`) hides the issue with a `...rest as any` cast.
 **Worked around by:** Hand-written destructure block at the top of the Button recipe's `render` body that pulls all seven keys out of `props` before spreading the remainder onto the polymorphic `Element`.
-**Recommended resolution for soribashi:** Either (a) `useProps` / `useStyles` should consume those keys and the `render` ctx should expose a pre-cleaned `props`; or (b) ship a `splitStylesApiProps(props)` helper from `@soribashi/factory` plus a documented `render` snippet showing the destructure pattern. Option (a) is more ergonomic; option (b) is non-breaking.
+
+**Resolution shipped (post-Wave-1):** Reframed as a documented convention rather than a code change after surveying Mantine's recipe layer. Every `@mantine/core` recipe — `Button`, `Anchor`, `ActionIcon`, `UnstyledButton`, etc. — destructures the seven framework keys in the **same block** as its own component-specific props (variant, color, leftSection, …) and spreads `...rest` onto the rendered element. Mantine's `polymorphicFactory` (`packages/@mantine/core/src/core/factory/polymorphic-factory.tsx`) does not auto-strip; the convention lives in each recipe's render body.
+
+Auto-stripping in soribashi's factory was rejected for two reasons:
+1. **Recipes destructure their own props anyway.** Wave 1's Button already destructures `variant`, `intent`, `size`, `loading`, `disabled`, `fullWidth`, `leftIcon`, `rightIcon`, `children`, `onClick`. Adding the seven framework keys to that block is +5 lines (some keys collapse to one identifier), not a separate 7-line tax.
+2. **Composition wants framework keys to flow.** A soribashi recipe that wraps another soribashi primitive (the way Mantine's Button wraps UnstyledButton) needs to forward `unstyled` / `classNames` / `styles` to the inner primitive. Factory-level auto-stripping breaks this composition pattern; the recipe would have to manually re-attach what was stripped.
+
+The pattern is now documented in **playbook § 2.1 "Render body destructure"** with a canonical block. A `splitStylesApiProps()` helper from `@soribashi/factory` remains a possible future addition for the rare zero-own-prop recipe but isn't worth shipping at the current volume.
+
+**Implication for future waves:** Lift the destructure block from Wave 1's Button when starting a recipe. Don't expect the factory to clean `props` for you. If a recipe composes another primitive, forward the framework keys explicitly to it.
 
 ### Gap 3: Pilot vitest config template missing jest-dom setup wiring
 
