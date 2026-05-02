@@ -118,14 +118,22 @@ The pattern is now documented in **playbook § 2.1 "Render body destructure"** w
 
 **Implication for future waves:** Lift the destructure block from Wave 1's Button when starting a recipe. Don't expect the factory to clean `props` for you. If a recipe composes another primitive, forward the framework keys explicitly to it.
 
-### Gap 3: Pilot vitest config template missing jest-dom setup wiring
+### Gap 3: Pilot vitest config template missing jest-dom setup wiring — DOCUMENTED (post-Wave-1)
 
-**Severity:** important
+**Severity:** ~~important~~ → **documented**
 **Where surfaced:** Phase 1 Task 1.5 (10/11 tests green; `disabled-on-loading` failed with `Invalid Chai property: toBeDisabled`)
 **What we needed:** The pilot-app vitest config template (Task 1.3 step) should include a `setupFiles` entry that imports `@testing-library/jest-dom/vitest`, so any test using jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, `toHaveAttribute`, etc.) works out of the box.
 **What soribashi has today:** The convention is implemented at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` — every published-package vitest config wires it. The pilot-app template Task 1.3 carried did not propagate the wiring, so the pattern was dropped at the boundary between `packages/*` and `apps/*`.
-**Worked around by:** Task 1.5 added `apps/core-radix-pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and `setupFiles: ['./test/setup.ts']` in the pilot's `vitest.config.ts`.
-**Recommended resolution for soribashi:** Update the pilot-app / consumer-app vitest config template (and any future scaffold) to include the setup wiring by default. This is harness wiring rather than a published-package gap, but it bites every recipe pilot that uses jest-dom matchers — which will be most of them.
+**Worked around by (during Wave 1):** Task 1.5 added `apps/core-radix-pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and `setupFiles: ['./test/setup.ts']` in the pilot's `vitest.config.ts`.
+
+**Resolution shipped (post-Wave-1):** Documented as a transferable scaffolding template in **playbook § 2.0 "Pilot app test scaffolding (transferable across waves)"** — three canonical files (vitest config, test setup, workspace registration) plus the dev-deps list. Future Wave 2-4 plan templates should copy from playbook § 2.0 rather than re-deriving from `packages/*` configs.
+
+No tooling change was made. Considered options:
+1. **Shared `vitest.shared.ts` preset at repo root** — rejected. Only 5 vitest configs in the repo total (4 packages + 1 pilot); 3 use jsdom + jest-dom and 2 are node-environment. The duplication is ~3 lines per jsdom config; a shared preset is premature abstraction.
+2. **Scaffold script** — rejected. No scaffold tooling exists in the repo today; building one for a single follow-up pilot violates YAGNI.
+3. **Pure documentation in playbook** — chosen. The playbook is already where Wave 2-4 plan authors look for category patterns; a colocated scaffold section keeps the lookup path consistent.
+
+**Implication for future waves:** Wave 2 (Tooltip), Wave 3 (Tabs), Wave 4 (Select) plans should reference playbook § 2.0 as the canonical pilot-test scaffold rather than copying from Wave 1's plan or from `packages/*` configs. The Wave 1 plan template (lines 1466-1478) is now obsolete for this purpose — it was the proximate cause of the gap.
 
 ### Gap 7: `definePolymorphicComponent` `render` ctx surfaces `ref`, but recipes silently drop it — RESOLVED (post-Wave-1)
 
