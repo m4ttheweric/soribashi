@@ -75,6 +75,17 @@ export interface SemanticTokens {
   /** Layered surface elevation. Suggested layers: canvas, default, raised, sunken, overlay. */
   surface: Record<string, SemanticReference>;
   border: Record<string, SemanticReference>;
+  /**
+   * Optional accent slot for semantic colors that don't fit `text`/`surface`/`border` —
+   * e.g. `accent.feedback` for inline highlight rings, `accent.brand` for non-chrome
+   * brand emphasis. Symmetrical with the other slots: each entry maps a logical name
+   * to a token reference (e.g. `colors.primary.500`). Codegen emits `--accent-{key}`
+   * CSS vars when this slot is present.
+   *
+   * Wave 1 didn't need this; reserved for the CVI integration project's `accent.feedback`
+   * token. See conversion journal § 4 Gap 4.
+   */
+  accent?: Record<string, SemanticReference>;
 }
 
 // Intent resolver types

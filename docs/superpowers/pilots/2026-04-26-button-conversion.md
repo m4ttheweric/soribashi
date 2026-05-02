@@ -135,7 +135,7 @@ No tooling change was made. Considered options:
 
 **Implication for future waves:** Wave 2 (Tooltip), Wave 3 (Tabs), Wave 4 (Select) plans should reference playbook § 2.0 as the canonical pilot-test scaffold rather than copying from Wave 1's plan or from `packages/*` configs. The Wave 1 plan template (lines 1466-1478) is now obsolete for this purpose — it was the proximate cause of the gap.
 
-### Gap 7: `definePolymorphicComponent` `render` ctx surfaces `ref`, but recipes silently drop it — RESOLVED (post-Wave-1)
+### Gap 7: `definePolymorphicComponent` `render` ctx surfaces `ref`, but recipes silently drop it — RESOLVED (post-Wave-1, runtime + type ergonomics)
 
 **Severity:** important
 **Where surfaced:** Codex code review of PR #1 (2026-04-27), `docs/superpowers/reviews/2026-04-27-pr-1-review.md` finding **P2**. Caught in independent review; not surfaced by Wave 1's own implementation pass.
@@ -144,11 +144,15 @@ No tooling change was made. Considered options:
 **Worked around by (during Wave 1):** Nothing — bug shipped.
 **Resolution shipped (post-Wave-1):** `Button.tsx` now destructures `ref` from the render ctx and passes `ref={ref}` to `<Element>`. Three new vitest tests in `Button.test.tsx` cover ref forwarding to (a) the default `<button>` element, (b) the polymorphic `as="a"` path, and (c) imperative focus via the forwarded ref.
 
-**Secondary type-ergonomics issue (still open).** During the test-writing pass, `createRef<HTMLButtonElement>()` failed to assign to `<Button ref={...}>` with a type error: `Type 'RefObject<HTMLButtonElement>' is not assignable to type 'RefObject<HTMLButtonElement> & RefObject<((instance: HTMLButtonElement | null) => void) | RefObject<HTMLButtonElement> | null>'`. The polymorphic-component `ref` prop types as a tangled intersection that doesn't accept a plain `RefObject<T>`. The Button tests cast through a small `refProp(ref)` helper to bypass the type wonkiness; future recipes will hit the same friction.
+**Secondary type-ergonomics issue — RESOLVED (post-Wave-1).** During the original test-writing pass, `createRef<HTMLButtonElement>()` failed to assign to `<Button ref={...}>` with a type error: `Type 'RefObject<HTMLButtonElement>' is not assignable to type 'RefObject<HTMLButtonElement> & RefObject<((instance: HTMLButtonElement | null) => void) | RefObject<HTMLButtonElement> | null>'`. The polymorphic-component `ref` prop typed as a tangled intersection that didn't accept a plain `RefObject<T>`.
 
-**Recommended resolution for soribashi:** Two layers.
-- **Runtime / authoring guidance:** Document the "must thread `ref` through" requirement in playbook § 2.1 and in `define-polymorphic-component.tsx` jsdoc. Strongly consider a dev-mode runtime warning: if the render output is a React element AND its props don't include `ref` AND the consumer passed `ref`, log a warning. Or — better — change the factory so the framework injects `ref` into the rendered element automatically (would require the render API to change shape; investigate trade-offs). Either prevents every Wave 2-4 recipe from rediscovering this footgun.
-- **Type ergonomics:** Audit the `PolymorphicComponentProps` ref type and replace the tangled intersection with `Ref<T> | undefined` (or whatever React's polymorphic-ref convention is in React 19+). Currently consumers can't use `createRef`/`useRef` ergonomically.
+**Root cause:** `PolymorphicComponentProps` was defined as `PolymorphicProps<TAs, TOwnProps> & RefAttributes<PolymorphicRef<TAs>>`. The `& RefAttributes<...>` was redundant — `PolymorphicProps` already pulls in `ComponentPropsWithRef<TAs>`, which provides a correctly-typed `ref?` for the target element. The redundant intersection caused TypeScript to merge two `ref?` properties into the tangled `RefObject<T> & RefObject<callback | RefObject<T> | null>` shape, which `RefObject<T>` alone doesn't satisfy.
+
+**Resolution shipped:** Dropped the redundant `& RefAttributes<PolymorphicRef<TAs>>` intersection — `PolymorphicComponentProps` is now identical to `PolymorphicProps`. `ComponentPropsWithRef<TAs>` already gives consumers a `ref?: Ref<HTMLButtonElement>` for `<Button>`, `Ref<HTMLAnchorElement>` for `<Button as="a">`, etc. The `refProp(ref)` cast helper in `Button.test.tsx` was deleted; the three ref-forwarding tests now pass `ref={createRef<HTMLButtonElement>()}` directly.
+
+**Implementation:** `packages/factory/src/types/polymorphic.ts` (drop the `& RefAttributes<...>` intersection; remove unused `RefAttributes` import); `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` (delete `refProp` helper; pass refs directly).
+
+**Authoring guidance** (still applies): the must-thread-`ref`-through requirement is documented in playbook § 2.1 "Token consumption" so future Wave 2-4 recipes don't rediscover the original runtime no-op. A dev-mode runtime warning (factory checks if consumer passed `ref` but render output didn't surface one) was considered and deferred — the playbook reminder + ref-forwarding tests are sufficient guard for now.
 
 ### Gap 4: Focus indicator invisible on transparent recipe variants — RESOLVED (post-Wave-1)
 
