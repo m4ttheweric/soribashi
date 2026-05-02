@@ -91,6 +91,58 @@ If any of these don't hold, the methodology is still valuable but produces less 
 
 ## 2. Authoring patterns by category
 
+### 2.0 Pilot app test scaffolding (transferable across waves)
+
+Every recipe pilot needs a vitest config that runs jsdom and wires `@testing-library/jest-dom/vitest` so jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, `toHaveAttribute`, …) work. This convention is already in place for the `packages/*` projects that need it (`packages/factory`, `packages/blocks`) but did not propagate to the `apps/*` boundary in Wave 1's plan template — Task 1.5 stumbled when the first jest-dom matcher failed and added the wiring as a workaround. To prevent every Wave 2-4 pilot from rediscovering the same gap, copy the canonical three-file template below verbatim when scaffolding a new pilot app.
+
+**Canonical `apps/{pilot-name}/vitest.config.ts`:**
+
+```ts
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['./test/setup.ts'],
+  },
+});
+```
+
+**Canonical `apps/{pilot-name}/test/setup.ts`:**
+
+```ts
+import '@testing-library/jest-dom/vitest';
+```
+
+**Workspace registration** — append the new config to `vitest.workspace.ts` at repo root:
+
+```ts
+export default [
+  './packages/theme/vitest.config.ts',
+  './packages/codegen/vitest.config.ts',
+  './packages/factory/vitest.config.ts',
+  './packages/blocks/vitest.config.ts',
+  './apps/core-radix-pilot/vitest.config.ts',
+  './apps/{pilot-name}/vitest.config.ts',  // new entry
+];
+```
+
+**Dev deps the pilot needs** (add to `apps/{pilot-name}/package.json` and re-run `bun install`):
+
+```
+"jsdom"
+"@testing-library/react"
+"@testing-library/jest-dom"
+"@vitejs/plugin-react"
+"vitest"
+```
+
+(Conversion journal § 4 Gap 3 — DOCUMENTED post-Wave-1.)
+
 ### 2.1 Pure styled primitive (Wave 1 — Button)
 
 Pattern for components with no Radix anatomy, no portal, no controlled state — just styled markup that responds to props.
@@ -198,7 +250,7 @@ If a recipe has zero own props (rare), the destructure block reduces to the seve
 
 #### Tests
 
-- **Vitest behavior** (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` — 11 tests): rendering, default props, click handling **in both directions** (disabled/loading suppression AND default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Requires `@testing-library/jest-dom/vitest` wired via `setupFiles` (conversion journal § 4 Gap 3) — copy the wiring from `packages/factory/test/setup.ts`.
+- **Vitest behavior** (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` — 11 tests): rendering, default props, click handling **in both directions** (disabled/loading suppression AND default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Pilot test harness (vitest config + jest-dom setup file) is documented in § 2.0 above — copy the three-file template before writing tests.
 - **Playwright parity** (Wave 1 reference: `apps/core-radix-pilot/tests/Button.parity.spec.ts`): smoke the high-frequency cells, not all 30. For Button: filled × all six intents (computed `background-color`); three sizes (computed height); disabled (opacity); loading (spinner present + disabled set).
 - Don't aim for 30-cell exhaustiveness in Playwright — the parity tests are smoke for the pattern, not exhaustive proof. **Visual review remains non-optional**; the focus-ring regression (conversion journal § 3 Surprises) didn't surface in either test layer.
 
@@ -250,13 +302,13 @@ Every gap surfaced during Wave 1 Phases 0 + 1 is collected here, deduplicated ac
 - **important** — surfaced friction; workaround was viable for Wave 1 but the gap will compound. Fix before Wave 4 (Select) at the latest.
 - **nice-to-have** — surfaced but the workaround is fine indefinitely. Optional cleanup.
 
-Wave 1 surfaced no `blocking` gaps in its own implementation pass — every gap had a viable in-pilot workaround. Three `important` and three `nice-to-have` made the cut. A seventh gap (Gap 7 — recipes silently drop forwarded refs) was caught later by independent code review (codex, PR #1, see `docs/superpowers/reviews/2026-04-27-pr-1-review.md`); it's recorded retroactively because the same recipe-author-discipline lessons apply to future waves. **Four entries have been resolved or reframed post-Wave-1:** Gap 1 (codegen `hsl(...)` wrapper) via dual-emit codegen change unblocking Option A; Gap 6 (focus indicator on transparent variants) via a variant-scoped focus override in Button.css; Gap 7 (ref forwarding runtime) via a Button.tsx fix + 3 new ref-forwarding tests; **Gap 2 (styles-API destructure)** reframed as a documented convention (see § 2.1 "Render body destructure") after surveying Mantine's recipes — every `@mantine/core` recipe destructures the framework keys alongside its own props rather than relying on factory-level stripping. Three open: #3 (vitest template), #4 (`accent.feedback`), #5 (border-default reset), plus the type-ergonomics half of Gap 7.
+Wave 1 surfaced no `blocking` gaps in its own implementation pass — every gap had a viable in-pilot workaround. Three `important` and three `nice-to-have` made the cut. A seventh gap (Gap 7 — recipes silently drop forwarded refs) was caught later by independent code review (codex, PR #1, see `docs/superpowers/reviews/2026-04-27-pr-1-review.md`); it's recorded retroactively because the same recipe-author-discipline lessons apply to future waves. **Five entries have been resolved or reframed post-Wave-1:** Gap 1 (codegen `hsl(...)` wrapper) via dual-emit codegen change unblocking Option A; Gap 6 (focus indicator on transparent variants) via a variant-scoped focus override in Button.css; Gap 7 (ref forwarding runtime) via a Button.tsx fix + 3 new ref-forwarding tests; **Gap 2 (styles-API destructure)** reframed as a documented convention (see § 2.1 "Render body destructure") after surveying Mantine's recipes; **Gap 3 (pilot vitest template)** documented as a transferable scaffold in § 2.0 ("Pilot app test scaffolding") so future Wave 2-4 plans copy from a canonical location rather than re-deriving the wiring. Two open: #4 (`accent.feedback`), #5 (border-default reset), plus the type-ergonomics half of Gap 7.
 
 | # | Gap | Severity | Surfaced in | Recommended resolution |
 |---|---|---|---|---|
 | 1 | Codegen emits `hsl(...)`-wrapped var values; bare-HSL emit needed for Tailwind `<alpha-value>` and `hsl(var(--x))` consumer patterns | ~~important~~ → **resolved** | Consolidation journal § 6 (third bullet) AND conversion journal § 4 Gap 1 — same root cause, surfaced first in Phase 0 Task 0.8 (TokenReview), recurred as a tax in Phase 1 Tasks 1.5 / 1.6 / 1.8 | **RESOLVED post-Wave-1.** Implemented as a **dual-emit** pattern (rather than the bare-only switch originally proposed, which would have broken ~146 existing consumers): codegen now emits both the canonical wrapped var (`--color-primary-500: hsl(...)`) AND a `--__hsl-` bare-component companion (`--__hsl-color-primary-500: ...`). Tailwind config's `<alpha-value>` pattern uses the `--__hsl-` companion. Zero breaking changes; `bg-primary-500/50` and friends now work. Implementation: `packages/codegen/src/emit-css.ts` (`stripHslWrapper` helper) + `packages/codegen/src/emit-tailwind-v3.ts`. The C → A bridge's gating gap is closed. |
 | 2 | `definePolymorphicComponent` `render` ctx surfaces the seven styles-API framework keys (`classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`) on `props`, requiring a hand-written destructure block before spreading `...rest` onto a DOM element | ~~important~~ → **documented as convention** | Conversion journal § 4 Gap 2 — Phase 1 Task 1.5 (Button recipe GREEN). Hidden in the factory's own test by a `...rest as any` cast (`packages/factory/test/define-polymorphic-component.test.tsx:18`) | **Reframed post-Wave-1.** Reviewing Mantine showed every `@mantine/core` recipe (Button, Anchor, ActionIcon, UnstyledButton, …) destructures the framework keys *in the same block* as its own props and spreads `...rest` — they don't auto-strip in `polymorphicFactory` either. Auto-stripping was rejected because (a) recipes destructure their own props anyway, so the framework keys add ~5 lines, not a 7-line standalone tax; (b) recipes that compose another soribashi primitive need to forward `unstyled` / `classNames` / `styles` to the inner primitive (Mantine's `Button` → `UnstyledButton` does this), which factory-level stripping would break. **Documented in playbook § 2.1 "Render body destructure"** with a canonical block. A `splitStylesApiProps()` helper remains a possible future addition for zero-own-prop recipes but isn't worth shipping for the volume. |
-| 3 | Pilot-app vitest config template lacks `setupFiles` wiring for `@testing-library/jest-dom/vitest`; jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, etc.) fail with `Invalid Chai property` until manually wired | important | Conversion journal § 4 Gap 3 — Phase 1 Task 1.5 (10/11 tests green; `disabled-on-loading` failed). Convention exists at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` but did not propagate across the `packages/*` → `apps/*` boundary | Harness wiring rather than a published-package gap, but bites every recipe pilot. Update the pilot-app / consumer-app vitest config template (and any future scaffold) to include `setupFiles: ['./test/setup.ts']` plus a one-line `import '@testing-library/jest-dom/vitest';` setup file by default. |
+| 3 | Pilot-app vitest config template lacks `setupFiles` wiring for `@testing-library/jest-dom/vitest`; jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, etc.) fail with `Invalid Chai property` until manually wired | ~~important~~ → **documented** | Conversion journal § 4 Gap 3 — Phase 1 Task 1.5 (10/11 tests green; `disabled-on-loading` failed). Convention exists at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` but did not propagate across the `packages/*` → `apps/*` boundary | **DOCUMENTED post-Wave-1.** Canonical three-file scaffolding template (`vitest.config.ts` with `setupFiles`, `test/setup.ts` with the jest-dom import, `vitest.workspace.ts` registration) lives in playbook § 2.0 "Pilot app test scaffolding." Future Wave 2-4 plan templates should copy from there rather than re-deriving from `packages/*` configs. No tooling change — the repo only has 5 vitest configs total and the duplication isn't enough to justify a shared preset. |
 | 4 | `accent.feedback` semantic token has no clean home in the soribashi `SemanticTokens` shape (`text`, `surface`, `border` only — no `accent` slot) | nice-to-have | Consolidation journal § 6 (first bullet) — Phase 0 Task 0.4 (theme expression). Wave 1 omits the token; pilot doesn't render the feedback UI | `@soribashi/theme`: pick one of (a) extend `SemanticTokens` with a free-form `accent: Record<string, SemanticReference>` slot, (b) promote it to a sibling top-level color family (`colors.accent`), or (c) fold it into a future "decorative" namespace. Not a Wave 1 blocker; flagged for the integration project that wires the consolidated theme into CVI's existing 115 importers. |
 | 5 | Border-default reset has no in-theme expression: CVI's `colors.borderColor.DEFAULT` Tailwind-config bug is currently worked around via a universal-selector reset in `claimview-islands.css`; the soribashi theme expresses `semantic.border.default → colors.neutral.200` but doesn't emit a corresponding universal `border-color` reset | nice-to-have | Consolidation journal § 6 (second bullet) — Phase 0 Task 0.4 (theme expression); cross-references consolidation journal § 5 Q7 | `@soribashi/codegen` (or `@soribashi/theme`): make the architectural choice — either codegen emits a universal `* { border-color: var(--color-border-default); }` reset when a `semantic.border.default` is set, or document that consumers are expected to apply `border-default` explicitly. Not a Wave 1 blocker; surfaced for the integration project. |
 | 6 | Focus indicator authoring footgun: routing focus color through the same `--cr-{recipe}-bg` var that powers the background makes the outline invisible whenever bg resolves to `transparent` (ghost / link / outline variants) | ~~nice-to-have~~ → **resolved** | Conversion journal § 4 Gap 4 — Phase 1 Task 1.5 review. Wave 1 originally shipped browser default `:focus-visible` ring on the transparent variants; tinted outline only on filled / subtle | **RESOLVED post-Wave-1.** Variant-scoped override in `Button.css` reroutes `outline-color` to `--cr-button-color` (the intent-coherent text color, always opaque) for ghost / link / outline. Four lines, no per-cell edits. Pattern documented in playbook § 2.1 for reuse in IconButton, ButtonDropdown, and any future recipe with transparent variants. |
@@ -270,7 +322,7 @@ The gaps that gated A:
 
 - **Gap 1 (codegen `hsl(...)` wrapper) — RESOLVED post-Wave-1.** Was the only Wave 1 gap blocking Option A directly. Tailwind's `<alpha-value>` pattern requires bare HSL components so the utility can splice the alpha in (`bg-primary-500/50` → `hsl(var(--__hsl-color-X-Y) / 0.5)`). Resolved via dual-emit: codegen emits both the canonical wrapped var (`--color-X-Y`) for direct CSS use and a `--__hsl-` bare-component companion for Tailwind alpha. Zero breaking changes to existing consumers; alpha utilities now work. See Gap 1 row above for implementation details.
 
-The other Wave 1 gaps (#2 styles-API destructure convention, #3 vitest template, #4 accent.feedback, #5 border-default reset, #6 focus indicator) are about recipe authoring ergonomics, theme-shape coverage, or harness wiring — none of them block A's "soribashi owns the full Tailwind config" promise. They're either wave-internal friction or integration-project concerns.
+The other Wave 1 gaps (#2 styles-API destructure convention, #3 vitest scaffold, #4 accent.feedback, #5 border-default reset, #6 focus indicator) are about recipe authoring ergonomics, theme-shape coverage, or harness wiring — none of them block A's "soribashi owns the full Tailwind config" promise. They're either wave-internal friction or integration-project concerns.
 
 A is still gated on two **codegen feature additions** that Wave 1 did not need but the spec called out: configurable dark-mode selector (so the host's `.dark .claim-view-islands` scope can be expressed) and config-level pass-through for `corePlugins.preflight`, plugins, and content globs. Wave 1 didn't surface either as a friction point because Option C composes them at the host layer; both are pure additions to the codegen's emit shape rather than gaps revealed by the pilot.
 
