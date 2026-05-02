@@ -63,4 +63,35 @@ export interface EmitCssOptions {
    * to `:root`, `.dark`, and (optionally) per-scope blocks.
    */
   cssVariablesResolver?: CssVariablesResolver;
+
+  /**
+   * Whether to emit `--__hsl-color-*` companion variables alongside the canonical
+   * wrapped color vars. The companions hold bare HSL components (`221.2 83.2% 53.3%`
+   * instead of `hsl(221.2 83.2% 53.3%)`) so that:
+   *   - Tailwind v3's `<alpha-value>` substitution can splice in alpha:
+   *     `hsl(var(--__hsl-color-primary-500) / <alpha-value>)`
+   *   - Hand-written CSS can use alpha directly:
+   *     `background: hsl(var(--__hsl-color-primary-500) / 0.4);`
+   *
+   * The `--__hsl-` prefix (rather than a `-hsl` suffix) keeps the companion vars
+   * out of the `--color-` autocomplete namespace — typing `--color-` only surfaces
+   * canonical wrapped vars; typing `--__hsl` deliberately reaches the private
+   * companion namespace.
+   *
+   * Modes:
+   *   - 'auto'  (default): emit companions only when the codegen config's Tailwind
+   *             output is missing OR is mode='v3'/mode='both' (i.e., when the
+   *             companions can be referenced from generated Tailwind config or
+   *             from hand-written CSS that pairs with v3 emission). Skip
+   *             companions in mode='v4'-only setups, where Tailwind v4's
+   *             `color-mix()` runtime makes them unnecessary.
+   *   - true   : always emit companions.
+   *   - false  : never emit companions.
+   *
+   * Driven from `build.ts` based on the resolved Tailwind output mode; consumers
+   * setting this directly can override the auto-detection.
+   *
+   * @default 'auto'
+   */
+  emitCompanionHsl?: 'auto' | boolean;
 }

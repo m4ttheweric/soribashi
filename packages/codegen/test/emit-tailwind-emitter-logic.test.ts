@@ -50,7 +50,7 @@ describe('emitTailwindV3 — emitter logic parity', () => {
 
       const output = emitTailwindV3(theme);
       // Must use the alpha-value pattern, NOT a plain var()
-      expect(output).toContain("'500': 'hsl(var(--color-primary-500) / <alpha-value>)'");
+      expect(output).toContain("'500': 'hsl(var(--__hsl-color-primary-500) / <alpha-value>)'");
       expect(output).not.toContain("'500': 'var(--color-primary-500)'");
     });
 
@@ -169,8 +169,8 @@ describe('emitTailwindV3 — emitter logic parity', () => {
 
       const output = emitTailwindV3(theme);
       // Shade keys '50' and '500' should be quoted in the colors block
-      expect(output).toContain("'50': 'hsl(var(--color-primary-50) / <alpha-value>)'");
-      expect(output).toContain("'500': 'hsl(var(--color-primary-500) / <alpha-value>)'");
+      expect(output).toContain("'50': 'hsl(var(--__hsl-color-primary-50) / <alpha-value>)'");
+      expect(output).toContain("'500': 'hsl(var(--__hsl-color-primary-500) / <alpha-value>)'");
     });
   });
 
