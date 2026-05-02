@@ -156,6 +156,44 @@ describe('emitCss', () => {
     expect(css).toContain('--surface-raised: var(--color-neutral-100);');
   });
 
+  it('emits --accent-* vars when semantic.accent is provided (Gap 4)', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {
+          primary: { '500': 'hsl(221 83% 53%)' },
+          warning: { '500': 'hsl(38 92% 50%)' },
+        },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+      semantic: {
+        accent: {
+          feedback: 'colors.warning.500',
+          brand: 'colors.primary.500',
+        },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--accent-feedback: var(--color-warning-500);');
+    expect(css).toContain('--accent-brand: var(--color-primary-500);');
+  });
+
+  it('does NOT emit --accent-* vars when semantic.accent is omitted (default)', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { neutral: { '0': '#fff' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).not.toContain('--accent-');
+  });
+
   it('output is deterministic — same theme produces identical output', () => {
     const theme = createTheme({
       tokens: {

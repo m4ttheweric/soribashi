@@ -125,17 +125,9 @@ describe('Button — polymorphism', () => {
 });
 
 describe('Button — ref forwarding', () => {
-  // The `ref` prop on PolymorphicProps types as a complex intersection
-  // (`RefObject<T> & RefObject<callback-ref-or-RefObject<T>-or-null>`) that
-  // doesn't accept a plain `createRef<T>()`. Cast through `unknown` here as
-  // a documented workaround — see conversion journal § 4 Gap 7 (the type
-  // ergonomics are part of that gap, not a recipe-author concern).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const refProp = (ref: unknown): any => ({ ref });
-
   it('forwards ref to the rendered <button> element by default', () => {
     const ref = createRef<HTMLButtonElement>();
-    wrap(<Button {...refProp(ref)}>x</Button>);
+    wrap(<Button ref={ref}>x</Button>);
     expect(ref.current).not.toBeNull();
     expect(ref.current?.tagName).toBe('BUTTON');
   });
@@ -143,7 +135,7 @@ describe('Button — ref forwarding', () => {
   it('forwards ref to the rendered <a> when as="a"', () => {
     const ref = createRef<HTMLAnchorElement>();
     wrap(
-      <Button as="a" href="/x" {...refProp(ref)}>
+      <Button as="a" href="/x" ref={ref}>
         link
       </Button>,
     );
@@ -153,7 +145,7 @@ describe('Button — ref forwarding', () => {
 
   it('forwarded ref can drive imperative focus on the rendered element', () => {
     const ref = createRef<HTMLButtonElement>();
-    wrap(<Button {...refProp(ref)}>x</Button>);
+    wrap(<Button ref={ref}>x</Button>);
     ref.current?.focus();
     expect(document.activeElement).toBe(ref.current);
   });

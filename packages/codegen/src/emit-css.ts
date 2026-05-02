@@ -245,6 +245,12 @@ function emitSemanticLines(lines: string[], theme: ResolvedTheme): void {
   for (const [key, ref] of Object.entries(theme.semantic.border).sort(byKey)) {
     lines.push(`  --border-${key}: ${semanticToVar(ref)};`);
   }
+
+  if (theme.semantic.accent) {
+    for (const [key, ref] of Object.entries(theme.semantic.accent).sort(byKey)) {
+      lines.push(`  --accent-${key}: ${semanticToVar(ref)};`);
+    }
+  }
 }
 
 function semanticToVar(ref: string): string {

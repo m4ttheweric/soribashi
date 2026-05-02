@@ -43,6 +43,7 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     text: merged.semantic?.text ?? DEFAULT_TEXT,
     surface: merged.semantic?.surface ?? DEFAULT_SURFACE,
     border: merged.semantic?.border ?? DEFAULT_BORDER,
+    ...(merged.semantic?.accent ? { accent: merged.semantic.accent } : {}),
   };
 
   return {
