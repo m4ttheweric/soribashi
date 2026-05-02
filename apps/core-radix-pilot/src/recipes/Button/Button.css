@@ -89,7 +89,7 @@
  * instantly; only background/border/color animate.
  */
 .cr-Button-root:active {
-  background: var(--cr-button-active-bg, var(--cr-button-hover-bg, var(--cr-button-bg)));
+  /* background: var(--cr-button-active-bg, var(--cr-button-hover-bg, var(--cr-button-bg))); */
   transform: translateY(1px);
 }
 
