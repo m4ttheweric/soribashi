@@ -49,14 +49,25 @@ Wave 1's job is to use soribashi to **consolidate CVI's tokens into one focused 
 
 ---
 
-## 3. North Star vs Pilot Working State
+## 3. Integration model
 
-Two integration models for how soribashi codegen meshes with the host's Tailwind setup:
+Soribashi codegen emits a `theme.extend` partial. The host's `tailwind.config.js` spreads the generated extend and layers host-policy concerns (preflight setting, plugin set, content globs, dark-mode selector). This is the same compose pattern `apps/playground` already uses.
 
-- **Option A (north star):** soribashi owns the entire Tailwind config — including the dark-mode selector, `preflight` setting, plugin pass-through, and content globs. The host drops the generated config in as-is. Requires soribashi codegen extensions: bare-HSL components emit mode (so Tailwind's `<alpha-value>` pattern works against the vars), configurable dark-mode selector, plugin and config-level pass-through.
-- **Option C (pilot working state):** soribashi emits a `theme.extend` partial. The host's `tailwind.config.js` spreads the generated extend and layers config-level concerns (`preflight: false`, `tailwindcss-animate`, content globs, dark-mode selector). This is the same compose pattern `apps/playground` already uses; we formalize the "partial emit" if needed.
+**Why this is the canonical model, not a workaround:**
 
-**Wave 1 ships against C.** The playbook documents the codegen/theme features that need to exist before A is real, and recommends the path. We do not pre-build A's missing features speculatively — we let the pilot surface which gaps actually matter.
+1. **Soribashi is substrate-agnostic.** § 3.2 of the foundational soribashi-design spec positions soribashi's primary output as CSS custom properties, with Tailwind config "an optional second output that enables utility classes referencing those vars." CSS Modules consumers don't use a Tailwind config at all. Forcing soribashi to own the full Tailwind config conflicts with that principle.
+
+2. **Composition seams are correct.** Content globs are intrinsically host-specific (only the host knows its file structure). Plugins are often host-specific (analytics, animations, custom utilities). Preflight is a host-policy choice that depends on what other CSS systems coexist. These belong to the host; soribashi shouldn't strong-arm them through a generated config.
+
+3. **The aesthetic single-line consumer config has no functional value.** Hiding host-policy declarations under a soribashi indirection doesn't reduce what the host owns; it just moves declarations between files. Composition is more honest about who owns what.
+
+**Wave 1 history:** an earlier draft of this spec framed Option A (soribashi owns the entire Tailwind config) as the north star and Option C (composition) as a working state. That framing was decided in a single 33-minute exchange on 2026-04-26 with thin justification — the argument for A reduced to "soribashi authoring core-radix as a library implies soribashi can own the Tailwind layer," which is tautological rather than substantive. After the Wave 1 pilot landed without surfacing any friction with composition, the decision was revisited on 2026-05-02 and reversed: **Option C is the integration model, period.** No "C → A bridge" — just C.
+
+**What still applies from the original Wave-1 framing:**
+
+- **Configurable dark-mode selector** — was originally listed as an Option-A feature. It is actually a codegen *correctness* gap independent of the integration model: today codegen hardcodes `.dark { ... }` in the emitted CSS, which breaks any consumer (like CVI) that needs a scoped dark mode (`.dark .claim-view-islands`). Required for the integration project regardless of A vs C; remains an open follow-up under Option C.
+- **Bare-HSL alpha companion vars** — already shipped as Wave 1 Gap 1's dual-emit fix (canonical wrapped var + `--__hsl-` companion). Was originally framed as a Option-A blocker; in fact it's an alpha-utility correctness fix that applies under either integration model.
+- ~~**Config-level pass-through for `corePlugins.preflight`, plugins, content globs**~~ — **dropped.** These are host-policy concerns under Option C; consumers compose them in their own `tailwind.config.js` and that's the right seam.
 
 ---
 
@@ -259,7 +270,7 @@ Synthesize Phase 0 + Phase 1 outputs into a single forward-looking playbook docu
 
 1. **Token consolidation methodology.** Transferable to any fragmented design system, not specific to CVI. The inventory → classify → express → codegen → review → decide loop, with the rationale for each step. Half the value of the engagement.
 2. **Pure styled primitive authoring pattern (Button category).** Recipe shape recipe, intent-resolver usage, polymorphism, state handling. Backed by Phase 1 evidence.
-3. **Soribashi gaps surfaced.** Codegen and theme-model gaps with severity (blocking / important / nice-to-have) and proposed resolutions. The C → A bridge — what soribashi has to add before it can own the full Tailwind config.
+3. **Soribashi gaps surfaced.** Codegen and theme-model gaps with severity (blocking / important / nice-to-have) and proposed resolutions. Notes the integration-model reversal — Option C is the canonical model; see § 3 — and identifies which gaps are codegen correctness fixes that apply under C regardless.
 4. **Legacy-token migration strategy stub.** What an integration project would need to do to migrate CVI's 115 importers from fragmented tokens to the consolidated vocabulary. Sized (S/M/L estimates per phase) but not designed. Becomes the input to the integration project's own brainstorm.
 5. **Future waves outlined.** Wave 2 (overlay compound: Tooltip), Wave 3 (navigational compound: Tabs), Wave 4 (form control: Select). Each named, sized, and slotted into the playbook structure so they extend rather than re-design.
 
