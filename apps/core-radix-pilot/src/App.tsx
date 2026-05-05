@@ -4,9 +4,10 @@ import { theme } from './theme/index.ts';
 import { TokenReview } from './pages/TokenReview.tsx';
 import { ScreenReplica } from './pages/ScreenReplica.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
+import { TooltipMatrix } from './pages/TooltipMatrix.tsx';
 import { Tooltip } from './recipes/Tooltip/Tooltip.tsx';
 
-type Page = 'tokens' | 'screen' | 'buttons';
+type Page = 'tokens' | 'screen' | 'buttons' | 'tooltips';
 
 export function App() {
   const [page, setPage] = useState<Page>('tokens');
@@ -36,6 +37,9 @@ export function App() {
             <button onClick={() => setPage('buttons')} aria-current={page === 'buttons' ? 'page' : undefined}>
               Button matrix
             </button>
+            <button onClick={() => setPage('tooltips')} aria-current={page === 'tooltips' ? 'page' : undefined}>
+              Tooltip matrix
+            </button>
             <span style={{ marginLeft: 'auto' }}>
               <button onClick={() => setDark(!dark)}>{dark ? 'Light' : 'Dark'}</button>
             </span>
@@ -45,6 +49,7 @@ export function App() {
             {page === 'tokens' && <TokenReview />}
             {page === 'screen' && <ScreenReplica />}
             {page === 'buttons' && <ButtonMatrix />}
+            {page === 'tooltips' && <TooltipMatrix />}
           </main>
         </div>
       </Tooltip.Provider>
