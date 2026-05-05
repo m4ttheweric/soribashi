@@ -13,6 +13,7 @@ export type {
   ColorScale,
   SemanticTokens,
   SemanticReference,
+  SemanticSurfaceValue,
   IntentResolver,
   IntentResolverInput,
   IntentResolverResult,
