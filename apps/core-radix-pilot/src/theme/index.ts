@@ -346,6 +346,11 @@ export const theme = createTheme({
       // surface (tooltips, dropdown menus, popover content) — distinct from
       // "scrim behind a modal." See journal § 5 Q11.
       scrim: 'colors.neutral.900',
+      // Wave 2: formalized foreground pairing for floating surfaces
+      // (tooltips, dropdowns, popovers). Object form enables codegen to emit
+      // both --surface-floating and --surface-floating-foreground so
+      // variants like Tooltip's `inverted` can guarantee contrast.
+      floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },
     },
     border: {
       // CVI's `--color-border-islands` (light hsl(214 32% 91%)) maps cleanly
