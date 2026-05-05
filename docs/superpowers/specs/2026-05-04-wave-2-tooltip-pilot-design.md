@@ -32,10 +32,12 @@ The pilot library (`apps/core-radix-pilot/`) plays the role of a hypothetical do
 |---|---|
 | `packages/factory/` | `defineCompound` factory — public API |
 | `packages/factory/` | `Slot` component — public API; substrate-agnostic asChild merge |
+| `packages/factory/` | `Component.withDefaults({...})` method on every `defineComponent` / `defineCompound` output — public API; reference-keyed theme registration |
 | `packages/factory/` | `compound: true` flag on `defineComponent` config — internal substrate, not exported |
 | `packages/factory/` | `createSafeContext` helper — internal use, not exported |
 | `packages/theme/` | `SemanticSurfaceValue` extended to support `string \| { value, foreground? }` |
 | `packages/theme/` | `surface.floating` semantic-token slot |
+| `packages/theme/` | `createTheme({ components: [...] })` accepts an array of `withDefaults`-tagged entries; legacy `Record<string, ComponentThemeConfig>` form remains for back-compat |
 | `packages/codegen/` | Codegen emits paired `--surface-{name}-foreground` when the object form is used |
 | `apps/core-radix-pilot/` | `Tooltip` recipe wrapping `@radix-ui/react-tooltip`, demonstrating `defineCompound` + `Slot` + the floating-surface formalization |
 | `apps/core-radix-pilot/src/pages/` | `TooltipMatrix.tsx` page |
@@ -114,12 +116,14 @@ interface PolymorphicPartConfig {
 
 `PartRenderCtx` exposes:
 
-- `props` — merged after `useProps`-style default resolution (config defaults → theme `MantineProvider`-style defaults → consumer-passed props).
+- `props` — *merged*, post-`useProps`. Resolution order: recipe-internal `defaults` → theme `components[name].defaultProps` (set via `withDefaults` — see § 3.5) → consumer-passed instance props (with `undefined` filtered out so it never clobbers a default). By the time `render` runs, `props.variant` reflects the final value, including theme overrides.
 - `getStyles(opts?)` — defaults to current part's slot. `getStyles({ part: 'arrow' })` targets a sibling slot; the part-name argument is type-checked against `keyof typeof config.parts`.
 - `ctx` — the compound's safe-context value. Factory injects `{ variant, getStyles }` plus whatever `config.context()` returns.
 - `children` — convenience accessor; also at `props.children`.
 
 Polymorphic parts additionally receive `Element` (the resolved element type) and `ref` (the forwarded ref). Threading is unchanged from `definePolymorphicComponent`.
+
+**`config.context()` runs inside Root's render** — at the same call site as `useProps`. It receives the *merged* root props and may call React hooks (`useFloating`, `useId`, etc.). This is the same idiom Mantine uses for compounds wrapping Floating UI: Popover's Root calls `usePopover(props)` directly in render and threads the result through context. soribashi's `context()` callback is the typed seam for that pattern.
 
 ### 3.3 What the factory does internally
 
@@ -141,7 +145,81 @@ The pilot Tooltip exercises all three; `defineCompound` does not enforce which c
 
 The factory does not statically partition parts into the three classes; the classification is observational. This is intentional — adding a "must declare class" config field would be ceremony with no compile-time benefit (a misclassified part fails at render time today, with the safe-context's named error).
 
-### 3.5 What `defineCompound` does *not* support in Wave 2
+### 3.5 Theme-level defaults — `withDefaults` and the array form
+
+Each component the factory produces — every `defineComponent` output, and every part of a `defineCompound` output — gets a `withDefaults({...})` method. The method returns a tagged record carrying the component's internal `name` plus the consumer-supplied defaults. Consumers register defaults by passing these tagged records to `createTheme({ components: [...] })`:
+
+```ts
+import { Tooltip } from 'core-radix-pilot';
+import { Button } from 'core-radix-pilot';
+
+const theme = createTheme({
+  tokens, semantic,
+  components: [
+    Tooltip.withDefaults({ variant: 'inverted' }),
+    Tooltip.Provider.withDefaults({ delayDuration: 500, skipDelayDuration: 150 }),
+    Tooltip.Content.withDefaults({ sideOffset: 8, withArrow: false }),
+    Button.withDefaults({ size: 'sm' }),
+  ],
+});
+```
+
+**What this fixes** vs. Mantine's flat-string-key shape:
+
+- **No string key written by the consumer.** `Tooltip.Provider.withDefaults(...)` is the only access path. Misspelling impossible — would have to import a non-existent component.
+- **Per-call type-safety.** `Tooltip.Provider.withDefaults({ ... })` autocompletes/checks against `TooltipProviderProps`. `Tooltip.Content.withDefaults({...})` against `TooltipContentProps`. The component reference carries its own type.
+- **Refactor-safe.** Renaming the recipe's `Tooltip` to `Popover` breaks at the consumer's import line, not silently at `useProps` runtime.
+- **Discoverable.** IDE autocomplete on `Tooltip.` shows `Provider`, `Trigger`, `Content`, `withDefaults`. Consumer doesn't read docs to learn naming conventions.
+
+**Implementation footprint** — small:
+
+```ts
+// packages/factory/src/define-component.tsx (extension)
+Component.withDefaults = (defaults: Partial<TProps>) => ({
+  __soribashiThemeEntry: true as const,
+  name: config.name,
+  defaultProps: defaults,
+});
+```
+
+```ts
+// packages/theme/src/create-theme.ts (extension to existing normalization)
+function normalizeComponents(input):
+  Record<string, ComponentThemeConfig> {
+  if (Array.isArray(input)) {
+    const out: Record<string, ComponentThemeConfig> = {};
+    for (const entry of input) out[entry.name] = { defaultProps: entry.defaultProps };
+    return out;
+  }
+  return input ?? {};
+}
+```
+
+`createTheme`'s `components` field type widens to `(Record<string, ComponentThemeConfig>) | ThemeEntry[]`. The runtime is unchanged: `useProps('Tooltip', ...)` still reads `theme.components['Tooltip']?.defaultProps`. Only the consumer-facing constructor changes.
+
+**Naming inside the factory.** Compound parts internally register under flattened names matching Mantine's convention — `Tooltip.Provider`'s registered name is `'TooltipProvider'`, `Tooltip.Content`'s is `'TooltipContent'`. Consumers never see these strings; the `withDefaults` reference-keyed API hides them entirely.
+
+**Backward compatibility — `.extend` and the record form remain.** soribashi's existing `Component.extend = identity` (returning `{ defaultProps }` directly) keeps working alongside the new path. The two coexist:
+
+```ts
+// Legacy record form — still works
+const theme = createTheme({
+  components: {
+    Tooltip: Tooltip.extend({ defaultProps: { variant: 'inverted' } }),
+  },
+});
+
+// New array form — recommended
+const theme = createTheme({
+  components: [
+    Tooltip.withDefaults({ variant: 'inverted' }),
+  ],
+});
+```
+
+`createTheme` normalizes both shapes into the same internal `Record<string, ComponentThemeConfig>`. Documentation directs new consumers at the array form. `.extend` is not deprecated — it's structurally fine for the record form; the array form is just a strictly nicer surface.
+
+### 3.6 What `defineCompound` does *not* support in Wave 2
 
 - **Eject-per-part.** A `parts.foo: Component` form (where `Component` is a pre-built `defineComponent` result) is *not* accepted in Wave 2. Adding this is a backward-compatible widening of the part-value type and will land in whichever future wave first hits a config-shape wall.
 - **Per-part variants.** Variants are declared at Root level only. Parts read `ctx.variant`. Matches Mantine — see `packages/@mantine/core/src/components/Tabs/TabsTab/TabsTab.tsx` (no `variant` field in `TabsTabFactory` payload; consumes `ctx.variant`).
@@ -361,13 +439,15 @@ export const Tooltip = defineCompound({
 
 ### 6.5 Consumer-side API
 
+**Mounting + per-instance use** — composition stays close to Radix:
+
 ```tsx
-// App.tsx
-<Tooltip.Provider delayDuration={500} skipDelayDuration={150}>
+// App.tsx — Provider mounts once at the React tree top
+<Tooltip.Provider>
   <App />
 </Tooltip.Provider>
 
-// downstream
+// downstream — per-tooltip JSX
 <Tooltip>
   <Tooltip.Trigger asChild>
     <Button>Save</Button>
@@ -382,6 +462,25 @@ export const Tooltip = defineCompound({
   <Tooltip.Content>Shortcut: ⌘S</Tooltip.Content>
 </Tooltip>
 ```
+
+**Theme-set defaults** — global behavior configured once, no per-instance prop threading (per § 3.5):
+
+```ts
+// app theme setup
+import { createTheme } from '@soribashi/core';
+import { Tooltip, Button } from 'core-radix-pilot';
+
+export const theme = createTheme({
+  tokens, semantic,
+  components: [
+    Tooltip.Provider.withDefaults({ delayDuration: 500, skipDelayDuration: 150 }),
+    Tooltip.Content.withDefaults({ sideOffset: 8 }),
+    // ...other components
+  ],
+});
+```
+
+With those defaults set, `<Tooltip.Provider>` mounts with no props in JSX; per-instance `<Tooltip.Content>` likewise inherits `sideOffset: 8` without the consumer writing it on every tooltip. Per-instance overrides still work — `<Tooltip.Content sideOffset={2}>` wins per the standard `useProps` precedence.
 
 ### 6.6 `TooltipMatrix.tsx`
 
@@ -425,6 +524,13 @@ Mirrors Wave 1's three-layer model + factory unit tests + codegen tests.
 - `getStyles({ part: 'sibling' })` resolves to sibling slot's class
 - `defaults` apply at part level + Root level
 - `vars` resolver output lands as inline custom properties on the right slot
+- `config.context()` receives merged props (post-`useProps`) and may call hooks
+- `Compound.Foo.withDefaults({...})` returns a tagged record carrying the part's flat name (`'CompoundFoo'`)
+
+`packages/factory/src/define-component.test.tsx` (additions):
+- `Component.withDefaults({...})` returns `{ __soribashiThemeEntry: true, name, defaultProps }`
+- The flat name matches `config.name` (so `defineCompound` parts register as `'TooltipProvider'`, `'TooltipContent'`, etc.)
+- Type-level: `withDefaults`'s argument is `Partial<TProps>` — passing an unknown prop is a compile error
 
 `packages/factory/src/slot.test.tsx`:
 - Single child enforced (`Children.only` throws on multiple)
@@ -467,6 +573,12 @@ Mirrors Wave 1's three-layer model + factory unit tests + codegen tests.
 - Type-level: `SemanticSurfaceValue` accepts both string and object forms
 - Runtime: `createTheme` round-trips both forms through the resolved theme shape
 
+`packages/theme/test/create-theme-components-array.test.ts` (new):
+- `createTheme({ components: [Component.withDefaults({...}), ...] })` normalizes to the existing `Record<string, ComponentThemeConfig>` shape
+- `createTheme({ components: { Tooltip: ... } })` (legacy record form) still works
+- `useProps('Tooltip', ...)` reads the merged defaults regardless of registration form
+- Two `withDefaults` entries for the same component: last write wins (documents the dedup behavior)
+
 ### 8.5 Visual review (manual, journaled)
 
 - `TooltipMatrix.tsx` rendered light + dark, screenshot grid captured in journal
@@ -479,12 +591,13 @@ Mirrors Wave 1's three-layer model + factory unit tests + codegen tests.
 The implementation plan (separate document, produced via writing-plans) sequences this. The dependency graph at the design-doc level:
 
 1. `packages/theme/` type extension (smallest, no consumers yet) — enables `surface.floating` declarations.
-2. `packages/codegen/` emit-css extension + tests — enables `--surface-floating-foreground` var.
-3. `packages/factory/` — `Slot` (independent), `compound: true` flag on `defineComponent` (substrate), `defineCompound` (top-level). `defineCompound` depends on the flag; `Slot` is independent.
-4. `apps/core-radix-pilot/` — theme update with `surface.floating`, Tooltip recipe, Tooltip tests, TooltipMatrix page, App.tsx Provider mount, ScreenReplica integration.
-5. Playbook § 2.2 + § 3 + new gradual-formalization convention.
+2. `packages/theme/` `createTheme` array-form normalization (small; no breaking change to existing record form). Independent of phase 1 but bundled here.
+3. `packages/codegen/` emit-css extension + tests — enables `--surface-floating-foreground` var.
+4. `packages/factory/` — `Component.withDefaults` method on `defineComponent` output (small; uses phase 2's normalization), `Slot` (independent), `compound: true` flag on `defineComponent` (substrate), `defineCompound` (top-level). `defineCompound` depends on the flag; `Slot` and `withDefaults` are independent.
+5. `apps/core-radix-pilot/` — theme update with `surface.floating`, Tooltip recipe, Tooltip tests, TooltipMatrix page, App.tsx Provider mount, ScreenReplica integration. The pilot's theme also exercises the array-form `components: [...]` registration with `Tooltip.Provider.withDefaults({...})` etc.
+6. Playbook § 2.2 + § 3 + new gradual-formalization convention.
 
-Phases 1-2 + the codegen test slice can land first as a small standalone PR if useful. Phases 3-5 form the bulk of the wave.
+Phases 1-3 + the codegen test slice can land first as a small standalone PR if useful. Phases 4-6 form the bulk of the wave.
 
 ---
 
@@ -507,7 +620,7 @@ Phases 1-2 + the codegen test slice can land first as a small standalone PR if u
 ## 11. Open design questions
 
 - **OQ-1.** `surface.floating` light-mode default value. Pilot picks `neutral.900` to deliberately exercise the inverted case; CVI integration may pick a non-inverted value. Pilot's choice acceptable, or should pilot match CVI's actual tooltip surface (non-inverted)? Net: visual demo only — token model handles both.
-- **OQ-2.** Should `Tooltip.Provider`'s props pass through to `RadixTooltip.Provider` 1:1, or trim/rename? Pilot default: 1:1 passthrough (least surprising for Radix users).
+- **OQ-2.** Should `Tooltip.Provider`'s props pass through to `RadixTooltip.Provider` 1:1, or trim/rename? Pilot default: 1:1 passthrough (least surprising for Radix users). With theme-set defaults via `Tooltip.Provider.withDefaults({...})` (§ 3.5) absorbing most of the configuration burden, the per-instance prop surface mostly serves "Radix transparency" rather than ergonomics — reinforcing the 1:1 default.
 - **OQ-3.** Naming for the new surface slot — `surface.floating` vs `surface.popover` vs `surface.overlay`. Wave-1 token-consolidation journal already reserved "overlay/floating" naming for Wave 2 when renaming the modal-backdrop slot from `surface.overlay` → `surface.scrim`. Spec picks `surface.floating` (matches Floating UI's vocabulary; doesn't presume the surface is for popovers vs tooltips vs menus). Confirm.
 - **OQ-4.** `Slot` lives in `packages/factory/src/slot.tsx` and is exported from `@soribashi/core`. Right module placement, or should it sit in a `@soribashi/utils` package (does not currently exist)? Spec default: `packages/factory/`.
 - **OQ-5.** Should `defineCompound` allow per-part `vars` resolvers (each part defines its own), or only Root-level `vars` keyed by part name (current design)? Mantine takes the keyed-by-slot approach. Spec default: Root-level keyed-by-part. Authors who need per-part split can refactor inside the resolver.
