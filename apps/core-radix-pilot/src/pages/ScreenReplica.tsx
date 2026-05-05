@@ -20,7 +20,14 @@
  *      `style={{ … }}` with the appropriate `var(--surface-…)`,
  *      `var(--text-…)`, `var(--border-…)` token. Comment trail kept inline
  *      at each fallback for the integration project's playbook.
+ *
+ * Wave 2 Tooltip integration (Phase 9.2):
+ *   - Stat cards: value numbers wrapped with Tooltip describing the metric
+ *   - Activity list: relative timestamps wrapped with Tooltip showing exact datetime
+ *   - Status badges: wrapped with Tooltip explaining each status
  */
+import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
+
 export function ScreenReplica() {
   return (
     // tailwind utility `bg-canvas` not emitted; using direct var() per journal § 6
@@ -38,9 +45,24 @@ export function ScreenReplica() {
 
       <section className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'Open statements', value: '3', tone: 'primary' as const },
-          { label: 'Pending review', value: '1', tone: 'warning' as const },
-          { label: 'Resolved', value: '14', tone: 'success' as const },
+          {
+            label: 'Open statements',
+            value: '3',
+            tone: 'primary' as const,
+            tooltip: '3 statements are currently open and awaiting action',
+          },
+          {
+            label: 'Pending review',
+            value: '1',
+            tone: 'warning' as const,
+            tooltip: '1 statement is pending adjuster review — action required',
+          },
+          {
+            label: 'Resolved',
+            value: '14',
+            tone: 'success' as const,
+            tooltip: '14 statements have been fully resolved on this claim',
+          },
         ].map((card) => (
           <div
             key={card.label}
@@ -57,10 +79,18 @@ export function ScreenReplica() {
             >
               {card.label}
             </div>
-            {/* tailwind utility `text-default` not emitted; using direct var() per journal § 6 */}
-            <div className="text-3xl font-semibold" style={{ color: 'var(--text-default)' }}>
-              {card.value}
-            </div>
+            {/* Tooltip wraps the stat value — icon-free metric card pattern from CVI */}
+            <Tooltip side="bottom">
+              <Tooltip.Trigger asChild>
+                <div
+                  className="text-3xl font-semibold"
+                  style={{ color: 'var(--text-default)', cursor: 'default', display: 'inline-block' }}
+                >
+                  {card.value}
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Content>{card.tooltip}</Tooltip.Content>
+            </Tooltip>
           </div>
         ))}
       </section>
@@ -78,9 +108,9 @@ export function ScreenReplica() {
         </h2>
         <ul className="space-y-3">
           {[
-            { who: 'M. Goodwin', what: 'Reviewed FNOL statement', when: '2h ago' },
-            { who: 'A. Patel', what: 'Added incident notes', when: '5h ago' },
-            { who: 'System', what: 'Merged FC into incident', when: 'yesterday' },
+            { who: 'M. Goodwin', what: 'Reviewed FNOL statement', when: '2h ago', fullTime: 'May 5, 2026 at 10:14 AM' },
+            { who: 'A. Patel', what: 'Added incident notes', when: '5h ago', fullTime: 'May 5, 2026 at 7:22 AM' },
+            { who: 'System', what: 'Merged FC into incident', when: 'yesterday', fullTime: 'May 4, 2026 at 3:45 PM' },
           ].map((row, idx, all) => (
             <li
               key={row.who + row.when}
@@ -99,7 +129,16 @@ export function ScreenReplica() {
               </div>
               {/* tailwind utility `text-muted` not emitted; using direct var() per journal § 6 */}
               <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                {row.what} · {row.when}
+                {row.what} ·{' '}
+                {/* Tooltip on truncated relative timestamp — shows exact datetime on hover */}
+                <Tooltip side="right">
+                  <Tooltip.Trigger asChild>
+                    <span style={{ cursor: 'default', borderBottom: '1px dotted var(--border-muted)' }}>
+                      {row.when}
+                    </span>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{row.fullTime}</Tooltip.Content>
+                </Tooltip>
               </div>
             </li>
           ))}
@@ -109,35 +148,56 @@ export function ScreenReplica() {
       {/*
         Badge chips: background/foreground use `var(--color-…)` directly (no
         `hsl()` wrapper) per journal § 6 — codegen emits already-wrapped values.
+        Tooltip wraps each badge — status-indicator pattern from CVI.
       */}
       <section className="flex gap-2">
-        <span
-          className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
-          style={{
-            background: 'var(--color-success-100)',
-            color: 'var(--color-success-800)',
-          }}
-        >
-          Active
-        </span>
-        <span
-          className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
-          style={{
-            background: 'var(--color-warning-100)',
-            color: 'var(--color-warning-800)',
-          }}
-        >
-          Review
-        </span>
-        <span
-          className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
-          style={{
-            background: 'var(--color-danger-100)',
-            color: 'var(--color-danger-800)',
-          }}
-        >
-          Disputed
-        </span>
+        <Tooltip side="top">
+          <Tooltip.Trigger asChild>
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
+              style={{
+                background: 'var(--color-success-100)',
+                color: 'var(--color-success-800)',
+                cursor: 'default',
+              }}
+            >
+              Active
+            </span>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Claim is active — payments processing normally</Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip side="top">
+          <Tooltip.Trigger asChild>
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
+              style={{
+                background: 'var(--color-warning-100)',
+                color: 'var(--color-warning-800)',
+                cursor: 'default',
+              }}
+            >
+              Review
+            </span>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Pending adjuster review before next action</Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip side="top">
+          <Tooltip.Trigger asChild>
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
+              style={{
+                background: 'var(--color-danger-100)',
+                color: 'var(--color-danger-800)',
+                cursor: 'default',
+              }}
+            >
+              Disputed
+            </span>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Claimant has opened a formal dispute — legal hold active</Tooltip.Content>
+        </Tooltip>
       </section>
     </div>
   );
