@@ -30,7 +30,7 @@
   /* Ensure text wraps rather than overflowing */
   word-break: break-word;
   /* Smooth animation curve for both in and out */
-  animation-duration: 150ms;
+  animation-duration: 200ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: forwards;
   /* Use the trigger element as the transform origin for natural-feeling motion */
@@ -59,7 +59,7 @@
  * the disappearance as a single moment rather than tracking direction. */
 .cr-Tooltip-content[data-state="closed"] {
   animation-name: cr-Tooltip-fadeOut;
-  animation-duration: 100ms;
+  animation-duration: 150ms;
 }
 
 .cr-Tooltip-arrow {
@@ -67,23 +67,27 @@
   fill: var(--cr-tooltip-bg);
 }
 
+/* In animations slide 8px from the trigger direction + scale up slightly
+ * for a subtle "popping into existence" feel. The scale is tied to the
+ * Radix-provided transform-origin so motion radiates from the trigger. */
 @keyframes cr-Tooltip-slideDownAndFadeIn {
-  from { opacity: 0; transform: translateY(-2px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 @keyframes cr-Tooltip-slideLeftAndFadeIn {
-  from { opacity: 0; transform: translateX(2px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateX(8px)  scale(0.96); }
+  to   { opacity: 1; transform: translateX(0)    scale(1); }
 }
 @keyframes cr-Tooltip-slideUpAndFadeIn {
-  from { opacity: 0; transform: translateY(2px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(8px)  scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 @keyframes cr-Tooltip-slideRightAndFadeIn {
-  from { opacity: 0; transform: translateX(-2px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateX(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateX(0)    scale(1); }
 }
+/* Out animation — fade + slight scale-down for symmetry with the in. */
 @keyframes cr-Tooltip-fadeOut {
-  from { opacity: 1; }
-  to   { opacity: 0; }
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.96); }
 }
