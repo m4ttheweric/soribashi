@@ -19,4 +19,7 @@ export type {
   ComponentThemeConfig,
   HeadingTokens,
   HeadingSize,
+  ThemeComponentEntry,
 } from './types.ts';
+
+export { isThemeComponentEntry } from './theme-component-entry.ts';

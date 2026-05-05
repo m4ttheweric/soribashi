@@ -57,3 +57,7 @@ export type { DefineComponentConfig } from './define-component.tsx';
 export type { DefinePolymorphicComponentConfig } from './define-polymorphic-component.tsx';
 export type { DefineGenericComponentConfig } from './define-generic-component.tsx';
 export type { UseStylesConfig } from './hooks/use-styles.ts';
+
+// Theme integration
+export type { ThemeComponentEntry } from './theme-component-entry.ts';
+export { isThemeComponentEntry } from './theme-component-entry.ts';
