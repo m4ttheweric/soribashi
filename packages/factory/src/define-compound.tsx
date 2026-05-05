@@ -5,7 +5,7 @@ import { useStyles } from './hooks/use-styles.ts';
 import { createSafeContext } from './create-safe-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
-import type { GetStylesFn } from './types/render-context.ts';
+import type { GetStylesResult } from './types/render-context.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -69,7 +69,8 @@ export interface DefineCompoundConfig<
 
 interface CompoundContextValue<TCtxExtra> {
   variant: string | undefined;
-  getStyles: GetStylesFn<FactoryPayload>;
+  /** Widened to string selector so compound internals can pass slot names without TS `never` errors. */
+  getStyles: (selector: string) => GetStylesResult;
   ctxExtras: TCtxExtra;
 }
 
@@ -168,13 +169,14 @@ export function defineCompound<
 
     const ctxValue: CompoundContextValue<TCtxExtra> = {
       variant,
-      getStyles,
+      getStyles: getStyles as (selector: string) => GetStylesResult,
       ctxExtras,
     };
 
     /** Adapts the raw getStyles(selector) into the compound API getStyles({ part? }). */
+    const getStylesStr = getStyles as (selector: string) => GetStylesResult;
     const rootGetStyles = (opts?: { part?: string }) =>
-      getStyles(opts?.part ?? 'root') as { className: string; style?: React.CSSProperties };
+      getStylesStr(opts?.part ?? 'root') as { className: string; style?: React.CSSProperties };
 
     return (
       <CompoundContext.Provider value={ctxValue}>
