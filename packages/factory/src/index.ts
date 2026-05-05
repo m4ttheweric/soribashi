@@ -4,6 +4,8 @@
 export { defineComponent } from './define-component.tsx';
 export { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 export { defineGenericComponent } from './define-generic-component.tsx';
+export { defineCompound } from './define-compound.tsx';
+export type { DefineCompoundConfig } from './define-compound.tsx';
 
 // Provider
 export { SoribashiProvider } from './provider/provider.tsx';
