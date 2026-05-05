@@ -188,3 +188,38 @@ describe('defineCompound — context()', () => {
     expect(el.dataset.id).toMatch(/^:r/); // useId-style identifier
   });
 });
+
+// ---------------------------------------------------------------------------
+// Cycle 7.4 — vars resolver lands as inline custom properties
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — vars resolver', () => {
+  it('vars output lands as inline CSS custom properties on the right slot', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      variants: ['default', 'inverted'] as const,
+      classes: { root: 'foo-root', child: 'foo-child' },
+      defaults: { variant: 'default' } as any,
+      vars: (_theme, props: any) => ({
+        child: {
+          '--foo-bg': props.variant === 'inverted' ? 'black' : 'white',
+        },
+      }),
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        child: { render: ({ getStyles }) => <span {...getStyles()} /> },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo variant="inverted">
+          <Foo.Child />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const child = container.querySelector('.foo-child') as HTMLElement;
+    expect(child.style.getPropertyValue('--foo-bg')).toBe('black');
+  });
+});
