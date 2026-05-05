@@ -7,6 +7,7 @@ import { makeWithProps } from './with-props.tsx';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
 
 const identity = <T,>(value: T): T => value;
 
@@ -82,6 +83,11 @@ export function defineComponent<
   (Component as any).classes = config.classes;
   (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
+  (Component as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+    __soribashiThemeEntry: true as const,
+    name: config.name,
+    defaultProps: defaults,
+  });
 
   return Component as unknown as React.ForwardRefExoticComponent<
     TOwnProps & StylesApiProps<any> & React.RefAttributes<HTMLElement>
@@ -90,6 +96,7 @@ export function defineComponent<
     withProps: (
       presets: Partial<TOwnProps & StylesApiProps<any>>,
     ) => React.ComponentType<TOwnProps & StylesApiProps<any>>;
+    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };
