@@ -21,35 +21,31 @@ import './Tooltip.css';
 type Variant = 'default' | 'inverted';
 type Side = 'top' | 'right' | 'bottom' | 'left';
 
-interface TooltipRootProps {
+export interface TooltipRootProps {
   variant?: Variant;
   side?: Side;
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
-interface TooltipProviderProps {
+export interface TooltipProviderProps {
   delayDuration?: number;
   skipDelayDuration?: number;
   disableHoverableContent?: boolean;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
-interface TooltipTriggerProps {
+export interface TooltipTriggerProps {
   asChild?: boolean;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
-interface TooltipContentProps {
+export interface TooltipContentProps {
   withArrow?: boolean;
   sideOffset?: number;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
 interface TooltipCtxExtras {
@@ -57,7 +53,9 @@ interface TooltipCtxExtras {
   sideOffset: number;
 }
 
-export const Tooltip = defineCompound({
+// Internal — the underlying defineCompound output. Cast at the bottom of
+// this file to surface typed props on each consumer-facing part.
+const _Tooltip = defineCompound({
   name: 'Tooltip',
   variants: ['default', 'inverted'] as const,
   classes: {
@@ -157,3 +155,27 @@ export const Tooltip = defineCompound({
     },
   },
 });
+
+/**
+ * Consumer-facing type-surface cast.
+ *
+ * `defineCompound` today returns parts typed as `forwardRef<unknown, any>`
+ * — which means consumers don't get autocomplete or type-checking on the
+ * interfaces declared above. We cast at the recipe boundary so that
+ * `<Tooltip variant="inverted">`, `<Tooltip.Provider delayDuration={500}>`,
+ * `<Tooltip.Trigger asChild>`, and `<Tooltip.Content withArrow={false}>`
+ * all flow through with full IDE support.
+ *
+ * This is a Wave 2 limitation in defineCompound's type machinery — see
+ * spec OQ-9. The proper fix is to make defineCompound generic over per-part
+ * prop types so consumers get this for free, without per-recipe casts.
+ */
+type TooltipPart<P> = (props: P) => React.ReactElement | null;
+
+export const Tooltip = _Tooltip as unknown as TooltipPart<TooltipRootProps> & {
+  displayName?: string;
+  Provider: TooltipPart<TooltipProviderProps>;
+  Trigger: TooltipPart<TooltipTriggerProps>;
+  Content: TooltipPart<TooltipContentProps>;
+  withDefaults: <P>(defaults: Partial<P>) => unknown;
+};

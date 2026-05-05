@@ -51,7 +51,7 @@ export function TooltipMatrix() {
               >
                 {variant} / {side}
               </span>
-              <Tooltip variant={variant} side={side}>
+              <Tooltip variant={variant} side={side} >
                 <Tooltip.Trigger asChild>
                   <button
                     style={{
@@ -143,7 +143,7 @@ function DefaultOpenWithListener() {
   const [openCount, setOpenCount] = useState(1); // starts open via defaultOpen
   return (
     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-      <Tooltip defaultOpen onOpenChange={(open) => open && setOpenCount((c) => c + 1)}>
+      <Tooltip defaultOpen onOpenChange={(open: boolean) => open && setOpenCount((c) => c + 1)}>
         <Tooltip.Trigger asChild>
           <button style={triggerStyle}>hover me</button>
         </Tooltip.Trigger>
