@@ -101,3 +101,90 @@ describe('defineCompound — multi-part', () => {
     expect((Foo as any).label).toBeUndefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Cycle 7.3 — context() callback
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — context()', () => {
+  it('context() receives merged props (post-useProps)', () => {
+    let captured: { side?: string } | null = null;
+
+    const Foo = defineCompound({
+      name: 'Foo',
+      defaults: { side: 'top' } as any,
+      classes: { root: 'foo-root', child: 'foo-child' },
+      context: (rootProps: any) => {
+        captured = { side: rootProps.side };
+        return { side: rootProps.side };
+      },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        child: { render: ({ ctx }) => <span data-side={(ctx as any).side} /> },
+      },
+    });
+
+    render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Child />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    expect(captured).toEqual({ side: 'top' }); // recipe-default applied
+  });
+
+  it('context() output flows to part.ctx', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', child: 'foo-child' },
+      context: () => ({ customField: 'from-context' }),
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        child: {
+          render: ({ ctx }) => <span data-custom={(ctx as any).customField} />,
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Child />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const el = container.querySelector('[data-custom]') as HTMLElement;
+    expect(el.dataset.custom).toBe('from-context');
+  });
+
+  it('context() can call React hooks (useId)', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', child: 'foo-child' },
+      context: () => {
+        // useId is a React hook — runs inside Root's render.
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const id = (require('react') as typeof import('react')).useId();
+        return { id };
+      },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        child: { render: ({ ctx }) => <span data-id={(ctx as any).id} /> },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Child />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const el = container.querySelector('[data-id]') as HTMLElement;
+    expect(el.dataset.id).toMatch(/^:r/); // useId-style identifier
+  });
+});
