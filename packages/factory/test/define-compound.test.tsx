@@ -318,6 +318,61 @@ describe('defineCompound — polymorphic parts', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Cycle 7.8 — Part-level withDefaults
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — part withDefaults', () => {
+  it('part .withDefaults uses the flat name (e.g., FooLabel)', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', label: 'foo-label' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        label: { render: ({ getStyles }) => <span {...getStyles()} /> },
+      },
+    });
+
+    const entry = (Foo as any).Label.withDefaults({ truncate: true });
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('FooLabel');
+    expect(entry.defaultProps).toEqual({ truncate: true });
+  });
+
+  it('part-level withDefaults flows through createTheme + useProps', () => {
+    let captured: { truncate?: boolean } | null = null;
+
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', label: 'foo-label' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        label: {
+          render: ({ getStyles, props }: any) => {
+            captured = { truncate: props.truncate };
+            return <span {...getStyles()} />;
+          },
+        },
+      },
+    });
+
+    const theme = createTheme({
+      tokens: { colors: { neutral: { '0': 'hsl(0 0% 100%)' } } },
+      components: [(Foo as any).Label.withDefaults({ truncate: true })],
+    });
+
+    render(
+      <SoribashiProvider theme={theme}>
+        <Foo>
+          <Foo.Label />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    expect(captured).toEqual({ truncate: true });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Cycle 7.6 — Passthrough parts (class-3)
 // ---------------------------------------------------------------------------
 
