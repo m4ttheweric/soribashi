@@ -50,8 +50,8 @@ describe('Slot', () => {
 
     expect(slotHandler).toHaveBeenCalled();
     expect(childHandler).toHaveBeenCalled();
-    expect(slotHandler.mock.invocationCallOrder[0]).toBeLessThan(
-      childHandler.mock.invocationCallOrder[0],
+    expect(slotHandler.mock.invocationCallOrder[0]!).toBeLessThan(
+      childHandler.mock.invocationCallOrder[0]!,
     );
   });
 

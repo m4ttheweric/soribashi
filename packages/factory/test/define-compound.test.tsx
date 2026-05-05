@@ -5,8 +5,15 @@ import { render } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
 import { defineCompound, SoribashiProvider } from '../src/index.ts';
 
+const baseTokens = {
+  colors: { neutral: { '0': 'hsl(0 0% 100%)' } },
+  radius: {},
+  spacing: {},
+  fontSize: {},
+};
+
 const minimalTheme = createTheme({
-  tokens: { colors: { neutral: { '0': 'hsl(0 0% 100%)' } } },
+  tokens: baseTokens as never,
 });
 
 // ---------------------------------------------------------------------------
@@ -356,7 +363,7 @@ describe('defineCompound — part withDefaults', () => {
     });
 
     const theme = createTheme({
-      tokens: { colors: { neutral: { '0': 'hsl(0 0% 100%)' } } },
+      tokens: baseTokens as never,
       components: [(Foo as any).Label.withDefaults({ truncate: true })],
     });
 

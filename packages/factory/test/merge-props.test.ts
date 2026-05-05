@@ -33,7 +33,7 @@ describe('mergeProps', () => {
     expect(childHandler).toHaveBeenCalledWith(event);
     const slotCallOrder = slotHandler.mock.invocationCallOrder[0];
     const childCallOrder = childHandler.mock.invocationCallOrder[0];
-    expect(slotCallOrder).toBeLessThan(childCallOrder);
+    expect(slotCallOrder!).toBeLessThan(childCallOrder!);
   });
 
   it('child wins on non-handler, non-className, non-style props', () => {
