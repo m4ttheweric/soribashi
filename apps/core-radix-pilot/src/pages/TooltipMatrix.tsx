@@ -5,7 +5,15 @@
  *   - 2 × 4 grid: variant ∈ {default, inverted} × side ∈ {top, right, bottom, left}
  *   - Long-content tooltip (forces wrapping within max-width)
  *   - withArrow={false} special case
- *   - Controlled open/close via open + onOpenChange
+ *   - defaultOpen + onOpenChange listener (open-count demo)
+ *
+ * Note: an earlier version had a "toggle button" that called setOpen(v => !v)
+ * to externally control the tooltip. That demo fought Radix's hover semantics
+ * — by the time the toggle fires, mouseleave has already driven state to
+ * false, so the toggle always observed false and flipped to true. Tooltip is
+ * a hover primitive; for click-to-toggle behavior, use Popover instead.
+ * Replaced with an `onOpenChange` listener pattern that demonstrates the
+ * controlled-state architectural point cleanly.
  */
 import { useState } from 'react';
 import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
@@ -95,9 +103,9 @@ export function TooltipMatrix() {
           </Tooltip>
         </SpecialCase>
 
-        {/* Controlled open */}
-        <SpecialCase label="controlled">
-          <ControlledTooltip />
+        {/* defaultOpen + onOpenChange listener */}
+        <SpecialCase label="defaultOpen + listen">
+          <DefaultOpenWithListener />
         </SpecialCase>
       </div>
     </div>
@@ -125,26 +133,25 @@ function SpecialCase({ label, children }: { label: string; children: React.React
   );
 }
 
-function ControlledTooltip() {
-  const [open, setOpen] = useState(false);
+/**
+ * Demonstrates `defaultOpen` (initial state) + `onOpenChange` listener
+ * (consumer subscribes to state changes). Tooltip starts open on mount,
+ * counts how many times it has opened. The consumer never tries to drive
+ * `open` externally — Radix owns hover, the consumer just listens.
+ */
+function DefaultOpenWithListener() {
+  const [openCount, setOpenCount] = useState(1); // starts open via defaultOpen
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-      <Tooltip open={open} onOpenChange={setOpen}>
+    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <Tooltip defaultOpen onOpenChange={(open) => open && setOpenCount((c) => c + 1)}>
         <Tooltip.Trigger asChild>
-          <button style={triggerStyle}>controlled</button>
+          <button style={triggerStyle}>hover me</button>
         </Tooltip.Trigger>
-        <Tooltip.Content>open is {String(open)}</Tooltip.Content>
+        <Tooltip.Content>opened {openCount}×</Tooltip.Content>
       </Tooltip>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          ...triggerStyle,
-          background: 'var(--surface-raised)',
-          color: 'var(--text-accent)',
-        }}
-      >
-        toggle
-      </button>
+      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+        opens: {openCount}
+      </span>
     </div>
   );
 }
