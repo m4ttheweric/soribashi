@@ -15,7 +15,7 @@
  */
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
-import { defineCompound } from '@soribashi/core';
+import { defineCompound, type PartRenderCtx } from '@soribashi/core';
 import './Tooltip.css';
 
 type Variant = 'default' | 'inverted';
@@ -53,9 +53,7 @@ interface TooltipCtxExtras {
   sideOffset: number;
 }
 
-// Internal — the underlying defineCompound output. Cast at the bottom of
-// this file to surface typed props on each consumer-facing part.
-const _Tooltip = defineCompound({
+export const Tooltip = defineCompound({
   name: 'Tooltip',
   variants: ['default', 'inverted'] as const,
   classes: {
@@ -86,11 +84,11 @@ const _Tooltip = defineCompound({
     // throwing. Delegates to RadixTooltip.Provider for the delay-duration
     // state machine shared across multiple Tooltip instances.
     provider: {
-      render: ({ props, children }) => (
+      render: ({ props, children }: PartRenderCtx<TooltipProviderProps, TooltipCtxExtras>) => (
         <RadixTooltip.Provider
-          delayDuration={(props as TooltipProviderProps).delayDuration}
-          skipDelayDuration={(props as TooltipProviderProps).skipDelayDuration}
-          disableHoverableContent={(props as TooltipProviderProps).disableHoverableContent}
+          delayDuration={props.delayDuration}
+          skipDelayDuration={props.skipDelayDuration}
+          disableHoverableContent={props.disableHoverableContent}
         >
           {children}
         </RadixTooltip.Provider>
@@ -99,11 +97,11 @@ const _Tooltip = defineCompound({
     // Root — establishes the compound context. Wraps RadixTooltip.Root for
     // open/close state management.
     root: {
-      render: ({ props, children }) => (
+      render: ({ props, children }: PartRenderCtx<TooltipRootProps, TooltipCtxExtras>) => (
         <RadixTooltip.Root
-          defaultOpen={(props as TooltipRootProps).defaultOpen}
-          open={(props as TooltipRootProps).open}
-          onOpenChange={(props as TooltipRootProps).onOpenChange}
+          defaultOpen={props.defaultOpen}
+          open={props.open}
+          onOpenChange={props.onOpenChange}
         >
           {children}
         </RadixTooltip.Root>
@@ -112,9 +110,8 @@ const _Tooltip = defineCompound({
     // Trigger — class-2 part. Reads ctx via getStyles (throws outside Root).
     // asChild merges trigger class onto the provided child element.
     trigger: {
-      render: ({ getStyles, props, children }) => {
-        const triggerProps = props as TooltipTriggerProps;
-        if (triggerProps.asChild) {
+      render: ({ getStyles, props, children }: PartRenderCtx<TooltipTriggerProps, TooltipCtxExtras>) => {
+        if (props.asChild) {
           // asChild: Radix Trigger renders as a Slot, merging its props
           // (including our className) onto the single child element.
           return (
@@ -134,14 +131,13 @@ const _Tooltip = defineCompound({
     // a Portal so content appears in document.body. Optional Arrow uses
     // cross-slot getStyles({ part: 'arrow' }).
     content: {
-      render: ({ getStyles, props, ctx, children }) => {
-        const contentProps = props as TooltipContentProps;
-        const showArrow = contentProps.withArrow !== false;
+      render: ({ getStyles, props, ctx, children }: PartRenderCtx<TooltipContentProps, TooltipCtxExtras>) => {
+        const showArrow = props.withArrow !== false;
         return (
           <RadixTooltip.Portal>
             <RadixTooltip.Content
               side={ctx.side}
-              sideOffset={contentProps.sideOffset ?? ctx.sideOffset}
+              sideOffset={props.sideOffset ?? ctx.sideOffset}
               {...getStyles()}
             >
               {children}
@@ -155,27 +151,3 @@ const _Tooltip = defineCompound({
     },
   },
 });
-
-/**
- * Consumer-facing type-surface cast.
- *
- * `defineCompound` today returns parts typed as `forwardRef<unknown, any>`
- * — which means consumers don't get autocomplete or type-checking on the
- * interfaces declared above. We cast at the recipe boundary so that
- * `<Tooltip variant="inverted">`, `<Tooltip.Provider delayDuration={500}>`,
- * `<Tooltip.Trigger asChild>`, and `<Tooltip.Content withArrow={false}>`
- * all flow through with full IDE support.
- *
- * This is a Wave 2 limitation in defineCompound's type machinery — see
- * spec OQ-9. The proper fix is to make defineCompound generic over per-part
- * prop types so consumers get this for free, without per-recipe casts.
- */
-type TooltipPart<P> = (props: P) => React.ReactElement | null;
-
-export const Tooltip = _Tooltip as unknown as TooltipPart<TooltipRootProps> & {
-  displayName?: string;
-  Provider: TooltipPart<TooltipProviderProps>;
-  Trigger: TooltipPart<TooltipTriggerProps>;
-  Content: TooltipPart<TooltipContentProps>;
-  withDefaults: <P>(defaults: Partial<P>) => unknown;
-};

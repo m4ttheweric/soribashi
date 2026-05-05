@@ -14,6 +14,11 @@ export type {
   PolymorphicProps,
   PolymorphicRef,
   DefineCompoundConfig,
+  PartConfig,
+  StandardPartConfig,
+  PolymorphicPartConfig,
+  PartRenderCtx,
+  PolymorphicPartRenderCtx,
 } from '@soribashi/factory';
 
 // Theme

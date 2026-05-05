@@ -12,9 +12,9 @@ import type { GetStylesResult } from './types/render-context.ts';
 // ---------------------------------------------------------------------------
 
 /**
- * Object passed to each part's `render` function.
+ * Object passed to each standard part's `render` function.
  */
-interface PartRenderCtx<TProps, TCtxExtra> {
+export interface PartRenderCtx<TProps, TCtxExtra> {
   props: TProps;
   /** Defaults to the part's own slot; pass { part: 'otherSlot' } to target sibling slots. */
   getStyles: (opts?: { part?: string }) => { className: string; style?: React.CSSProperties };
@@ -23,21 +23,28 @@ interface PartRenderCtx<TProps, TCtxExtra> {
   ref: Ref<unknown>;
 }
 
+/**
+ * Object passed to each polymorphic part's `render` function.
+ */
+export interface PolymorphicPartRenderCtx<TProps, TCtxExtra> extends PartRenderCtx<TProps, TCtxExtra> {
+  Element: keyof JSX.IntrinsicElements;
+}
+
 // ---------------------------------------------------------------------------
 // Part config types
 // ---------------------------------------------------------------------------
 
-interface StandardPartConfig<TProps, TCtxExtra> {
+export interface StandardPartConfig<TProps, TCtxExtra> {
   render: (ctx: PartRenderCtx<TProps, TCtxExtra>) => ReactNode;
   defaults?: Partial<TProps>;
 }
 
-interface PolymorphicPartConfig<TProps, TCtxExtra> extends StandardPartConfig<TProps, TCtxExtra> {
+export interface PolymorphicPartConfig<TProps, TCtxExtra> extends StandardPartConfig<TProps, TCtxExtra> {
   polymorphic: true;
   defaultElement: keyof JSX.IntrinsicElements;
 }
 
-type PartConfig<TProps, TCtxExtra> =
+export type PartConfig<TProps, TCtxExtra> =
   | StandardPartConfig<TProps, TCtxExtra>
   | PolymorphicPartConfig<TProps, TCtxExtra>;
 
@@ -45,22 +52,33 @@ type PartConfig<TProps, TCtxExtra> =
 // Public config type
 // ---------------------------------------------------------------------------
 
+/** Extract TProps from a PartConfig<TProps, any>; falls back to Record<string, unknown> for untyped configs */
+type ExtractPartProps<C> = C extends PartConfig<infer P, any>
+  ? [P] extends [never]
+    ? Record<string, unknown>
+    : unknown extends P
+      ? Record<string, unknown>
+      : P
+  : Record<string, unknown>;
+
+/** Constrain parts map — each value must be a PartConfig */
+type PartsRecord<TCtxExtra extends object> = Record<string, PartConfig<any, TCtxExtra>>;
+
 export interface DefineCompoundConfig<
-  TRootProps extends Record<string, unknown>,
-  TParts extends Record<string, PartConfig<any, any>>,
-  TVariants extends readonly string[],
-  TCtxExtra extends object = {},
+  TParts extends PartsRecord<TCtxExtra>,
+  TVariants extends readonly string[] = readonly [],
+  TCtxExtra extends object = object,
 > {
   name: string;
   variants?: TVariants;
   classes?: Partial<Record<string, string>>;
-  defaults?: Partial<TRootProps>;
+  defaults?: Partial<ExtractPartProps<TParts['root']>>;
   vars?: (
     theme: ResolvedTheme,
-    props: TRootProps,
+    props: ExtractPartProps<TParts['root']>,
   ) => Partial<Record<string, Record<string, string>>>;
-  context?: (rootProps: TRootProps) => TCtxExtra;
-  parts: TParts & { root: PartConfig<TRootProps, TCtxExtra> };
+  context?: (rootProps: ExtractPartProps<TParts['root']>) => TCtxExtra;
+  parts: TParts & { root: PartConfig<any, TCtxExtra> };
 }
 
 // ---------------------------------------------------------------------------
@@ -78,12 +96,22 @@ interface CompoundContextValue<TCtxExtra> {
 // Return type helpers
 // ---------------------------------------------------------------------------
 
-type PartsNamespace<TParts extends Record<string, unknown>> = {
-  [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]: React.ForwardRefExoticComponent<any> & {
+type PartsNamespace<TParts extends Record<string, PartConfig<any, any>>> = {
+  [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]: React.ForwardRefExoticComponent<
+    ExtractPartProps<TParts[K]> & React.RefAttributes<unknown>
+  > & {
     withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
     displayName?: string;
   };
 };
+
+type CompoundComponent<TParts extends Record<string, PartConfig<any, any>>> =
+  React.ForwardRefExoticComponent<
+    ExtractPartProps<TParts['root']> & React.RefAttributes<unknown>
+  > & PartsNamespace<TParts> & {
+    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
+    displayName?: string;
+  };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -114,11 +142,10 @@ function makeNullCtxProxy(compoundName: string, partKey: string): Record<string,
 // ---------------------------------------------------------------------------
 
 export function defineCompound<
-  TRootProps extends Record<string, unknown>,
-  TParts extends Record<string, PartConfig<any, any>>,
+  TParts extends PartsRecord<TCtxExtra>,
   const TVariants extends readonly string[] = readonly [],
-  TCtxExtra extends object = {},
->(config: DefineCompoundConfig<TRootProps, TParts, TVariants, TCtxExtra>) {
+  TCtxExtra extends object = object,
+>(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra>): CompoundComponent<TParts> {
   if (!config.parts.root) {
     throw new Error(`defineCompound("${config.name}") requires parts.root`);
   }
@@ -140,6 +167,8 @@ export function defineCompound<
   // -------------------------------------------------------------------------
   // Root component
   // -------------------------------------------------------------------------
+
+  type TRootProps = ExtractPartProps<TParts['root']>;
 
   const Root = forwardRef<unknown, TRootProps>(function CompoundRoot(rawProps, ref) {
     const merged = useProps<TRootProps>(
@@ -305,7 +334,5 @@ export function defineCompound<
 
   Object.assign(Root as object, namespacedParts);
 
-  return Root as unknown as typeof Root & PartsNamespace<TParts> & {
-    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
-  };
+  return Root as unknown as CompoundComponent<TParts>;
 }
