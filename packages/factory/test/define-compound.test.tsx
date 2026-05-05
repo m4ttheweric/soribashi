@@ -373,6 +373,38 @@ describe('defineCompound — part withDefaults', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Cycle 7.9 — Config guards
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — config guards', () => {
+  it('throws when parts.root is missing', () => {
+    expect(() =>
+      defineCompound({
+        name: 'NoRoot',
+        classes: {},
+        parts: { foo: { render: () => null } } as any,
+      }),
+    ).toThrow(/requires parts.root/);
+  });
+
+  it('throws when parts.root is polymorphic', () => {
+    expect(() =>
+      defineCompound({
+        name: 'PolyRoot',
+        classes: { root: 'poly' },
+        parts: {
+          root: {
+            polymorphic: true,
+            defaultElement: 'div',
+            render: () => null,
+          },
+        } as any,
+      }),
+    ).toThrow(/root part cannot be polymorphic/);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Cycle 7.6 — Passthrough parts (class-3)
 // ---------------------------------------------------------------------------
 
