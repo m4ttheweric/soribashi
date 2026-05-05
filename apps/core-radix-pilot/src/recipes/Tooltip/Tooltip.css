@@ -6,6 +6,13 @@
  * These are injected as inline styles on the content slot by defineCompound
  * when the root's vars() callback runs.
  *
+ * Animations are driven by Radix's data-state + data-side attributes on
+ * the Content node:
+ *   - data-state="delayed-open" / "instant-open" → in animation
+ *   - data-state="closed" → out animation (Radix's <Presence> keeps the
+ *     element mounted until the closed-state animation finishes)
+ *   - data-side="top|right|bottom|left" → direction-aware slide
+ *
  * .cr-Tooltip-arrow: SVG fill matches the tooltip background for seamless
  * visual connection between arrow and content bubble.
  */
@@ -18,11 +25,41 @@
   font-size: var(--font-size-sm, 0.875rem);
   line-height: 1.4;
   box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
-  animation: cr-Tooltip-fadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 50;
   max-width: 18rem;
   /* Ensure text wraps rather than overflowing */
   word-break: break-word;
+  /* Smooth animation curve for both in and out */
+  animation-duration: 150ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: forwards;
+  /* Use the trigger element as the transform origin for natural-feeling motion */
+  transform-origin: var(--radix-tooltip-content-transform-origin, center);
+}
+
+/* In animations — direction-aware slide-and-fade */
+.cr-Tooltip-content[data-state="delayed-open"][data-side="top"],
+.cr-Tooltip-content[data-state="instant-open"][data-side="top"] {
+  animation-name: cr-Tooltip-slideDownAndFadeIn;
+}
+.cr-Tooltip-content[data-state="delayed-open"][data-side="right"],
+.cr-Tooltip-content[data-state="instant-open"][data-side="right"] {
+  animation-name: cr-Tooltip-slideLeftAndFadeIn;
+}
+.cr-Tooltip-content[data-state="delayed-open"][data-side="bottom"],
+.cr-Tooltip-content[data-state="instant-open"][data-side="bottom"] {
+  animation-name: cr-Tooltip-slideUpAndFadeIn;
+}
+.cr-Tooltip-content[data-state="delayed-open"][data-side="left"],
+.cr-Tooltip-content[data-state="instant-open"][data-side="left"] {
+  animation-name: cr-Tooltip-slideRightAndFadeIn;
+}
+
+/* Out animation — quick fade. Direction-symmetric is fine; users perceive
+ * the disappearance as a single moment rather than tracking direction. */
+.cr-Tooltip-content[data-state="closed"] {
+  animation-name: cr-Tooltip-fadeOut;
+  animation-duration: 100ms;
 }
 
 .cr-Tooltip-arrow {
@@ -30,13 +67,23 @@
   fill: var(--cr-tooltip-bg);
 }
 
-@keyframes cr-Tooltip-fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes cr-Tooltip-slideDownAndFadeIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cr-Tooltip-slideLeftAndFadeIn {
+  from { opacity: 0; transform: translateX(2px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes cr-Tooltip-slideUpAndFadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cr-Tooltip-slideRightAndFadeIn {
+  from { opacity: 0; transform: translateX(-2px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes cr-Tooltip-fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
