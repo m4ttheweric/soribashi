@@ -1,3 +1,8 @@
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
+
+// Re-export so consumers can import ThemeComponentEntry from '@soribashi/theme'
+export type { ThemeComponentEntry } from './theme-component-entry.ts';
+
 // Token-level types
 
 /**
@@ -148,7 +153,7 @@ export interface ThemeDefinition {
   dark?: PartialThemeTokens;
   semantic?: Partial<SemanticTokens>;
   intentResolver?: IntentResolver;
-  components?: Record<string, ComponentThemeConfig>;
+  components?: Record<string, ComponentThemeConfig> | readonly ThemeComponentEntry[];
   /** CSS selector for light scope. Defaults to `:root`. */
   scope?: string;
   /** CSS selector(s) for dark mode. Defaults to `.dark`. */

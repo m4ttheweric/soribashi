@@ -1,4 +1,4 @@
-import type { ResolvedTheme, ThemeDefinition, ThemeTokens } from './types.ts';
+import type { ComponentThemeConfig, ResolvedTheme, ThemeDefinition, ThemeTokens } from './types.ts';
 
 /**
  * Merges a child theme definition on top of a resolved base theme.
@@ -24,7 +24,7 @@ export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): Theme
       border: { ...base.semantic.border, ...(child.semantic?.border ?? {}) },
     },
     intentResolver: child.intentResolver ?? base.intentResolver,
-    components: { ...base.components, ...(child.components ?? {}) },
+    components: { ...base.components, ...normalizeChildComponents(child.components) },
     scope: child.scope ?? base.scope,
     darkMode: child.darkMode ?? base.darkMode,
     name: child.name ?? base.name,
@@ -58,6 +58,20 @@ function mergeHeadingTokens(
     sizes: { ...base.sizes, ...child.sizes },
     textWrap: child.textWrap ?? base.textWrap,
   };
+}
+
+function normalizeChildComponents(
+  input: ThemeDefinition['components'],
+): Record<string, ComponentThemeConfig> {
+  if (input === undefined) return {};
+  if (Array.isArray(input)) {
+    const out: Record<string, ComponentThemeConfig> = {};
+    for (const entry of input) {
+      out[entry.name] = { defaultProps: entry.defaultProps };
+    }
+    return out;
+  }
+  return input as Record<string, ComponentThemeConfig>;
 }
 
 function mergeNamedScales(
