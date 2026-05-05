@@ -207,6 +207,50 @@ export function defineCompound<
     if (partKey === 'root') continue;
 
     const partName = `${config.name}${capitalize(partKey)}`;
+    const isPolymorphic = (partConfig as PolymorphicPartConfig<any, any>).polymorphic === true;
+
+    if (isPolymorphic) {
+      const polyConfig = partConfig as PolymorphicPartConfig<any, any>;
+
+      const PolyPartComponent = forwardRef<unknown, any>(function PolymorphicCompoundPart(rawProps, ref) {
+        const rawCtx = useContext(CompoundContext);
+        const merged = useProps<any>(partName, polyConfig.defaults ?? null, rawProps);
+
+        const { as: asProp, ...rest } = merged as { as?: keyof JSX.IntrinsicElements; [key: string]: unknown };
+        const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
+
+        const partGetStyles = (opts?: { part?: string }) => {
+          if (rawCtx === null) {
+            throw new Error(`<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`);
+          }
+          return rawCtx.getStyles(opts?.part ?? partKey) as { className: string; style?: React.CSSProperties };
+        };
+
+        const ctxToPass = rawCtx === null
+          ? makeNullCtxProxy(config.name, partKey)
+          : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: string | undefined });
+
+        return (polyConfig.render as (c: any) => ReactNode)({
+          Element,
+          props: rest,
+          getStyles: partGetStyles,
+          ctx: ctxToPass as TCtxExtra & { variant: string | undefined },
+          children: (rest as { children?: ReactNode }).children,
+          ref,
+        });
+      });
+
+      PolyPartComponent.displayName = partName;
+
+      (PolyPartComponent as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+        __soribashiThemeEntry: true as const,
+        name: partName,
+        defaultProps: defaults,
+      });
+
+      namespacedParts[capitalize(partKey)] = PolyPartComponent;
+      continue;
+    }
 
     const PartComponent = forwardRef<unknown, any>(function CompoundPart(rawProps, ref) {
       // Raw context read: null when outside Root (doesn't throw).

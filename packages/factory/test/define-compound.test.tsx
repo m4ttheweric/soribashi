@@ -260,6 +260,64 @@ describe('defineCompound — sibling-slot getStyles', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Cycle 7.7 — Polymorphic parts
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — polymorphic parts', () => {
+  const Foo = defineCompound({
+    name: 'Foo',
+    classes: { root: 'foo-root', trigger: 'foo-trigger' },
+    parts: {
+      root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+      trigger: {
+        polymorphic: true,
+        defaultElement: 'button',
+        render: ({ Element, getStyles, props, ref }: any) => (
+          <Element {...getStyles()} {...props} ref={ref} />
+        ),
+      },
+    },
+  });
+
+  it('renders the default element when `as` is not provided', () => {
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Trigger>click</Foo.Trigger>
+        </Foo>
+      </SoribashiProvider>,
+    );
+    const trigger = container.querySelector('.foo-trigger');
+    expect(trigger?.tagName).toBe('BUTTON');
+  });
+
+  it('renders the polymorphic element when `as` is provided', () => {
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Trigger as="a" href="/x">link</Foo.Trigger>
+        </Foo>
+      </SoribashiProvider>,
+    );
+    const trigger = container.querySelector('.foo-trigger');
+    expect(trigger?.tagName).toBe('A');
+    expect(trigger?.getAttribute('href')).toBe('/x');
+  });
+
+  it('forwards refs through polymorphic parts', () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Trigger ref={ref}>click</Foo.Trigger>
+        </Foo>
+      </SoribashiProvider>,
+    );
+    expect(ref.current).toBeInstanceOf(HTMLButtonElement);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Cycle 7.6 — Passthrough parts (class-3)
 // ---------------------------------------------------------------------------
 
