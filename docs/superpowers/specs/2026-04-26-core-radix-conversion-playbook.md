@@ -283,7 +283,275 @@ See `apps/core-radix-pilot/src/recipes/Button/Button.tsx` for the full implement
 
 ### 2.2 Transient overlay compound (Wave 2 — Tooltip)
 
-_To be populated by Wave 2._
+Pattern for components with Radix anatomy, a portal, and ephemeral show/hide lifecycle — tooltips, popovers, hover cards. Radix owns the open/close state machine; soribashi's job is slot styling and context propagation.
+
+**Examples in core-radix:** Tooltip, HoverCard, Popover (all share this anatomy structure).
+
+#### Recipe shape
+
+Use `defineCompound` (from `@soribashi/core`, re-exported from `@soribashi/factory`). The config shape differs from `definePolymorphicComponent` in three ways: (1) `parts` is a keyed object where each part declares its own `render`; (2) `context` derives shared state from root props and makes it available to all parts; (3) `vars` is a per-slot resolver — an object whose keys are part names and whose values are `Record<string, string>` var maps.
+
+**Parts taxonomy — Tooltip has four parts:**
+
+| Part | Class | Role |
+|---|---|---|
+| `provider` | — | Class-3 passthrough; wraps `RadixTooltip.Provider`. No soribashi context. |
+| `root` | `cr-Tooltip-root` | Class-1 context-creator; establishes compound context via `RadixTooltip.Root`. |
+| `trigger` | `cr-Tooltip-trigger` | Class-2 context-consumer; reads `ctx.getStyles()` to apply trigger class. |
+| `content` | `cr-Tooltip-content` | Class-2 context-consumer; reads `ctx.side` + `ctx.sideOffset`; renders in a Portal. |
+
+**Slot vs part — the `arrow` distinction:** `arrow` is declared in `classes` (`cr-Tooltip-arrow`) so it participates in the var/class resolution system, but it is **not** exported as a separate part. It's a sub-element slot owned by the `content` part and reached via `getStyles({ part: 'arrow' })`. This is the slot-vs-part distinction: a _part_ is a separately-rendered, separately-exported piece of the compound; a _slot_ is a styling hook owned by another part.
+
+#### Style approach
+
+`classes` maps every part _and_ slot name to a CSS class. The `vars` resolver is an object keyed by part name; each key's value is a `Record<string, string>` of CSS custom-property overrides evaluated at render time.
+
+```ts
+vars: (_theme, props) => ({
+  content: {
+    '--cr-tooltip-bg':   props.variant === 'inverted' ? 'var(--surface-floating)' : 'var(--surface-default)',
+    '--cr-tooltip-color': props.variant === 'inverted' ? 'var(--surface-floating-foreground)' : 'var(--text-default)',
+  },
+}),
+```
+
+Inside each part's `render`, `getStyles()` returns the class + inline vars for that part's own slot. To target a _different_ slot, pass the part name explicitly: `getStyles({ part: 'arrow' })` returns the class for the `arrow` slot. The content part uses this to render the optional `<RadixTooltip.Arrow>`.
+
+#### State handling
+
+Radix owns the open/close lifecycle entirely. `data-state="delayed-open"` / `data-state="closed"` attributes are emitted by Radix directly onto its own elements and propagate into the portal. The recipe has **no state-toggle code** — no `useState`, no `data-state` writes, no visibility classes toggled in `render`. CSS animations keyed to `data-state` in `Tooltip.css` handle the enter/exit transitions automatically.
+
+This is the defining characteristic of the transient-overlay category: the recipe author handles styling; Radix handles lifecycle. Contrast with a pure-styled primitive (Wave 1 — Button) where the recipe is the entire render tree.
+
+#### Token consumption
+
+The Tooltip recipe introduces the `surface.floating` semantic token — a dark, inverted-contrast surface for overlays. Its `vars` resolver references:
+
+- `var(--surface-floating)` — the floating surface background
+- `var(--surface-floating-foreground)` — the guaranteed-contrast foreground for that surface
+
+This exercises the **gradual surface↔foreground formalization** pattern (see § 3, "Gradual surface↔foreground formalization (Wave 2)"): because `surface.floating` diverges meaningfully from `surface.default` in lightness (it's a near-black `neutral.900` in light mode), it is declared as a `{ value, foreground }` pair in the theme. Codegen emits both `--surface-floating` and `--surface-floating-foreground`. The recipe pairs them — guaranteed-correct contrast regardless of theme overrides.
+
+The default variant uses `var(--surface-default)` + `var(--text-default)` — the page's normal contrast band — following the informal pairing convention for surfaces that don't diverge.
+
+#### Three classes of part
+
+Every `defineCompound` part falls into one of three classes:
+
+- **Class 1 — Root (context-creator).** Calls `RadixTooltip.Root` to initialize Radix's state machine and establishes the soribashi compound context (via the `context` function). All variant/side/sideOffset resolution is done here. One Root per compound.
+- **Class 2 — Context-consuming.** `Trigger` and `Content` call `getStyles()` to read the compound context and resolve their class + vars. If rendered outside a Root, `defineCompound` throws a meaningful error (safe context boundary). Use for every part that needs styling or context props.
+- **Class 3 — Passthrough.** `Provider` wraps `RadixTooltip.Provider` without coupling to the soribashi compound context at all — it is valid outside a Root, which is the point (Radix's `TooltipProvider` wraps multiple Tooltip instances at the app boundary). Use for parts that are structurally outside the compound's context tree, or for thin delegation wrappers that need no styling.
+
+When authoring a new compound: start with Class 2 for every part, then downgrade to Class 3 only if the part genuinely must exist outside the compound context tree.
+
+#### Render body destructure
+
+`defineCompound` parts receive a render ctx with `{ props, getStyles, ctx, children }`. For polymorphic parts, `Element` and `ref` are also present (same convention as `definePolymorphicComponent`).
+
+Unlike the Wave 1 Button recipe — which destructures all seven styles-API framework keys at the top of one `render` — each part in a compound has its own `render` and destructures only what it needs. The convention is the same: destructure explicitly, spread `...rest` for unknown pass-through props, never forward the raw `props` object to a DOM element.
+
+```tsx
+// Content part — destructures own props alongside framework keys
+content: {
+  render: ({ getStyles, props, ctx, children }) => {
+    const contentProps = props as TooltipContentProps;
+    const showArrow = contentProps.withArrow !== false;
+    return (
+      <RadixTooltip.Portal>
+        <RadixTooltip.Content
+          side={ctx.side}
+          sideOffset={contentProps.sideOffset ?? ctx.sideOffset}
+          {...getStyles()}
+        >
+          {children}
+          {showArrow && <RadixTooltip.Arrow {...getStyles({ part: 'arrow' })} />}
+        </RadixTooltip.Content>
+      </RadixTooltip.Portal>
+    );
+  },
+},
+```
+
+#### Tests
+
+- **Vitest behavior** (Wave 2 reference: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`): rendering with default props, `data-state` flow for open/close, `withArrow` prop, `variant='inverted'` CSS vars applied, `side` prop forwarded to content, Provider wrapping multiple Tooltip instances. Use the same vitest config + jest-dom setup template from § 2.0. Compound tests also exercise `getStyles({ part: 'arrow' })` producing the arrow class.
+- **Playwright parity** (Wave 2 reference: `apps/core-radix-pilot/tests/Tooltip.parity.spec.ts`): open on hover (default variant — check computed `background-color`); inverted variant; arrow present; side offset; keyboard-trigger open.
+- **Manual visual** — non-optional. Enter/exit animation, arrow alignment on all four sides, inverted contrast legibility, focus-trigger behavior. Playwright does not catch animation drift or sub-pixel arrow misalignment.
+
+Pilot harness is already wired from Wave 1 (§ 2.0 template was applied during pilot scaffolding).
+
+#### Recipe code snippet
+
+```tsx
+/**
+ * Tooltip recipe — Wave 2 pilot for the transient-overlay compound category.
+ *
+ * Authored with `defineCompound` from @soribashi/core (re-exported from
+ * @soribashi/factory). Wraps @radix-ui/react-tooltip and exercises:
+ *   - defineCompound with four parts: Provider, Root, Trigger, Content
+ *   - surface.floating formalized foreground pairing (Wave 2 semantic token)
+ *   - Passthrough part (Provider — class-3, renders outside compound context)
+ *   - asChild forwarding via RadixTooltip.Trigger
+ *   - Portal rendering via RadixTooltip.Portal
+ *   - Optional arrow via getStyles({ part: 'arrow' }) cross-slot targeting
+ *
+ * Spec: docs/superpowers/specs/2026-05-04-wave-2-tooltip-pilot-design.md § 6
+ * Journal: docs/superpowers/pilots/2026-05-04-tooltip-pilot.md
+ */
+import * as RadixTooltip from '@radix-ui/react-tooltip';
+import type { ReactNode } from 'react';
+import { defineCompound } from '@soribashi/core';
+import './Tooltip.css';
+
+type Variant = 'default' | 'inverted';
+type Side = 'top' | 'right' | 'bottom' | 'left';
+
+interface TooltipRootProps {
+  variant?: Variant;
+  side?: Side;
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children?: ReactNode;
+  [key: string]: unknown;
+}
+
+interface TooltipProviderProps {
+  delayDuration?: number;
+  skipDelayDuration?: number;
+  disableHoverableContent?: boolean;
+  children?: ReactNode;
+  [key: string]: unknown;
+}
+
+interface TooltipTriggerProps {
+  asChild?: boolean;
+  children?: ReactNode;
+  [key: string]: unknown;
+}
+
+interface TooltipContentProps {
+  withArrow?: boolean;
+  sideOffset?: number;
+  children?: ReactNode;
+  [key: string]: unknown;
+}
+
+interface TooltipCtxExtras {
+  side: Side;
+  sideOffset: number;
+}
+
+export const Tooltip = defineCompound<
+  TooltipRootProps,
+  // Parts type — using Record to satisfy the constraint; actual shape is
+  // declared inline below.
+  Record<string, never>,
+  readonly ['default', 'inverted'],
+  TooltipCtxExtras
+>({
+  name: 'Tooltip',
+  variants: ['default', 'inverted'] as const,
+  classes: {
+    root: 'cr-Tooltip-root',
+    trigger: 'cr-Tooltip-trigger',
+    content: 'cr-Tooltip-content',
+    arrow: 'cr-Tooltip-arrow',
+  },
+  defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
+  vars: (_theme, props) => ({
+    content: {
+      '--cr-tooltip-bg':
+        props.variant === 'inverted'
+          ? 'var(--surface-floating)'
+          : 'var(--surface-default)',
+      '--cr-tooltip-color':
+        props.variant === 'inverted'
+          ? 'var(--surface-floating-foreground)'
+          : 'var(--text-default)',
+    },
+  }),
+  context: (rootProps) => ({
+    side: rootProps.side ?? 'top',
+    sideOffset: 4,
+  }),
+  parts: {
+    // Provider — class-3 passthrough: renders outside compound context without
+    // throwing. Delegates to RadixTooltip.Provider for the delay-duration
+    // state machine shared across multiple Tooltip instances.
+    provider: {
+      render: ({ props, children }) => (
+        <RadixTooltip.Provider
+          delayDuration={(props as TooltipProviderProps).delayDuration}
+          skipDelayDuration={(props as TooltipProviderProps).skipDelayDuration}
+          disableHoverableContent={(props as TooltipProviderProps).disableHoverableContent}
+        >
+          {children}
+        </RadixTooltip.Provider>
+      ),
+    },
+    // Root — establishes the compound context. Wraps RadixTooltip.Root for
+    // open/close state management.
+    root: {
+      render: ({ props, children }) => (
+        <RadixTooltip.Root
+          defaultOpen={(props as TooltipRootProps).defaultOpen}
+          open={(props as TooltipRootProps).open}
+          onOpenChange={(props as TooltipRootProps).onOpenChange}
+        >
+          {children}
+        </RadixTooltip.Root>
+      ),
+    },
+    // Trigger — class-2 part. Reads ctx via getStyles (throws outside Root).
+    // asChild merges trigger class onto the provided child element.
+    trigger: {
+      render: ({ getStyles, props, children }) => {
+        const triggerProps = props as TooltipTriggerProps;
+        if (triggerProps.asChild) {
+          // asChild: Radix Trigger renders as a Slot, merging its props
+          // (including our className) onto the single child element.
+          return (
+            <RadixTooltip.Trigger asChild {...getStyles()}>
+              {children}
+            </RadixTooltip.Trigger>
+          );
+        }
+        return (
+          <RadixTooltip.Trigger {...getStyles()}>
+            {children}
+          </RadixTooltip.Trigger>
+        );
+      },
+    },
+    // Content — class-2 part. Reads ctx for side + sideOffset. Renders inside
+    // a Portal so content appears in document.body. Optional Arrow uses
+    // cross-slot getStyles({ part: 'arrow' }).
+    content: {
+      render: ({ getStyles, props, ctx, children }) => {
+        const contentProps = props as TooltipContentProps;
+        const showArrow = contentProps.withArrow !== false;
+        return (
+          <RadixTooltip.Portal>
+            <RadixTooltip.Content
+              side={ctx.side}
+              sideOffset={contentProps.sideOffset ?? ctx.sideOffset}
+              {...getStyles()}
+            >
+              {children}
+              {showArrow && (
+                <RadixTooltip.Arrow {...getStyles({ part: 'arrow' })} />
+              )}
+            </RadixTooltip.Content>
+          </RadixTooltip.Portal>
+        );
+      },
+    },
+  },
+} as Parameters<typeof defineCompound>[0]);
+```
+
+See `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx` for the live source (this snippet is verbatim as of Wave 2).
 
 ### 2.3 Persistent navigational compound (Wave 3 — Tabs)
 
@@ -333,6 +601,28 @@ See foundational spec § 3 ("Integration model") for the full reasoning + the hi
 - ~~**Config-level pass-through for `corePlugins.preflight`, plugins, content globs**~~ — **dropped.** These are host-policy concerns under Option C; consumers compose them in their own `tailwind.config.js` and that's the right seam.
 
 The other Wave 1 gaps (#2 styles-API destructure convention, #3 vitest scaffold, #4 accent.feedback, #5 border-default reset, #6 focus indicator) are about recipe authoring ergonomics, theme-shape coverage, or harness wiring — none of them depend on integration model.
+
+### Gradual surface↔foreground formalization (Wave 2)
+
+**Convention:** when introducing a semantic surface whose lightness diverges
+meaningfully from `surface.default`, declare it as `{ value, foreground }`.
+Codegen emits both `--surface-{name}` and `--surface-{name}-foreground`.
+Consumers pair the two — guaranteed-correct contrast.
+
+When introducing a surface that lives in the page's normal contrast band
+(canvas / default / raised / sunken), keep the string form and pair informally
+with `text.default`.
+
+**Existing Wave-1 surfaces are not retroactively formalized.** The migration
+cost (rename every `text.default` reference to `surface.X-foreground`) is
+not justified by Wave 2's needs and does not need to be paid retroactively.
+Future surfaces are formalized at introduction time.
+
+**Wave 2 example:** the pilot's `surface.floating` is declared as
+`{ value: 'neutral.900', foreground: 'neutral.0' }`. The Tooltip recipe's
+`vars` resolver then references `var(--surface-floating)` and
+`var(--surface-floating-foreground)` for the inverted variant — a guaranteed
+contrast pair regardless of theme overrides.
 
 ## 4. Legacy-token migration strategy stub
 
