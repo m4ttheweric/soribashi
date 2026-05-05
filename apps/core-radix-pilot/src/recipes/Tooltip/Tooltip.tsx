@@ -57,14 +57,7 @@ interface TooltipCtxExtras {
   sideOffset: number;
 }
 
-export const Tooltip = defineCompound<
-  TooltipRootProps,
-  // Parts type — using Record to satisfy the constraint; actual shape is
-  // declared inline below.
-  Record<string, never>,
-  readonly ['default', 'inverted'],
-  TooltipCtxExtras
->({
+export const Tooltip = defineCompound({
   name: 'Tooltip',
   variants: ['default', 'inverted'] as const,
   classes: {
@@ -163,4 +156,4 @@ export const Tooltip = defineCompound<
       },
     },
   },
-} as Parameters<typeof defineCompound>[0]);
+});

@@ -49,7 +49,7 @@ export interface DefineCompoundConfig<
   TRootProps extends Record<string, unknown>,
   TParts extends Record<string, PartConfig<any, any>>,
   TVariants extends readonly string[],
-  TCtxExtra extends Record<string, unknown> = {},
+  TCtxExtra extends object = {},
 > {
   name: string;
   variants?: TVariants;
@@ -117,7 +117,7 @@ export function defineCompound<
   TRootProps extends Record<string, unknown>,
   TParts extends Record<string, PartConfig<any, any>>,
   const TVariants extends readonly string[] = readonly [],
-  TCtxExtra extends Record<string, unknown> = {},
+  TCtxExtra extends object = {},
 >(config: DefineCompoundConfig<TRootProps, TParts, TVariants, TCtxExtra>) {
   if (!config.parts.root) {
     throw new Error(`defineCompound("${config.name}") requires parts.root`);
