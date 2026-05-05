@@ -58,6 +58,10 @@ export type { DefinePolymorphicComponentConfig } from './define-polymorphic-comp
 export type { DefineGenericComponentConfig } from './define-generic-component.tsx';
 export type { UseStylesConfig } from './hooks/use-styles.ts';
 
+// asChild slot-merging primitive
+export { Slot } from './slot.tsx';
+export type { SlotProps } from './slot.tsx';
+
 // Theme integration
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
 export { isThemeComponentEntry } from './theme-component-entry.ts';
