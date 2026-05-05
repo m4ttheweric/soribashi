@@ -8,6 +8,7 @@ import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
 
 const identity = <T,>(value: T): T => value;
 
@@ -90,6 +91,11 @@ export function definePolymorphicComponent<
   (Component as any).classes = config.classes;
   (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
+  (Component as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+    __soribashiThemeEntry: true as const,
+    name: config.name,
+    defaultProps: defaults,
+  });
 
   // The component itself is generic over the target element type.
   // Callers can pass `as="span"` and TS instantiates TAs='span' so the
@@ -107,6 +113,7 @@ export function definePolymorphicComponent<
   return Component as unknown as PolymorphicComponentLike & {
     extend: (cfg: any) => any;
     withProps: WithPropsFn;
+    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };
