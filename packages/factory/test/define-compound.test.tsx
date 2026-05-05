@@ -223,3 +223,37 @@ describe('defineCompound — vars resolver', () => {
     expect(child.style.getPropertyValue('--foo-bg')).toBe('black');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Cycle 7.5 — Sibling-slot getStyles
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — sibling-slot getStyles', () => {
+  it('getStyles({ part: "sibling" }) resolves to sibling slot class', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', main: 'foo-main', arrow: 'foo-arrow' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        main: {
+          render: ({ getStyles }) => (
+            <div {...getStyles()}>
+              <span {...getStyles({ part: 'arrow' })} data-testid="arrow-inside-main" />
+            </div>
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Main />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const arrow = container.querySelector('[data-testid="arrow-inside-main"]') as HTMLElement;
+    expect(arrow.className).toBe('foo-arrow');
+  });
+});
