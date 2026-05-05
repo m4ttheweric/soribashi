@@ -1,4 +1,4 @@
-import { forwardRef, type ReactNode, type Ref } from 'react';
+import { forwardRef, useContext, type ReactNode, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
@@ -92,6 +92,22 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/**
+ * Returns a Proxy that throws a named error on any property access.
+ * Used when a part is rendered outside Root but still receives a `ctx` argument —
+ * passthrough parts that ignore `ctx` are unaffected; context-consuming parts
+ * see the friendly error rather than a null-deref TypeError.
+ */
+function makeNullCtxProxy(compoundName: string, partKey: string): Record<string, unknown> {
+  return new Proxy({} as Record<string, unknown>, {
+    get() {
+      throw new Error(
+        `<${compoundName}.${capitalize(partKey)}> must be inside <${compoundName}>`,
+      );
+    },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // defineCompound
 // ---------------------------------------------------------------------------
@@ -113,7 +129,10 @@ export function defineCompound<
     );
   }
 
-  const [CompoundContext, useCompoundContext] = createSafeContext<CompoundContextValue<TCtxExtra>>(
+  // createSafeContext returns [Context, useSafeHook]. We keep the safe hook for
+  // Root's own usage (not currently needed) but use raw useContext in parts so
+  // that passthrough parts (class-3) can render outside Root without throwing.
+  const [CompoundContext] = createSafeContext<CompoundContextValue<TCtxExtra>>(
     `${config.name} parts must be inside <${config.name}>`,
   );
 
@@ -190,7 +209,10 @@ export function defineCompound<
     const partName = `${config.name}${capitalize(partKey)}`;
 
     const PartComponent = forwardRef<unknown, any>(function CompoundPart(rawProps, ref) {
-      const compoundCtx = useCompoundContext();
+      // Raw context read: null when outside Root (doesn't throw).
+      // Passthrough parts (class-3) that never touch ctx or getStyles render fine.
+      // Context-consuming parts surface the named error via partGetStyles / ctxToPass.
+      const rawCtx = useContext(CompoundContext);
 
       const merged = useProps<any>(
         partName,
@@ -198,20 +220,27 @@ export function defineCompound<
         rawProps,
       );
 
-      /** Wraps the shared getStyles with this part's slot as the default. */
-      const partGetStyles = (opts?: { part?: string }) =>
-        compoundCtx.getStyles(opts?.part ?? partKey) as {
+      /** Wraps the shared getStyles with this part's slot as the default. Throws when outside Root. */
+      const partGetStyles = (opts?: { part?: string }) => {
+        if (rawCtx === null) {
+          throw new Error(
+            `<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`,
+          );
+        }
+        return rawCtx.getStyles(opts?.part ?? partKey) as {
           className: string;
           style?: React.CSSProperties;
         };
+      };
+
+      const ctxToPass = rawCtx === null
+        ? makeNullCtxProxy(config.name, partKey)
+        : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: string | undefined });
 
       return (partConfig.render as (c: PartRenderCtx<any, TCtxExtra>) => ReactNode)({
         props: merged,
         getStyles: partGetStyles,
-        ctx: {
-          variant: compoundCtx.variant,
-          ...compoundCtx.ctxExtras,
-        } as TCtxExtra & { variant: string | undefined },
+        ctx: ctxToPass as TCtxExtra & { variant: string | undefined },
         children: (merged as { children?: ReactNode }).children,
         ref,
       });

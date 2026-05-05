@@ -1,5 +1,6 @@
 // packages/factory/test/define-compound.test.tsx
 import { describe, expect, it } from 'vitest';
+import { createRef } from 'react';
 import { render } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
 import { defineCompound, SoribashiProvider } from '../src/index.ts';
@@ -92,7 +93,7 @@ describe('defineCompound — multi-part', () => {
           <Foo.Label>oops</Foo.Label>
         </SoribashiProvider>,
       ),
-    ).toThrow(/Foo parts must be inside <Foo>/);
+    ).toThrow(/must be inside <Foo>/);
   });
 
   it('part name on the namespace is capitalized from config key', () => {
@@ -255,5 +256,34 @@ describe('defineCompound — sibling-slot getStyles', () => {
 
     const arrow = container.querySelector('[data-testid="arrow-inside-main"]') as HTMLElement;
     expect(arrow.className).toBe('foo-arrow');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cycle 7.6 — Passthrough parts (class-3)
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — passthrough parts', () => {
+  it('a part that does NOT consume ctx renders fine outside Root', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        provider: {
+          render: ({ children }) => <section data-provider>{children}</section>,
+        },
+      },
+    });
+
+    // Render Foo.Provider OUTSIDE any Foo Root — should not throw because
+    // its render doesn't touch ctx.
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo.Provider>content</Foo.Provider>
+      </SoribashiProvider>,
+    );
+
+    expect(container.querySelector('[data-provider]')?.textContent).toBe('content');
   });
 });
