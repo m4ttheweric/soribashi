@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@soribashi/codegen": "workspace:*",
     "@soribashi/core": "workspace:*",
     "react": "^18.3.0",
