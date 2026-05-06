@@ -17,6 +17,7 @@
  */
 import { useState } from 'react';
 import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
+import { Button } from '../recipes/Button/Button.tsx';
 
 const VARIANTS = ['default', 'inverted'] as const;
 const SIDES = ['top', 'right', 'bottom', 'left'] as const;
@@ -51,22 +52,11 @@ export function TooltipMatrix() {
               >
                 {variant} / {side}
               </span>
-              <Tooltip variant={variant} side={side} >
+              <Tooltip variant={variant} side={side}>
                 <Tooltip.Trigger asChild>
-                  <button
-                    style={{
-                      padding: '6px 14px',
-                      fontFamily: 'var(--font-family-sans)',
-                      fontSize: 'var(--font-size-sm)',
-                      cursor: 'pointer',
-                      border: '1px solid var(--border-strong)',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'var(--surface-raised)',
-                      color: 'var(--text-default)',
-                    }}
-                  >
+                  <Button intent="neutral" variant="outline" size="sm">
                     hover me
-                  </button>
+                  </Button>
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   {variant} variant on {side}
@@ -84,7 +74,7 @@ export function TooltipMatrix() {
         <SpecialCase label="long content">
           <Tooltip>
             <Tooltip.Trigger asChild>
-              <button style={triggerStyle}>long content</button>
+              <Button intent="neutral" variant="outline" size="sm">long content</Button>
             </Tooltip.Trigger>
             <Tooltip.Content>
               A really long tooltip content that should wrap nicely within the max-width constraint
@@ -97,7 +87,7 @@ export function TooltipMatrix() {
         <SpecialCase label="withArrow={false}">
           <Tooltip>
             <Tooltip.Trigger asChild>
-              <button style={triggerStyle}>no arrow</button>
+              <Button intent="neutral" variant="outline" size="sm">no arrow</Button>
             </Tooltip.Trigger>
             <Tooltip.Content withArrow={false}>No arrow on this one.</Tooltip.Content>
           </Tooltip>
@@ -145,7 +135,7 @@ function DefaultOpenWithListener() {
     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
       <Tooltip defaultOpen onOpenChange={(open: boolean) => open && setOpenCount((c) => c + 1)}>
         <Tooltip.Trigger asChild>
-          <button style={triggerStyle}>hover me</button>
+          <Button intent="neutral" variant="outline" size="sm">hover me</Button>
         </Tooltip.Trigger>
         <Tooltip.Content>opened {openCount}×</Tooltip.Content>
       </Tooltip>
@@ -155,14 +145,3 @@ function DefaultOpenWithListener() {
     </div>
   );
 }
-
-const triggerStyle: React.CSSProperties = {
-  padding: '6px 14px',
-  fontFamily: 'var(--font-family-sans)',
-  fontSize: 'var(--font-size-sm)',
-  cursor: 'pointer',
-  border: '1px solid var(--border-strong)',
-  borderRadius: 'var(--radius-md)',
-  background: 'var(--surface-raised)',
-  color: 'var(--text-default)',
-};
