@@ -400,41 +400,37 @@ Pilot harness is already wired from Wave 1 (§ 2.0 template was applied during p
  */
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
-import { defineCompound } from '@soribashi/core';
+import { defineCompound, type PartRenderCtx } from '@soribashi/core';
 import './Tooltip.css';
 
-type Variant = 'default' | 'inverted';
+type Variant = 'default' | 'subtle';
 type Side = 'top' | 'right' | 'bottom' | 'left';
 
-interface TooltipRootProps {
+export interface TooltipRootProps {
   variant?: Variant;
   side?: Side;
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
-interface TooltipProviderProps {
+export interface TooltipProviderProps {
   delayDuration?: number;
   skipDelayDuration?: number;
   disableHoverableContent?: boolean;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
-interface TooltipTriggerProps {
+export interface TooltipTriggerProps {
   asChild?: boolean;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
-interface TooltipContentProps {
+export interface TooltipContentProps {
   withArrow?: boolean;
   sideOffset?: number;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
 interface TooltipCtxExtras {
@@ -442,16 +438,9 @@ interface TooltipCtxExtras {
   sideOffset: number;
 }
 
-export const Tooltip = defineCompound<
-  TooltipRootProps,
-  // Parts type — using Record to satisfy the constraint; actual shape is
-  // declared inline below.
-  Record<string, never>,
-  readonly ['default', 'inverted'],
-  TooltipCtxExtras
->({
+export const Tooltip = defineCompound({
   name: 'Tooltip',
-  variants: ['default', 'inverted'] as const,
+  variants: ['default', 'subtle'] as const,
   classes: {
     root: 'cr-Tooltip-root',
     trigger: 'cr-Tooltip-trigger',
@@ -460,15 +449,20 @@ export const Tooltip = defineCompound<
   },
   defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
   vars: (_theme, props) => ({
+    // Default variant uses surface.floating + its formalized foreground —
+    // guaranteed contrast against any page background. Matches shadcn's
+    // bg-foreground / text-background pattern. The `subtle` variant opts in
+    // to page-surface styling for cases where a less prominent tooltip is
+    // wanted; consumer accepts responsibility for contrast there.
     content: {
       '--cr-tooltip-bg':
-        props.variant === 'inverted'
-          ? 'var(--surface-floating)'
-          : 'var(--surface-default)',
+        props.variant === 'subtle'
+          ? 'var(--surface-default)'
+          : 'var(--surface-floating)',
       '--cr-tooltip-color':
-        props.variant === 'inverted'
-          ? 'var(--surface-floating-foreground)'
-          : 'var(--text-default)',
+        props.variant === 'subtle'
+          ? 'var(--text-default)'
+          : 'var(--surface-floating-foreground)',
     },
   }),
   context: (rootProps) => ({
@@ -480,11 +474,11 @@ export const Tooltip = defineCompound<
     // throwing. Delegates to RadixTooltip.Provider for the delay-duration
     // state machine shared across multiple Tooltip instances.
     provider: {
-      render: ({ props, children }) => (
+      render: ({ props, children }: PartRenderCtx<TooltipProviderProps, TooltipCtxExtras>) => (
         <RadixTooltip.Provider
-          delayDuration={(props as TooltipProviderProps).delayDuration}
-          skipDelayDuration={(props as TooltipProviderProps).skipDelayDuration}
-          disableHoverableContent={(props as TooltipProviderProps).disableHoverableContent}
+          delayDuration={props.delayDuration}
+          skipDelayDuration={props.skipDelayDuration}
+          disableHoverableContent={props.disableHoverableContent}
         >
           {children}
         </RadixTooltip.Provider>
@@ -493,11 +487,11 @@ export const Tooltip = defineCompound<
     // Root — establishes the compound context. Wraps RadixTooltip.Root for
     // open/close state management.
     root: {
-      render: ({ props, children }) => (
+      render: ({ props, children }: PartRenderCtx<TooltipRootProps, TooltipCtxExtras>) => (
         <RadixTooltip.Root
-          defaultOpen={(props as TooltipRootProps).defaultOpen}
-          open={(props as TooltipRootProps).open}
-          onOpenChange={(props as TooltipRootProps).onOpenChange}
+          defaultOpen={props.defaultOpen}
+          open={props.open}
+          onOpenChange={props.onOpenChange}
         >
           {children}
         </RadixTooltip.Root>
@@ -506,9 +500,8 @@ export const Tooltip = defineCompound<
     // Trigger — class-2 part. Reads ctx via getStyles (throws outside Root).
     // asChild merges trigger class onto the provided child element.
     trigger: {
-      render: ({ getStyles, props, children }) => {
-        const triggerProps = props as TooltipTriggerProps;
-        if (triggerProps.asChild) {
+      render: ({ getStyles, props, children }: PartRenderCtx<TooltipTriggerProps, TooltipCtxExtras>) => {
+        if (props.asChild) {
           // asChild: Radix Trigger renders as a Slot, merging its props
           // (including our className) onto the single child element.
           return (
@@ -528,14 +521,13 @@ export const Tooltip = defineCompound<
     // a Portal so content appears in document.body. Optional Arrow uses
     // cross-slot getStyles({ part: 'arrow' }).
     content: {
-      render: ({ getStyles, props, ctx, children }) => {
-        const contentProps = props as TooltipContentProps;
-        const showArrow = contentProps.withArrow !== false;
+      render: ({ getStyles, props, ctx, children }: PartRenderCtx<TooltipContentProps, TooltipCtxExtras>) => {
+        const showArrow = props.withArrow !== false;
         return (
           <RadixTooltip.Portal>
             <RadixTooltip.Content
               side={ctx.side}
-              sideOffset={contentProps.sideOffset ?? ctx.sideOffset}
+              sideOffset={props.sideOffset ?? ctx.sideOffset}
               {...getStyles()}
             >
               {children}
@@ -548,7 +540,7 @@ export const Tooltip = defineCompound<
       },
     },
   },
-} as Parameters<typeof defineCompound>[0]);
+});
 ```
 
 See `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx` for the live source (this snippet is verbatim as of Wave 2).
