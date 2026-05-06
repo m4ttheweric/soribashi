@@ -104,16 +104,20 @@ test.describe('Tooltip — computed styles per variant', () => {
 
   // ── 2. Subtle variant: surface.default + text.default (page-surface) ─────
 
-  test('subtle variant — content bg uses surface.default (white)', async ({ page }) => {
+  test('subtle variant — content bg uses surface.raised (slight elevation)', async ({ page }) => {
     await gotoTooltipMatrix(page);
     const { content } = await hoverTrigger(page, 4); // subtle / top
 
     const bg = await content.evaluate((el) => getComputedStyle(el).backgroundColor);
-    // surface.default = neutral-0 = hsl(0 0% 100%) → rgb(255, 255, 255)
+    // surface.raised = neutral-100 = hsl(210 40% 96%) → rgb(~241, ~245, ~249)
+    // Light gray, all channels well above 230 — visibly distinct from white
+    // page bg without being inverted.
     const [r, g, b] = parseRgb(bg);
-    expect(r).toBeGreaterThan(240);
-    expect(g).toBeGreaterThan(240);
-    expect(b).toBeGreaterThan(240);
+    expect(r).toBeGreaterThan(230);
+    expect(g).toBeGreaterThan(230);
+    expect(b).toBeGreaterThan(230);
+    // Confirm it's NOT pure white (would mean surface.default)
+    expect(r + g + b).toBeLessThan(255 * 3);
   });
 
   test('subtle variant — content color uses text.default (dark)', async ({ page }) => {

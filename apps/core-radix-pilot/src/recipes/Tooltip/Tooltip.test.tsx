@@ -169,7 +169,7 @@ describe('Tooltip recipe', () => {
 
     const contentDiv = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
     expect(contentDiv).not.toBeNull();
-    expect(contentDiv.style.getPropertyValue('--cr-tooltip-bg')).toBe('var(--surface-default)');
+    expect(contentDiv.style.getPropertyValue('--cr-tooltip-bg')).toBe('var(--surface-raised)');
     expect(contentDiv.style.getPropertyValue('--cr-tooltip-color')).toBe('var(--text-default)');
   });
 

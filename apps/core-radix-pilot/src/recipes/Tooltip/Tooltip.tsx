@@ -67,12 +67,13 @@ export const Tooltip = defineCompound({
     // Default variant uses surface.floating + its formalized foreground —
     // guaranteed contrast against any page background. Matches shadcn's
     // bg-foreground / text-background pattern. The `subtle` variant opts in
-    // to page-surface styling for cases where a less prominent tooltip is
-    // wanted; consumer accepts responsibility for contrast there.
+    // to a page-aligned but slightly elevated surface (surface.raised); the
+    // box-shadow alone wasn't enough to differentiate it from a same-color
+    // page bg. Consumer accepts responsibility for contrast at usage sites.
     content: {
       '--cr-tooltip-bg':
         props.variant === 'subtle'
-          ? 'var(--surface-default)'
+          ? 'var(--surface-raised)'
           : 'var(--surface-floating)',
       '--cr-tooltip-color':
         props.variant === 'subtle'

@@ -365,7 +365,7 @@ export const Tooltip = defineCompound({
   defaults: { variant: 'default', side: 'top' },
   vars: (_theme, props) => ({
     content: {
-      '--cr-tooltip-bg':    props.variant === 'subtle' ? 'var(--surface-default)' : 'var(--surface-floating)',
+      '--cr-tooltip-bg':    props.variant === 'subtle' ? 'var(--surface-raised)' : 'var(--surface-floating)',
       '--cr-tooltip-color': props.variant === 'subtle' ? 'var(--text-default)'    : 'var(--surface-floating-foreground)',
     },
   }),
@@ -548,7 +548,7 @@ Mirrors Wave 1's three-layer model + factory unit tests + codegen tests.
 - Click outside or escape → content disappears
 - `asChild` forwards onto a `<Button>` (computed-style assertion: button has trigger's class)
 - Default variant → content has `--cr-tooltip-bg: var(--surface-floating)` resolved (the new "out of the box" inverted-style)
-- `variant="subtle"` → content has `--cr-tooltip-bg: var(--surface-default)` resolved
+- `variant="subtle"` → content has `--cr-tooltip-bg: var(--surface-raised)` resolved
 - `withArrow` toggles arrow rendering
 - Content renders inside a portal (asserted via `document.body` query, not container)
 - Trigger/Content thrown outside Root → safe-context error
