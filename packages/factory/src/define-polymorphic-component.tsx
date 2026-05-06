@@ -1,4 +1,4 @@
-import { forwardRef, type ElementType, type Ref } from 'react';
+import { forwardRef, type ComponentPropsWithoutRef, type ElementType, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
@@ -11,6 +11,46 @@ import type { PolymorphicComponentProps } from './types/polymorphic.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 
 const identity = <T,>(value: T): T => value;
+
+/**
+ * Render-context type for polymorphic recipes (e.g., Button). Authors type
+ * their `render` function's parameter via this so destructuring is fully typed
+ * — no `as` casts needed inside the render body.
+ *
+ * `props` is the intersection of:
+ *   - `TOwnProps` — the recipe's own prop interface
+ *   - `StylesApiProps<TPayload>` — framework keys (className, style, classNames,
+ *     styles, vars, attributes, unstyled) typed against the factory payload, NOT
+ *     `<any>`. Destructuring these gives proper types.
+ *   - `Omit<ComponentPropsWithoutRef<TDefaultAs>, ...>` — HTML attributes for the
+ *     default element (e.g., `disabled` / `onClick` for `<button>`). The `Omit`
+ *     guards against TOwnProps overrides for shared keys.
+ *   - variant / intent — populated by `useProps` from theme + recipe defaults.
+ *
+ * The `...rest` after destructuring TOwnProps + framework keys is structurally
+ * `ComponentPropsWithoutRef<TDefaultAs>`-compatible, so spreading on `<Element>`
+ * works without an index-signature cast.
+ *
+ * Resolves the Wave 1 Gap 2 "documented convention" — the cast block is gone;
+ * destructuring is the only remaining boilerplate (kept per the composition
+ * rationale: recipes wrapping inner primitives need to forward framework keys).
+ */
+export type PolymorphicRenderCtx<
+  TOwnProps,
+  TDefaultAs extends ElementType,
+  TSelectors extends readonly string[] = readonly string[],
+  TVariants extends readonly string[] = readonly string[],
+> = {
+  Element: ElementType;
+  props: TOwnProps
+    & StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>
+    & Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>
+    & { variant?: TVariants[number]; intent?: string };
+  getStyles: GetStylesFn<
+    { props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload
+  >;
+  ref: Ref<unknown>;
+};
 
 export interface DefinePolymorphicComponentConfig<
   TOwnProps,
@@ -28,14 +68,7 @@ export interface DefinePolymorphicComponentConfig<
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
   ) => Partial<Record<TSelectors[number], Record<string, string>>>;
-  render: (ctx: {
-    Element: ElementType;
-    props: TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
-    getStyles: GetStylesFn<
-      { props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload
-    >;
-    ref: Ref<unknown>;
-  }) => React.ReactNode;
+  render: (ctx: PolymorphicRenderCtx<TOwnProps, TDefaultAs, TSelectors, TVariants>) => React.ReactNode;
 }
 
 /**

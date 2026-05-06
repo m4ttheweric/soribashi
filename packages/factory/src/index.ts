@@ -63,7 +63,7 @@ export type {
 
 export type { FactoryComponent } from './factory.tsx';
 export type { DefineComponentConfig } from './define-component.tsx';
-export type { DefinePolymorphicComponentConfig } from './define-polymorphic-component.tsx';
+export type { DefinePolymorphicComponentConfig, PolymorphicRenderCtx } from './define-polymorphic-component.tsx';
 export type { DefineGenericComponentConfig } from './define-generic-component.tsx';
 export type { UseStylesConfig } from './hooks/use-styles.ts';
 

@@ -221,10 +221,17 @@ This collapses 30 (variant × intent) cells to: one root rule + 30 four-line ove
 
 #### Render body destructure
 
-Inside `render`, destructure the seven styles-API framework keys (`className`, `style`, `classNames`, `styles`, `unstyled`, `attributes`, `vars`) **in the same block as your own recipe props** (`variant`, `intent`, `size`, etc.), then spread `...rest` onto the rendered `<Element>`. Don't pass the merged `props` object to `<Element>` directly — the framework keys would surface as React unknown-prop warnings on a DOM node.
+Inside `render`, type the parameter via `PolymorphicRenderCtx<TOwnProps, TDefaultAs, TSelectors, TVariants>` and destructure the seven styles-API framework keys (`className`, `style`, `classNames`, `styles`, `unstyled`, `attributes`, `vars`) **in the same block as your own recipe props** (`variant`, `intent`, `size`, etc.), then spread `...rest` onto the rendered `<Element>`. Don't pass the merged `props` object to `<Element>` directly — the framework keys would surface as React unknown-prop warnings on a DOM node.
 
 ```tsx
-render: ({ Element, props, getStyles, ref }) => {
+import { definePolymorphicComponent, type PolymorphicRenderCtx } from '@soribashi/core';
+
+render: ({
+  Element,
+  props,
+  getStyles,
+  ref,
+}: PolymorphicRenderCtx<ButtonOwnProps, 'button', readonly ['root', 'inner', 'label', 'icon', 'spinner']>) => {
   const {
     // own props
     variant, intent, size, loading, disabled, fullWidth,
@@ -242,11 +249,13 @@ render: ({ Element, props, getStyles, ref }) => {
 },
 ```
 
+`PolymorphicRenderCtx` types `props` as the intersection of `TOwnProps`, the styles-API framework keys (properly typed against the factory payload), HTML attributes for `TDefaultAs` (so `disabled`, `onClick`, etc. for `<button>` are automatically present), and the variant/intent fields. **No `as` casts inside the render body** — destructuring is fully typed; `...rest` spreads onto `<Element>` cleanly.
+
 This matches Mantine's convention. Every recipe in `@mantine/core` (`Button`, `Anchor`, `ActionIcon`, `UnstyledButton`, …) destructures the framework keys alongside its own props and spreads `...rest` — see `Button.tsx` in `mantinedev/mantine` for a canonical example. **Don't expect the factory to pre-strip:** recipes that compose another soribashi primitive (the way Mantine's `Button` wraps `UnstyledButton`) need to *forward* `unstyled` / `classNames` / `styles` to the inner primitive, which factory-level auto-stripping would break.
 
 If a recipe has zero own props (rare), the destructure block reduces to the seven framework keys plus `...rest`. A `splitStylesApiProps()` helper from `@soribashi/factory` could shorten that case but isn't worth shipping for the volume — most recipes destructure their own props anyway.
 
-(Conversion journal § 4 Gap 2 — DOCUMENTED AS CONVENTION post-Wave-1.)
+(Conversion journal § 4 Gap 2 — DOCUMENTED AS CONVENTION post-Wave-1, refined in Wave 2 by introducing `PolymorphicRenderCtx` so the destructure is fully typed without the prior `as ButtonOwnProps & { ... [k: string]: unknown }` cast block.)
 
 #### Tests
 

@@ -8,8 +8,8 @@
  * Spec: docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md § 7
  * Journal: docs/superpowers/pilots/2026-04-26-button-conversion.md
  */
-import type { ReactNode, MouseEvent } from 'react';
-import { definePolymorphicComponent } from '@soribashi/core';
+import type { MouseEvent, ReactNode } from 'react';
+import { definePolymorphicComponent, type PolymorphicRenderCtx } from '@soribashi/core';
 import './Button.css';
 
 type Intent = 'primary' | 'neutral' | 'success' | 'warning' | 'danger' | 'info';
@@ -48,7 +48,18 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
     loading: false,
     fullWidth: false,
   },
-  render: ({ Element, props, getStyles, ref }) => {
+  render: ({
+    Element,
+    props,
+    getStyles,
+    ref,
+  }: PolymorphicRenderCtx<ButtonOwnProps, 'button', readonly ['root', 'inner', 'label', 'icon', 'spinner']>) => {
+    // Wave 1 Gap 2 documented convention — recipes destructure their own props
+    // alongside the seven styles-API framework keys (classNames, styles, vars,
+    // attributes, unstyled, className, style) so `...rest` only carries HTML
+    // attributes the consumer passed for spreading on <Element>. Composition
+    // (recipes wrapping inner soribashi primitives) is why we don't auto-strip
+    // at the factory level — see playbook § 2.1.
     const {
       intent,
       variant,
@@ -60,7 +71,6 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
       children,
       disabled,
       onClick,
-      // strip styles-api props so they don't leak onto the DOM
       classNames: _classNames,
       styles: _styles,
       vars: _vars,
@@ -69,23 +79,12 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
       className: _className,
       style: _style,
       ...rest
-    } = props as ButtonOwnProps & {
-      disabled?: boolean;
-      onClick?: (e: MouseEvent) => void;
-      classNames?: unknown;
-      styles?: unknown;
-      vars?: unknown;
-      attributes?: unknown;
-      unstyled?: unknown;
-      className?: string;
-      style?: unknown;
-      [k: string]: unknown;
-    };
+    } = props;
 
     const isDisabled = Boolean(disabled) || Boolean(loading);
     const isButton = Element === 'button';
 
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
       if (isDisabled) {
         e.preventDefault();
         return;
