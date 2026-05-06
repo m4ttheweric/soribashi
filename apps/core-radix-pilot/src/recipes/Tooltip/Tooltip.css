@@ -23,6 +23,10 @@
 .cr-Tooltip-content {
   background: var(--cr-tooltip-bg);
   color: var(--cr-tooltip-color);
+  /* Border delineates the tooltip from the page bg in cases where the
+   * surface-raised value is close to surface-default — keeps the floating
+   * surface visible even when the box-shadow is washed out (e.g. dark mode). */
+  border: 1px solid var(--cr-tooltip-border, transparent);
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-md, 6px);
   font-size: var(--font-size-sm, 0.875rem);

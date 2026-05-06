@@ -65,14 +65,23 @@ export const Tooltip = defineCompound({
   defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
   vars: (_theme, props) => ({
     content: {
+      // default uses surface.raised (slight elevation from the page) — page bg
+      // is surface.default, so using the same here would make the tooltip blend
+      // in (esp. in dark mode where the box-shadow is invisible).
       '--cr-tooltip-bg':
         props.variant === 'inverted'
           ? 'var(--surface-floating)'
-          : 'var(--surface-default)',
+          : 'var(--surface-raised)',
       '--cr-tooltip-color':
         props.variant === 'inverted'
           ? 'var(--surface-floating-foreground)'
           : 'var(--text-default)',
+      // border color: only meaningful for default; inverted tooltip already
+      // has hard contrast and doesn't need a delineating border.
+      '--cr-tooltip-border':
+        props.variant === 'inverted'
+          ? 'transparent'
+          : 'var(--border-default)',
     },
   }),
   context: (rootProps) => ({
