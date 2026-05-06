@@ -1,21 +1,7 @@
 import { defaultIntentResolver } from './default-intent-resolver.ts';
-import type { ComponentThemeConfig, ResolvedTheme, SemanticTokens, ThemeDefinition } from './types.ts';
+import type { ResolvedTheme, SemanticTokens, ThemeDefinition } from './types.ts';
 import { composeTheme } from './compose-theme.ts';
-
-function normalizeComponents(
-  input: ThemeDefinition['components'] | undefined,
-): Record<string, ComponentThemeConfig> {
-  if (input === undefined) return {};
-  if (Array.isArray(input)) {
-    const out: Record<string, ComponentThemeConfig> = {};
-    for (const entry of input) {
-      // Last-write-wins: later entries override earlier ones with the same name.
-      out[entry.name] = { defaultProps: entry.defaultProps };
-    }
-    return out;
-  }
-  return input as Record<string, ComponentThemeConfig>;
-}
+import { normalizeComponents } from './normalize-components.ts';
 
 const DEFAULT_INTENTS = ['primary', 'neutral', 'danger', 'success', 'warning', 'info'] as const;
 const DEFAULT_VARIANTS = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;

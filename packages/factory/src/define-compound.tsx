@@ -1,4 +1,4 @@
-import { forwardRef, useContext, type ReactNode, type Ref } from 'react';
+import { forwardRef, useContext, type CSSProperties, type ReactNode, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
@@ -17,7 +17,7 @@ import type { GetStylesResult } from './types/render-context.ts';
 export interface PartRenderCtx<TProps, TCtxExtra> {
   props: TProps;
   /** Defaults to the part's own slot; pass { part: 'otherSlot' } to target sibling slots. */
-  getStyles: (opts?: { part?: string }) => { className: string; style?: React.CSSProperties };
+  getStyles: (opts?: { part?: string }) => { className: string; style?: CSSProperties };
   ctx: TCtxExtra & { variant: string | undefined };
   children?: ReactNode;
   ref: Ref<unknown>;
@@ -100,7 +100,9 @@ type PartsNamespace<TParts extends Record<string, PartConfig<any, any>>> = {
   [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]: React.ForwardRefExoticComponent<
     ExtractPartProps<TParts[K]> & React.RefAttributes<unknown>
   > & {
-    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
+    withDefaults: (
+      defaults: Partial<ExtractPartProps<TParts[K]>>,
+    ) => ThemeComponentEntry<ExtractPartProps<TParts[K]>>;
     displayName?: string;
   };
 };
@@ -109,7 +111,9 @@ type CompoundComponent<TParts extends Record<string, PartConfig<any, any>>> =
   React.ForwardRefExoticComponent<
     ExtractPartProps<TParts['root']> & React.RefAttributes<unknown>
   > & PartsNamespace<TParts> & {
-    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
+    withDefaults: (
+      defaults: Partial<ExtractPartProps<TParts['root']>>,
+    ) => ThemeComponentEntry<ExtractPartProps<TParts['root']>>;
     displayName?: string;
   };
 
@@ -181,7 +185,7 @@ export function defineCompound<
       name: config.name,
       classes: config.classes as Record<string, string> | undefined,
       className: (merged as { className?: string }).className,
-      style: (merged as { style?: React.CSSProperties }).style,
+      style: (merged as { style?: CSSProperties }).style,
       classNames: (merged as { classNames?: unknown }).classNames as never,
       styles: (merged as { styles?: unknown }).styles as never,
       attributes: (merged as { attributes?: unknown }).attributes as never,
@@ -205,7 +209,7 @@ export function defineCompound<
     /** Adapts the raw getStyles(selector) into the compound API getStyles({ part? }). */
     const getStylesStr = getStyles as (selector: string) => GetStylesResult;
     const rootGetStyles = (opts?: { part?: string }) =>
-      getStylesStr(opts?.part ?? 'root') as { className: string; style?: React.CSSProperties };
+      getStylesStr(opts?.part ?? 'root') as { className: string; style?: CSSProperties };
 
     return (
       <CompoundContext.Provider value={ctxValue}>
@@ -222,7 +226,9 @@ export function defineCompound<
 
   Root.displayName = config.name;
 
-  (Root as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+  (Root as any).withDefaults = (
+    defaults: Partial<TRootProps>,
+  ): ThemeComponentEntry<TRootProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
     defaultProps: defaults,
@@ -254,7 +260,7 @@ export function defineCompound<
           if (rawCtx === null) {
             throw new Error(`<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`);
           }
-          return rawCtx.getStyles(opts?.part ?? partKey) as { className: string; style?: React.CSSProperties };
+          return rawCtx.getStyles(opts?.part ?? partKey) as { className: string; style?: CSSProperties };
         };
 
         const ctxToPass = rawCtx === null
@@ -273,7 +279,7 @@ export function defineCompound<
 
       PolyPartComponent.displayName = partName;
 
-      (PolyPartComponent as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+      (PolyPartComponent as any).withDefaults = (defaults: Partial<any>): ThemeComponentEntry<any> => ({
         __soribashiThemeEntry: true as const,
         name: partName,
         defaultProps: defaults,
@@ -304,7 +310,7 @@ export function defineCompound<
         }
         return rawCtx.getStyles(opts?.part ?? partKey) as {
           className: string;
-          style?: React.CSSProperties;
+          style?: CSSProperties;
         };
       };
 
@@ -323,7 +329,7 @@ export function defineCompound<
 
     PartComponent.displayName = partName;
 
-    (PartComponent as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+    (PartComponent as any).withDefaults = (defaults: Partial<any>): ThemeComponentEntry<any> => ({
       __soribashiThemeEntry: true as const,
       name: partName,
       defaultProps: defaults,

@@ -298,18 +298,18 @@ export interface SemanticSurfaces {
 // apps/core-radix-pilot/src/theme/index.ts (extension)
 semantic: {
   surface: {
-    canvas:  'neutral.50',
-    default: 'neutral.0',
-    raised:  'neutral.0',
-    sunken:  'neutral.100',
-    scrim:   'neutral.950',
-    floating: { value: 'neutral.900', foreground: 'neutral.0' },  // NEW — meaningfully inverted
+    canvas:  'colors.neutral.50',
+    default: 'colors.neutral.0',
+    raised:  'colors.neutral.0',
+    sunken:  'colors.neutral.100',
+    scrim:   'colors.neutral.950',
+    floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },  // NEW — meaningfully inverted
     // dark-mode equivalents flip via the existing dark-mode emission mechanism
   },
 }
 ```
 
-The pilot's choice to make `surface.floating` *inverted* from `surface.default` is deliberate. A non-inverted floating value (alias to `surface.default`) would not exercise the formalization — the formalized foreground is only load-bearing when the surfaces actually differ. CVI's integration project may later override `surface.floating` to a non-inverted value (e.g., `{ value: 'neutral.0', foreground: 'neutral.700' }`); both are expressible in the same model.
+The pilot's choice to make `surface.floating` *inverted* from `surface.default` is deliberate. A non-inverted floating value (alias to `surface.default`) would not exercise the formalization — the formalized foreground is only load-bearing when the surfaces actually differ. CVI's integration project may later override `surface.floating` to a non-inverted value (e.g., `{ value: 'colors.neutral.0', foreground: 'colors.neutral.700' }`); both are expressible in the same model.
 
 ### 5.5 Convention added to playbook
 

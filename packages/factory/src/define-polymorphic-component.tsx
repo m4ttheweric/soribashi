@@ -124,7 +124,14 @@ export function definePolymorphicComponent<
   (Component as any).classes = config.classes;
   (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
-  (Component as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+  type DefinePolymorphicProps = TOwnProps
+    & StylesApiProps<any>
+    & Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>
+    & { variant?: TVariants[number]; intent?: string };
+
+  (Component as any).withDefaults = (
+    defaults: Partial<DefinePolymorphicProps>,
+  ): ThemeComponentEntry<DefinePolymorphicProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
     defaultProps: defaults,
@@ -146,7 +153,9 @@ export function definePolymorphicComponent<
   return Component as unknown as PolymorphicComponentLike & {
     extend: (cfg: any) => any;
     withProps: WithPropsFn;
-    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
+    withDefaults: (
+      defaults: Partial<DefinePolymorphicProps>,
+    ) => ThemeComponentEntry<DefinePolymorphicProps>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };

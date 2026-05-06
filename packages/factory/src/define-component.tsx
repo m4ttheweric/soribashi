@@ -83,7 +83,11 @@ export function defineComponent<
   (Component as any).classes = config.classes;
   (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
-  (Component as any).withDefaults = <P,>(defaults: Partial<P>): ThemeComponentEntry<P> => ({
+  type DefineComponentProps = TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
+
+  (Component as any).withDefaults = (
+    defaults: Partial<DefineComponentProps>,
+  ): ThemeComponentEntry<DefineComponentProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
     defaultProps: defaults,
@@ -96,7 +100,9 @@ export function defineComponent<
     withProps: (
       presets: Partial<TOwnProps & StylesApiProps<any>>,
     ) => React.ComponentType<TOwnProps & StylesApiProps<any>>;
-    withDefaults: <P>(defaults: Partial<P>) => ThemeComponentEntry<P>;
+    withDefaults: (
+      defaults: Partial<DefineComponentProps>,
+    ) => ThemeComponentEntry<DefineComponentProps>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };

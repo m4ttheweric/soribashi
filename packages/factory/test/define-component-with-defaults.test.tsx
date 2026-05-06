@@ -30,6 +30,28 @@ describe('defineComponent .withDefaults', () => {
   });
 });
 
+describe('defineComponent .withDefaults type safety', () => {
+  interface FooProps { size?: 'sm' | 'md' | 'lg' }
+  const Foo = defineComponent<FooProps, readonly ['root'], readonly []>({
+    name: 'Foo',
+    selectors: ['root'] as const,
+    render: ({ getStyles }) => <div {...getStyles('root')} />,
+  });
+
+  it('withDefaults rejects unknown keys at compile time', () => {
+    // @ts-expect-error — `bogus` is not a FooProps key
+    Foo.withDefaults({ bogus: 'value' });
+    // If TS no longer errors here, the @ts-expect-error comment itself will
+    // cause a typecheck failure — confirming the constraint is working.
+  });
+
+  it('withDefaults accepts known props', () => {
+    const entry = Foo.withDefaults({ size: 'sm' });
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('Foo');
+  });
+});
+
 describe('definePolymorphicComponent .withDefaults', () => {
   const Bar = definePolymorphicComponent<{ tone?: 'a' | 'b' }, 'div'>({
     name: 'Bar',

@@ -11,25 +11,25 @@ describe('SemanticSurfaceValue', () => {
   it('accepts string form (existing behavior)', () => {
     const theme = createTheme({
       tokens: { ...baseTokens, colors: { neutral: { '0': 'hsl(0 0% 100%)', '900': 'hsl(0 0% 10%)' } } },
-      semantic: { surface: { default: 'neutral.0' } },
+      semantic: { surface: { default: 'colors.neutral.0' } },
     });
-    expect(theme.semantic.surface.default).toBe('neutral.0');
+    expect(theme.semantic.surface.default).toBe('colors.neutral.0');
   });
 
   it('accepts object form with foreground', () => {
     const theme = createTheme({
       tokens: { ...baseTokens, colors: { neutral: { '0': 'hsl(0 0% 100%)', '900': 'hsl(0 0% 10%)' } } },
-      semantic: { surface: { floating: { value: 'neutral.900', foreground: 'neutral.0' } } },
+      semantic: { surface: { floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' } } },
     });
-    expect(theme.semantic.surface.floating).toEqual({ value: 'neutral.900', foreground: 'neutral.0' });
+    expect(theme.semantic.surface.floating).toEqual({ value: 'colors.neutral.900', foreground: 'colors.neutral.0' });
   });
 
   it('accepts object form without foreground (forward-compat opt-in)', () => {
     const theme = createTheme({
       tokens: { ...baseTokens, colors: { neutral: { '0': 'hsl(0 0% 100%)' } } },
-      semantic: { surface: { floating: { value: 'neutral.0' } } },
+      semantic: { surface: { floating: { value: 'colors.neutral.0' } } },
     });
-    expect(theme.semantic.surface.floating).toEqual({ value: 'neutral.0' });
+    expect(theme.semantic.surface.floating).toEqual({ value: 'colors.neutral.0' });
   });
 
   it('resolves surface.floating through ResolvedTheme.semantic', () => {
@@ -45,15 +45,15 @@ describe('SemanticSurfaceValue', () => {
       },
       semantic: {
         surface: {
-          default: 'neutral.0',
-          floating: { value: 'neutral.900', foreground: 'neutral.0' },
+          default: 'colors.neutral.0',
+          floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },
         },
       },
     });
 
     expect(theme.semantic.surface).toEqual({
-      default: 'neutral.0',
-      floating: { value: 'neutral.900', foreground: 'neutral.0' },
+      default: 'colors.neutral.0',
+      floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },
     });
   });
 });
