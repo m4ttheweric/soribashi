@@ -79,10 +79,13 @@ export function ScreenReplica() {
             >
               {card.label}
             </div>
-            {/* Tooltip wraps the stat value — icon-free metric card pattern from CVI */}
+            {/* Tooltip wraps the stat value — icon-free metric card pattern from CVI.
+                tabIndex={0} makes the non-interactive <div> focusable so keyboard
+                users can open the tooltip via Tab + focus, not just hover. */}
             <Tooltip side="bottom">
               <Tooltip.Trigger asChild>
                 <div
+                  tabIndex={0}
                   className="text-3xl font-semibold"
                   style={{ color: 'var(--text-default)', cursor: 'default', display: 'inline-block' }}
                 >
@@ -130,10 +133,14 @@ export function ScreenReplica() {
               {/* tailwind utility `text-muted` not emitted; using direct var() per journal § 6 */}
               <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 {row.what} ·{' '}
-                {/* Tooltip on truncated relative timestamp — shows exact datetime on hover */}
+                {/* Tooltip on truncated relative timestamp — shows exact datetime on hover.
+                    tabIndex={0} keeps the dotted-underline span focusable for keyboard users. */}
                 <Tooltip side="right">
                   <Tooltip.Trigger asChild>
-                    <span style={{ cursor: 'default', borderBottom: '1px dotted var(--border-muted)' }}>
+                    <span
+                      tabIndex={0}
+                      style={{ cursor: 'default', borderBottom: '1px dotted var(--border-muted)' }}
+                    >
                       {row.when}
                     </span>
                   </Tooltip.Trigger>
@@ -151,9 +158,12 @@ export function ScreenReplica() {
         Tooltip wraps each badge — status-indicator pattern from CVI.
       */}
       <section className="flex gap-2">
+        {/* Each badge gets tabIndex={0} so keyboard users can focus the
+            non-interactive <span> and read its tooltip via focus, not just hover. */}
         <Tooltip side="top">
           <Tooltip.Trigger asChild>
             <span
+              tabIndex={0}
               className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
               style={{
                 background: 'var(--color-success-100)',
@@ -170,6 +180,7 @@ export function ScreenReplica() {
         <Tooltip side="top">
           <Tooltip.Trigger asChild>
             <span
+              tabIndex={0}
               className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
               style={{
                 background: 'var(--color-warning-100)',
@@ -186,6 +197,7 @@ export function ScreenReplica() {
         <Tooltip side="top">
           <Tooltip.Trigger asChild>
             <span
+              tabIndex={0}
               className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
               style={{
                 background: 'var(--color-danger-100)',
