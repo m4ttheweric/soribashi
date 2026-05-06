@@ -65,13 +65,14 @@ export const Tooltip = defineCompound({
   defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
   vars: (_theme, props) => ({
     content: {
-      // default uses surface.raised (slight elevation from the page) — page bg
-      // is surface.default, so using the same here would make the tooltip blend
-      // in (esp. in dark mode where the box-shadow is invisible).
+      // default uses surface.default (page surface) + a defining border —
+      // tooltip reads as a "card on the canvas" with a subtle edge. The
+      // border is the main visual differentiator from page bg in dark mode
+      // (box-shadow alone is too faint on dark surfaces).
       '--cr-tooltip-bg':
         props.variant === 'inverted'
           ? 'var(--surface-floating)'
-          : 'var(--surface-raised)',
+          : 'var(--surface-default)',
       '--cr-tooltip-color':
         props.variant === 'inverted'
           ? 'var(--surface-floating-foreground)'
