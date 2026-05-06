@@ -2,10 +2,12 @@
  * Tooltip recipe — computed-style browser-parity tests.
  *
  * Covers:
- *   1. Default variant — content uses surface.default (white bg) + text.default (dark)
- *   2. Inverted variant — content uses surface.floating (dark bg) + surface.floating-foreground (light)
+ *   1. Default variant — content uses surface.floating (dark in light mode) +
+ *      surface.floating-foreground (light) — the inverted "shadcn" tooltip
+ *   2. Subtle variant — content uses surface.default (page surface) +
+ *      text.default — opt-in for non-inverted look
  *   3. Arrow inherits the same bg as content (both reference --cr-tooltip-bg)
- *   4. Dark mode flips the inverted variant's foreground pairing to light
+ *   4. Dark mode flips the default variant's foreground pairing
  *
  * Navigation: the pilot app is a SPA with useState routing. Navigate to '/'
  * and click the "Tooltip matrix" nav button — same pattern as Button.parity.spec.ts.
@@ -19,8 +21,8 @@
  * Grid layout (4 cols, 2 rows — variant × side):
  *   index 0: default / top     index 1: default / right
  *   index 2: default / bottom  index 3: default / left
- *   index 4: inverted / top    index 5: inverted / right
- *   index 6: inverted / bottom index 7: inverted / left
+ *   index 4: subtle / top      index 5: subtle / right
+ *   index 6: subtle / bottom   index 7: subtle / left
  *
  * Placement: apps/core-radix-pilot/tests/ (core-radix-pilot Playwright project,
  * baseURL http://localhost:5174)
@@ -43,9 +45,9 @@ async function gotoTooltipMatrix(page: Page): Promise<void> {
  * Hover a tooltip trigger by index and wait for the content overlay.
  *
  * Radix Tooltip triggers are buttons with `data-state` attribute.
- * Grid order (4 cols): index 0 = default/top, index 4 = inverted/top.
+ * Grid order (4 cols): index 0 = default/top, index 4 = subtle/top.
  *
- * Returns { content, contentBg } for further assertions.
+ * Returns { content } for further assertions.
  */
 async function hoverTrigger(
   page: Page,
@@ -73,48 +75,24 @@ function parseRgb(css: string): [number, number, number] {
 
 test.describe('Tooltip — computed styles per variant', () => {
 
-  // ── 1. Default variant: surface.default + text.default ───────────────────
+  // ── 1. Default variant: surface.floating + foreground (inverted) ─────────
 
-  test('default variant — content bg uses surface.default (white)', async ({ page }) => {
+  test('default variant — content bg uses surface.floating (dark in light mode)', async ({ page }) => {
     await gotoTooltipMatrix(page);
     const { content } = await hoverTrigger(page, 0); // default / top
 
     const bg = await content.evaluate((el) => getComputedStyle(el).backgroundColor);
-    // surface.default = neutral-0 = hsl(0 0% 100%) → rgb(255, 255, 255)
-    const [r, g, b] = parseRgb(bg);
-    expect(r).toBeGreaterThan(240);
-    expect(g).toBeGreaterThan(240);
-    expect(b).toBeGreaterThan(240);
-  });
-
-  test('default variant — content color uses text.default (dark)', async ({ page }) => {
-    await gotoTooltipMatrix(page);
-    const { content } = await hoverTrigger(page, 0); // default / top
-
-    const color = await content.evaluate((el) => getComputedStyle(el).color);
-    // text.default = neutral-900 in light mode → dark, all channels < 80
-    const [r] = parseRgb(color);
-    expect(r).toBeLessThan(80);
-  });
-
-  // ── 2. Inverted variant: surface.floating + surface.floating-foreground ──
-
-  test('inverted variant — content bg uses surface.floating (dark navy)', async ({ page }) => {
-    await gotoTooltipMatrix(page);
-    const { content } = await hoverTrigger(page, 4); // inverted / top
-
-    const bg = await content.evaluate((el) => getComputedStyle(el).backgroundColor);
-    // surface.floating = neutral-900 = hsl(222 47% 11%) → rgb(15, 23, 41)
-    // All channels well below 80
+    // surface.floating = neutral-900 = hsl(222 47% 11%) → rgb(~15, ~23, ~41)
+    // All channels well below 80.
     const [r, g, b] = parseRgb(bg);
     expect(r).toBeLessThan(80);
     expect(g).toBeLessThan(80);
     expect(b).toBeLessThan(80);
   });
 
-  test('inverted variant — content color uses surface.floating-foreground (light)', async ({ page }) => {
+  test('default variant — content color uses surface.floating-foreground (light)', async ({ page }) => {
     await gotoTooltipMatrix(page);
-    const { content } = await hoverTrigger(page, 4); // inverted / top
+    const { content } = await hoverTrigger(page, 0); // default / top
 
     const color = await content.evaluate((el) => getComputedStyle(el).color);
     // surface.floating-foreground = neutral-0 = hsl(0 0% 100%) → rgb(255, 255, 255)
@@ -124,12 +102,36 @@ test.describe('Tooltip — computed styles per variant', () => {
     expect(b).toBeGreaterThan(200);
   });
 
+  // ── 2. Subtle variant: surface.default + text.default (page-surface) ─────
+
+  test('subtle variant — content bg uses surface.default (white)', async ({ page }) => {
+    await gotoTooltipMatrix(page);
+    const { content } = await hoverTrigger(page, 4); // subtle / top
+
+    const bg = await content.evaluate((el) => getComputedStyle(el).backgroundColor);
+    // surface.default = neutral-0 = hsl(0 0% 100%) → rgb(255, 255, 255)
+    const [r, g, b] = parseRgb(bg);
+    expect(r).toBeGreaterThan(240);
+    expect(g).toBeGreaterThan(240);
+    expect(b).toBeGreaterThan(240);
+  });
+
+  test('subtle variant — content color uses text.default (dark)', async ({ page }) => {
+    await gotoTooltipMatrix(page);
+    const { content } = await hoverTrigger(page, 4); // subtle / top
+
+    const color = await content.evaluate((el) => getComputedStyle(el).color);
+    // text.default = neutral-900 in light mode → dark, all channels < 80
+    const [r] = parseRgb(color);
+    expect(r).toBeLessThan(80);
+  });
+
   // ── 3. Arrow inherits content bg via --cr-tooltip-bg ─────────────────────
 
   test('arrow fill equals content bg (both resolved from --cr-tooltip-bg)', async ({ page }) => {
     await gotoTooltipMatrix(page);
-    // Use inverted/top: non-white bg makes a divergence easy to detect
-    const { content } = await hoverTrigger(page, 4);
+    // Use default/top: non-white bg makes a divergence easy to detect
+    const { content } = await hoverTrigger(page, 0);
 
     const arrow = page.locator('.cr-Tooltip-arrow').first();
     await expect(arrow).toBeVisible({ timeout: 3000 });
@@ -144,18 +146,18 @@ test.describe('Tooltip — computed styles per variant', () => {
     expect(arrowFill).toBe(contentBg);
   });
 
-  // ── 4. Dark mode flips inverted variant to light bg ───────────────────────
+  // ── 4. Dark mode flips the default variant's foreground pairing ──────────
 
-  test('dark mode — inverted variant bg flips to light (foreground pairing inverts)', async ({ page }) => {
+  test('dark mode — default variant bg flips to light (foreground pairing inverts)', async ({ page }) => {
     await gotoTooltipMatrix(page);
 
-    // Add .dark to <html> so the portal content (rendered in document.body,
-    // outside the app's inner .dark wrapper div) picks up dark-mode CSS vars.
-    // The theme defines .dark { ... } as a class selector on any ancestor,
-    // so adding it to <html> propagates to all descendants including portals.
+    // Add .dark to <html> so the portal content (rendered in document.body)
+    // picks up dark-mode CSS vars. The theme defines .dark { ... } as a class
+    // selector on any ancestor, so adding it to <html> propagates to all
+    // descendants including portals.
     await page.evaluate(() => document.documentElement.classList.add('dark'));
 
-    const { content } = await hoverTrigger(page, 4); // inverted / top
+    const { content } = await hoverTrigger(page, 0); // default / top
 
     const bg = await content.evaluate((el) => getComputedStyle(el).backgroundColor);
     // In dark mode: surface.floating = neutral-900 which flips to

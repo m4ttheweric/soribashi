@@ -309,8 +309,8 @@ Use `defineCompound` (from `@soribashi/core`, re-exported from `@soribashi/facto
 ```ts
 vars: (_theme, props) => ({
   content: {
-    '--cr-tooltip-bg':   props.variant === 'inverted' ? 'var(--surface-floating)' : 'var(--surface-default)',
-    '--cr-tooltip-color': props.variant === 'inverted' ? 'var(--surface-floating-foreground)' : 'var(--text-default)',
+    '--cr-tooltip-bg':    props.variant === 'subtle' ? 'var(--surface-default)' : 'var(--surface-floating)',
+    '--cr-tooltip-color': props.variant === 'subtle' ? 'var(--text-default)'    : 'var(--surface-floating-foreground)',
   },
 }),
 ```
@@ -332,7 +332,7 @@ The Tooltip recipe introduces the `surface.floating` semantic token — a dark, 
 
 This exercises the **gradual surface↔foreground formalization** pattern (see § 3, "Gradual surface↔foreground formalization (Wave 2)"): because `surface.floating` diverges meaningfully from `surface.default` in lightness (it's a near-black `neutral.900` in light mode), it is declared as a `{ value, foreground }` pair in the theme. Codegen emits both `--surface-floating` and `--surface-floating-foreground`. The recipe pairs them — guaranteed-correct contrast regardless of theme overrides.
 
-The default variant uses `var(--surface-default)` + `var(--text-default)` — the page's normal contrast band — following the informal pairing convention for surfaces that don't diverge.
+The Tooltip's **default variant** uses the formalized `surface.floating` pair (the inverted-style tooltip — guaranteed contrast against any page background, matches shadcn's `bg-foreground` choice). A `subtle` variant opts in to `var(--surface-default)` + `var(--text-default)` — the page's normal contrast band — for cases where a less prominent tooltip is wanted; consumer accepts responsibility for contrast at usage sites.
 
 #### Three classes of part
 
@@ -374,9 +374,9 @@ content: {
 
 #### Tests
 
-- **Vitest behavior** (Wave 2 reference: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`): rendering with default props, `data-state` flow for open/close, `withArrow` prop, `variant='inverted'` CSS vars applied, `side` prop forwarded to content, Provider wrapping multiple Tooltip instances. Use the same vitest config + jest-dom setup template from § 2.0. Compound tests also exercise `getStyles({ part: 'arrow' })` producing the arrow class.
-- **Playwright parity** (Wave 2 reference: `apps/core-radix-pilot/tests/Tooltip.parity.spec.ts`): open on hover (default variant — check computed `background-color`); inverted variant; arrow present; side offset; keyboard-trigger open.
-- **Manual visual** — non-optional. Enter/exit animation, arrow alignment on all four sides, inverted contrast legibility, focus-trigger behavior. Playwright does not catch animation drift or sub-pixel arrow misalignment.
+- **Vitest behavior** (Wave 2 reference: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`): rendering with default props, `data-state` flow for open/close, `withArrow` prop, default + `variant='subtle'` CSS vars applied, `side` prop forwarded to content, Provider wrapping multiple Tooltip instances. Use the same vitest config + jest-dom setup template from § 2.0. Compound tests also exercise `getStyles({ part: 'arrow' })` producing the arrow class.
+- **Playwright parity** (Wave 2 reference: `apps/core-radix-pilot/tests/tooltip-computed-styles.spec.ts`): open on hover (default variant — surface.floating bg, light foreground); subtle variant — surface.default bg, text.default; arrow inherits content bg; dark mode flips the formalized foreground pairing.
+- **Manual visual** — non-optional. Enter/exit animation, arrow alignment on all four sides, contrast legibility (default high-contrast + subtle low-contrast), focus-trigger behavior. Playwright does not catch animation drift or sub-pixel arrow misalignment.
 
 Pilot harness is already wired from Wave 1 (§ 2.0 template was applied during pilot scaffolding).
 

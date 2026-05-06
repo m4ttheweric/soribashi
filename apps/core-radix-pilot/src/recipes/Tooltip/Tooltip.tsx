@@ -18,7 +18,7 @@ import type { ReactNode } from 'react';
 import { defineCompound, type PartRenderCtx } from '@soribashi/core';
 import './Tooltip.css';
 
-type Variant = 'default' | 'inverted';
+type Variant = 'default' | 'subtle';
 type Side = 'top' | 'right' | 'bottom' | 'left';
 
 export interface TooltipRootProps {
@@ -55,7 +55,7 @@ interface TooltipCtxExtras {
 
 export const Tooltip = defineCompound({
   name: 'Tooltip',
-  variants: ['default', 'inverted'] as const,
+  variants: ['default', 'subtle'] as const,
   classes: {
     root: 'cr-Tooltip-root',
     trigger: 'cr-Tooltip-trigger',
@@ -64,15 +64,20 @@ export const Tooltip = defineCompound({
   },
   defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
   vars: (_theme, props) => ({
+    // Default variant uses surface.floating + its formalized foreground —
+    // guaranteed contrast against any page background. Matches shadcn's
+    // bg-foreground / text-background pattern. The `subtle` variant opts in
+    // to page-surface styling for cases where a less prominent tooltip is
+    // wanted; consumer accepts responsibility for contrast there.
     content: {
       '--cr-tooltip-bg':
-        props.variant === 'inverted'
-          ? 'var(--surface-floating)'
-          : 'var(--surface-default)',
+        props.variant === 'subtle'
+          ? 'var(--surface-default)'
+          : 'var(--surface-floating)',
       '--cr-tooltip-color':
-        props.variant === 'inverted'
-          ? 'var(--surface-floating-foreground)'
-          : 'var(--text-default)',
+        props.variant === 'subtle'
+          ? 'var(--text-default)'
+          : 'var(--surface-floating-foreground)',
     },
   }),
   context: (rootProps) => ({

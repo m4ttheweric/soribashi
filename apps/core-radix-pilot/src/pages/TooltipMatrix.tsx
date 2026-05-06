@@ -2,7 +2,9 @@
  * TooltipMatrix — variant × side matrix + special cases for the Tooltip recipe.
  *
  * Covers:
- *   - 2 × 4 grid: variant ∈ {default, inverted} × side ∈ {top, right, bottom, left}
+ *   - 2 × 4 grid: variant ∈ {default, subtle} × side ∈ {top, right, bottom, left}
+ *     (default = inverted-style, the high-contrast "shadcn" tooltip;
+ *      subtle = page-surface, opt-in)
  *   - Long-content tooltip (forces wrapping within max-width)
  *   - withArrow={false} special case
  *   - defaultOpen + onOpenChange listener (open-count demo)
@@ -19,7 +21,7 @@ import { useState } from 'react';
 import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 
-const VARIANTS = ['default', 'inverted'] as const;
+const VARIANTS = ['default', 'subtle'] as const;
 const SIDES = ['top', 'right', 'bottom', 'left'] as const;
 
 export function TooltipMatrix() {

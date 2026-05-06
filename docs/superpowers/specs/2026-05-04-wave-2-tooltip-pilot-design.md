@@ -13,7 +13,7 @@
 Wave 1 proved soribashi can author a **pure styled primitive** (Button) by extending `definePolymorphicComponent` over the consolidated theme. Wave 2 takes the next category in the playbook — **transient overlay compound** — using Tooltip as the vehicle. Two architecturally-distinct things have to land for the wave to count:
 
 1. **Compound-authoring API.** soribashi today has `defineComponent`, `definePolymorphicComponent`, `defineGenericComponent`. None expresses the multi-part, shared-context, slot-styled shape that Tooltip / Popover / Tabs / Select / Combobox all share. Wave 2 adds the missing primitive.
-2. **Q11 surface↔foreground decision.** Wave 1 deferred whether to formalize per-surface foreground tokens. The token-consolidation journal § 5 Q11 explicitly tagged this decision as gated on "the first wave with a meaningfully different surface." Tooltip is that wave — its `inverted` variant deliberately lives on a surface with opposite lightness from the page.
+2. **Q11 surface↔foreground decision.** Wave 1 deferred whether to formalize per-surface foreground tokens. The token-consolidation journal § 5 Q11 explicitly tagged this decision as gated on "the first wave with a meaningfully different surface." Tooltip is that wave — its **default variant** deliberately lives on a surface with opposite lightness from the page (matching shadcn's `bg-foreground` pattern). A `subtle` variant opts in to page-surface styling.
 
 soribashi is the authoring framework, not a component library. Two distinct DX surfaces matter:
 
@@ -65,7 +65,7 @@ The pilot library (`apps/core-radix-pilot/`) plays the role of a hypothetical do
 ```ts
 defineCompound({
   name: 'Tooltip',
-  variants: ['default', 'inverted'] as const,
+  variants: ['default', 'subtle'] as const,
   classes: {                             // keys are SLOTS, not parts
     root:    'cr-Tooltip-root',
     trigger: 'cr-Tooltip-trigger',
@@ -156,7 +156,7 @@ import { Button } from 'core-radix-pilot';
 const theme = createTheme({
   tokens, semantic,
   components: [
-    Tooltip.withDefaults({ variant: 'inverted' }),
+    Tooltip.withDefaults({ variant: 'subtle' }),
     Tooltip.Provider.withDefaults({ delayDuration: 500, skipDelayDuration: 150 }),
     Tooltip.Content.withDefaults({ sideOffset: 8, withArrow: false }),
     Button.withDefaults({ size: 'sm' }),
@@ -205,14 +205,14 @@ function normalizeComponents(input):
 // Legacy record form — still works
 const theme = createTheme({
   components: {
-    Tooltip: Tooltip.extend({ defaultProps: { variant: 'inverted' } }),
+    Tooltip: Tooltip.extend({ defaultProps: { variant: 'subtle' } }),
   },
 });
 
 // New array form — recommended
 const theme = createTheme({
   components: [
-    Tooltip.withDefaults({ variant: 'inverted' }),
+    Tooltip.withDefaults({ variant: 'subtle' }),
   ],
 });
 ```
@@ -350,12 +350,12 @@ import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { defineCompound } from '@soribashi/core';
 import './Tooltip.css';
 
-type Variant = 'default' | 'inverted';
+type Variant = 'default' | 'subtle';
 type Side = 'top' | 'right' | 'bottom' | 'left';
 
 export const Tooltip = defineCompound({
   name: 'Tooltip',
-  variants: ['default', 'inverted'] as const,
+  variants: ['default', 'subtle'] as const,
   classes: {
     root: 'cr-Tooltip-root',
     trigger: 'cr-Tooltip-trigger',
@@ -365,8 +365,8 @@ export const Tooltip = defineCompound({
   defaults: { variant: 'default', side: 'top' },
   vars: (_theme, props) => ({
     content: {
-      '--cr-tooltip-bg':    props.variant === 'inverted' ? 'var(--surface-floating)'             : 'var(--surface-default)',
-      '--cr-tooltip-color': props.variant === 'inverted' ? 'var(--surface-floating-foreground)' : 'var(--text-default)',
+      '--cr-tooltip-bg':    props.variant === 'subtle' ? 'var(--surface-default)' : 'var(--surface-floating)',
+      '--cr-tooltip-color': props.variant === 'subtle' ? 'var(--text-default)'    : 'var(--surface-floating-foreground)',
     },
   }),
   context: (rootProps) => ({ side: rootProps.side ?? 'top', sideOffset: 4 }),
@@ -455,7 +455,7 @@ export const Tooltip = defineCompound({
   <Tooltip.Content>Saves your changes</Tooltip.Content>
 </Tooltip>
 
-<Tooltip variant="inverted" side="right">
+<Tooltip variant="subtle" side="right">
   <Tooltip.Trigger asChild>
     <Button variant="ghost">?</Button>
   </Tooltip.Trigger>
@@ -547,7 +547,8 @@ Mirrors Wave 1's three-layer model + factory unit tests + codegen tests.
 - Hover trigger → content appears (`userEvent.hover` + Radix's open lifecycle)
 - Click outside or escape → content disappears
 - `asChild` forwards onto a `<Button>` (computed-style assertion: button has trigger's class)
-- `variant="inverted"` → content has `--cr-tooltip-bg: var(--surface-floating)` resolved
+- Default variant → content has `--cr-tooltip-bg: var(--surface-floating)` resolved (the new "out of the box" inverted-style)
+- `variant="subtle"` → content has `--cr-tooltip-bg: var(--surface-default)` resolved
 - `withArrow` toggles arrow rendering
 - Content renders inside a portal (asserted via `document.body` query, not container)
 - Trigger/Content thrown outside Root → safe-context error

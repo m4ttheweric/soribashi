@@ -4,7 +4,7 @@
  * Tasks covered:
  *   8.2 — basic render lifecycle (content hidden until hover)
  *   8.3 — open-on-hover + escape-close
- *   8.4 — asChild, portal, inverted variant vars, safe-context throw
+ *   8.4 — asChild, portal, default + subtle variant vars, safe-context throw
  */
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -129,29 +129,48 @@ describe('Tooltip recipe', () => {
     expect(document.body.querySelector('.cr-Tooltip-content')).not.toBeNull();
   });
 
-  it('variant="inverted" applies the formalized foreground vars to content', async () => {
+  it('default variant applies the formalized floating-surface foreground vars', async () => {
     const user = userEvent.setup();
     render(
       withProvidersFastDelay(
-        <Tooltip variant="inverted">
+        <Tooltip>
           <Tooltip.Trigger asChild>
-            <button>inverted-trigger</button>
+            <button>default-trigger</button>
           </Tooltip.Trigger>
-          <Tooltip.Content>inverted-tip-text</Tooltip.Content>
+          <Tooltip.Content>default-tip-text</Tooltip.Content>
         </Tooltip>,
       ),
     );
 
-    await user.hover(screen.getByText('inverted-trigger'));
-    // Wait for tooltip to appear
-    await screen.findByRole('tooltip', { name: 'inverted-tip-text' });
+    await user.hover(screen.getByText('default-trigger'));
+    await screen.findByRole('tooltip', { name: 'default-tip-text' });
 
-    // The vars resolver placed inline custom properties on the visible content element.
-    // Query the styled div directly (Radix's hidden role="tooltip" span lacks the inline style).
     const contentDiv = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
     expect(contentDiv).not.toBeNull();
     expect(contentDiv.style.getPropertyValue('--cr-tooltip-bg')).toBe('var(--surface-floating)');
     expect(contentDiv.style.getPropertyValue('--cr-tooltip-color')).toBe('var(--surface-floating-foreground)');
+  });
+
+  it('variant="subtle" applies the page-surface vars (opt-in non-inverted)', async () => {
+    const user = userEvent.setup();
+    render(
+      withProvidersFastDelay(
+        <Tooltip variant="subtle">
+          <Tooltip.Trigger asChild>
+            <button>subtle-trigger</button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>subtle-tip-text</Tooltip.Content>
+        </Tooltip>,
+      ),
+    );
+
+    await user.hover(screen.getByText('subtle-trigger'));
+    await screen.findByRole('tooltip', { name: 'subtle-tip-text' });
+
+    const contentDiv = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
+    expect(contentDiv).not.toBeNull();
+    expect(contentDiv.style.getPropertyValue('--cr-tooltip-bg')).toBe('var(--surface-default)');
+    expect(contentDiv.style.getPropertyValue('--cr-tooltip-color')).toBe('var(--text-default)');
   });
 
   it('throws when Tooltip.Trigger is rendered outside Tooltip', () => {
