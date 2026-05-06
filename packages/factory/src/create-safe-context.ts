@@ -1,6 +1,6 @@
 /**
  * Vendored from Mantine v7 — see
- * /Users/matt/Documents/GitHub/mantine/packages/@mantine/core/src/core/utils/create-safe-context/create-safe-context.tsx
+ * @mantine/core/src/core/utils/create-safe-context/create-safe-context.tsx
  *
  * Internal use by `defineCompound`; not exported from `@soribashi/core`'s
  * public API in Wave 2 (see spec § 3.6 + OQ-6 — promotion to public is
