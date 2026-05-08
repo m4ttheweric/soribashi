@@ -5,7 +5,7 @@ import { useStyles } from './hooks/use-styles.ts';
 import { createSafeContext } from './create-safe-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
-import type { GetStylesResult } from './types/render-context.ts';
+import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
 import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 
 // ---------------------------------------------------------------------------
@@ -30,9 +30,15 @@ export interface PartRenderCtx<
   TSlotKeys extends string = string,
 > {
   props: TProps;
-  /** Defaults to the part's own slot; pass { part: 'otherSlot' } to target sibling slots.
-   *  The part argument is type-checked against the slot key union derived from config.classes. */
-  getStyles: (opts?: { part?: TSlotKeys }) => GetStylesResult;
+  /**
+   * Returns merged className/style/data-* for the given slot (defaults to this
+   * part's own slot). Pass `{ part: 'otherSlot' }` to target sibling slots.
+   *
+   * All `GetStylesOptions` fields (`className`, `style`, `classNames`, `styles`,
+   * `active`, `variant`) are forwarded to the underlying `useStyles` closure, so
+   * per-call overrides compose on top of root-level and theme-level styles.
+   */
+  getStyles: (opts?: { part?: TSlotKeys } & GetStylesOptions) => GetStylesResult;
   ctx: TCtxExtra & { variant: TVariants[number] | undefined };
   children?: ReactNode;
   ref: Ref<unknown>;
@@ -105,10 +111,21 @@ export interface DefineCompoundConfig<
 // Internal context value shape
 // ---------------------------------------------------------------------------
 
+/**
+ * A concrete FactoryPayload where stylesNames is `string` (not `string | undefined`)
+ * so that GetStylesFn<ConcreteFactoryPayload> resolves to (selector: string, ...) => ...
+ * rather than (selector: never, ...) => ...
+ */
+type ConcreteFactoryPayload = FactoryPayload & { stylesNames: string };
+
 interface CompoundContextValue<TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
   variant: TVariants[number] | undefined;
-  /** Widened to string selector so compound internals can pass slot names without TS `never` errors. */
-  getStyles: (selector: string) => GetStylesResult;
+  /**
+   * The full `useStyles` closure stored in context so each part can forward
+   * its own instance-level styles-API props (className, style, classNames,
+   * styles) via the options argument rather than dropping them.
+   */
+  getStyles: GetStylesFn<ConcreteFactoryPayload>;
   ctxExtras: TCtxExtra;
 }
 
@@ -249,14 +266,22 @@ export function defineCompound<
 
     const ctxValue: CompoundContextValue<TCtxExtra, TVariants> = {
       variant,
-      getStyles: getStyles as (selector: string) => GetStylesResult,
+      getStyles: getStyles as GetStylesFn<ConcreteFactoryPayload>,
       ctxExtras,
     };
 
-    /** Adapts the raw getStyles(selector) into the compound API getStyles({ part? }). */
-    const getStylesStr = getStyles as (selector: string) => GetStylesResult;
-    const rootGetStyles = (opts?: { part?: string }): GetStylesResult =>
-      getStylesStr(opts?.part ?? 'root');
+    /**
+     * Root's getStyles adapter. For the root selector the root instance
+     * className/style are already baked into the useStyles config, so we
+     * don't forward them again to avoid doubling. Cross-slot calls
+     * (opts.part !== 'root') forward nothing extra — root doesn't carry
+     * per-part classNames/styles at this level.
+     */
+    const rootGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult =>
+      (getStyles as GetStylesFn<ConcreteFactoryPayload>)(
+        (opts?.part ?? 'root') as string,
+        opts ? { active: opts.active, variant: opts.variant, className: opts.className, style: opts.style, classNames: opts.classNames, styles: opts.styles } : undefined,
+      );
 
     return (
       <CompoundContext.Provider value={ctxValue}>
@@ -303,11 +328,27 @@ export function defineCompound<
         const { as: asProp, ...rest } = merged as { as?: keyof JSX.IntrinsicElements; [key: string]: unknown };
         const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
 
-        const partGetStyles = (opts?: { part?: string }): GetStylesResult => {
+        const partGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult => {
           if (rawCtx === null) {
             throw new Error(`<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`);
           }
-          return rawCtx.getStyles(opts?.part ?? partKey);
+          const m = rest as {
+            className?: string;
+            style?: CSSProperties;
+            classNames?: unknown;
+            styles?: unknown;
+          };
+          return rawCtx.getStyles(
+            (opts?.part ?? partKey) as string,
+            {
+              className: opts?.className ?? m.className,
+              style: opts?.style ?? m.style,
+              classNames: (opts?.classNames ?? m.classNames) as GetStylesOptions['classNames'],
+              styles: (opts?.styles ?? m.styles) as GetStylesOptions['styles'],
+              active: opts?.active,
+              variant: opts?.variant,
+            },
+          );
         };
 
         const ctxToPass = rawCtx === null
@@ -348,14 +389,35 @@ export function defineCompound<
         rawProps,
       );
 
-      /** Wraps the shared getStyles with this part's slot as the default. Throws when outside Root. */
-      const partGetStyles = (opts?: { part?: string }): GetStylesResult => {
+      /**
+       * Wraps the shared getStyles with this part's slot as the default.
+       * Forwards instance-level styles-API props (className, style,
+       * classNames, styles) from the part's merged props so they are
+       * actually applied at runtime. Per-call opts override merged props.
+       */
+      const partGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult => {
         if (rawCtx === null) {
           throw new Error(
             `<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`,
           );
         }
-        return rawCtx.getStyles(opts?.part ?? partKey);
+        const m = merged as {
+          className?: string;
+          style?: CSSProperties;
+          classNames?: unknown;
+          styles?: unknown;
+        };
+        return rawCtx.getStyles(
+          (opts?.part ?? partKey) as string,
+          {
+            className: opts?.className ?? m.className,
+            style: opts?.style ?? m.style,
+            classNames: (opts?.classNames ?? m.classNames) as GetStylesOptions['classNames'],
+            styles: (opts?.styles ?? m.styles) as GetStylesOptions['styles'],
+            active: opts?.active,
+            variant: opts?.variant,
+          },
+        );
       };
 
       const ctxToPass = rawCtx === null

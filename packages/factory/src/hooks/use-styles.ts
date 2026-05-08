@@ -48,14 +48,22 @@ export function useStyles<P extends FactoryPayload>(
     const instanceClassNames = resolveClassNames(instanceClassNamesRaw, theme, config.props);
     const instanceClass = instanceClassNames[selector as string] ?? '';
 
+    // Per-call classNames override (forwarded from compound part instance props).
+    const callClassNamesRaw = options?.classNames as ClassNames<P> | undefined;
+    const callClassNames = resolveClassNames(callClassNamesRaw, theme, config.props);
+    const callClassNamesClass = callClassNames[selector as string] ?? '';
+
     const rootInstanceClass = isRoot ? (config.className ?? '') : '';
     const callSiteClass = options?.className ?? '';
 
-    const className = cn(builtIn, themeClass, instanceClass, rootInstanceClass, callSiteClass);
+    const className = cn(builtIn, themeClass, instanceClass, callClassNamesClass, rootInstanceClass, callSiteClass);
 
     const themeStyles = resolveStyles(themeComponent.styles, theme, config.props);
     const instanceStylesRaw = config.styles as Styles<P> | undefined;
     const instanceStyles = resolveStyles(instanceStylesRaw, theme, config.props);
+    // Per-call styles override (forwarded from compound part instance props).
+    const callStylesRaw = options?.styles as Styles<P> | undefined;
+    const callStyles = resolveStyles(callStylesRaw, theme, config.props);
     const themeVarsResolverFromTheme = themeComponent.vars
       ? themeComponent.vars(theme, config.props)
       : {};
@@ -64,6 +72,7 @@ export function useStyles<P extends FactoryPayload>(
     const styleParts: CSSProperties[] = [
       themeStyles[selector as string] ?? {},
       instanceStyles[selector as string] ?? {},
+      callStyles[selector as string] ?? {},
       filterDefinedValues(
         ((builtInVars as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
       ) as CSSProperties,

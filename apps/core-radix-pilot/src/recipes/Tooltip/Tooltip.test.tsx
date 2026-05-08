@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SoribashiProvider } from '@soribashi/core';
+import { SoribashiProvider, createTheme } from '@soribashi/core';
 import { theme } from '../../theme/index.ts';
 import { Tooltip } from './Tooltip.tsx';
 
@@ -187,5 +187,57 @@ describe('Tooltip recipe', () => {
         </SoribashiProvider>,
       ),
     ).toThrow(/<Tooltip\.Trigger> must be inside <Tooltip>/);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Styles-API plumbing: instance className / withDefaults round-trip
+  // ---------------------------------------------------------------------------
+
+  it('Tooltip.Content className from instance props lands on the rendered element', async () => {
+    const user = userEvent.setup();
+    render(
+      withProvidersFastDelay(
+        <Tooltip>
+          <Tooltip.Trigger asChild><button>t</button></Tooltip.Trigger>
+          <Tooltip.Content className="custom-content-class">hi</Tooltip.Content>
+        </Tooltip>,
+      ),
+    );
+    await user.hover(screen.getByText('t'));
+    await screen.findByRole('tooltip', { name: 'hi' });
+
+    const content = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
+    expect(content).toBeTruthy();
+    // Both the recipe's built-in class AND the instance's className must be present.
+    expect(content.className).toContain('cr-Tooltip-content');
+    expect(content.className).toContain('custom-content-class');
+  });
+
+  it('withDefaults-set className for a part lands on the element', async () => {
+    const user = userEvent.setup();
+    const themeWithDefaults = createTheme({
+      tokens: theme.tokens,
+      semantic: theme.semantic,
+      components: [
+        Tooltip.Content.withDefaults({ className: 'theme-default-class' } as any),
+      ],
+    });
+    render(
+      <SoribashiProvider theme={themeWithDefaults}>
+        <Tooltip.Provider delayDuration={0}>
+          <Tooltip>
+            <Tooltip.Trigger asChild><button>wd-trigger</button></Tooltip.Trigger>
+            <Tooltip.Content>wd-tip</Tooltip.Content>
+          </Tooltip>
+        </Tooltip.Provider>
+      </SoribashiProvider>,
+    );
+    await user.hover(screen.getByText('wd-trigger'));
+    await screen.findByRole('tooltip', { name: 'wd-tip' });
+
+    const content = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
+    expect(content).toBeTruthy();
+    expect(content.className).toContain('cr-Tooltip-content');
+    expect(content.className).toContain('theme-default-class');
   });
 });

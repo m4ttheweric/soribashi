@@ -1,5 +1,6 @@
 import {
   Children,
+  Fragment,
   cloneElement,
   forwardRef,
   isValidElement,
@@ -40,6 +41,15 @@ export const Slot = forwardRef<unknown, SlotProps>(function Slot(props, forwarde
   // Non-element single child (text, number, null, etc.) — render nothing.
   if (!isValidElement(children)) {
     return null;
+  }
+
+  // React.Fragment is a valid element but cloneElement on it silently drops
+  // className, style, onClick, and most other props. Throw explicitly so the
+  // failure is obvious rather than a silent no-op merge.
+  if ((children as ReactElement).type === Fragment) {
+    throw new Error(
+      'Slot does not accept React.Fragment children. Pass a single element instead.',
+    );
   }
 
   const child = children as ReactElement<{ ref?: Ref<unknown> }>;

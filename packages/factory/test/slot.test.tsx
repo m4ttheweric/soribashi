@@ -24,6 +24,18 @@ describe('Slot', () => {
     ).toThrow();
   });
 
+  it('throws when given a Fragment child', () => {
+    expect(() =>
+      render(
+        <Slot className="x">
+          <>
+            <button>inside</button>
+          </>
+        </Slot>,
+      ),
+    ).toThrow(/Fragment/);
+  });
+
   it('returns null for non-element children', () => {
     const { container } = render(<Slot>plain text</Slot>);
     expect(container.firstChild).toBeNull();
