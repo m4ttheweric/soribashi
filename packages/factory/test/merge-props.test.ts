@@ -50,4 +50,14 @@ describe('mergeProps', () => {
     expect(mergeProps({}, { foo: 1 })).toEqual({ foo: 1 });
     expect(mergeProps({ foo: 1 }, {})).toEqual({ foo: 1 });
   });
+
+  it('child undefined values do not clobber slot props', () => {
+    const slotHandler = vi.fn();
+    const merged = mergeProps(
+      { onClick: slotHandler, 'data-slot': 'root' },
+      { onClick: undefined, 'data-slot': undefined },
+    );
+    expect(merged.onClick).toBe(slotHandler);
+    expect(merged['data-slot']).toBe('root');
+  });
 });

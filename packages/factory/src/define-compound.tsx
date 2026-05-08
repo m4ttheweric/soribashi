@@ -1,4 +1,4 @@
-import { forwardRef, useContext, type ComponentPropsWithoutRef, type CSSProperties, type ElementType, type ReactNode, type Ref } from 'react';
+import { forwardRef, useContext, type ComponentPropsWithoutRef, type CSSProperties, type ReactNode, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
@@ -14,12 +14,16 @@ import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 
 /**
  * Object passed to each standard part's `render` function.
+ *
+ * TVariants defaults to `readonly string[]` so that callers which don't
+ * explicitly pass the variants tuple (e.g. `PartRenderCtx<P, Ctx>`) continue
+ * to compile: `ctx.variant` is just `string | undefined` in that case.
  */
-export interface PartRenderCtx<TProps, TCtxExtra> {
+export interface PartRenderCtx<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
   props: TProps;
   /** Defaults to the part's own slot; pass { part: 'otherSlot' } to target sibling slots. */
   getStyles: (opts?: { part?: string }) => GetStylesResult;
-  ctx: TCtxExtra & { variant: string | undefined };
+  ctx: TCtxExtra & { variant: TVariants[number] | undefined };
   children?: ReactNode;
   ref: Ref<unknown>;
 }
@@ -27,7 +31,7 @@ export interface PartRenderCtx<TProps, TCtxExtra> {
 /**
  * Object passed to each polymorphic part's `render` function.
  */
-export interface PolymorphicPartRenderCtx<TProps, TCtxExtra> extends PartRenderCtx<TProps, TCtxExtra> {
+export interface PolymorphicPartRenderCtx<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> extends PartRenderCtx<TProps, TCtxExtra, TVariants> {
   Element: keyof JSX.IntrinsicElements;
 }
 
@@ -35,26 +39,26 @@ export interface PolymorphicPartRenderCtx<TProps, TCtxExtra> extends PartRenderC
 // Part config types
 // ---------------------------------------------------------------------------
 
-export interface StandardPartConfig<TProps, TCtxExtra> {
-  render: (ctx: PartRenderCtx<TProps, TCtxExtra>) => ReactNode;
+export interface StandardPartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
+  render: (ctx: PartRenderCtx<TProps, TCtxExtra, TVariants>) => ReactNode;
   defaults?: Partial<TProps>;
 }
 
-export interface PolymorphicPartConfig<TProps, TCtxExtra> extends StandardPartConfig<TProps, TCtxExtra> {
+export interface PolymorphicPartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> extends StandardPartConfig<TProps, TCtxExtra, TVariants> {
   polymorphic: true;
   defaultElement: keyof JSX.IntrinsicElements;
 }
 
-export type PartConfig<TProps, TCtxExtra> =
-  | StandardPartConfig<TProps, TCtxExtra>
-  | PolymorphicPartConfig<TProps, TCtxExtra>;
+export type PartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> =
+  | StandardPartConfig<TProps, TCtxExtra, TVariants>
+  | PolymorphicPartConfig<TProps, TCtxExtra, TVariants>;
 
 // ---------------------------------------------------------------------------
 // Public config type
 // ---------------------------------------------------------------------------
 
-/** Extract TProps from a PartConfig<TProps, any>; falls back to Record<string, unknown> for untyped configs */
-type ExtractPartProps<C> = C extends PartConfig<infer P, any>
+/** Extract TProps from a PartConfig<TProps, any, any>; falls back to Record<string, unknown> for untyped configs */
+type ExtractPartProps<C> = C extends PartConfig<infer P, any, any>
   ? [P] extends [never]
     ? Record<string, unknown>
     : unknown extends P
@@ -63,10 +67,10 @@ type ExtractPartProps<C> = C extends PartConfig<infer P, any>
   : Record<string, unknown>;
 
 /** Constrain parts map — each value must be a PartConfig */
-type PartsRecord<TCtxExtra extends object> = Record<string, PartConfig<any, TCtxExtra>>;
+type PartsRecord<TCtxExtra extends object, TVariants extends readonly string[] = readonly string[]> = Record<string, PartConfig<any, TCtxExtra, TVariants>>;
 
 export interface DefineCompoundConfig<
-  TParts extends PartsRecord<TCtxExtra>,
+  TParts extends PartsRecord<TCtxExtra, TVariants>,
   TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
 > {
@@ -79,15 +83,15 @@ export interface DefineCompoundConfig<
     props: ExtractPartProps<TParts['root']>,
   ) => Partial<Record<string, Record<string, string>>>;
   context?: (rootProps: ExtractPartProps<TParts['root']>) => TCtxExtra;
-  parts: TParts & { root: PartConfig<any, TCtxExtra> };
+  parts: TParts & { root: PartConfig<any, TCtxExtra, TVariants> };
 }
 
 // ---------------------------------------------------------------------------
 // Internal context value shape
 // ---------------------------------------------------------------------------
 
-interface CompoundContextValue<TCtxExtra> {
-  variant: string | undefined;
+interface CompoundContextValue<TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
+  variant: TVariants[number] | undefined;
   /** Widened to string selector so compound internals can pass slot names without TS `never` errors. */
   getStyles: (selector: string) => GetStylesResult;
   ctxExtras: TCtxExtra;
@@ -109,16 +113,16 @@ type PartPayload<TPartConfig> = {
 /**
  * For polymorphic parts: extract the default element type and produce the
  * element-attribute intersection (omitting keys already declared by the part's
- * own props). Falls back to `{ as?: ElementType }` for non-polymorphic parts.
+ * own props). Falls back to `{}` for non-polymorphic parts.
  */
 type ExtractPartElementAttrs<C> =
   C extends PolymorphicPartConfig<any, any> & { defaultElement: infer D }
     ? D extends keyof JSX.IntrinsicElements
-      ? Omit<ComponentPropsWithoutRef<D>, keyof ExtractPartProps<C>> & { as?: ElementType }
-      : { as?: ElementType }
+      ? Omit<ComponentPropsWithoutRef<D>, keyof ExtractPartProps<C>> & { as?: keyof JSX.IntrinsicElements }
+      : { as?: keyof JSX.IntrinsicElements }
     : {};
 
-type PartsNamespace<TParts extends Record<string, PartConfig<any, any>>> = {
+type PartsNamespace<TParts extends Record<string, PartConfig<any, any, any>>> = {
   [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]: React.ForwardRefExoticComponent<
     ExtractPartProps<TParts[K]>
     & ExtractPartElementAttrs<TParts[K]>
@@ -132,7 +136,7 @@ type PartsNamespace<TParts extends Record<string, PartConfig<any, any>>> = {
   };
 };
 
-type CompoundComponent<TParts extends Record<string, PartConfig<any, any>>> =
+type CompoundComponent<TParts extends Record<string, PartConfig<any, any, any>>> =
   React.ForwardRefExoticComponent<
     ExtractPartProps<TParts['root']>
     & StylesApiProps<PartPayload<TParts['root']>>
@@ -173,7 +177,7 @@ function makeNullCtxProxy(compoundName: string, partKey: string): Record<string,
 // ---------------------------------------------------------------------------
 
 export function defineCompound<
-  TParts extends PartsRecord<TCtxExtra>,
+  TParts extends PartsRecord<TCtxExtra, TVariants>,
   const TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
 >(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra>): CompoundComponent<TParts> {
@@ -191,7 +195,7 @@ export function defineCompound<
   // createSafeContext returns [Context, useSafeHook]. We keep the safe hook for
   // Root's own usage (not currently needed) but use raw useContext in parts so
   // that passthrough parts (class-3) can render outside Root without throwing.
-  const [CompoundContext] = createSafeContext<CompoundContextValue<TCtxExtra>>(
+  const [CompoundContext] = createSafeContext<CompoundContextValue<TCtxExtra, TVariants>>(
     `${config.name} parts must be inside <${config.name}>`,
   );
 
@@ -224,10 +228,10 @@ export function defineCompound<
         : undefined,
     });
 
-    const variant = (merged as { variant?: string }).variant;
+    const variant = (merged as { variant?: string }).variant as TVariants[number] | undefined;
     const ctxExtras = config.context ? config.context(merged) : ({} as TCtxExtra);
 
-    const ctxValue: CompoundContextValue<TCtxExtra> = {
+    const ctxValue: CompoundContextValue<TCtxExtra, TVariants> = {
       variant,
       getStyles: getStyles as (selector: string) => GetStylesResult,
       ctxExtras,
@@ -240,10 +244,10 @@ export function defineCompound<
 
     return (
       <CompoundContext.Provider value={ctxValue}>
-        {(config.parts.root.render as (c: PartRenderCtx<TRootProps, TCtxExtra>) => ReactNode)({
+        {(config.parts.root.render as (c: PartRenderCtx<TRootProps, TCtxExtra, TVariants>) => ReactNode)({
           props: merged,
           getStyles: rootGetStyles,
-          ctx: { variant, ...ctxExtras } as TCtxExtra & { variant: string | undefined },
+          ctx: { variant, ...ctxExtras } as TCtxExtra & { variant: TVariants[number] | undefined },
           children: (merged as { children?: ReactNode }).children,
           ref,
         })}
@@ -292,13 +296,13 @@ export function defineCompound<
 
         const ctxToPass = rawCtx === null
           ? makeNullCtxProxy(config.name, partKey)
-          : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: string | undefined });
+          : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: TVariants[number] | undefined });
 
         return (polyConfig.render as (c: any) => ReactNode)({
           Element,
           props: rest,
           getStyles: partGetStyles,
-          ctx: ctxToPass as TCtxExtra & { variant: string | undefined },
+          ctx: ctxToPass as TCtxExtra & { variant: TVariants[number] | undefined },
           children: (rest as { children?: ReactNode }).children,
           ref,
         });
@@ -340,12 +344,12 @@ export function defineCompound<
 
       const ctxToPass = rawCtx === null
         ? makeNullCtxProxy(config.name, partKey)
-        : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: string | undefined });
+        : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: TVariants[number] | undefined });
 
-      return (partConfig.render as (c: PartRenderCtx<any, TCtxExtra>) => ReactNode)({
+      return (partConfig.render as (c: PartRenderCtx<any, TCtxExtra, TVariants>) => ReactNode)({
         props: merged,
         getStyles: partGetStyles,
-        ctx: ctxToPass as TCtxExtra & { variant: string | undefined },
+        ctx: ctxToPass as TCtxExtra & { variant: TVariants[number] | undefined },
         children: (merged as { children?: ReactNode }).children,
         ref,
       });

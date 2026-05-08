@@ -32,7 +32,9 @@ export function mergeProps(
         (childValue as (...a: unknown[]) => unknown)(...args);
       };
     } else {
-      out[key] = childValue;
+      if (childValue !== undefined) {
+        out[key] = childValue;
+      }
     }
   }
 

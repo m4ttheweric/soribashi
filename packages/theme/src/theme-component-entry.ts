@@ -19,9 +19,12 @@ export interface ThemeComponentEntry<P = Record<string, unknown>> {
 
 /** Type guard for runtime detection. */
 export function isThemeComponentEntry(value: unknown): value is ThemeComponentEntry {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Partial<ThemeComponentEntry> & { __soribashiThemeEntry?: unknown };
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    (value as { __soribashiThemeEntry?: unknown }).__soribashiThemeEntry === true
+    v.__soribashiThemeEntry === true &&
+    typeof v.name === 'string' &&
+    typeof v.defaultProps === 'object' &&
+    v.defaultProps !== null
   );
 }

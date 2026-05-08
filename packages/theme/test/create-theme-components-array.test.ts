@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createTheme } from '../src/create-theme.ts';
+import { isThemeComponentEntry } from '../src/theme-component-entry.ts';
 import type { ThemeComponentEntry } from '../src/index.ts';
 
 const baseTokens = {
@@ -82,5 +83,49 @@ describe('createTheme components array-form normalization', () => {
         components: [{ variant: 'filled' }] as any,
       }),
     ).toThrow(/Use Component\.withDefaults/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isThemeComponentEntry — brand validation
+// ---------------------------------------------------------------------------
+
+describe('isThemeComponentEntry guard', () => {
+  it('returns true for a well-formed entry', () => {
+    const entry: ThemeComponentEntry = {
+      __soribashiThemeEntry: true,
+      name: 'Button',
+      defaultProps: { variant: 'filled' },
+    };
+    expect(isThemeComponentEntry(entry)).toBe(true);
+  });
+
+  it('returns false for a branded object missing name', () => {
+    const malformed = { __soribashiThemeEntry: true, defaultProps: {} };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
+  it('returns false for a branded object with non-string name', () => {
+    const malformed = { __soribashiThemeEntry: true, name: 42, defaultProps: {} };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
+  it('returns false for a branded object missing defaultProps', () => {
+    const malformed = { __soribashiThemeEntry: true, name: 'Button' };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
+  it('returns false for a branded object with null defaultProps', () => {
+    const malformed = { __soribashiThemeEntry: true, name: 'Button', defaultProps: null };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
+  it('returns false for null', () => {
+    expect(isThemeComponentEntry(null)).toBe(false);
+  });
+
+  it('returns false for a non-object primitive', () => {
+    expect(isThemeComponentEntry('string')).toBe(false);
+    expect(isThemeComponentEntry(42)).toBe(false);
   });
 });
