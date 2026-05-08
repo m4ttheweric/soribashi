@@ -117,7 +117,7 @@ interface PolymorphicPartConfig {
 `PartRenderCtx` exposes:
 
 - `props` — *merged*, post-`useProps`. Resolution order: recipe-internal `defaults` → theme `components[name].defaultProps` (set via `withDefaults` — see § 3.5) → consumer-passed instance props (with `undefined` filtered out so it never clobbers a default). By the time `render` runs, `props.variant` reflects the final value, including theme overrides.
-- `getStyles(opts?)` — defaults to current part's slot. `getStyles({ part: 'arrow' })` targets a sibling slot; the part-name argument is type-checked against `keyof typeof config.parts`.
+- `getStyles(opts?)` — defaults to current part's slot. `getStyles({ part: 'arrow' })` targets a sibling slot; the part-name argument is type-checked against the slot-key union when the recipe author annotates `PartRenderCtx<TProps, TCtxExtra, TVariants, TSlotKeys>` explicitly.
 - `ctx` — the compound's safe-context value. Factory injects `{ variant, getStyles }` plus whatever `config.context()` returns.
 - `children` — convenience accessor; also at `props.children`.
 
@@ -496,7 +496,7 @@ Adds Tooltips wherever CVI uses them in production: icon-only buttons (e.g., the
 
 | Failure | Surfaces at | Caught by | Behavior |
 |---|---|---|---|
-| Author calls `getStyles({ part: 'typo' })` | compile time | TS — part name bound to `keyof typeof config.parts` | won't compile |
+| Author calls `getStyles({ part: 'typo' })` | compile time | TS — part name bound to slot-key union (TSlotKeys) when `PartRenderCtx` is explicitly annotated | won't compile |
 | Consumer renders `<Tooltip.Trigger>` outside `<Tooltip>` | runtime, render | safe-context throw | error: `"Tooltip parts must be inside <Tooltip>"` (factory uses `name` from config) |
 | Consumer renders `<Tooltip>` outside `<Tooltip.Provider>` | runtime, on hover | Radix's own console error | tooltip doesn't open. Pilot README documents the expected mount of `Tooltip.Provider` at app root. |
 | Consumer passes `asChild` with multiple children | runtime, render | `Children.only()` (Slot) and Radix's own check | error from whichever guards first |

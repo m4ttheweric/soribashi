@@ -842,6 +842,77 @@ describe('defineCompound — withDefaults accepts styles-API props', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Cycle 7.15 — Polymorphic part accepts as-element-specific attributes (CodeRabbit round-8)
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — polymorphic part full <As> polymorphism', () => {
+  it('polymorphic part accepts as-element-specific attributes at runtime', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', trigger: 'foo-trigger' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        trigger: {
+          polymorphic: true,
+          defaultElement: 'button',
+          render: ({ Element, getStyles, props, ref }: any) => (
+            <Element {...getStyles()} {...props} ref={ref} />
+          ),
+        },
+      },
+    });
+
+    // Default element (button) with button-specific attr
+    const { container: c1 } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Trigger type="submit">submit</Foo.Trigger>
+        </Foo>
+      </SoribashiProvider>,
+    );
+    expect(c1.querySelector('button')?.getAttribute('type')).toBe('submit');
+
+    // as="a" with anchor-specific attr — runtime confirms the value threads through
+    const { container: c2 } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Trigger as="a" href="/x">link</Foo.Trigger>
+        </Foo>
+      </SoribashiProvider>,
+    );
+    expect(c2.querySelector('a')?.getAttribute('href')).toBe('/x');
+
+    // as="input" with input-specific attr
+    const { container: c3 } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Trigger as="input" type="text" />
+        </Foo>
+      </SoribashiProvider>,
+    );
+    expect(c3.querySelector('input')?.getAttribute('type')).toBe('text');
+  });
+
+  it('PolymorphicCompoundPart type-level: as-element narrows the accepted props', () => {
+    // Type-level test: use PolymorphicComponentProps directly to assert the narrowing
+    // that PolymorphicCompoundPart provides on the call site.
+    // When TAs='a', href is valid but formNoValidate (button-only) is not.
+    type AnchorProps = import('../src/types/polymorphic.ts').PolymorphicComponentProps<
+      'a',
+      { label?: string }
+    >;
+    // href is in AnchorHTMLAttributes — should be assignable
+    const _ok: AnchorProps = { href: '/x', label: 'link' };
+    // formNoValidate is ButtonHTMLAttributes-only — should NOT be in AnchorProps
+    // @ts-expect-error — formNoValidate is not assignable to AnchorProps
+    const _bad: AnchorProps = { formNoValidate: true };
+    void _ok;
+    void _bad;
+    expect(true).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // New matrix-cell tests — cells previously uncovered by rounds 5/6/7
 // ---------------------------------------------------------------------------
 

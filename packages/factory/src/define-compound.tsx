@@ -1,4 +1,12 @@
-import { forwardRef, useContext, type ComponentPropsWithoutRef, type CSSProperties, type ReactNode, type Ref } from 'react';
+import {
+  forwardRef,
+  useContext,
+  type CSSProperties,
+  type ElementType,
+  type JSX,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
@@ -7,6 +15,7 @@ import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
 import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
+import type { PolymorphicComponentProps } from './types/polymorphic.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -143,29 +152,37 @@ type PartPayload<TPartConfig> = {
 } & FactoryPayload;
 
 /**
- * For polymorphic parts: extract the default element type and produce the
- * element-attribute intersection (omitting keys already declared by the part's
- * own props). Falls back to `{}` for non-polymorphic parts.
+ * Static methods shared by all part component shapes (polymorphic and standard).
  */
-type ExtractPartElementAttrs<C> =
-  C extends PolymorphicPartConfig<any, any> & { defaultElement: infer D }
-    ? D extends keyof JSX.IntrinsicElements
-      ? Omit<ComponentPropsWithoutRef<D>, keyof ExtractPartProps<C>> & { as?: keyof JSX.IntrinsicElements }
-      : { as?: keyof JSX.IntrinsicElements }
-    : {};
+type PartStaticMethods<TPartConfig> = {
+  withDefaults: (
+    defaults: Partial<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
+  ) => ThemeComponentEntry<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>;
+  displayName?: string;
+};
+
+/**
+ * Type shape for a polymorphic compound part.
+ * The component is generic over the target element type at the call site —
+ * mirrors `PolymorphicComponentLike` from `define-polymorphic-component.tsx`.
+ * `<Foo.Trigger as="a" href="/x">` correctly narrows props to anchor attrs.
+ */
+type PolymorphicCompoundPart<TPartConfig, TDefaultEl extends ElementType> =
+  (<TAs extends ElementType = TDefaultEl>(
+    props: PolymorphicComponentProps<TAs, ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
+  ) => React.ReactElement | null) & PartStaticMethods<TPartConfig>;
 
 type PartsNamespace<TParts extends Record<string, PartConfig<any, any, any>>> = {
-  [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]: React.ForwardRefExoticComponent<
-    ExtractPartProps<TParts[K]>
-    & ExtractPartElementAttrs<TParts[K]>
-    & CompoundStylesApiProps<PartPayload<TParts[K]>>
-    & React.RefAttributes<unknown>
-  > & {
-    withDefaults: (
-      defaults: Partial<ExtractPartProps<TParts[K]> & CompoundStylesApiProps<PartPayload<TParts[K]>>>,
-    ) => ThemeComponentEntry<ExtractPartProps<TParts[K]> & CompoundStylesApiProps<PartPayload<TParts[K]>>>;
-    displayName?: string;
-  };
+  [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]:
+    TParts[K] extends PolymorphicPartConfig<any, any, any> & { defaultElement: infer DefaultEl }
+      ? DefaultEl extends ElementType
+        ? PolymorphicCompoundPart<TParts[K], DefaultEl>
+        : never
+      : React.ForwardRefExoticComponent<
+          ExtractPartProps<TParts[K]>
+          & CompoundStylesApiProps<PartPayload<TParts[K]>>
+          & React.RefAttributes<unknown>
+        > & PartStaticMethods<TParts[K]>;
 };
 
 type CompoundComponent<TParts extends Record<string, PartConfig<any, any, any>>> =
