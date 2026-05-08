@@ -6,7 +6,7 @@ import { createSafeContext } from './create-safe-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
-import type { StylesApiProps, CompoundStylesApiProps, ClassNames, Styles } from './types/props.ts';
+import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -204,96 +204,6 @@ function makeNullCtxProxy(compoundName: string, partKey: string): Record<string,
   });
 }
 
-// ---------------------------------------------------------------------------
-// Composition helpers for classNames / styles
-// ---------------------------------------------------------------------------
-
-/** Merges two resolved classNames records; per-slot values are space-joined
- * so both classes appear on the element. */
-function mergeClassNamesRecord(
-  base: Record<string, string | undefined>,
-  override: Record<string, string | undefined>,
-): Record<string, string | undefined> {
-  const keys = new Set([...Object.keys(base), ...Object.keys(override)]);
-  const out: Record<string, string | undefined> = {};
-  for (const k of keys) {
-    const b = base[k];
-    const o = override[k];
-    if (b && o) {
-      out[k] = `${b} ${o}`;
-    } else {
-      out[k] = b ?? o;
-    }
-  }
-  return out;
-}
-
-/** Merges two resolved styles records; per-slot CSSProperties are shallow-merged,
- * override wins on individual property collisions (consistent with mergeProps semantics). */
-function mergeStylesRecord(
-  base: Record<string, Record<string, unknown> | undefined>,
-  override: Record<string, Record<string, unknown> | undefined>,
-): Record<string, Record<string, unknown> | undefined> {
-  const keys = new Set([...Object.keys(base), ...Object.keys(override)]);
-  const out: Record<string, Record<string, unknown> | undefined> = {};
-  for (const k of keys) {
-    out[k] = { ...(base[k] ?? {}), ...(override[k] ?? {}) };
-  }
-  return out;
-}
-
-/**
- * Composes two classNames values (record or function form). Both layers apply;
- * per-slot class strings are space-joined so both appear on the element.
- * This avoids the clobber that `override ?? base` would cause when both are present.
- */
-function composeClassNames(
-  base: ClassNames<any> | undefined,
-  override: ClassNames<any> | undefined,
-): ClassNames<any> | undefined {
-  if (!base) return override;
-  if (!override) return base;
-  if (typeof base === 'function' || typeof override === 'function') {
-    return ((theme: ResolvedTheme, props: unknown) => {
-      const baseObj = typeof base === 'function' ? base(theme, props) : base;
-      const overrideObj = typeof override === 'function' ? override(theme, props) : override;
-      return mergeClassNamesRecord(
-        baseObj as Record<string, string | undefined>,
-        overrideObj as Record<string, string | undefined>,
-      );
-    }) as ClassNames<any>;
-  }
-  return mergeClassNamesRecord(
-    base as Record<string, string | undefined>,
-    override as Record<string, string | undefined>,
-  ) as ClassNames<any>;
-}
-
-/**
- * Composes two styles values (record or function form). Both layers apply;
- * per-slot CSSProperties are shallow-merged, override wins per property.
- */
-function composeStyles(
-  base: Styles<any> | undefined,
-  override: Styles<any> | undefined,
-): Styles<any> | undefined {
-  if (!base) return override;
-  if (!override) return base;
-  if (typeof base === 'function' || typeof override === 'function') {
-    return ((theme: ResolvedTheme, props: unknown) => {
-      const baseObj = typeof base === 'function' ? base(theme, props) : base;
-      const overrideObj = typeof override === 'function' ? override(theme, props) : override;
-      return mergeStylesRecord(
-        baseObj as Record<string, Record<string, unknown> | undefined>,
-        overrideObj as Record<string, Record<string, unknown> | undefined>,
-      );
-    }) as Styles<any>;
-  }
-  return mergeStylesRecord(
-    base as Record<string, Record<string, unknown> | undefined>,
-    override as Record<string, Record<string, unknown> | undefined>,
-  ) as Styles<any>;
-}
 
 // ---------------------------------------------------------------------------
 // defineCompound
@@ -428,32 +338,34 @@ export function defineCompound<
           const m = rest as {
             className?: string;
             style?: CSSProperties;
-            classNames?: unknown;
-            styles?: unknown;
-            vars?: unknown;
+            classNames?: GetStylesOptions['classNames'];
+            styles?: GetStylesOptions['styles'];
+            vars?: GetStylesOptions['vars'];
+            attributes?: GetStylesOptions['attributes'];
+            unstyled?: boolean;
           };
-          return rawCtx.getStyles(
-            targetSlot as string,
-            {
-              // className/style: only from merged when targeting OWN slot;
-              // for cross-slot, only opts-provided overrides apply
-              className: opts?.className ?? (isOwnSlot ? m.className : undefined),
-              style: opts?.style ?? (isOwnSlot ? m.style : undefined),
-              // classNames/styles: COMPOSE instance-level and per-call layers so
-              // both apply (per-call wins on key collisions). Using ?? would silently
-              // drop the instance layer whenever a per-call override is supplied.
-              classNames: composeClassNames(
-                m.classNames as ClassNames<any> | undefined,
-                opts?.classNames as ClassNames<any> | undefined,
-              ) as GetStylesOptions['classNames'],
-              styles: composeStyles(
-                m.styles as Styles<any> | undefined,
-                opts?.styles as Styles<any> | undefined,
-              ) as GetStylesOptions['styles'],
-              active: opts?.active,
-              variant: opts?.variant,
-            },
-          );
+          // Mantine-shaped forwarding (mirrors TabsTab / PopoverDropdown pattern):
+          // The part forwards its own styles-API props into ctx.getStyles(slot, options).
+          // useStyles is the merge engine — it handles Root-level + part-instance +
+          // render-call layers independently; no pre-composition at the part level.
+          //
+          // className/style scalars only apply to own-slot calls; cross-slot calls
+          // use undefined because the scalar refers to this part's root element, not
+          // a sibling slot's element. The per-slot record forms (classNames/styles)
+          // are self-targeting by slot key and always pass through.
+          return rawCtx.getStyles(targetSlot as string, {
+            className: isOwnSlot ? (opts?.className ?? m.className) : opts?.className,
+            style: isOwnSlot ? (opts?.style ?? m.style) : opts?.style,
+            classNames: m.classNames,
+            styles: m.styles,
+            callClassNames: opts?.classNames,
+            callStyles: opts?.styles,
+            vars: m.vars,
+            attributes: m.attributes,
+            unstyled: m.unstyled,
+            active: opts?.active,
+            variant: opts?.variant,
+          });
         };
 
         const ctxToPass = rawCtx === null
@@ -495,16 +407,20 @@ export function defineCompound<
       );
 
       /**
-       * Wraps the shared getStyles with this part's slot as the default.
-       * Forwards instance-level styles-API props (className, style,
-       * classNames, styles) from the part's merged props so they are
-       * actually applied at runtime. Per-call opts override merged props.
+       * Wraps the Root's getStyles closure with this part's slot as the default,
+       * forwarding the part's own styles-API props into the options argument.
        *
-       * className/style are only forwarded from merged when the call targets
-       * THIS part's own slot. Cross-slot calls (e.g. Content rendering the
-       * arrow slot) must not leak the part-instance className/style onto
-       * sibling slots. The per-slot classNames/styles maps still apply since
-       * those are keyed by slot name internally.
+       * Mirrors Mantine's TabsTab / PopoverDropdown pattern:
+       *   - The part forwards its own classNames/styles/vars/attributes/unstyled
+       *     as `options.classNames` / `options.styles` / etc. (part-instance layer).
+       *   - Any render-time per-call overrides passed via getStyles({ classNames })
+       *     flow as `options.callClassNames` (render-call layer).
+       *   - useStyles resolves all three layers independently — no pre-composition
+       *     happens at this level.
+       *
+       * className/style scalars apply only to own-slot calls (cross-slot calls use
+       * undefined because the scalar refers to this part's element, not a sibling's).
+       * The per-slot record forms are self-targeting by key and always pass through.
        */
       const partGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult => {
         if (rawCtx === null) {
@@ -517,32 +433,25 @@ export function defineCompound<
         const m = merged as {
           className?: string;
           style?: CSSProperties;
-          classNames?: unknown;
-          styles?: unknown;
-          vars?: unknown;
+          classNames?: GetStylesOptions['classNames'];
+          styles?: GetStylesOptions['styles'];
+          vars?: GetStylesOptions['vars'];
+          attributes?: GetStylesOptions['attributes'];
+          unstyled?: boolean;
         };
-        return rawCtx.getStyles(
-          targetSlot as string,
-          {
-            // className/style: only from merged when targeting OWN slot;
-            // for cross-slot, only opts-provided overrides apply
-            className: opts?.className ?? (isOwnSlot ? m.className : undefined),
-            style: opts?.style ?? (isOwnSlot ? m.style : undefined),
-            // classNames/styles: COMPOSE instance-level and per-call layers so
-            // both apply (per-call wins on key collisions). Using ?? would silently
-            // drop the instance layer whenever a per-call override is supplied.
-            classNames: composeClassNames(
-              m.classNames as ClassNames<any> | undefined,
-              opts?.classNames as ClassNames<any> | undefined,
-            ) as GetStylesOptions['classNames'],
-            styles: composeStyles(
-              m.styles as Styles<any> | undefined,
-              opts?.styles as Styles<any> | undefined,
-            ) as GetStylesOptions['styles'],
-            active: opts?.active,
-            variant: opts?.variant,
-          },
-        );
+        return rawCtx.getStyles(targetSlot as string, {
+          className: isOwnSlot ? (opts?.className ?? m.className) : opts?.className,
+          style: isOwnSlot ? (opts?.style ?? m.style) : opts?.style,
+          classNames: m.classNames,
+          styles: m.styles,
+          callClassNames: opts?.classNames,
+          callStyles: opts?.styles,
+          vars: m.vars,
+          attributes: m.attributes,
+          unstyled: m.unstyled,
+          active: opts?.active,
+          variant: opts?.variant,
+        });
       };
 
       const ctxToPass = rawCtx === null

@@ -840,3 +840,162 @@ describe('defineCompound — withDefaults accepts styles-API props', () => {
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// New matrix-cell tests — cells previously uncovered by rounds 5/6/7
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — styles-API merge matrix (new cells)', () => {
+  // Cell: vars from part instance lands on the rendered slot (own-slot).
+  it('vars from part instance lands on the rendered slot as CSS custom properties', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', label: 'foo-label' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        label: { render: ({ getStyles }) => <span {...getStyles()} data-testid="label-el" /> },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Label vars={(_theme: any) => ({ label: { '--label-color': 'blue' } })} />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const el = container.querySelector('[data-testid="label-el"]') as HTMLElement;
+    expect(el.style.getPropertyValue('--label-color')).toBe('blue');
+  });
+
+  // Cell: attributes from part instance lands on the rendered slot (own-slot, per-slot map).
+  it('attributes from part instance lands on the rendered slot', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', label: 'foo-label' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        label: { render: ({ getStyles }) => <span {...getStyles()} data-testid="label-el" /> },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Label attributes={{ label: { 'aria-label': 'my-label' } }} />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const el = container.querySelector('[data-testid="label-el"]') as HTMLElement;
+    expect(el.getAttribute('aria-label')).toBe('my-label');
+  });
+
+  // Cell: classNames cross-slot — <Foo.Body classNames={{ icon: 'x' }}> styles the icon
+  // slot when Body's render does getStyles({ part: 'icon' }).
+  it('part-instance classNames cross-slot: slot-keyed classNames reach the target slot', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', body: 'foo-body', icon: 'foo-icon' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        body: {
+          render: ({ getStyles }) => (
+            <div {...getStyles()} data-testid="body-el">
+              <span {...getStyles({ part: 'icon' })} data-testid="icon-el" />
+            </div>
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          {/* classNames targets the icon slot — keyed by slot name */}
+          <Foo.Body classNames={{ icon: 'instance-icon-class' }} />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const icon = container.querySelector('[data-testid="icon-el"]') as HTMLElement;
+    // The icon slot should have the classNames value from the Body instance props
+    expect(icon.className).toContain('foo-icon');
+    expect(icon.className).toContain('instance-icon-class');
+
+    // And it must NOT appear on the body slot (body slot key is 'body', not 'icon')
+    const body = container.querySelector('[data-testid="body-el"]') as HTMLElement;
+    expect(body.className).not.toContain('instance-icon-class');
+  });
+
+  // Cell: per-call style only affects the call's target slot, not sibling slots.
+  // (Complements the round-6 className isolation test with per-call style.)
+  it('per-call getStyles style only affects the call target slot, not sibling slots', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', body: 'foo-body', icon: 'foo-icon' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        body: {
+          render: ({ getStyles }) => (
+            <div
+              {...getStyles({ style: { color: 'green' } })}
+              data-testid="body-el"
+            >
+              {/* no per-call style for the icon cross-slot call */}
+              <span {...getStyles({ part: 'icon' })} data-testid="icon-el" />
+            </div>
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Body />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const body = container.querySelector('[data-testid="body-el"]') as HTMLElement;
+    const icon = container.querySelector('[data-testid="icon-el"]') as HTMLElement;
+
+    expect(body.style.color).toBe('green');
+    expect(icon.style.color).toBe('');
+  });
+
+  // Cell: vars from part instance does NOT leak onto cross-slot calls.
+  it('vars from part instance do not leak onto cross-slot calls', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', body: 'foo-body', icon: 'foo-icon' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        body: {
+          render: ({ getStyles }) => (
+            <div {...getStyles()} data-testid="body-el">
+              <span {...getStyles({ part: 'icon' })} data-testid="icon-el" />
+            </div>
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Body vars={(_theme: any) => ({ body: { '--body-var': 'red' } })} />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const body = container.querySelector('[data-testid="body-el"]') as HTMLElement;
+    const icon = container.querySelector('[data-testid="icon-el"]') as HTMLElement;
+
+    // vars is keyed by slot name so 'body' var only shows on body slot
+    expect(body.style.getPropertyValue('--body-var')).toBe('red');
+    expect(icon.style.getPropertyValue('--body-var')).toBe('');
+  });
+});

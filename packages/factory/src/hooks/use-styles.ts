@@ -39,45 +39,69 @@ export function useStyles<P extends FactoryPayload>(
   return (selector, options?: GetStylesOptions): GetStylesResult => {
     const isRoot = (selector as string) === 'root';
 
-    const builtIn = config.unstyled ? '' : (config.classes?.[selector] ?? '');
+    // Suppress built-in class when config or per-call unstyled is set.
+    const isUnstyled = config.unstyled || options?.unstyled;
+    const builtIn = isUnstyled ? '' : (config.classes?.[selector] ?? '');
 
     const themeClassNames = resolveClassNames(themeComponent.classNames, theme, config.props);
     const themeClass = themeClassNames[selector as string] ?? '';
 
+    // Root-level classNames (from <Root classNames={...}>).
     const instanceClassNamesRaw = config.classNames as ClassNames<P> | undefined;
     const instanceClassNames = resolveClassNames(instanceClassNamesRaw, theme, config.props);
     const instanceClass = instanceClassNames[selector as string] ?? '';
 
-    // Per-call classNames override (forwarded from compound part instance props).
-    const callClassNamesRaw = options?.classNames as ClassNames<P> | undefined;
+    // Part instance classNames (forwarded from the compound part's own props,
+    // matching Mantine's TabsTab pattern: ctx.getStyles('tab', { classNames, ... })).
+    const partClassNamesRaw = options?.classNames as ClassNames<P> | undefined;
+    const partClassNames = resolveClassNames(partClassNamesRaw, theme, config.props);
+    const partClassNamesClass = partClassNames[selector as string] ?? '';
+
+    // Render-time per-call classNames override (from inside the render function,
+    // e.g. getStyles({ callClassNames: { icon: 'y' } })). Resolved independently
+    // so neither layer clobbers the other.
+    const callClassNamesRaw = options?.callClassNames as ClassNames<P> | undefined;
     const callClassNames = resolveClassNames(callClassNamesRaw, theme, config.props);
     const callClassNamesClass = callClassNames[selector as string] ?? '';
 
     const rootInstanceClass = isRoot ? (config.className ?? '') : '';
     const callSiteClass = options?.className ?? '';
 
-    const className = cn(builtIn, themeClass, instanceClass, callClassNamesClass, rootInstanceClass, callSiteClass);
+    const className = cn(builtIn, themeClass, instanceClass, partClassNamesClass, callClassNamesClass, rootInstanceClass, callSiteClass);
 
     const themeStyles = resolveStyles(themeComponent.styles, theme, config.props);
     const instanceStylesRaw = config.styles as Styles<P> | undefined;
     const instanceStyles = resolveStyles(instanceStylesRaw, theme, config.props);
-    // Per-call styles override (forwarded from compound part instance props).
-    const callStylesRaw = options?.styles as Styles<P> | undefined;
+    // Part instance styles (Mantine-matched layer).
+    const partStylesRaw = options?.styles as Styles<P> | undefined;
+    const partStyles = resolveStyles(partStylesRaw, theme, config.props);
+    // Render-time per-call styles override.
+    const callStylesRaw = options?.callStyles as Styles<P> | undefined;
     const callStyles = resolveStyles(callStylesRaw, theme, config.props);
+
     const themeVarsResolverFromTheme = themeComponent.vars
       ? themeComponent.vars(theme, config.props)
       : {};
     const builtInVars = config.varsResolver ? config.varsResolver(theme, config.props) : {};
 
+    // Per-call vars from the part instance (forwarded via options.vars).
+    const partVarsResolved = options?.vars
+      ? (options.vars as (theme: ResolvedTheme, props: P['props']) => Partial<Record<string, Record<string, string>>>)(theme, config.props)
+      : {};
+
     const styleParts: CSSProperties[] = [
       themeStyles[selector as string] ?? {},
       instanceStyles[selector as string] ?? {},
+      partStyles[selector as string] ?? {},
       callStyles[selector as string] ?? {},
       filterDefinedValues(
         ((builtInVars as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
       ) as CSSProperties,
       filterDefinedValues(
         (themeVarsResolverFromTheme[selector as string] as Record<string, unknown> | undefined) ?? {},
+      ) as CSSProperties,
+      filterDefinedValues(
+        (partVarsResolved[selector as string] as Record<string, unknown> | undefined) ?? {},
       ) as CSSProperties,
     ];
 
@@ -91,11 +115,15 @@ export function useStyles<P extends FactoryPayload>(
       unknown
     >;
     const instanceAttrs = (config.attributes?.[selector] as Record<string, unknown>) ?? {};
+    // Per-call attributes from the part instance (forwarded via options.attributes).
+    const partAttrsMap = options?.attributes as Partial<Record<string, Record<string, unknown>>> | undefined;
+    const partCallAttrs = (partAttrsMap?.[selector as string] ?? {}) as Record<string, unknown>;
 
     const result: GetStylesResult = {
       className,
       ...themeAttrs,
       ...instanceAttrs,
+      ...partCallAttrs,
     };
 
     if (Object.keys(style).length > 0) result.style = style;
