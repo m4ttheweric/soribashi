@@ -332,17 +332,24 @@ export function defineCompound<
           if (rawCtx === null) {
             throw new Error(`<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`);
           }
+          const targetSlot = opts?.part ?? partKey;
+          const isOwnSlot = targetSlot === partKey;
           const m = rest as {
             className?: string;
             style?: CSSProperties;
             classNames?: unknown;
             styles?: unknown;
+            vars?: unknown;
           };
           return rawCtx.getStyles(
-            (opts?.part ?? partKey) as string,
+            targetSlot as string,
             {
-              className: opts?.className ?? m.className,
-              style: opts?.style ?? m.style,
+              // className/style: only from merged when targeting OWN slot;
+              // for cross-slot, only opts-provided overrides apply
+              className: opts?.className ?? (isOwnSlot ? m.className : undefined),
+              style: opts?.style ?? (isOwnSlot ? m.style : undefined),
+              // classNames/styles maps stay — they're keyed by slot name internally,
+              // so a part's classNames={{ otherSlot: '...' }} legitimately styles that slot
               classNames: (opts?.classNames ?? m.classNames) as GetStylesOptions['classNames'],
               styles: (opts?.styles ?? m.styles) as GetStylesOptions['styles'],
               active: opts?.active,
@@ -394,6 +401,12 @@ export function defineCompound<
        * Forwards instance-level styles-API props (className, style,
        * classNames, styles) from the part's merged props so they are
        * actually applied at runtime. Per-call opts override merged props.
+       *
+       * className/style are only forwarded from merged when the call targets
+       * THIS part's own slot. Cross-slot calls (e.g. Content rendering the
+       * arrow slot) must not leak the part-instance className/style onto
+       * sibling slots. The per-slot classNames/styles maps still apply since
+       * those are keyed by slot name internally.
        */
       const partGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult => {
         if (rawCtx === null) {
@@ -401,17 +414,24 @@ export function defineCompound<
             `<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`,
           );
         }
+        const targetSlot = opts?.part ?? partKey;
+        const isOwnSlot = targetSlot === partKey;
         const m = merged as {
           className?: string;
           style?: CSSProperties;
           classNames?: unknown;
           styles?: unknown;
+          vars?: unknown;
         };
         return rawCtx.getStyles(
-          (opts?.part ?? partKey) as string,
+          targetSlot as string,
           {
-            className: opts?.className ?? m.className,
-            style: opts?.style ?? m.style,
+            // className/style: only from merged when targeting OWN slot;
+            // for cross-slot, only opts-provided overrides apply
+            className: opts?.className ?? (isOwnSlot ? m.className : undefined),
+            style: opts?.style ?? (isOwnSlot ? m.style : undefined),
+            // classNames/styles maps stay — they're keyed by slot name internally,
+            // so a part's classNames={{ otherSlot: '...' }} legitimately styles that slot
             classNames: (opts?.classNames ?? m.classNames) as GetStylesOptions['classNames'],
             styles: (opts?.styles ?? m.styles) as GetStylesOptions['styles'],
             active: opts?.active,

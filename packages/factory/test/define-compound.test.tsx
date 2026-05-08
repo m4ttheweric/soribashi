@@ -602,6 +602,116 @@ describe('defineCompound — getStyles slot-key type safety', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Cycle 7.14 — Cross-slot className/style does NOT leak (Copilot round-6 #1+2)
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — cross-slot className/style isolation', () => {
+  it('part-instance className stays on own slot, does not leak to cross-slot calls', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', body: 'foo-body', icon: 'foo-icon' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        body: {
+          render: ({ getStyles }) => (
+            <div {...getStyles()} data-testid="body-slot">
+              <span {...getStyles({ part: 'icon' })} data-testid="icon-slot" />
+            </div>
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Body className="my-body-class" />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const body = container.querySelector('[data-testid="body-slot"]') as HTMLElement;
+    const icon = container.querySelector('[data-testid="icon-slot"]') as HTMLElement;
+
+    // body slot has both the recipe class and the instance className
+    expect(body.className).toContain('foo-body');
+    expect(body.className).toContain('my-body-class');
+
+    // icon slot (cross-slot from body) gets ONLY the recipe class —
+    // my-body-class must not leak
+    expect(icon.className).toContain('foo-icon');
+    expect(icon.className).not.toContain('my-body-class');
+  });
+
+  it('part-instance style stays on own slot, does not leak to cross-slot calls', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', body: 'foo-body', icon: 'foo-icon' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        body: {
+          render: ({ getStyles }) => (
+            <div {...getStyles()} data-testid="body-slot">
+              <span {...getStyles({ part: 'icon' })} data-testid="icon-slot" />
+            </div>
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Body style={{ color: 'red' }} />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const body = container.querySelector('[data-testid="body-slot"]') as HTMLElement;
+    const icon = container.querySelector('[data-testid="icon-slot"]') as HTMLElement;
+
+    expect(body.style.color).toBe('red');
+    expect(icon.style.color).toBe('');
+  });
+
+  it('polymorphic part-instance className does not leak to cross-slot calls', () => {
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', trigger: 'foo-trigger', icon: 'foo-icon' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        trigger: {
+          polymorphic: true,
+          defaultElement: 'button',
+          render: ({ Element, getStyles }: any) => (
+            <Element {...getStyles()} data-testid="trigger-slot">
+              <span {...getStyles({ part: 'icon' })} data-testid="icon-slot" />
+            </Element>
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          <Foo.Trigger className="my-trigger-class" />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const trigger = container.querySelector('[data-testid="trigger-slot"]') as HTMLElement;
+    const icon = container.querySelector('[data-testid="icon-slot"]') as HTMLElement;
+
+    expect(trigger.className).toContain('foo-trigger');
+    expect(trigger.className).toContain('my-trigger-class');
+
+    expect(icon.className).toContain('foo-icon');
+    expect(icon.className).not.toContain('my-trigger-class');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Cycle 7.13 — withDefaults accepts StylesApiProps (Copilot round-4 #4)
 // ---------------------------------------------------------------------------
 

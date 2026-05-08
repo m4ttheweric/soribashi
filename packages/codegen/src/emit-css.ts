@@ -285,10 +285,17 @@ function resolveSurfacePair(raw: SemanticSurfaceValue): SurfacePair {
 }
 
 /**
- * Resolves a semantic reference dot-path (e.g. `colors.neutral.500`) to the
- * bare HSL components of the underlying token value in the given theme, or
- * returns `null` if the value is not an HSL color (hex, rgb, etc.) or the
- * reference doesn't resolve to a color token.
+ * Resolves a semantic reference dot-path (e.g. `colors.neutral.500`) to a
+ * `var(--__hsl-color-*)` reference for the underlying token's HSL companion.
+ *
+ * Returns `null` if the reference doesn't target a color token (e.g. radius),
+ * or if the underlying token isn't an HSL value (so no `--__hsl-color-*`
+ * companion was emitted for it).
+ *
+ * Emitting a var() reference rather than a literal HSL string ensures dark-mode
+ * overrides cascade correctly: the `.dark` block already overrides
+ * `--__hsl-color-*` (Wave 1 dual-emit), and semantic companions pick that up
+ * automatically via the var() indirection.
  *
  * Used to emit `--__hsl-surface-{name}` Tailwind alpha companions alongside
  * the canonical `--surface-{name}: var(--color-*)` vars.
@@ -300,7 +307,10 @@ function resolveSemanticHsl(ref: string, theme: ResolvedTheme): string | null {
     const shade = parts[2]!;
     const value = (theme.tokens.colors as Record<string, Record<string, string>>)[family]?.[shade];
     if (value === undefined) return null;
-    return stripHslWrapper(value);
+    // Only emit the companion if the underlying token is HSL (otherwise there's
+    // no --__hsl-color-* var to reference).
+    if (stripHslWrapper(value) === null) return null;
+    return `var(--__hsl-color-${family}-${shade})`;
   }
   return null;
 }
