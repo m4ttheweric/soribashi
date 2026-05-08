@@ -25,6 +25,7 @@ export function isThemeComponentEntry(value: unknown): value is ThemeComponentEn
     v.__soribashiThemeEntry === true &&
     typeof v.name === 'string' &&
     typeof v.defaultProps === 'object' &&
-    v.defaultProps !== null
+    v.defaultProps !== null &&
+    !Array.isArray(v.defaultProps)
   );
 }

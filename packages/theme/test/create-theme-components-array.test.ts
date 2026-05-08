@@ -120,6 +120,13 @@ describe('isThemeComponentEntry guard', () => {
     expect(isThemeComponentEntry(malformed)).toBe(false);
   });
 
+  it('returns false for a branded object with array defaultProps (typeof [] === "object" trap)', () => {
+    // Arrays satisfy typeof x === 'object' && x !== null — the guard must also
+    // reject arrays via !Array.isArray(v.defaultProps).
+    const malformed = { __soribashiThemeEntry: true, name: 'Button', defaultProps: [] };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
   it('returns false for null', () => {
     expect(isThemeComponentEntry(null)).toBe(false);
   });

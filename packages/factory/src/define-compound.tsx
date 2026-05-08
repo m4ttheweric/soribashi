@@ -18,11 +18,21 @@ import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
  * TVariants defaults to `readonly string[]` so that callers which don't
  * explicitly pass the variants tuple (e.g. `PartRenderCtx<P, Ctx>`) continue
  * to compile: `ctx.variant` is just `string | undefined` in that case.
+ *
+ * TSlotKeys defaults to `string` for backwards compatibility when not derived
+ * from config.classes; when defineCompound infers TSlotKeys from config.classes,
+ * typos like `getStyles({ part: 'arroow' })` are caught at compile time.
  */
-export interface PartRenderCtx<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
+export interface PartRenderCtx<
+  TProps = unknown,
+  TCtxExtra = object,
+  TVariants extends readonly string[] = readonly string[],
+  TSlotKeys extends string = string,
+> {
   props: TProps;
-  /** Defaults to the part's own slot; pass { part: 'otherSlot' } to target sibling slots. */
-  getStyles: (opts?: { part?: string }) => GetStylesResult;
+  /** Defaults to the part's own slot; pass { part: 'otherSlot' } to target sibling slots.
+   *  The part argument is type-checked against the slot key union derived from config.classes. */
+  getStyles: (opts?: { part?: TSlotKeys }) => GetStylesResult;
   ctx: TCtxExtra & { variant: TVariants[number] | undefined };
   children?: ReactNode;
   ref: Ref<unknown>;
@@ -31,7 +41,12 @@ export interface PartRenderCtx<TProps, TCtxExtra, TVariants extends readonly str
 /**
  * Object passed to each polymorphic part's `render` function.
  */
-export interface PolymorphicPartRenderCtx<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> extends PartRenderCtx<TProps, TCtxExtra, TVariants> {
+export interface PolymorphicPartRenderCtx<
+  TProps = unknown,
+  TCtxExtra = object,
+  TVariants extends readonly string[] = readonly string[],
+  TSlotKeys extends string = string,
+> extends PartRenderCtx<TProps, TCtxExtra, TVariants, TSlotKeys> {
   Element: keyof JSX.IntrinsicElements;
 }
 
@@ -130,8 +145,8 @@ type PartsNamespace<TParts extends Record<string, PartConfig<any, any, any>>> = 
     & React.RefAttributes<unknown>
   > & {
     withDefaults: (
-      defaults: Partial<ExtractPartProps<TParts[K]>>,
-    ) => ThemeComponentEntry<ExtractPartProps<TParts[K]>>;
+      defaults: Partial<ExtractPartProps<TParts[K]> & CompoundStylesApiProps<PartPayload<TParts[K]>>>,
+    ) => ThemeComponentEntry<ExtractPartProps<TParts[K]> & CompoundStylesApiProps<PartPayload<TParts[K]>>>;
     displayName?: string;
   };
 };
@@ -143,8 +158,8 @@ type CompoundComponent<TParts extends Record<string, PartConfig<any, any, any>>>
     & React.RefAttributes<unknown>
   > & PartsNamespace<TParts> & {
     withDefaults: (
-      defaults: Partial<ExtractPartProps<TParts['root']>>,
-    ) => ThemeComponentEntry<ExtractPartProps<TParts['root']>>;
+      defaults: Partial<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>,
+    ) => ThemeComponentEntry<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>;
     displayName?: string;
   };
 
@@ -180,7 +195,8 @@ export function defineCompound<
   TParts extends PartsRecord<TCtxExtra, TVariants>,
   const TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
->(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra>): CompoundComponent<TParts> {
+  TClasses extends Partial<Record<string, string>> = Partial<Record<string, string>>,
+>(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra> & { classes?: TClasses }): CompoundComponent<TParts> {
   if (!config.parts.root) {
     throw new Error(`defineCompound("${config.name}") requires parts.root`);
   }

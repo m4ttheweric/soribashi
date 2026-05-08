@@ -4,7 +4,7 @@
  * Covers:
  *   1. Default variant — content uses surface.floating (dark in light mode) +
  *      surface.floating-foreground (light) — the inverted "shadcn" tooltip
- *   2. Subtle variant — content uses surface.default (page surface) +
+ *   2. Subtle variant — content uses surface.raised (slight elevation) +
  *      text.default — opt-in for non-inverted look
  *   3. Arrow inherits the same bg as content (both reference --cr-tooltip-bg)
  *   4. Dark mode flips the default variant's foreground pairing
