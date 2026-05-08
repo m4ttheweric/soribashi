@@ -5,6 +5,7 @@ export {
   defineComponent,
   defineGenericComponent,
   definePolymorphicComponent,
+  defineCompound,
   cn,
 } from '@soribashi/factory';
 
@@ -12,6 +13,13 @@ export type {
   StylesApiProps,
   PolymorphicProps,
   PolymorphicRef,
+  DefineCompoundConfig,
+  PartConfig,
+  StandardPartConfig,
+  PolymorphicPartConfig,
+  PartRenderCtx,
+  PolymorphicPartRenderCtx,
+  PolymorphicRenderCtx,
 } from '@soribashi/factory';
 
 // Theme

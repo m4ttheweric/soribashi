@@ -1,6 +1,7 @@
 import { defaultIntentResolver } from './default-intent-resolver.ts';
 import type { ResolvedTheme, SemanticTokens, ThemeDefinition } from './types.ts';
 import { composeTheme } from './compose-theme.ts';
+import { normalizeComponents } from './normalize-components.ts';
 
 const DEFAULT_INTENTS = ['primary', 'neutral', 'danger', 'success', 'warning', 'info'] as const;
 const DEFAULT_VARIANTS = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
@@ -51,7 +52,7 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     dark: merged.dark ?? {},
     semantic,
     intentResolver: merged.intentResolver ?? defaultIntentResolver,
-    components: merged.components ?? {},
+    components: normalizeComponents(merged.components),
     scope: merged.scope ?? ':root',
     darkMode: merged.darkMode ?? { selector: '.dark' },
     name: merged.name ?? 'default',

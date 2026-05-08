@@ -13,10 +13,14 @@ export type {
   ColorScale,
   SemanticTokens,
   SemanticReference,
+  SemanticSurfaceValue,
   IntentResolver,
   IntentResolverInput,
   IntentResolverResult,
   ComponentThemeConfig,
   HeadingTokens,
   HeadingSize,
+  ThemeComponentEntry,
 } from './types.ts';
+
+export { isThemeComponentEntry } from './theme-component-entry.ts';

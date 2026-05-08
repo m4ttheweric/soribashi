@@ -1,4 +1,5 @@
 import type { ResolvedTheme, ThemeDefinition, ThemeTokens } from './types.ts';
+import { normalizeComponents } from './normalize-components.ts';
 
 /**
  * Merges a child theme definition on top of a resolved base theme.
@@ -24,7 +25,7 @@ export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): Theme
       border: { ...base.semantic.border, ...(child.semantic?.border ?? {}) },
     },
     intentResolver: child.intentResolver ?? base.intentResolver,
-    components: { ...base.components, ...(child.components ?? {}) },
+    components: { ...base.components, ...normalizeComponents(child.components) },
     scope: child.scope ?? base.scope,
     darkMode: child.darkMode ?? base.darkMode,
     name: child.name ?? base.name,

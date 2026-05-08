@@ -4,6 +4,15 @@
 export { defineComponent } from './define-component.tsx';
 export { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 export { defineGenericComponent } from './define-generic-component.tsx';
+export { defineCompound } from './define-compound.tsx';
+export type {
+  DefineCompoundConfig,
+  PartConfig,
+  StandardPartConfig,
+  PolymorphicPartConfig,
+  PartRenderCtx,
+  PolymorphicPartRenderCtx,
+} from './define-compound.tsx';
 
 // Provider
 export { SoribashiProvider } from './provider/provider.tsx';
@@ -54,6 +63,14 @@ export type {
 
 export type { FactoryComponent } from './factory.tsx';
 export type { DefineComponentConfig } from './define-component.tsx';
-export type { DefinePolymorphicComponentConfig } from './define-polymorphic-component.tsx';
+export type { DefinePolymorphicComponentConfig, PolymorphicRenderCtx } from './define-polymorphic-component.tsx';
 export type { DefineGenericComponentConfig } from './define-generic-component.tsx';
 export type { UseStylesConfig } from './hooks/use-styles.ts';
+
+// asChild slot-merging primitive
+export { Slot } from './slot.tsx';
+export type { SlotProps } from './slot.tsx';
+
+// Theme integration
+export type { ThemeComponentEntry } from './theme-component-entry.ts';
+export { isThemeComponentEntry } from './theme-component-entry.ts';

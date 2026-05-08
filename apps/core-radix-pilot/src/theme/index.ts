@@ -254,13 +254,16 @@ export const theme = createTheme({
       },
       neutral: {
         // CVI inverts the neutral scale in dark (`50` ↔ `900` swap pattern).
-        // Preserved verbatim. `0` → near-black overlay surface.
-        '0': 'hsl(222 84% 5%)',
-        '50': 'hsl(222 47% 11%)',
-        '100': 'hsl(217 33% 17%)',
-        '200': 'hsl(215 25% 27%)',
-        '300': 'hsl(215 19% 35%)',
-        '400': 'hsl(215 16% 47%)',
+        // Lower steps (0-300, the surface/border tones) had 25-84% saturation
+        // which read as heavy navy on the page. Dialled down to 6-10%
+        // saturation — subtle cool tint, reads as dark gray rather than blue.
+        // Hue shifted slightly to 220 for consistency. Lightness preserved.
+        '0': 'hsl(220 6% 9%)',     // was hsl(222 84% 5%) — page bg / surface.default
+        '50': 'hsl(220 6% 13%)',   // was hsl(222 47% 11%) — surface.sunken in dark
+        '100': 'hsl(220 5% 18%)',  // was hsl(217 33% 17%) — surface.raised (default-variant tooltip)
+        '200': 'hsl(220 5% 25%)',  // was hsl(215 25% 27%) — borders
+        '300': 'hsl(220 5% 35%)',  // was hsl(215 19% 35%)
+        '400': 'hsl(215 16% 47%)', // unchanged — mid-tone, sat already moderate
         '500': 'hsl(215 20% 65%)',
         '600': 'hsl(213 27% 84%)',
         '700': 'hsl(214 32% 91%)',
@@ -346,6 +349,11 @@ export const theme = createTheme({
       // surface (tooltips, dropdown menus, popover content) — distinct from
       // "scrim behind a modal." See journal § 5 Q11.
       scrim: 'colors.neutral.900',
+      // Wave 2: formalized foreground pairing for floating surfaces
+      // (tooltips, dropdowns, popovers). Object form enables codegen to emit
+      // both --surface-floating and --surface-floating-foreground so
+      // variants like Tooltip's `inverted` can guarantee contrast.
+      floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },
     },
     border: {
       // CVI's `--color-border-islands` (light hsl(214 32% 91%)) maps cleanly

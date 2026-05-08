@@ -1,3 +1,8 @@
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
+
+// Re-export so consumers can import ThemeComponentEntry from '@soribashi/theme'
+export type { ThemeComponentEntry } from './theme-component-entry.ts';
+
 // Token-level types
 
 /**
@@ -66,14 +71,31 @@ export type PartialThemeTokens = {
  */
 export type SemanticReference = string;
 
+/**
+ * A surface slot may be a plain token reference (string) or an object that
+ * pairs the surface background with an optional formalized foreground.
+ *
+ * Object form was introduced in Wave 2 for the Tooltip `floating` slot, which
+ * needs to declare its paired foreground color in the token vocabulary.
+ * Existing string-form surface values continue to work unchanged.
+ */
+export type SemanticSurfaceValue =
+  | SemanticReference
+  | { value: SemanticReference; foreground?: SemanticReference };
+
 export interface SemanticTokens {
   /** Available intent values; constrains components' `intent` prop */
   intent: readonly string[];
   /** Available variant values; constrains components' `variant` prop */
   variant: readonly string[];
   text: Record<string, SemanticReference>;
-  /** Layered surface elevation. Suggested layers: canvas, default, raised, sunken, overlay. */
-  surface: Record<string, SemanticReference>;
+  /**
+   * Layered surface elevation. Each slot is either a plain token reference
+   * (string) or an object `{ value, foreground? }` for surfaces that declare
+   * a paired foreground. Suggested layers: canvas, default, raised, sunken,
+   * overlay. `floating` was added in Wave 2 for the Tooltip pilot.
+   */
+  surface: Record<string, SemanticSurfaceValue>;
   border: Record<string, SemanticReference>;
   /**
    * Optional accent slot for semantic colors that don't fit `text`/`surface`/`border` —
@@ -131,7 +153,7 @@ export interface ThemeDefinition {
   dark?: PartialThemeTokens;
   semantic?: Partial<SemanticTokens>;
   intentResolver?: IntentResolver;
-  components?: Record<string, ComponentThemeConfig>;
+  components?: Record<string, ComponentThemeConfig> | readonly ThemeComponentEntry[];
   /** CSS selector for light scope. Defaults to `:root`. */
   scope?: string;
   /** CSS selector(s) for dark mode. Defaults to `.dark`. */
