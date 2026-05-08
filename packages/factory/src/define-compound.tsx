@@ -6,7 +6,7 @@ import { createSafeContext } from './create-safe-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
-import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
+import type { StylesApiProps, CompoundStylesApiProps, ClassNames, Styles } from './types/props.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -205,6 +205,97 @@ function makeNullCtxProxy(compoundName: string, partKey: string): Record<string,
 }
 
 // ---------------------------------------------------------------------------
+// Composition helpers for classNames / styles
+// ---------------------------------------------------------------------------
+
+/** Merges two resolved classNames records; per-slot values are space-joined
+ * so both classes appear on the element. */
+function mergeClassNamesRecord(
+  base: Record<string, string | undefined>,
+  override: Record<string, string | undefined>,
+): Record<string, string | undefined> {
+  const keys = new Set([...Object.keys(base), ...Object.keys(override)]);
+  const out: Record<string, string | undefined> = {};
+  for (const k of keys) {
+    const b = base[k];
+    const o = override[k];
+    if (b && o) {
+      out[k] = `${b} ${o}`;
+    } else {
+      out[k] = b ?? o;
+    }
+  }
+  return out;
+}
+
+/** Merges two resolved styles records; per-slot CSSProperties are shallow-merged,
+ * override wins on individual property collisions (consistent with mergeProps semantics). */
+function mergeStylesRecord(
+  base: Record<string, Record<string, unknown> | undefined>,
+  override: Record<string, Record<string, unknown> | undefined>,
+): Record<string, Record<string, unknown> | undefined> {
+  const keys = new Set([...Object.keys(base), ...Object.keys(override)]);
+  const out: Record<string, Record<string, unknown> | undefined> = {};
+  for (const k of keys) {
+    out[k] = { ...(base[k] ?? {}), ...(override[k] ?? {}) };
+  }
+  return out;
+}
+
+/**
+ * Composes two classNames values (record or function form). Both layers apply;
+ * per-slot class strings are space-joined so both appear on the element.
+ * This avoids the clobber that `override ?? base` would cause when both are present.
+ */
+function composeClassNames(
+  base: ClassNames<any> | undefined,
+  override: ClassNames<any> | undefined,
+): ClassNames<any> | undefined {
+  if (!base) return override;
+  if (!override) return base;
+  if (typeof base === 'function' || typeof override === 'function') {
+    return ((theme: ResolvedTheme, props: unknown) => {
+      const baseObj = typeof base === 'function' ? base(theme, props) : base;
+      const overrideObj = typeof override === 'function' ? override(theme, props) : override;
+      return mergeClassNamesRecord(
+        baseObj as Record<string, string | undefined>,
+        overrideObj as Record<string, string | undefined>,
+      );
+    }) as ClassNames<any>;
+  }
+  return mergeClassNamesRecord(
+    base as Record<string, string | undefined>,
+    override as Record<string, string | undefined>,
+  ) as ClassNames<any>;
+}
+
+/**
+ * Composes two styles values (record or function form). Both layers apply;
+ * per-slot CSSProperties are shallow-merged, override wins per property.
+ */
+function composeStyles(
+  base: Styles<any> | undefined,
+  override: Styles<any> | undefined,
+): Styles<any> | undefined {
+  if (!base) return override;
+  if (!override) return base;
+  if (typeof base === 'function' || typeof override === 'function') {
+    return ((theme: ResolvedTheme, props: unknown) => {
+      const baseObj = typeof base === 'function' ? base(theme, props) : base;
+      const overrideObj = typeof override === 'function' ? override(theme, props) : override;
+      return mergeStylesRecord(
+        baseObj as Record<string, Record<string, unknown> | undefined>,
+        overrideObj as Record<string, Record<string, unknown> | undefined>,
+      );
+    }) as Styles<any>;
+  }
+  return mergeStylesRecord(
+    base as Record<string, Record<string, unknown> | undefined>,
+    override as Record<string, Record<string, unknown> | undefined>,
+  ) as Styles<any>;
+}
+
+// ---------------------------------------------------------------------------
 // defineCompound
 // ---------------------------------------------------------------------------
 
@@ -348,10 +439,17 @@ export function defineCompound<
               // for cross-slot, only opts-provided overrides apply
               className: opts?.className ?? (isOwnSlot ? m.className : undefined),
               style: opts?.style ?? (isOwnSlot ? m.style : undefined),
-              // classNames/styles maps stay — they're keyed by slot name internally,
-              // so a part's classNames={{ otherSlot: '...' }} legitimately styles that slot
-              classNames: (opts?.classNames ?? m.classNames) as GetStylesOptions['classNames'],
-              styles: (opts?.styles ?? m.styles) as GetStylesOptions['styles'],
+              // classNames/styles: COMPOSE instance-level and per-call layers so
+              // both apply (per-call wins on key collisions). Using ?? would silently
+              // drop the instance layer whenever a per-call override is supplied.
+              classNames: composeClassNames(
+                m.classNames as ClassNames<any> | undefined,
+                opts?.classNames as ClassNames<any> | undefined,
+              ) as GetStylesOptions['classNames'],
+              styles: composeStyles(
+                m.styles as Styles<any> | undefined,
+                opts?.styles as Styles<any> | undefined,
+              ) as GetStylesOptions['styles'],
               active: opts?.active,
               variant: opts?.variant,
             },
@@ -430,10 +528,17 @@ export function defineCompound<
             // for cross-slot, only opts-provided overrides apply
             className: opts?.className ?? (isOwnSlot ? m.className : undefined),
             style: opts?.style ?? (isOwnSlot ? m.style : undefined),
-            // classNames/styles maps stay — they're keyed by slot name internally,
-            // so a part's classNames={{ otherSlot: '...' }} legitimately styles that slot
-            classNames: (opts?.classNames ?? m.classNames) as GetStylesOptions['classNames'],
-            styles: (opts?.styles ?? m.styles) as GetStylesOptions['styles'],
+            // classNames/styles: COMPOSE instance-level and per-call layers so
+            // both apply (per-call wins on key collisions). Using ?? would silently
+            // drop the instance layer whenever a per-call override is supplied.
+            classNames: composeClassNames(
+              m.classNames as ClassNames<any> | undefined,
+              opts?.classNames as ClassNames<any> | undefined,
+            ) as GetStylesOptions['classNames'],
+            styles: composeStyles(
+              m.styles as Styles<any> | undefined,
+              opts?.styles as Styles<any> | undefined,
+            ) as GetStylesOptions['styles'],
             active: opts?.active,
             variant: opts?.variant,
           },

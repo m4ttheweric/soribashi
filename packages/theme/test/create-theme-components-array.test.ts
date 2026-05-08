@@ -135,4 +135,36 @@ describe('isThemeComponentEntry guard', () => {
     expect(isThemeComponentEntry('string')).toBe(false);
     expect(isThemeComponentEntry(42)).toBe(false);
   });
+
+  it('returns false when defaultProps is a Date (non-plain-object prototype)', () => {
+    const malformed = { __soribashiThemeEntry: true, name: 'Button', defaultProps: new Date() };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
+  it('returns false when defaultProps is a Map (non-plain-object prototype)', () => {
+    const malformed = { __soribashiThemeEntry: true, name: 'Button', defaultProps: new Map() };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
+  it('returns false when defaultProps has a custom prototype (Object.create)', () => {
+    const malformed = {
+      __soribashiThemeEntry: true,
+      name: 'Button',
+      defaultProps: Object.create({ inherited: 1 }),
+    };
+    expect(isThemeComponentEntry(malformed)).toBe(false);
+  });
+
+  it('returns false when the outer value itself is a Date', () => {
+    expect(isThemeComponentEntry(new Date())).toBe(false);
+  });
+
+  it('returns true when defaultProps is a plain object (Object.create(null))', () => {
+    const entry = {
+      __soribashiThemeEntry: true,
+      name: 'Button',
+      defaultProps: Object.create(null) as Record<string, unknown>,
+    };
+    expect(isThemeComponentEntry(entry)).toBe(true);
+  });
 });

@@ -3,7 +3,7 @@
 **Status:** Draft
 **Date:** 2026-05-04
 **Audience:** Implementation engineers
-**Target host (read-only reference):** `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands` ("CVI")
+**Target host (read-only reference):** `apps/adjuster/src/components/ClaimViewIslands` ("CVI") — the path within the consuming `assured` repo
 **Wave:** 2 of N. Sequenced after Wave 1 (`docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md`).
 
 ---
@@ -323,7 +323,7 @@ New entry in playbook § 3 (or a new playbook section if § 3 doesn't fit):
 
 ### 6.1 Files
 
-```
+```text
 apps/core-radix-pilot/src/recipes/Tooltip/
   Tooltip.tsx
   Tooltip.css

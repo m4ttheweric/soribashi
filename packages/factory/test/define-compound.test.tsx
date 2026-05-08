@@ -193,7 +193,10 @@ describe('defineCompound — context()', () => {
     );
 
     const el = container.querySelector('[data-id]') as HTMLElement;
-    expect(el.dataset.id).toMatch(/^:r/); // useId-style identifier
+    // Assert the hook ran and produced a non-empty string; don't depend on
+    // React's internal useId format (`:r0:` etc.) which may change across versions.
+    expect(el.dataset.id).toBeTruthy();
+    expect(el.dataset.id!.length).toBeGreaterThan(0);
   });
 });
 
@@ -532,6 +535,45 @@ describe('defineCompound — passthrough parts', () => {
     );
 
     expect(container.querySelector('[data-provider]')?.textContent).toBe('content');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cycle 7.12 — classNames/styles composition (item 11 from CodeRabbit round-7)
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — per-call classNames compose with instance classNames', () => {
+  it('instance classNames and per-call getStyles classNames both apply (neither clobbers)', () => {
+    // The child part receives instanceClassNames via its own prop AND
+    // the render function calls getStyles({ classNames: ... }) with a per-call
+    // override. Both sets of per-slot classes should appear in the output.
+    const Foo = defineCompound({
+      name: 'Foo',
+      classes: { root: 'foo-root', child: 'foo-child' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        child: {
+          render: ({ getStyles }) => (
+            // per-call classNames: adds 'per-call-child' to the child slot
+            <span {...getStyles({ classNames: { child: 'per-call-child' } })} />
+          ),
+        },
+      },
+    });
+
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <Foo>
+          {/* instance classNames: adds 'instance-child' to the child slot */}
+          <Foo.Child classNames={{ child: 'instance-child' }} />
+        </Foo>
+      </SoribashiProvider>,
+    );
+
+    const child = container.querySelector('.foo-child') as HTMLElement;
+    // Both layers must be present
+    expect(child.classList.contains('instance-child')).toBe(true);
+    expect(child.classList.contains('per-call-child')).toBe(true);
   });
 });
 

@@ -17,15 +17,20 @@ export interface ThemeComponentEntry<P = Record<string, unknown>> {
   readonly defaultProps: Partial<P>;
 }
 
+/** Returns true only for plain objects (prototype is Object.prototype or null). */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
 /** Type guard for runtime detection. */
 export function isThemeComponentEntry(value: unknown): value is ThemeComponentEntry {
-  if (typeof value !== 'object' || value === null) return false;
+  if (!isPlainObject(value)) return false;
   const v = value as Partial<ThemeComponentEntry> & { __soribashiThemeEntry?: unknown };
   return (
     v.__soribashiThemeEntry === true &&
     typeof v.name === 'string' &&
-    typeof v.defaultProps === 'object' &&
-    v.defaultProps !== null &&
-    !Array.isArray(v.defaultProps)
+    isPlainObject(v.defaultProps)
   );
 }

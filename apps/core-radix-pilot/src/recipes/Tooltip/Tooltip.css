@@ -30,7 +30,8 @@
   box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
   z-index: 50;
   max-width: 18rem;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: normal;
   /* Motion radiates from the trigger via Radix's transform-origin. */
   transform-origin: var(--radix-tooltip-content-transform-origin, center);
   animation-duration: 150ms;
@@ -44,28 +45,28 @@
  */
 .cr-Tooltip-content[data-state="delayed-open"][data-side="top"],
 .cr-Tooltip-content[data-state="instant-open"][data-side="top"] {
-  animation-name: cr-Tooltip-enter-from-bottom;
+  animation-name: cr-tooltip-enter-from-bottom;
   animation-timing-function: ease-out;
 }
 .cr-Tooltip-content[data-state="delayed-open"][data-side="right"],
 .cr-Tooltip-content[data-state="instant-open"][data-side="right"] {
-  animation-name: cr-Tooltip-enter-from-left;
+  animation-name: cr-tooltip-enter-from-left;
   animation-timing-function: ease-out;
 }
 .cr-Tooltip-content[data-state="delayed-open"][data-side="bottom"],
 .cr-Tooltip-content[data-state="instant-open"][data-side="bottom"] {
-  animation-name: cr-Tooltip-enter-from-top;
+  animation-name: cr-tooltip-enter-from-top;
   animation-timing-function: ease-out;
 }
 .cr-Tooltip-content[data-state="delayed-open"][data-side="left"],
 .cr-Tooltip-content[data-state="instant-open"][data-side="left"] {
-  animation-name: cr-Tooltip-enter-from-right;
+  animation-name: cr-tooltip-enter-from-right;
   animation-timing-function: ease-out;
 }
 
 /* --- OUT animation ------------------------------------------------------- */
 .cr-Tooltip-content[data-state="closed"] {
-  animation-name: cr-Tooltip-exit;
+  animation-name: cr-tooltip-exit;
   animation-timing-function: ease-in;
 }
 
@@ -74,29 +75,29 @@
 }
 
 /* Side=top → tooltip is above trigger → enter FROM bottom (closer to trigger). */
-@keyframes cr-Tooltip-enter-from-bottom {
+@keyframes cr-tooltip-enter-from-bottom {
   from { opacity: 0; transform: translateY(8px)  scale(0.95); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 /* Side=right → tooltip is right of trigger → enter FROM left. */
-@keyframes cr-Tooltip-enter-from-left {
+@keyframes cr-tooltip-enter-from-left {
   from { opacity: 0; transform: translateX(-8px) scale(0.95); }
   to   { opacity: 1; transform: translateX(0)    scale(1); }
 }
 /* Side=bottom → tooltip is below trigger → enter FROM top. */
-@keyframes cr-Tooltip-enter-from-top {
+@keyframes cr-tooltip-enter-from-top {
   from { opacity: 0; transform: translateY(-8px) scale(0.95); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 /* Side=left → tooltip is left of trigger → enter FROM right. */
-@keyframes cr-Tooltip-enter-from-right {
+@keyframes cr-tooltip-enter-from-right {
   from { opacity: 0; transform: translateX(8px)  scale(0.95); }
   to   { opacity: 1; transform: translateX(0)    scale(1); }
 }
 
 /* Exit: symmetric fade + scale-down (no slide; matches shadcn's
  * data-[state=closed]:animate-out fade-out-0 zoom-out-95). */
-@keyframes cr-Tooltip-exit {
+@keyframes cr-tooltip-exit {
   from { opacity: 1; transform: scale(1); }
   to   { opacity: 0; transform: scale(0.95); }
 }

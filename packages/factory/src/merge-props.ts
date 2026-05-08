@@ -11,7 +11,7 @@ export function mergeProps(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = { ...slotProps };
 
-  for (const key in childProps) {
+  for (const key of Object.keys(childProps)) {
     const slotValue = slotProps[key];
     const childValue = childProps[key];
 

@@ -60,4 +60,16 @@ describe('mergeProps', () => {
     expect(merged.onClick).toBe(slotHandler);
     expect(merged['data-slot']).toBe('root');
   });
+
+  it('does not iterate inherited enumerable properties', () => {
+    // Build an object with an enumerable inherited property using Object.create
+    // (class prototype can't be replaced in strict mode).
+    const proto = { inherited: 'should-not-merge' };
+    const child = Object.assign(Object.create(proto) as Record<string, unknown>, {
+      own: 'own-value',
+    });
+    const merged = mergeProps({}, child as Record<string, unknown>);
+    expect(merged.own).toBe('own-value');
+    expect(merged.inherited).toBeUndefined();
+  });
 });

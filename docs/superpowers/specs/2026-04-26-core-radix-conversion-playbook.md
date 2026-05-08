@@ -362,18 +362,19 @@ Unlike the Wave 1 Button recipe — which destructures all seven styles-API fram
 ```tsx
 // Content part — destructures own props alongside framework keys
 content: {
-  render: ({ getStyles, props, ctx, children }) => {
-    const contentProps = props as TooltipContentProps;
-    const showArrow = contentProps.withArrow !== false;
+  render: ({ getStyles, props, ctx, children }: PartRenderCtx<TooltipContentProps, TooltipCtxExtras>) => {
+    const showArrow = props.withArrow !== false;
     return (
       <RadixTooltip.Portal>
         <RadixTooltip.Content
           side={ctx.side}
-          sideOffset={contentProps.sideOffset ?? ctx.sideOffset}
+          sideOffset={props.sideOffset ?? ctx.sideOffset}
           {...getStyles()}
         >
           {children}
-          {showArrow && <RadixTooltip.Arrow {...getStyles({ part: 'arrow' })} />}
+          {showArrow && (
+            <RadixTooltip.Arrow {...getStyles({ part: 'arrow' })} />
+          )}
         </RadixTooltip.Content>
       </RadixTooltip.Portal>
     );
