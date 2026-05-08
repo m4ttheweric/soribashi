@@ -2,6 +2,19 @@ import type { ComponentThemeConfig, ThemeDefinition } from './types.ts';
 import { isThemeComponentEntry } from './theme-component-entry.ts';
 
 /**
+ * Safely converts an unknown value to a string for error messages.
+ * JSON.stringify throws on circular references, BigInt, etc.; this wrapper
+ * falls back gracefully instead of obscuring the original error.
+ */
+function describe(value: unknown): string {
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return Object.prototype.toString.call(value);
+  }
+}
+
+/**
  * Normalizes `ThemeDefinition['components']` (either an array of
  * `ThemeComponentEntry` objects or an already-normalized record) into the
  * internal `Record<string, ComponentThemeConfig>` shape.
@@ -20,7 +33,7 @@ export function normalizeComponents(
       if (!isThemeComponentEntry(entry)) {
         throw new Error(
           `createTheme: components array contains a non-ThemeComponentEntry value. ` +
-          `Use Component.withDefaults({...}) to construct entries; got: ${JSON.stringify(entry)}`,
+          `Use Component.withDefaults({...}) to construct entries; got: ${describe(entry)}`,
         );
       }
       // Last-write-wins: later entries override earlier ones with the same name.

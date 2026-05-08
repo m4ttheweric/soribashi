@@ -1,4 +1,4 @@
-import { forwardRef, useContext, type CSSProperties, type ReactNode, type Ref } from 'react';
+import { forwardRef, useContext, type ComponentPropsWithoutRef, type CSSProperties, type ElementType, type ReactNode, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
@@ -6,6 +6,7 @@ import { createSafeContext } from './create-safe-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesResult } from './types/render-context.ts';
+import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -17,7 +18,7 @@ import type { GetStylesResult } from './types/render-context.ts';
 export interface PartRenderCtx<TProps, TCtxExtra> {
   props: TProps;
   /** Defaults to the part's own slot; pass { part: 'otherSlot' } to target sibling slots. */
-  getStyles: (opts?: { part?: string }) => { className: string; style?: CSSProperties };
+  getStyles: (opts?: { part?: string }) => GetStylesResult;
   ctx: TCtxExtra & { variant: string | undefined };
   children?: ReactNode;
   ref: Ref<unknown>;
@@ -96,9 +97,33 @@ interface CompoundContextValue<TCtxExtra> {
 // Return type helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Constructs a minimal FactoryPayload from a part config so that StylesApiProps /
+ * CompoundStylesApiProps can be parameterised without needing the full payload.
+ */
+type PartPayload<TPartConfig> = {
+  props: ExtractPartProps<TPartConfig>;
+  stylesNames: string;
+} & FactoryPayload;
+
+/**
+ * For polymorphic parts: extract the default element type and produce the
+ * element-attribute intersection (omitting keys already declared by the part's
+ * own props). Falls back to `{ as?: ElementType }` for non-polymorphic parts.
+ */
+type ExtractPartElementAttrs<C> =
+  C extends PolymorphicPartConfig<any, any> & { defaultElement: infer D }
+    ? D extends keyof JSX.IntrinsicElements
+      ? Omit<ComponentPropsWithoutRef<D>, keyof ExtractPartProps<C>> & { as?: ElementType }
+      : { as?: ElementType }
+    : {};
+
 type PartsNamespace<TParts extends Record<string, PartConfig<any, any>>> = {
   [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]: React.ForwardRefExoticComponent<
-    ExtractPartProps<TParts[K]> & React.RefAttributes<unknown>
+    ExtractPartProps<TParts[K]>
+    & ExtractPartElementAttrs<TParts[K]>
+    & CompoundStylesApiProps<PartPayload<TParts[K]>>
+    & React.RefAttributes<unknown>
   > & {
     withDefaults: (
       defaults: Partial<ExtractPartProps<TParts[K]>>,
@@ -109,7 +134,9 @@ type PartsNamespace<TParts extends Record<string, PartConfig<any, any>>> = {
 
 type CompoundComponent<TParts extends Record<string, PartConfig<any, any>>> =
   React.ForwardRefExoticComponent<
-    ExtractPartProps<TParts['root']> & React.RefAttributes<unknown>
+    ExtractPartProps<TParts['root']>
+    & StylesApiProps<PartPayload<TParts['root']>>
+    & React.RefAttributes<unknown>
   > & PartsNamespace<TParts> & {
     withDefaults: (
       defaults: Partial<ExtractPartProps<TParts['root']>>,
@@ -208,8 +235,8 @@ export function defineCompound<
 
     /** Adapts the raw getStyles(selector) into the compound API getStyles({ part? }). */
     const getStylesStr = getStyles as (selector: string) => GetStylesResult;
-    const rootGetStyles = (opts?: { part?: string }) =>
-      getStylesStr(opts?.part ?? 'root') as { className: string; style?: CSSProperties };
+    const rootGetStyles = (opts?: { part?: string }): GetStylesResult =>
+      getStylesStr(opts?.part ?? 'root');
 
     return (
       <CompoundContext.Provider value={ctxValue}>
@@ -256,11 +283,11 @@ export function defineCompound<
         const { as: asProp, ...rest } = merged as { as?: keyof JSX.IntrinsicElements; [key: string]: unknown };
         const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
 
-        const partGetStyles = (opts?: { part?: string }) => {
+        const partGetStyles = (opts?: { part?: string }): GetStylesResult => {
           if (rawCtx === null) {
             throw new Error(`<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`);
           }
-          return rawCtx.getStyles(opts?.part ?? partKey) as { className: string; style?: CSSProperties };
+          return rawCtx.getStyles(opts?.part ?? partKey);
         };
 
         const ctxToPass = rawCtx === null
@@ -302,16 +329,13 @@ export function defineCompound<
       );
 
       /** Wraps the shared getStyles with this part's slot as the default. Throws when outside Root. */
-      const partGetStyles = (opts?: { part?: string }) => {
+      const partGetStyles = (opts?: { part?: string }): GetStylesResult => {
         if (rawCtx === null) {
           throw new Error(
             `<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`,
           );
         }
-        return rawCtx.getStyles(opts?.part ?? partKey) as {
-          className: string;
-          style?: CSSProperties;
-        };
+        return rawCtx.getStyles(opts?.part ?? partKey);
       };
 
       const ctxToPass = rawCtx === null

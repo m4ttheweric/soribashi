@@ -61,4 +61,26 @@ describe('createTheme components array-form normalization', () => {
     });
     expect(theme.components.Button).toEqual({ defaultProps: { variant: 'outline' } });
   });
+
+  it('throws a descriptive error (without itself throwing) for a circular-ref entry', () => {
+    // Build a circular-reference object — JSON.stringify would throw on this.
+    const circular: Record<string, unknown> = { key: 'value' };
+    circular['self'] = circular;
+
+    expect(() =>
+      createTheme({
+        tokens: baseTokens,
+        components: [circular] as any,
+      }),
+    ).toThrow(/non-ThemeComponentEntry/);
+  });
+
+  it('throws a descriptive error for a plain object (non-circular) passed as an entry', () => {
+    expect(() =>
+      createTheme({
+        tokens: baseTokens,
+        components: [{ variant: 'filled' }] as any,
+      }),
+    ).toThrow(/Use Component\.withDefaults/);
+  });
 });
