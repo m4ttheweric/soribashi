@@ -492,7 +492,7 @@ describe('defineCompound — ctx.variant typed as TVariants[number] | undefined'
       classes: { root: 'foo' },
       parts: {
         root: {
-          render: ({ ctx, getStyles, children }) => {
+          render: ({ ctx, getStyles, children }: PartRenderCtx<any, object, readonly ['a', 'b']>) => {
             // ctx.variant should be 'a' | 'b' | undefined
             const _v: 'a' | 'b' | undefined = ctx.variant;
             // @ts-expect-error — 'c' is not in the variants tuple

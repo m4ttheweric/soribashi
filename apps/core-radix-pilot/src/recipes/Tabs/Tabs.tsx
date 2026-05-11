@@ -91,9 +91,14 @@ export const Tabs = defineCompound({
     trigger: {
       polymorphic: true,
       defaultElement: 'button',
-      render: (rawCtx: PartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>) => {
-        const { Element, ref, getStyles, ctx, props, children } =
-          rawCtx as unknown as PolymorphicPartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>;
+      render: ({
+        Element,
+        ref,
+        getStyles,
+        ctx,
+        props,
+        children,
+      }: PolymorphicPartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>) => {
         const Tag = Element as ElementType;
         return (
           <RadixTabs.Trigger asChild value={props.value} disabled={props.disabled}>
