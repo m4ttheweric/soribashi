@@ -74,6 +74,15 @@ export interface StandardPartConfig<TProps, TCtxExtra, TVariants extends readonl
   defaults?: Partial<TProps>;
 }
 
+/**
+ * Polymorphic-part config. Standalone (NOT `extends StandardPartConfig`) by
+ * design — extending would force `render`'s parameter type to be a contravariant
+ * subtype of StandardPartConfig.render's (PartRenderCtx), which TypeScript
+ * rejects with TS2430 because PolymorphicPartRenderCtx adds fields (Element,
+ * ref) that PartRenderCtx lacks. Wave 3 in-wave factory fix (Task 3.5) settled
+ * on the standalone shape; do not re-introduce `extends StandardPartConfig`
+ * without first solving the variance constraint. See OQ-7 in the Wave 3 spec.
+ */
 export interface PolymorphicPartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
   polymorphic: true;
   defaultElement: keyof JSX.IntrinsicElements;

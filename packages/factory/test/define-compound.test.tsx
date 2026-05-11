@@ -533,14 +533,17 @@ describe('defineCompound — ctx.variant typed as TVariants[number] | undefined'
       parts: {
         root: {
           render: ({ ctx }) => {
-            // @ts-expect-error — regression canary: this line errors iff TVariants
-            // inference is restored (ctx would no longer be `any`, making bogus field
-            // access a TS2339 error). If this expect-error itself starts erroring, that
-            // means inference came back and the AnyPartConfig workaround should be removed.
-            const _ = ctx.thisFieldDoesNotExist;
-            void _;
-            return null;
-          },
+          // Canary: ctx is `any` today (per the AnyPartConfig bound in
+          // packages/factory/src/define-compound.tsx). This bogus field access
+          // compiles silently. If TVariants/TCtxExtras inference is ever
+          // restored, `ctx` narrows away from `any` and this line starts
+          // producing TS2339 — typecheck fails, and the canary fires. Update
+          // this test (and the related OQ-7 in the Wave 3 spec) when that
+          // happens.
+          const _ = ctx.thisFieldDoesNotExist;
+          void _;
+          return null;
+        },
         },
       },
     });
