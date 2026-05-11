@@ -286,4 +286,99 @@ describe('Tabs recipe', () => {
     expect(ref.current?.tagName).toBe('A');
     expect(ref.current?.getAttribute('href')).toBe('/x');
   });
+
+  it('disabled Trigger does not fire onValueChange when clicked', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      withProviders(
+        <Tabs defaultValue="a" onValueChange={onValueChange}>
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+            <Tabs.Trigger value="b" disabled>B</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+          <Tabs.Content value="b">content-b</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    await user.click(screen.getByRole('tab', { name: 'B' }));
+    expect(onValueChange).not.toHaveBeenCalled();
+    expect(screen.getByText('content-a')).toBeInTheDocument();
+  });
+
+  it('disabled Trigger is skipped by arrow-key navigation', async () => {
+    const user = userEvent.setup();
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+            <Tabs.Trigger value="b" disabled>B</Tabs.Trigger>
+            <Tabs.Trigger value="c">C</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+          <Tabs.Content value="b">content-b</Tabs.Content>
+          <Tabs.Content value="c">content-c</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    screen.getByRole('tab', { name: 'A' }).focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: 'C' })).toHaveFocus();
+  });
+
+  it('forceMount keeps inactive Content mounted in DOM', () => {
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+            <Tabs.Trigger value="b">B</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+          <Tabs.Content value="b" forceMount>content-b</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    // Active content is visible
+    expect(screen.getByText('content-a')).toBeInTheDocument();
+    // Inactive but forceMount'd content is still in DOM (hidden via Radix's `hidden` attr)
+    expect(screen.getByText('content-b')).toBeInTheDocument();
+    expect(screen.getByText('content-b').closest('[role="tabpanel"]'))
+      .toHaveAttribute('data-state', 'inactive');
+  });
+
+  it('throws when Tabs.Trigger is rendered outside <Tabs>', () => {
+    expect(() =>
+      render(
+        <SoribashiProvider theme={theme}>
+          <Tabs.Trigger value="a">orphan</Tabs.Trigger>
+        </SoribashiProvider>,
+      ),
+    ).toThrow(/<Tabs\.Trigger> must be inside <Tabs>/);
+  });
+
+  it('throws when Tabs.Content is rendered outside <Tabs>', () => {
+    expect(() =>
+      render(
+        <SoribashiProvider theme={theme}>
+          <Tabs.Content value="a">orphan</Tabs.Content>
+        </SoribashiProvider>,
+      ),
+    ).toThrow(/<Tabs\.Content> must be inside <Tabs>/);
+  });
+
+  it('throws when Tabs.List is rendered outside <Tabs>', () => {
+    expect(() =>
+      render(
+        <SoribashiProvider theme={theme}>
+          <Tabs.List>orphan</Tabs.List>
+        </SoribashiProvider>,
+      ),
+    ).toThrow(/<Tabs\.List> must be inside <Tabs>/);
+  });
 });
