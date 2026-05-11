@@ -5,9 +5,9 @@ import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SoribashiProvider } from '@soribashi/core';
+import { SoribashiProvider, createTheme } from '@soribashi/core';
 import { theme } from '../../theme/index.ts';
-import { Tabs } from './Tabs.tsx';
+import { Tabs, type TabsRootProps, type TabsContentProps } from './Tabs.tsx';
 
 function withProviders(node: React.ReactNode) {
   return <SoribashiProvider theme={theme}>{node}</SoribashiProvider>;
@@ -380,5 +380,88 @@ describe('Tabs recipe', () => {
         </SoribashiProvider>,
       ),
     ).toThrow(/<Tabs\.List> must be inside <Tabs>/);
+  });
+
+  it('className from instance props lands on Tabs.Trigger', () => {
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a" className="custom-trigger-class">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    const tab = screen.getByRole('tab', { name: 'A' });
+    expect(tab.className).toContain('cr-Tabs-trigger');
+    expect(tab.className).toContain('custom-trigger-class');
+  });
+
+  it('className from instance props lands on Tabs.Content', () => {
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a" className="custom-content-class">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    const panel = screen.getByRole('tabpanel');
+    expect(panel.className).toContain('cr-Tabs-content');
+    expect(panel.className).toContain('custom-content-class');
+  });
+
+  it('Tabs.withDefaults({ variant: "pills" }) round-trips through createTheme', () => {
+    const themeWithDefaults = createTheme({
+      tokens: theme.tokens,
+      semantic: theme.semantic,
+      components: [
+        Tabs.withDefaults({ variant: 'pills' } as Partial<TabsRootProps>),
+      ],
+    });
+    render(
+      <SoribashiProvider theme={themeWithDefaults}>
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>
+      </SoribashiProvider>,
+    );
+
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'pills');
+    expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('data-variant', 'pills');
+  });
+
+  it('Tabs.Content.withDefaults({ forceMount: true }) round-trips through createTheme', () => {
+    const themeWithDefaults = createTheme({
+      tokens: theme.tokens,
+      semantic: theme.semantic,
+      components: [
+        Tabs.Content.withDefaults({ forceMount: true } as Partial<TabsContentProps>),
+      ],
+    });
+    render(
+      <SoribashiProvider theme={themeWithDefaults}>
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+            <Tabs.Trigger value="b">B</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+          <Tabs.Content value="b">content-b</Tabs.Content>
+        </Tabs>
+      </SoribashiProvider>,
+    );
+
+    // Even though 'a' is the active tab, 'b' content is mounted via withDefaults forceMount
+    expect(screen.getByText('content-a')).toBeInTheDocument();
+    expect(screen.getByText('content-b')).toBeInTheDocument();
   });
 });
