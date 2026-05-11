@@ -143,7 +143,7 @@ describe('Tabs recipe', () => {
   });
 
   it('default variant applies data-variant attribute on List, Root, and Triggers', () => {
-    render(
+    const { container } = render(
       withProviders(
         <Tabs defaultValue="a">
           <Tabs.List>
@@ -154,6 +154,9 @@ describe('Tabs recipe', () => {
       ),
     );
 
+    // Root is the outermost element RadixTabs.Root renders.
+    const root = container.firstChild as HTMLElement;
+    expect(root).toHaveAttribute('data-variant', 'default');
     expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'default');
     expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('data-variant', 'default');
   });
