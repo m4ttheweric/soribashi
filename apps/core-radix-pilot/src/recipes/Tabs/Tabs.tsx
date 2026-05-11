@@ -60,7 +60,20 @@ export const Tabs = defineCompound({
     content: 'cr-Tabs-content',
   },
   defaults: { variant: 'default' } as Partial<TabsRootProps>,
-  vars: (_theme, _props) => ({}),
+  vars: (_theme, props) => ({
+    // Variant-driven token vars used by Tabs.css's [data-variant='pills']
+    // block for the active-pill background/foreground. Other variants
+    // don't read these but the resolver still emits sentinel values so
+    // tests can assert the per-variant routing.
+    list: {
+      '--cr-tabs-active-bg':
+        props.variant === 'pills' ? 'var(--color-primary-500)' : 'transparent',
+      '--cr-tabs-active-color':
+        props.variant === 'pills'
+          ? 'var(--surface-default-foreground, var(--color-neutral-0))'
+          : 'var(--text-default)',
+    },
+  }),
   context: (_rootProps) => ({} as TabsCtxExtras),
   parts: {
     root: {

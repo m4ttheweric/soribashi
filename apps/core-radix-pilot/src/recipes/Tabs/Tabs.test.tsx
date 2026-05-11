@@ -141,4 +141,76 @@ describe('Tabs recipe', () => {
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('tab', { name: 'A' })).toHaveFocus();
   });
+
+  it('default variant applies data-variant attribute on List, Root, and Triggers', () => {
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'default');
+    expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('data-variant', 'default');
+  });
+
+  it('variant="outline" propagates data-variant on List + Trigger', () => {
+    render(
+      withProviders(
+        <Tabs variant="outline" defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'outline');
+    expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('data-variant', 'outline');
+  });
+
+  it('variant="pills" sets the active-pill bg + color vars on the List slot', () => {
+    render(
+      withProviders(
+        <Tabs variant="pills" defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    const list = screen.getByRole('tablist') as HTMLElement;
+    expect(list.style.getPropertyValue('--cr-tabs-active-bg')).toBe(
+      'var(--color-primary-500)',
+    );
+    expect(list.style.getPropertyValue('--cr-tabs-active-color')).toBe(
+      'var(--surface-default-foreground, var(--color-neutral-0))',
+    );
+  });
+
+  it('non-pills variant: the active-pill vars resolve to transparent + text-default', () => {
+    render(
+      withProviders(
+        <Tabs variant="default" defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    const list = screen.getByRole('tablist') as HTMLElement;
+    expect(list.style.getPropertyValue('--cr-tabs-active-bg')).toBe('transparent');
+    expect(list.style.getPropertyValue('--cr-tabs-active-color')).toBe(
+      'var(--text-default)',
+    );
+  });
 });
