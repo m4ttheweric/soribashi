@@ -1,6 +1,7 @@
 /**
  * Tabs recipe tests — Wave 3 pilot
  */
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -215,5 +216,74 @@ describe('Tabs recipe', () => {
     expect(list.style.getPropertyValue('--cr-tabs-active-color')).toBe(
       'var(--text-default)',
     );
+  });
+
+  it('Tabs.Trigger defaults to a <button> element', () => {
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    const tab = screen.getByRole('tab', { name: 'A' });
+    expect(tab.tagName).toBe('BUTTON');
+  });
+
+  it('Tabs.Trigger with as="a" renders an anchor element', () => {
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a" as="a" href="/dashboard">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    const tab = screen.getByRole('tab', { name: 'A' });
+    expect(tab.tagName).toBe('A');
+    expect(tab).toHaveAttribute('href', '/dashboard');
+    expect(tab).toHaveAttribute('data-state', 'active');
+  });
+
+  it('Tabs.Trigger forwards refs to the rendered button (default element)', () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a" ref={ref}>A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    expect(ref.current).not.toBeNull();
+    expect(ref.current?.tagName).toBe('BUTTON');
+  });
+
+  it('Tabs.Trigger forwards refs to the rendered anchor when as="a"', () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(
+      withProviders(
+        <Tabs defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a" as="a" href="/x" ref={ref}>A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content-a</Tabs.Content>
+        </Tabs>,
+      ),
+    );
+
+    expect(ref.current).not.toBeNull();
+    expect(ref.current?.tagName).toBe('A');
+    expect(ref.current?.getAttribute('href')).toBe('/x');
   });
 });

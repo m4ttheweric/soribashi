@@ -12,7 +12,7 @@
  * Spec: docs/superpowers/specs/2026-05-10-wave-3-tabs-pilot-design.md
  */
 import * as RadixTabs from '@radix-ui/react-tabs';
-import type { ElementType, ReactNode } from 'react';
+import type { CSSProperties, ElementType, ReactNode } from 'react';
 import {
   defineCompound,
   type PartRenderCtx,
@@ -112,10 +112,41 @@ export const Tabs = defineCompound({
         props,
         children,
       }: PolymorphicPartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>) => {
+        // Destructure own props + the styles-API framework keys so they don't
+        // get spread onto <Element>. Wave 1 playbook § 2.1 "Render body
+        // destructure" — same pattern adapted to a polymorphic compound part.
+        const {
+          value,
+          disabled,
+          // styles-API framework keys (consumed by useStyles via getStyles)
+          className,
+          style,
+          classNames,
+          styles,
+          unstyled,
+          attributes,
+          vars,
+          // children is in the render ctx directly; drop from rest
+          children: _ignoredChildren,
+          ...rest
+        } = props as TabsTriggerOwnProps & {
+          className?: string;
+          style?: CSSProperties;
+          classNames?: unknown;
+          styles?: unknown;
+          unstyled?: unknown;
+          attributes?: unknown;
+          vars?: unknown;
+        } & Record<string, unknown>;
         const Tag = Element as ElementType;
         return (
-          <RadixTabs.Trigger asChild value={props.value} disabled={props.disabled}>
-            <Tag ref={ref} data-variant={ctx.variant} {...getStyles()}>
+          <RadixTabs.Trigger asChild value={value} disabled={disabled}>
+            <Tag
+              ref={ref}
+              data-variant={ctx.variant}
+              {...rest}
+              {...getStyles()}
+            >
               {children}
             </Tag>
           </RadixTabs.Trigger>
