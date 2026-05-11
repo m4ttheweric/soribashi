@@ -12,8 +12,12 @@
  * Spec: docs/superpowers/specs/2026-05-10-wave-3-tabs-pilot-design.md
  */
 import * as RadixTabs from '@radix-ui/react-tabs';
-import type { ReactNode } from 'react';
-import { defineCompound, type PartRenderCtx } from '@soribashi/core';
+import type { ElementType, ReactNode } from 'react';
+import {
+  defineCompound,
+  type PartRenderCtx,
+  type PolymorphicPartRenderCtx,
+} from '@soribashi/core';
 import './Tabs.css';
 
 type Variant = 'default' | 'outline' | 'pills';
@@ -27,6 +31,18 @@ export interface TabsRootProps {
 }
 
 export interface TabsListProps {
+  children?: ReactNode;
+}
+
+export interface TabsTriggerOwnProps {
+  value: string;
+  disabled?: boolean;
+  children?: ReactNode;
+}
+
+export interface TabsContentProps {
+  value: string;
+  forceMount?: boolean;
   children?: ReactNode;
 }
 
@@ -64,6 +80,43 @@ export const Tabs = defineCompound({
         <RadixTabs.List data-variant={ctx.variant} {...getStyles()}>
           {children}
         </RadixTabs.List>
+      ),
+    },
+    // Trigger — class-2 AND polymorphic. defaultElement: 'button'.
+    // Internally always uses RadixTabs.Trigger with asChild so Radix's
+    // state-machine props (data-state, aria-selected, click handler,
+    // keyboard handlers) merge onto whatever <Element> the consumer chose.
+    // Public API: <Tabs.Trigger as="a" href="/foo" value="x">label</Tabs.Trigger>.
+    // No public asChild — `as` is the canonical polymorphism mechanism here.
+    trigger: {
+      polymorphic: true,
+      defaultElement: 'button',
+      render: (rawCtx: PartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>) => {
+        const { Element, ref, getStyles, ctx, props, children } =
+          rawCtx as unknown as PolymorphicPartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>;
+        const Tag = Element as ElementType;
+        return (
+          <RadixTabs.Trigger asChild value={props.value} disabled={props.disabled}>
+            <Tag ref={ref} data-variant={ctx.variant} {...getStyles()}>
+              {children}
+            </Tag>
+          </RadixTabs.Trigger>
+        );
+      },
+    },
+    content: {
+      render: ({
+        getStyles,
+        props,
+        children,
+      }: PartRenderCtx<TabsContentProps, TabsCtxExtras>) => (
+        <RadixTabs.Content
+          value={props.value}
+          forceMount={props.forceMount || undefined}
+          {...getStyles()}
+        >
+          {children}
+        </RadixTabs.Content>
       ),
     },
   },
