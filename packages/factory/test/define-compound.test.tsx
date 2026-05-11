@@ -485,7 +485,11 @@ describe('defineCompound — StylesApiProps on consumer-facing types', () => {
 // ---------------------------------------------------------------------------
 
 describe('defineCompound — ctx.variant typed as TVariants[number] | undefined', () => {
-  it('ctx.variant is typed as TVariants[number] | undefined (type-level assertion)', () => {
+  it('TVariants flows when render param is explicitly annotated (PartRenderCtx<...>)', () => {
+    // Post-3.5: the factory's PartsRecord uses an AnyPartConfig bound (render: (ctx: any) =>
+    // ReactNode) rather than a Standard | Polymorphic union, which erases TVariants for
+    // un-annotated inline renders. When the render param IS explicitly annotated with
+    // PartRenderCtx<TProps, TCtxExtras, TVariants>, TVariants flows correctly.
     defineCompound({
       name: 'Foo',
       variants: ['a', 'b'] as const,
@@ -505,6 +509,41 @@ describe('defineCompound — ctx.variant typed as TVariants[number] | undefined'
       },
     });
     // Runtime assertion — function reaches here without throwing
+    expect(true).toBe(true);
+  });
+
+  it('TVariants does NOT auto-flow into un-annotated inline render (post-3.5 regression)', () => {
+    // When the render param is NOT explicitly annotated, the AnyPartConfig bound means ctx
+    // is typed as `any`. This is a known regression from the Wave 3 in-wave factory fix
+    // (Task 3.5) — changing PartsRecord's constraint to AnyPartConfig was required to avoid
+    // ~150 TS contextual-inference failures caused by the Standard | Polymorphic union.
+    //
+    // Regression canary: `ctx` is `any`, so `ctx.thisFieldDoesNotExist` compiles without
+    // error. If TVariants inference is ever restored (AnyPartConfig workaround removed),
+    // `ctx` will be narrowly typed and this access will error with TS2339 — at which point
+    // this test needs updating alongside the broader inference fix.
+    // See define-compound.tsx PolymorphicPartConfig history (Wave 3 in-wave factory fix).
+    defineCompound({
+      name: 'CycleProbe',
+      variants: ['a', 'b'] as const,
+      classes: { root: 'root' },
+      defaults: {},
+      vars: () => ({}),
+      context: () => ({}),
+      parts: {
+        root: {
+          render: ({ ctx }) => {
+            // @ts-expect-error — regression canary: this line errors iff TVariants
+            // inference is restored (ctx would no longer be `any`, making bogus field
+            // access a TS2339 error). If this expect-error itself starts erroring, that
+            // means inference came back and the AnyPartConfig workaround should be removed.
+            const _ = ctx.thisFieldDoesNotExist;
+            void _;
+            return null;
+          },
+        },
+      },
+    });
     expect(true).toBe(true);
   });
 });
