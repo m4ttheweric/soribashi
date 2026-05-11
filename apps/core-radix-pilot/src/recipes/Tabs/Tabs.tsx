@@ -60,8 +60,8 @@ export const Tabs = defineCompound({
       ),
     },
     list: {
-      render: ({ props, getStyles, ctx, children }: PartRenderCtx<TabsListProps, TabsCtxExtras>) => (
-        <RadixTabs.List data-variant={ctx.variant} {...props} {...getStyles()}>
+      render: ({ getStyles, ctx, children }: PartRenderCtx<TabsListProps, TabsCtxExtras>) => (
+        <RadixTabs.List data-variant={ctx.variant} {...getStyles()}>
           {children}
         </RadixTabs.List>
       ),

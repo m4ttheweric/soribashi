@@ -16,14 +16,14 @@ describe('Tabs recipe', () => {
     render(
       withProviders(
         <Tabs defaultValue="a">
-          <Tabs.List data-testid="list">
+          <Tabs.List>
             <span>list-child</span>
           </Tabs.List>
         </Tabs>,
       ),
     );
 
-    expect(screen.getByTestId('list')).toBeInTheDocument();
+    expect(screen.getByRole('tablist')).toBeInTheDocument();
     expect(screen.getByText('list-child')).toBeInTheDocument();
   });
 });
