@@ -26,6 +26,7 @@
  *   - Activity list: relative timestamps wrapped with Tooltip showing exact datetime
  *   - Status badges: wrapped with Tooltip explaining each status
  */
+import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 
 export function ScreenReplica() {
@@ -150,6 +151,36 @@ export function ScreenReplica() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/*
+        Claim detail side-panel tabs — mirrors CVI's RightToolbar PanelTabs
+        pattern (Details / Activity / Notes). Default variant used (no `variant`
+        prop) so the underline-on-active styling matches existing CVI styling.
+      */}
+      <section
+        className="rounded-md p-6 mb-6"
+        style={{
+          background: 'var(--surface-default)',
+          border: '1px solid var(--border-default)',
+        }}
+      >
+        <Tabs defaultValue="details">
+          <Tabs.List>
+            <Tabs.Trigger value="details">Details</Tabs.Trigger>
+            <Tabs.Trigger value="activity">Activity</Tabs.Trigger>
+            <Tabs.Trigger value="notes">Notes</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="details">
+            <p style={{ color: 'var(--text-default)' }}>Claim details placeholder.</p>
+          </Tabs.Content>
+          <Tabs.Content value="activity">
+            <p style={{ color: 'var(--text-default)' }}>Activity feed placeholder.</p>
+          </Tabs.Content>
+          <Tabs.Content value="notes">
+            <p style={{ color: 'var(--text-default)' }}>Notes placeholder.</p>
+          </Tabs.Content>
+        </Tabs>
       </section>
 
       {/*
