@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { SoribashiProvider, createTheme } from '@soribashi/core';
 import { theme } from '../../theme/index.ts';
 import { Tabs, type TabsRootProps, type TabsContentProps } from './Tabs.tsx';
+import classes from './Tabs.module.css';
 
 function withProviders(node: React.ReactNode) {
   return <SoribashiProvider theme={theme}>{node}</SoribashiProvider>;
@@ -396,7 +397,7 @@ describe('Tabs recipe', () => {
     );
 
     const tab = screen.getByRole('tab', { name: 'A' });
-    expect(tab.className).toContain('cr-Tabs-trigger');
+    expect(tab.className).toContain(classes.trigger);
     expect(tab.className).toContain('custom-trigger-class');
   });
 
@@ -413,7 +414,7 @@ describe('Tabs recipe', () => {
     );
 
     const panel = screen.getByRole('tabpanel');
-    expect(panel.className).toContain('cr-Tabs-content');
+    expect(panel.className).toContain(classes.content);
     expect(panel.className).toContain('custom-content-class');
   });
 
