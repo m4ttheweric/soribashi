@@ -121,7 +121,7 @@ function ControlledCell() {
 export function TabsMatrix() {
   return (
     <div style={{ padding: '1.5rem', display: 'grid', gap: '1.5rem' }}>
-      <h2 style={{ margin: 0 }}>Tabs matrix</h2>
+      <h2 id="tabs-matrix" style={{ margin: 0 }}>Tabs matrix</h2>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
         {VARIANTS.map((v) => <VariantCell key={v} variant={v} />)}

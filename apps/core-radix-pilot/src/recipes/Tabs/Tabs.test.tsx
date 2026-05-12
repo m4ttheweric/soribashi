@@ -156,7 +156,8 @@ describe('Tabs recipe', () => {
     );
 
     // Root is the outermost element RadixTabs.Root renders.
-    const root = container.firstChild as HTMLElement;
+    const root = container.querySelector('[data-variant="default"]');
+    expect(root).not.toBeNull();
     expect(root).toHaveAttribute('data-variant', 'default');
     expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'default');
     expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('data-variant', 'default');

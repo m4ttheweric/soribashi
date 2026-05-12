@@ -1466,7 +1466,7 @@ That line is near line 559-561 of the playbook (line numbers may have shifted; g
 
 Replace the placeholder with:
 
-```markdown
+````markdown
 ### 2.3 Persistent navigational compound (Wave 3 — Tabs)
 
 Pattern for components with Radix anatomy, sibling parts in the same DOM tree (no portal), persistent active-state, and controlled-value passthrough — tabs, segmented controls, breadcrumb-like patterns.
@@ -1665,7 +1665,7 @@ export const Tabs = defineCompound({
 ```
 
 See `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx` for the live source (snippet verbatim as of Wave 3).
-```
+````
 
 - [ ] **Step 3: Commit**
 
