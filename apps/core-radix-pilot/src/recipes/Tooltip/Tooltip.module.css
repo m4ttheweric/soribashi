@@ -1,7 +1,7 @@
 /**
  * Tooltip recipe styles — Wave 2 pilot
  *
- * .cr-Tooltip-content: floating surface using the CSS custom properties
+ * .content: floating surface using the CSS custom properties
  * emitted by the vars resolver (--cr-tooltip-bg / --cr-tooltip-color).
  * These are injected as inline styles on the content slot by defineCompound
  * when the root's vars() callback runs.
@@ -16,11 +16,11 @@
  * Radix's <Presence> wrapper keeps the Content node mounted during the
  * data-state="closed" animation so the exit can complete cleanly.
  *
- * .cr-Tooltip-arrow: SVG fill matches the tooltip background for seamless
+ * .arrow: SVG fill matches the tooltip background for seamless
  * visual connection between arrow and content bubble.
  */
 
-.cr-Tooltip-content {
+.content {
   background: var(--cr-tooltip-bg);
   color: var(--cr-tooltip-color);
   padding: 0.5rem 0.75rem;
@@ -43,34 +43,34 @@
  * the trigger by 8px) and slides into final position. This matches shadcn's
  * `slide-in-from-{opposite-side}-2` pattern.
  */
-.cr-Tooltip-content[data-state="delayed-open"][data-side="top"],
-.cr-Tooltip-content[data-state="instant-open"][data-side="top"] {
+.content[data-state="delayed-open"][data-side="top"],
+.content[data-state="instant-open"][data-side="top"] {
   animation-name: cr-tooltip-enter-from-bottom;
   animation-timing-function: ease-out;
 }
-.cr-Tooltip-content[data-state="delayed-open"][data-side="right"],
-.cr-Tooltip-content[data-state="instant-open"][data-side="right"] {
+.content[data-state="delayed-open"][data-side="right"],
+.content[data-state="instant-open"][data-side="right"] {
   animation-name: cr-tooltip-enter-from-left;
   animation-timing-function: ease-out;
 }
-.cr-Tooltip-content[data-state="delayed-open"][data-side="bottom"],
-.cr-Tooltip-content[data-state="instant-open"][data-side="bottom"] {
+.content[data-state="delayed-open"][data-side="bottom"],
+.content[data-state="instant-open"][data-side="bottom"] {
   animation-name: cr-tooltip-enter-from-top;
   animation-timing-function: ease-out;
 }
-.cr-Tooltip-content[data-state="delayed-open"][data-side="left"],
-.cr-Tooltip-content[data-state="instant-open"][data-side="left"] {
+.content[data-state="delayed-open"][data-side="left"],
+.content[data-state="instant-open"][data-side="left"] {
   animation-name: cr-tooltip-enter-from-right;
   animation-timing-function: ease-out;
 }
 
 /* --- OUT animation ------------------------------------------------------- */
-.cr-Tooltip-content[data-state="closed"] {
+.content[data-state="closed"] {
   animation-name: cr-tooltip-exit;
   animation-timing-function: ease-in;
 }
 
-.cr-Tooltip-arrow {
+.arrow {
   fill: var(--cr-tooltip-bg);
 }
 

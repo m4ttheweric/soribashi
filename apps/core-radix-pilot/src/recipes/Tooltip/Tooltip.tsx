@@ -16,7 +16,7 @@
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
 import { defineCompound, type PartRenderCtx } from '@soribashi/core';
-import './Tooltip.css';
+import classes from './Tooltip.module.css';
 
 type Variant = 'default' | 'subtle';
 type Side = 'top' | 'right' | 'bottom' | 'left';
@@ -56,12 +56,7 @@ interface TooltipCtxExtras {
 export const Tooltip = defineCompound({
   name: 'Tooltip',
   variants: ['default', 'subtle'] as const,
-  classes: {
-    root: 'cr-Tooltip-root',
-    trigger: 'cr-Tooltip-trigger',
-    content: 'cr-Tooltip-content',
-    arrow: 'cr-Tooltip-arrow',
-  },
+  classes,
   defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
   vars: (_theme, props) => ({
     // Default variant uses surface.floating + its formalized foreground —

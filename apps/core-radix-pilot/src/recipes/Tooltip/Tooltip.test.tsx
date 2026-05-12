@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event';
 import { SoribashiProvider, createTheme } from '@soribashi/core';
 import { theme } from '../../theme/index.ts';
 import { Tooltip } from './Tooltip.tsx';
+import classes from './Tooltip.module.css';
 
 // ---------------------------------------------------------------------------
 // Test wrappers
@@ -104,7 +105,7 @@ describe('Tooltip recipe', () => {
     );
 
     const btn = screen.getByTestId('custom-btn');
-    expect(btn.className).toContain('cr-Tooltip-trigger');
+    expect(btn.className).toContain(classes.trigger);
   });
 
   it('renders content inside a portal (not inside the test container)', async () => {
@@ -125,8 +126,8 @@ describe('Tooltip recipe', () => {
     await screen.findByRole('tooltip', { name: 'portal-tooltip-text' });
 
     // Content is in document.body, NOT inside the test render container.
-    expect(container.querySelector('.cr-Tooltip-content')).toBeNull();
-    expect(document.body.querySelector('.cr-Tooltip-content')).not.toBeNull();
+    expect(container.querySelector(`.${classes.content}`)).toBeNull();
+    expect(document.body.querySelector(`.${classes.content}`)).not.toBeNull();
   });
 
   it('default variant applies the formalized floating-surface foreground vars', async () => {
@@ -145,7 +146,7 @@ describe('Tooltip recipe', () => {
     await user.hover(screen.getByText('default-trigger'));
     await screen.findByRole('tooltip', { name: 'default-tip-text' });
 
-    const contentDiv = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
+    const contentDiv = document.body.querySelector(`.${classes.content}`) as HTMLElement;
     expect(contentDiv).not.toBeNull();
     expect(contentDiv.style.getPropertyValue('--cr-tooltip-bg')).toBe('var(--surface-floating)');
     expect(contentDiv.style.getPropertyValue('--cr-tooltip-color')).toBe('var(--surface-floating-foreground)');
@@ -167,7 +168,7 @@ describe('Tooltip recipe', () => {
     await user.hover(screen.getByText('subtle-trigger'));
     await screen.findByRole('tooltip', { name: 'subtle-tip-text' });
 
-    const contentDiv = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
+    const contentDiv = document.body.querySelector(`.${classes.content}`) as HTMLElement;
     expect(contentDiv).not.toBeNull();
     expect(contentDiv.style.getPropertyValue('--cr-tooltip-bg')).toBe('var(--surface-raised)');
     expect(contentDiv.style.getPropertyValue('--cr-tooltip-color')).toBe('var(--text-default)');
@@ -206,10 +207,10 @@ describe('Tooltip recipe', () => {
     await user.hover(screen.getByText('t'));
     await screen.findByRole('tooltip', { name: 'hi' });
 
-    const content = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
+    const content = document.body.querySelector(`.${classes.content}`) as HTMLElement;
     expect(content).toBeTruthy();
     // Both the recipe's built-in class AND the instance's className must be present.
-    expect(content.className).toContain('cr-Tooltip-content');
+    expect(content.className).toContain(classes.content);
     expect(content.className).toContain('custom-content-class');
   });
 
@@ -235,9 +236,9 @@ describe('Tooltip recipe', () => {
     await user.hover(screen.getByText('wd-trigger'));
     await screen.findByRole('tooltip', { name: 'wd-tip' });
 
-    const content = document.body.querySelector('.cr-Tooltip-content') as HTMLElement;
+    const content = document.body.querySelector(`.${classes.content}`) as HTMLElement;
     expect(content).toBeTruthy();
-    expect(content.className).toContain('cr-Tooltip-content');
+    expect(content.className).toContain(classes.content);
     expect(content.className).toContain('theme-default-class');
   });
 });
