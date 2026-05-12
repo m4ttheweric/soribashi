@@ -74,9 +74,20 @@ export interface StandardPartConfig<TProps, TCtxExtra, TVariants extends readonl
   defaults?: Partial<TProps>;
 }
 
-export interface PolymorphicPartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> extends StandardPartConfig<TProps, TCtxExtra, TVariants> {
+/**
+ * Polymorphic-part config. Standalone (NOT `extends StandardPartConfig`) by
+ * design — extending would force `render`'s parameter type to be a contravariant
+ * subtype of StandardPartConfig.render's (PartRenderCtx), which TypeScript
+ * rejects with TS2430 because PolymorphicPartRenderCtx adds fields (Element,
+ * ref) that PartRenderCtx lacks. Wave 3 in-wave factory fix (Task 3.5) settled
+ * on the standalone shape; do not re-introduce `extends StandardPartConfig`
+ * without first solving the variance constraint. See OQ-7 in the Wave 3 spec.
+ */
+export interface PolymorphicPartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
   polymorphic: true;
   defaultElement: keyof JSX.IntrinsicElements;
+  render: (ctx: PolymorphicPartRenderCtx<TProps, TCtxExtra, TVariants>) => ReactNode;
+  defaults?: Partial<TProps>;
 }
 
 export type PartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> =
@@ -96,11 +107,29 @@ type ExtractPartProps<C> = C extends PartConfig<infer P, any, any>
       : P
   : Record<string, unknown>;
 
-/** Constrain parts map — each value must be a PartConfig */
-type PartsRecord<TCtxExtra extends object, TVariants extends readonly string[] = readonly string[]> = Record<string, PartConfig<any, TCtxExtra, TVariants>>;
+/**
+ * Loose per-part constraint used for the TParts generic bound.
+ *
+ * Using PartConfig<any, ...> as the per-value bound prevents TypeScript from
+ * contextually narrowing inline render functions when the parts object is typed
+ * as Record<string, Standard | Polymorphic> — the union kills inference and
+ * forces callers to annotate every render parameter. By constraining to a
+ * minimal structural shape instead, TypeScript infers the render param type
+ * from context (PartRenderCtx for plain parts, PolymorphicPartRenderCtx for
+ * parts with polymorphic: true), eliminating spurious annotation requirements.
+ */
+type AnyPartConfig = {
+  render: (ctx: any) => ReactNode;
+  defaults?: any;
+  polymorphic?: true;
+  defaultElement?: keyof JSX.IntrinsicElements;
+};
+
+/** Constrain parts map — each value must satisfy the minimal AnyPartConfig shape */
+type PartsRecord = Record<string, AnyPartConfig>;
 
 export interface DefineCompoundConfig<
-  TParts extends PartsRecord<TCtxExtra, TVariants>,
+  TParts extends PartsRecord,
   TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
 > {
@@ -113,7 +142,7 @@ export interface DefineCompoundConfig<
     props: ExtractPartProps<TParts['root']>,
   ) => Partial<Record<string, Record<string, string>>>;
   context?: (rootProps: ExtractPartProps<TParts['root']>) => TCtxExtra;
-  parts: TParts & { root: PartConfig<any, TCtxExtra, TVariants> };
+  parts: TParts & { root: AnyPartConfig };
 }
 
 // ---------------------------------------------------------------------------
@@ -227,7 +256,7 @@ function makeNullCtxProxy(compoundName: string, partKey: string): Record<string,
 // ---------------------------------------------------------------------------
 
 export function defineCompound<
-  TParts extends PartsRecord<TCtxExtra, TVariants>,
+  TParts extends PartsRecord,
   const TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
   TClasses extends Partial<Record<string, string>> = Partial<Record<string, string>>,

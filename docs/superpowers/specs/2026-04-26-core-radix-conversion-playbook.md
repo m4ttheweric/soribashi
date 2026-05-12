@@ -558,7 +558,348 @@ See `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx` for the live source 
 
 ### 2.3 Persistent navigational compound (Wave 3 — Tabs)
 
-_To be populated by Wave 3._
+Pattern for components with Radix anatomy, sibling parts in the same DOM tree (no portal), persistent active-state, and controlled-value passthrough — tabs, segmented controls, breadcrumb-like patterns.
+
+**Examples in core-radix:** Tabs, SegmentedControl.
+
+#### Recipe shape
+
+Use `defineCompound` (from `@soribashi/core`). The config shape parallels Wave 2's Tooltip with three notable differences: (1) no `Provider` part — Radix Tabs has no app-level shared state, so the compound is item-flat with four parts (Root / List / Trigger / Content); (2) `Tabs.Trigger` is **polymorphic** via `PolymorphicPartConfig` — the wave's first recipe exercise of that API; (3) the safe-context's `context()` callback returns an empty extras object because Radix's Tabs.Root owns active-value internally, and Triggers/Contents read it through Radix's own context — no soribashi-side state to thread.
+
+**Parts taxonomy — Tabs has four parts:**
+
+| Part | Class | Role |
+|---|---|---|
+| `root` | `cr-Tabs-root` | Class-1 context-creator. Establishes compound context via `RadixTabs.Root`. Owns `variant` + controlled `value` / `defaultValue` / `onValueChange`. Emits `data-variant` for descendant CSS. |
+| `list` | `cr-Tabs-list` | Class-2 context-consumer. Wraps `RadixTabs.List`. Reads `ctx.variant` for variant-driven list styling. |
+| `trigger` | `cr-Tabs-trigger` | Class-2 + polymorphic. Wraps `RadixTabs.Trigger` (asChild). Polymorphic with `defaultElement: 'button'`. Consumer chooses element via `as` prop; recipe never exposes Radix's `asChild` publicly. |
+| `content` | `cr-Tabs-content` | Class-2 context-consumer. Wraps `RadixTabs.Content`. `forceMount` passthrough for keep-mounted panels. |
+
+#### Polymorphic part API (new in Wave 3)
+
+Declared with `polymorphic: true` and `defaultElement: 'button'` in the `PolymorphicPartConfig`. The part's render function is typed via `PolymorphicPartRenderCtx<TOwnProps, TCtxExtras>` and destructures `Element`, `ref` alongside the usual `getStyles`, `ctx`, `props`, `children`. The emitted element is `<Element ref={ref} {...getStyles()}>{children}</Element>` — same shape as `definePolymorphicComponent` recipes.
+
+This is the wave's first recipe exercise of `PolymorphicPartConfig`. The API was introduced in the Wave 3 in-wave factory fix (see "Render body destructure" below for the typing details).
+
+#### Polymorphic + wrap-Radix interaction via Slot
+
+`RadixTabs.Trigger` needs to be the element receiving Radix's state-machine props (`data-state`, `aria-selected`, click handler, keyboard handlers). When the consumer's `<Element>` is custom (e.g., `as="a"`), the recipe wraps the `<Element>` inside `<RadixTabs.Trigger asChild>{<Element>}</RadixTabs.Trigger>` — Radix's own Slot merges Radix's props onto `<Element>`.
+
+This means `asChild` is a **recipe-internal detail**, not a public prop. Public polymorphism is via `as`; passing a custom component is also expressible via `as={CustomComponent}`. This is a deliberate API divergence from Wave 2's Tooltip (which kept public `asChild`): Tabs.Trigger's job is to render a trigger element, and `as` expresses that more directly than `asChild`.
+
+#### Polymorphic Trigger with non-button elements
+
+When `as="a"` (or any non-button), Radix forwards `disabled` onto the element. `<a disabled>` is non-spec — anchors ignore the attribute. Consumers using polymorphic Trigger with non-button elements should add `aria-disabled` manually if they need disabled semantics. The recipe doesn't poly-fill this — CVI uses button-only.
+
+#### Style approach
+
+Same `data-attribute selector + vars-resolver` hybrid Wave 1 used for Button. Each part emits `data-variant={ctx.variant}` (Root emits its own); CSS rules combine `[data-variant='X'][data-state='active']` for active-cell styling. The `vars` resolver carries only the per-variant token values that CSS can't hardcode (the active-pill bg/fg, where the cell's tokens differ from the chrome above).
+
+```ts
+vars: (_theme, props) => ({
+  list: {
+    '--cr-tabs-active-bg':
+      props.variant === 'pills' ? 'var(--color-primary-500)' : 'transparent',
+    '--cr-tabs-active-color':
+      props.variant === 'pills'
+        ? 'var(--surface-default-foreground, var(--color-neutral-0))'
+        : 'var(--text-default)',
+  },
+}),
+```
+
+The pills variant's filled active state collides with the default `--color-primary-500` outline color. Variant-scoped focus override re-routes to a contrast-coherent outline:
+
+```css
+.cr-Tabs-trigger[data-variant='pills'][data-state='active']:focus-visible {
+  outline-color: var(--color-neutral-0);
+  outline-offset: -2px;
+}
+```
+
+This is the same pattern Wave 1 used for Button's transparent variants — reuse for any future recipe with a filled active state that shares its color with the focus ring.
+
+#### State handling
+
+Radix Tabs owns active-value entirely. `data-state="active"` / `data-state="inactive"` attributes are emitted by Radix directly onto its own elements. The recipe has **no state-toggle code** — no `useState`, no `useUncontrolled`. The `config.context()` callback returns an empty extras object; active-value is not surfaced through soribashi's context because Triggers/Contents read it via Radix's internal context (Radix uses it to match `Trigger.value === Root.value` and emit `data-state`).
+
+This is the defining characteristic of the persistent-navigational category as wrapped on top of Radix: the recipe author handles styling + variant routing + the polymorphic-Trigger seam; Radix handles state + keyboard + a11y. Contrast with Wave 2's Tooltip (transient overlay — Radix also owns the open/close lifecycle but soribashi's context surfaced `side` and `sideOffset` because the recipe needed them for Content placement).
+
+#### Token consumption
+
+The Tabs recipe consumes Wave-1 / Wave-2 semantic tokens unchanged — no new surface token needed. `surface.default` (pills active bg fallback), `text.default` / `text.muted` (trigger fg states), `border.default` (list bottom-border, outline variant), `color.primary.500` (focus ring + pills active bg), `radius.md` / `radius.full`. The pilot's `default` variant deliberately tracks CVI's existing styling so integration is a near-drop-in.
+
+#### Three classes of part — recap
+
+Same taxonomy as Wave 2:
+
+- **Class 1 — Root.** `Tabs` (the Root part). Owns variant and controlled-value props; establishes the safe-context.
+- **Class 2 — Context-consuming.** `Tabs.List`, `Tabs.Trigger`, `Tabs.Content` — all read `ctx.variant`. `Tabs.Trigger` additionally declares `polymorphic: true`.
+- **Class 3 — Passthrough.** None in Tabs. Radix Tabs has no equivalent of `RadixTooltip.Provider`. The four-part anatomy is item-flat.
+
+When authoring a new compound: start with Class 2 for every part; downgrade to Class 3 only if the part genuinely must live outside the compound context tree.
+
+#### Render body destructure
+
+`defineCompound` parts receive a render ctx with `{ props, getStyles, ctx, children }`. Polymorphic parts add `Element` and `ref`.
+
+For **standard parts** (Root, List, Content), each destructures only what it needs from `props` and never forwards the raw `props` object to a DOM element.
+
+For the **polymorphic Trigger**, the pattern extends the Wave 1 Button destructure-and-rest-spread convention — but with a critical structural difference: there is a **Radix wrapper layer** between the recipe and `<Element>`. The split-destination rule:
+
+- The **Radix wrapper** (`RadixTabs.Trigger`) gets own props that feed the state machine (`value`, `disabled`).
+- The **`<Element>`** gets `...rest` (pass-through HTML attrs like `href`, `aria-*`, `data-*`, `onClick`) + `{...getStyles()}` (class/style from the recipe).
+
+The seven styles-API framework keys (`className`, `style`, `classNames`, `styles`, `unstyled`, `attributes`, `vars`) must be destructured out of `props` explicitly — the factory doesn't auto-strip them, and spreading them to a DOM element would surface React unknown-prop warnings.
+
+`children` is available on the render ctx directly; it must be explicitly discarded from `...rest` (using the `_ignoredChildren` discard convention) to avoid passing `children` twice.
+
+`{...rest}` comes BEFORE `{...getStyles()}` so recipe class/style wins over any consumer-supplied className in rest.
+
+The cast intersection (`OwnProps & StylesApiProps & Record<string, unknown>`) is necessary because the factory's props type is opaque to the recipe at this layer.
+
+Full destructure from the live Tabs.tsx Trigger render:
+
+```tsx
+trigger: {
+  polymorphic: true,
+  defaultElement: 'button',
+  render: ({
+    Element,
+    ref,
+    getStyles,
+    ctx,
+    props,
+    children,
+  }: PolymorphicPartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>) => {
+    const {
+      value,
+      disabled,
+      // styles-API framework keys (consumed by useStyles via getStyles)
+      className,
+      style,
+      classNames,
+      styles,
+      unstyled,
+      attributes,
+      vars,
+      // children is in the render ctx directly; drop from rest
+      children: _ignoredChildren,
+      ...rest
+    } = props as TabsTriggerOwnProps & {
+      className?: string;
+      style?: React.CSSProperties;
+      classNames?: unknown;
+      styles?: unknown;
+      unstyled?: unknown;
+      attributes?: unknown;
+      vars?: unknown;
+    } & Record<string, unknown>;
+    const Tag = Element as ElementType;
+    return (
+      <RadixTabs.Trigger asChild value={value} disabled={disabled}>
+        <Tag
+          ref={ref}
+          data-variant={ctx.variant}
+          {...rest}
+          {...getStyles()}
+        >
+          {children}
+        </Tag>
+      </RadixTabs.Trigger>
+    );
+  },
+},
+```
+
+**Type-annotation requirement (OQ-7).** The Wave 3 in-wave factory fix made `PolymorphicPartConfig` standalone (no longer extending `StandardPartConfig`) and changed `PartsRecord`'s constraint to a minimal `AnyPartConfig` — necessary because the prior `extends StandardPartConfig` inheritance forced a contravariant subtype relationship TS rejects (TS2430), and the union constraint killed contextual inference for ~150 cases. Trade-off: un-annotated inline render functions lose `TVariants` / `TCtxExtras` inference (they get `any`). Recipe authors must annotate render parameters explicitly with `PartRenderCtx<TProps, TCtxExtras>` or `PolymorphicPartRenderCtx<TProps, TCtxExtras>` — `TVariants` / `TCtxExtras` do not auto-flow into un-annotated inline renders. Real recipes always annotate (as Tabs.tsx does throughout), so this is bounded in practice. Wave 4 (Select) inherits the decision; see Wave 3 spec § 11 OQ-7 for the full trade-off analysis (referred to as OQ-9 erosion in the Wave 2 spec).
+
+#### Tests
+
+- **Vitest behavior** (Wave 3 reference: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx` — 23 tests): render lifecycle (`defaultValue` / `data-state`); controlled mode round-trip; keyboard arrow-nav + skip-disabled; three variants apply `data-variant`; pills vars resolve; polymorphic Trigger renders `<button>` by default and `<a>` with `as="a"`; ref forwarding to both default and polymorphic elements; disabled Trigger skipped by nav + clicks; `forceMount` keeps inactive Content in DOM; safe-context throws for each part rendered outside Root; `className` from instance props lands; `Tabs.withDefaults` + `Tabs.Content.withDefaults` round-trip through `createTheme`.
+- **Playwright parity** (Wave 3 reference: deferable; vitest covers ~95% of the surface). If wired, per-variant computed-style assertions across the matrix + keyboard nav + dark-mode toggle.
+- **Manual visual** — non-optional. Variant matrix in light + dark; focus-ring visibility per variant (especially the pills active-state contrast-coherent override); polymorphic anchor Trigger in DevTools (verifies real `<a>` element); dark-mode toggle redraws all cells correctly.
+
+Pilot harness is already wired from Wave 1 (§ 2.0 template was applied during pilot scaffolding).
+
+#### Recipe code snippet
+
+```tsx
+/**
+ * Tabs recipe — Wave 3 pilot for the persistent-navigational-compound category.
+ *
+ * Authored with `defineCompound` from @soribashi/core. Wraps
+ * @radix-ui/react-tabs and exercises:
+ *   - defineCompound with four parts: Root, List, Trigger, Content
+ *   - Polymorphic Trigger via PolymorphicPartConfig (defaultElement: 'button')
+ *   - Three variants: default | outline | pills
+ *   - Controlled active-value via Radix Tabs (no soribashi-side state)
+ *   - data-attribute + vars-resolver hybrid for variant styling
+ *
+ * Spec: docs/superpowers/specs/2026-05-10-wave-3-tabs-pilot-design.md
+ */
+import * as RadixTabs from '@radix-ui/react-tabs';
+import type { CSSProperties, ElementType, ReactNode } from 'react';
+import {
+  defineCompound,
+  type PartRenderCtx,
+  type PolymorphicPartRenderCtx,
+} from '@soribashi/core';
+import './Tabs.css';
+
+type Variant = 'default' | 'outline' | 'pills';
+
+export interface TabsRootProps {
+  variant?: Variant;
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  children?: ReactNode;
+}
+
+export interface TabsListProps {
+  children?: ReactNode;
+}
+
+export interface TabsTriggerOwnProps {
+  value: string;
+  disabled?: boolean;
+  children?: ReactNode;
+}
+
+export interface TabsContentProps {
+  value: string;
+  forceMount?: boolean;
+  children?: ReactNode;
+}
+
+interface TabsCtxExtras {
+  // No extras beyond what the factory injects (variant, getStyles).
+}
+
+export const Tabs = defineCompound({
+  name: 'Tabs',
+  variants: ['default', 'outline', 'pills'] as const,
+  classes: {
+    root: 'cr-Tabs-root',
+    list: 'cr-Tabs-list',
+    trigger: 'cr-Tabs-trigger',
+    content: 'cr-Tabs-content',
+  },
+  defaults: { variant: 'default' } as Partial<TabsRootProps>,
+  vars: (_theme, props) => ({
+    // Variant-driven token vars used by Tabs.css's [data-variant='pills']
+    // block for the active-pill background/foreground. Other variants
+    // don't read these but the resolver still emits sentinel values so
+    // tests can assert the per-variant routing.
+    list: {
+      '--cr-tabs-active-bg':
+        props.variant === 'pills' ? 'var(--color-primary-500)' : 'transparent',
+      '--cr-tabs-active-color':
+        props.variant === 'pills'
+          ? 'var(--surface-default-foreground, var(--color-neutral-0))'
+          : 'var(--text-default)',
+    },
+  }),
+  context: (_rootProps) => ({} as TabsCtxExtras),
+  parts: {
+    root: {
+      render: ({ props, children }: PartRenderCtx<TabsRootProps, TabsCtxExtras>) => (
+        <RadixTabs.Root
+          value={props.value}
+          defaultValue={props.defaultValue}
+          onValueChange={props.onValueChange}
+          data-variant={props.variant}
+        >
+          {children}
+        </RadixTabs.Root>
+      ),
+    },
+    list: {
+      render: ({ getStyles, ctx, children }: PartRenderCtx<TabsListProps, TabsCtxExtras>) => (
+        <RadixTabs.List data-variant={ctx.variant} {...getStyles()}>
+          {children}
+        </RadixTabs.List>
+      ),
+    },
+    // Trigger — class-2 AND polymorphic. defaultElement: 'button'.
+    // Internally always uses RadixTabs.Trigger with asChild so Radix's
+    // state-machine props (data-state, aria-selected, click handler,
+    // keyboard handlers) merge onto whatever <Element> the consumer chose.
+    // Public API: <Tabs.Trigger as="a" href="/foo" value="x">label</Tabs.Trigger>.
+    // No public asChild — `as` is the canonical polymorphism mechanism here.
+    trigger: {
+      polymorphic: true,
+      defaultElement: 'button',
+      render: ({
+        Element,
+        ref,
+        getStyles,
+        ctx,
+        props,
+        children,
+      }: PolymorphicPartRenderCtx<TabsTriggerOwnProps, TabsCtxExtras>) => {
+        // Destructure own props + the styles-API framework keys so they don't
+        // get spread onto <Element>. Wave 1 playbook § 2.1 "Render body
+        // destructure" — same pattern adapted to a polymorphic compound part.
+        const {
+          value,
+          disabled,
+          // styles-API framework keys (consumed by useStyles via getStyles)
+          className,
+          style,
+          classNames,
+          styles,
+          unstyled,
+          attributes,
+          vars,
+          // children is in the render ctx directly; drop from rest
+          children: _ignoredChildren,
+          ...rest
+        } = props as TabsTriggerOwnProps & {
+          className?: string;
+          style?: CSSProperties;
+          classNames?: unknown;
+          styles?: unknown;
+          unstyled?: unknown;
+          attributes?: unknown;
+          vars?: unknown;
+        } & Record<string, unknown>;
+        const Tag = Element as ElementType;
+        return (
+          <RadixTabs.Trigger asChild value={value} disabled={disabled}>
+            <Tag
+              ref={ref}
+              data-variant={ctx.variant}
+              {...rest}
+              {...getStyles()}
+            >
+              {children}
+            </Tag>
+          </RadixTabs.Trigger>
+        );
+      },
+    },
+    content: {
+      render: ({
+        getStyles,
+        props,
+        children,
+      }: PartRenderCtx<TabsContentProps, TabsCtxExtras>) => (
+        <RadixTabs.Content
+          value={props.value}
+          forceMount={props.forceMount || undefined}
+          {...getStyles()}
+        >
+          {children}
+        </RadixTabs.Content>
+      ),
+    },
+  },
+});
+```
+
+See `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx` for the live source (this snippet is verbatim as of Wave 3).
 
 ### 2.4 Form control (Wave 4 — Select)
 
