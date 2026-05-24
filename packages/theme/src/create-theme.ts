@@ -55,7 +55,7 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     vocabulary,
     semanticTokens,
     intentResolver: merged.intentResolver ?? defaultIntentResolver,
-    components: normalizeComponents(merged.components),
+    components: normalizeComponents(merged.components, vocabulary),
     scope: merged.scope ?? ':root',
     darkMode: merged.darkMode ?? { selector: '.dark' },
     name: merged.name ?? 'default',

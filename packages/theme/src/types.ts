@@ -143,6 +143,12 @@ export type IntentResolver = (input: IntentResolverInput) => IntentResolverResul
 
 export interface ComponentThemeConfig {
   defaultProps?: Record<string, unknown>;
+  /** Resolved per-component vocabulary overrides (concrete Vocabulary objects only — function-form resolved at createTheme() time). */
+  vocabulary?: {
+    size?: Vocabulary;
+    intent?: Vocabulary;
+    variant?: Vocabulary;
+  };
   classNames?:
     | Record<string, string>
     | ((theme: ResolvedTheme, props: Record<string, unknown>) => Record<string, string>);

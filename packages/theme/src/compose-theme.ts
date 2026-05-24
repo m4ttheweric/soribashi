@@ -1,5 +1,6 @@
-import type { ResolvedTheme, ThemeDefinition, ThemeTokens } from './types.ts';
+import type { ResolvedTheme, ThemeDefinition, ThemeTokens, ThemeVocabulary } from './types.ts';
 import { normalizeComponents } from './normalize-components.ts';
+import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
 
 /**
  * Merges a child theme definition on top of a resolved base theme.
@@ -12,6 +13,14 @@ import { normalizeComponents } from './normalize-components.ts';
  * - scope, darkMode, name, intentResolver: child overrides if present
  */
 export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): ThemeDefinition {
+  // Resolve the merged vocabulary so function-form component vocabulary overrides
+  // in the child can be evaluated correctly during normalizeComponents below.
+  const mergedVocabulary: ThemeVocabulary = {
+    size: child.vocabulary?.size ?? base.vocabulary?.size ?? DEFAULT_VOCABULARIES.size,
+    intent: child.vocabulary?.intent ?? base.vocabulary?.intent ?? DEFAULT_VOCABULARIES.intent,
+    variant: child.vocabulary?.variant ?? base.vocabulary?.variant ?? DEFAULT_VOCABULARIES.variant,
+  };
+
   return {
     tokens: mergeTokens(base.tokens, child.tokens),
     dark: mergeTokens(
@@ -19,10 +28,7 @@ export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): Theme
       (child.dark ?? {}) as ThemeTokens,
     ) as ThemeDefinition['dark'],
     // Vocabulary: per-axis replace (vocabularies are atomic; child axis fully replaces base axis)
-    vocabulary: {
-      ...base.vocabulary,
-      ...(child.vocabulary ?? {}),
-    },
+    vocabulary: mergedVocabulary,
     // SemanticTokens: per-slot deep merge (child keys override base keys within each slot)
     semanticTokens: {
       text: { ...base.semanticTokens?.text, ...(child.semanticTokens?.text ?? {}) },
@@ -33,7 +39,7 @@ export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): Theme
       }),
     },
     intentResolver: child.intentResolver ?? base.intentResolver,
-    components: { ...base.components, ...normalizeComponents(child.components) },
+    components: { ...base.components, ...normalizeComponents(child.components, mergedVocabulary) },
     scope: child.scope ?? base.scope,
     darkMode: child.darkMode ?? base.darkMode,
     name: child.name ?? base.name,

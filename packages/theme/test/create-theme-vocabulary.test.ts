@@ -53,6 +53,74 @@ describe('createTheme — vocabulary field', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// VocabularyOverride resolution in components
+// ---------------------------------------------------------------------------
+
+import type { ThemeComponentEntry } from '../src/theme-component-entry.ts';
+import type { Vocabulary } from '../src/define-vocabulary.ts';
+
+describe('createTheme — VocabularyOverride resolution in components', () => {
+  it('replace-mode: passes Vocabulary directly through normalizeComponents', () => {
+    const customVariant = defineVocabulary(['default', 'subtle'] as ['default', 'subtle']);
+    const entry: ThemeComponentEntry = {
+      __soribashiThemeEntry: true,
+      name: 'Tooltip',
+      defaultProps: {},
+      vocabulary: { variant: customVariant },
+    };
+    const theme = createTheme({
+      tokens: minimalTokens,
+      components: [entry],
+    });
+    const resolved = (theme.components as any).Tooltip;
+    expect(resolved).toBeDefined();
+    expect(resolved.vocabulary?.variant?.values).toEqual(['default', 'subtle']);
+  });
+
+  it('extend-mode: function receives current global vocab and returns new vocabulary', () => {
+    const entry: ThemeComponentEntry = {
+      __soribashiThemeEntry: true,
+      name: 'Button',
+      defaultProps: {},
+      vocabulary: {
+        // Function form — cast to bypass the strict Vocabulary type on the entry
+        size: ((current: Vocabulary) => {
+          const extended = [...current.values, 'jumbo'] as unknown as [string, ...string[]];
+          return defineVocabulary(extended);
+        }) as unknown as Vocabulary,
+      },
+    };
+    const theme = createTheme({
+      tokens: minimalTokens,
+      vocabulary: { size: defineVocabulary(['xs', 'sm', 'md'] as ['xs', 'sm', 'md']) },
+      components: [entry],
+    });
+    const resolved = (theme.components as any).Button;
+    expect(resolved).toBeDefined();
+    expect(resolved.vocabulary?.size?.values).toEqual(['xs', 'sm', 'md', 'jumbo']);
+  });
+
+  it('axes omitted in the entry do not appear in the resolved component vocabulary', () => {
+    // The entry only overrides variant; size + intent should NOT be present in the resolved entry.
+    const entry: ThemeComponentEntry = {
+      __soribashiThemeEntry: true,
+      name: 'Tabs',
+      defaultProps: {},
+      vocabulary: { variant: defineVocabulary(['underline', 'pills'] as ['underline', 'pills']) },
+    };
+    const theme = createTheme({
+      tokens: minimalTokens,
+      vocabulary: { size: defineVocabulary(['s', 'm', 'l'] as ['s', 'm', 'l']) },
+      components: [entry],
+    });
+    const resolved = (theme.components as any).Tabs;
+    expect(resolved.vocabulary?.variant?.values).toEqual(['underline', 'pills']);
+    expect(resolved.vocabulary?.size).toBeUndefined();
+    expect(resolved.vocabulary?.intent).toBeUndefined();
+  });
+});
+
 describe('createTheme — semanticTokens field', () => {
   it('uses caller-provided semanticTokens', () => {
     const theme = createTheme({

@@ -75,4 +75,5 @@ export type { SlotProps } from './slot.tsx';
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
 export { isThemeComponentEntry } from './theme-component-entry.ts';
 
-export type { ComponentExtendConfig, VocabularyOverride } from './types/component-extend.ts';
+export type { ComponentExtendConfig } from './types/component-extend.ts';
+export type { VocabularyOverride } from '@soribashi/theme';

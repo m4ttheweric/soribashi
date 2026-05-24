@@ -1,4 +1,4 @@
-import type { Vocabulary } from './define-vocabulary.ts';
+import type { VocabularyOverride } from './vocabulary-override.ts';
 
 /**
  * Tagged record returned by `Component.extend({...})`. Consumers pass
@@ -19,9 +19,9 @@ export interface ThemeComponentEntry<P = Record<string, unknown>> {
   readonly defaultProps: Partial<P>;
   /** Per-component vocabulary overrides — function-form values resolved at createTheme() time. */
   readonly vocabulary?: {
-    size?: Vocabulary;
-    intent?: Vocabulary;
-    variant?: Vocabulary;
+    size?: VocabularyOverride;
+    intent?: VocabularyOverride;
+    variant?: VocabularyOverride;
   };
   readonly classNames?: unknown;
   readonly styles?: unknown;

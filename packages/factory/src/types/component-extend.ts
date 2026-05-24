@@ -1,18 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { ResolvedTheme, Vocabulary } from '@soribashi/theme';
-
-/**
- * A vocabulary override is either:
- *   - A Vocabulary value (replace mode): the recipe's axis becomes that vocab.
- *   - A function (current: Vocabulary) => Vocabulary (extend mode): receives the
- *     theme-resolved global vocab for that axis and returns a new vocab.
- *
- * Evaluated once during createTheme()'s entry resolution; the resulting concrete
- * Vocabulary is stored on the ThemeComponentEntry for runtime lookup.
- */
-export type VocabularyOverride =
-  | Vocabulary
-  | ((current: Vocabulary) => Vocabulary);
+import type { ResolvedTheme, VocabularyOverride } from '@soribashi/theme';
 
 /**
  * Configuration passed to `Recipe.extend()`. Replaces the prior `withDefaults`
