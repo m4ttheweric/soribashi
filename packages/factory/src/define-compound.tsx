@@ -17,6 +17,7 @@ import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
 import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
+import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -133,11 +134,13 @@ export interface DefineCompoundConfig<
   TParts extends PartsRecord,
   TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
+  vocabularyAxes?: TVocabAxes;
   variants?: TVariants;
   classes?: Partial<Record<string, string>>;
-  defaults?: Partial<ExtractPartProps<TParts['root']>>;
+  defaults?: Partial<ExtractPartProps<TParts['root']> & InjectedVocabularyProps<TVocabAxes>>;
   vars?: (
     theme: ResolvedTheme,
     props: ExtractPartProps<TParts['root']>,
@@ -261,7 +264,8 @@ export function defineCompound<
   const TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
   TClasses extends Partial<Record<string, string>> = Partial<Record<string, string>>,
->(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra> & { classes?: TClasses }): CompoundComponent<TParts> {
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+>(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra, TVocabAxes> & { classes?: TClasses }): CompoundComponent<TParts> {
   if (!config.parts.root) {
     throw new Error(`defineCompound("${config.name}") requires parts.root`);
   }
@@ -345,6 +349,7 @@ export function defineCompound<
   });
 
   Root.displayName = config.name;
+  (Root as any).__vocabularyAxes = config.vocabularyAxes ?? [];
 
   (Root as any).extend = (
     extendConfig: ComponentExtendConfig<TRootProps>,

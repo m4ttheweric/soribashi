@@ -9,24 +9,27 @@ import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
+import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
 export interface DefineComponentConfig<
   TOwnProps,
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
   element?: keyof JSX.IntrinsicElements;
+  vocabularyAxes?: TVocabAxes;
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps>;
+  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
   ) => Partial<Record<TSelectors[number], Record<string, string>>>;
   render: (ctx: {
-    props: TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
+    props: TOwnProps & InjectedVocabularyProps<TVocabAxes> & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
     getStyles: GetStylesFn<
       { props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload
     >;
@@ -41,7 +44,8 @@ export function defineComponent<
   TOwnProps = Record<string, never>,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
->(config: DefineComponentConfig<TOwnProps, TSelectors, TVariants>) {
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+>(config: DefineComponentConfig<TOwnProps, TSelectors, TVariants, TVocabAxes>) {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
   const Component = forwardRef<HTMLElement, any>((rawProps, ref) => {
@@ -79,6 +83,7 @@ export function defineComponent<
   });
 
   Component.displayName = config.name;
+  (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
   (Component as any).withProps = makeWithProps(Component as any);
   type DefineComponentProps = TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };

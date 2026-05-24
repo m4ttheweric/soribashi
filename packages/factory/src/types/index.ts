@@ -13,3 +13,5 @@ export type {
   GetStylesResult,
   GetStylesOptions,
 } from './render-context.ts';
+
+export type { VocabularyAxis, InjectedVocabularyProps } from './vocabulary-axes.ts';

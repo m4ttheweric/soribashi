@@ -6,9 +6,11 @@ import { autoVars } from './auto-vars.ts';
 import { makeWithProps } from './with-props.tsx';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
+import type { VocabularyAxis } from './types/vocabulary-axes.ts';
 
 export interface DefineGenericComponentConfig {
   name: string;
+  vocabularyAxes?: readonly VocabularyAxis[];
   selectors: readonly string[];
   variants?: readonly string[];
   classes?: Record<string, string>;
@@ -81,6 +83,7 @@ export function defineGenericComponent<TOwnPropsTemplate>(
   });
 
   Component.displayName = config.name;
+  (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
   (Component as any).extend = (
     extendConfig: ComponentExtendConfig<TOwnPropsTemplate>,

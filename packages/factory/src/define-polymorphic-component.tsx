@@ -10,6 +10,7 @@ import type { GetStylesFn } from './types/render-context.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
+import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
 /**
  * Render-context type for polymorphic recipes (e.g., Button). Authors type
@@ -39,9 +40,11 @@ export type PolymorphicRenderCtx<
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > = {
   Element: ElementType;
   props: TOwnProps
+    & InjectedVocabularyProps<TVocabAxes>
     & StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>
     & Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>
     & { variant?: TVariants[number]; intent?: string };
@@ -56,18 +59,20 @@ export interface DefinePolymorphicComponentConfig<
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
   defaultElement: TDefaultAs;
+  vocabularyAxes?: TVocabAxes;
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps>;
+  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
   ) => Partial<Record<TSelectors[number], Record<string, string>>>;
-  render: (ctx: PolymorphicRenderCtx<TOwnProps, TDefaultAs, TSelectors, TVariants>) => React.ReactNode;
+  render: (ctx: PolymorphicRenderCtx<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>) => React.ReactNode;
 }
 
 /**
@@ -78,7 +83,8 @@ export function definePolymorphicComponent<
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
->(config: DefinePolymorphicComponentConfig<TOwnProps, TDefaultAs, TSelectors, TVariants>) {
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+>(config: DefinePolymorphicComponentConfig<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>) {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
@@ -120,6 +126,7 @@ export function definePolymorphicComponent<
   });
 
   Component.displayName = config.name;
+  (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
   (Component as any).withProps = makeWithProps(Component as any);
   type DefinePolymorphicProps = TOwnProps
