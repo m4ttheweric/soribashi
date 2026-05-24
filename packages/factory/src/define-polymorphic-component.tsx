@@ -4,6 +4,7 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { autoVars } from './auto-vars.ts';
 import { makeWithProps } from './with-props.tsx';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
@@ -96,6 +97,8 @@ export function definePolymorphicComponent<
       (config.defaults ?? null) as Partial<TOwnProps & StylesApiProps<any>> | null,
       rest as TOwnProps & StylesApiProps<any>,
     );
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)

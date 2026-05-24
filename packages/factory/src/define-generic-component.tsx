@@ -4,6 +4,7 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { autoVars } from './auto-vars.ts';
 import { makeWithProps } from './with-props.tsx';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { VocabularyAxis } from './types/vocabulary-axes.ts';
@@ -56,6 +57,8 @@ export function defineGenericComponent<TOwnPropsTemplate>(
 
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
     const merged = useProps(config.name, (config.defaults ?? null) as any, rawProps as any);
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)

@@ -11,6 +11,7 @@ import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { createSafeContext } from './create-safe-context.ts';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
@@ -296,6 +297,8 @@ export function defineCompound<
       (config.defaults ?? null) as Partial<TRootProps> | null,
       rawProps as TRootProps,
     );
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
 
     const getStyles = useStyles<FactoryPayload>({
       name: config.name,
