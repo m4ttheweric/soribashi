@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
 import { defineComponent, SoribashiProvider } from '../src/index.ts';
 
-describe('withDefaults end-to-end through createTheme + useProps', () => {
+describe('extend() end-to-end through createTheme + useProps', () => {
   interface FooProps {
     label?: string;
     [key: string]: unknown;
@@ -27,7 +27,7 @@ describe('withDefaults end-to-end through createTheme + useProps', () => {
   it('theme-set defaults override recipe defaults', () => {
     const theme = createTheme({
       tokens: baseTokens as never,
-      components: [(Foo as any).withDefaults({ label: 'theme-default' })],
+      components: [(Foo as any).extend({ defaultProps: { label: 'theme-default' } })],
     });
 
     const { container } = render(
@@ -43,7 +43,7 @@ describe('withDefaults end-to-end through createTheme + useProps', () => {
   it('instance props override theme defaults', () => {
     const theme = createTheme({
       tokens: baseTokens as never,
-      components: [(Foo as any).withDefaults({ label: 'theme-default' })],
+      components: [(Foo as any).extend({ defaultProps: { label: 'theme-default' } })],
     });
 
     const { container } = render(

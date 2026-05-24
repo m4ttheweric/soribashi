@@ -8,8 +8,7 @@ import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
-
-const identity = <T,>(value: T): T => value;
+import type { ComponentExtendConfig } from './types/component-extend.ts';
 
 export interface DefineComponentConfig<
   TOwnProps,
@@ -81,28 +80,33 @@ export function defineComponent<
 
   Component.displayName = config.name;
   (Component as any).classes = config.classes;
-  (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
   type DefineComponentProps = TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
 
-  (Component as any).withDefaults = (
-    defaults: Partial<DefineComponentProps>,
+  (Component as any).extend = (
+    extendConfig: ComponentExtendConfig<DefineComponentProps>,
   ): ThemeComponentEntry<DefineComponentProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
-    defaultProps: defaults,
+    // Vocabulary stored as-is; function-form values resolved by createTheme/normalize-components.
+    // Cast to any because the entry type expects concrete Vocabulary (post-resolution shape).
+    vocabulary: extendConfig.vocabulary as any,
+    defaultProps: extendConfig.defaultProps ?? {},
+    classNames: extendConfig.classNames,
+    styles: extendConfig.styles,
+    vars: extendConfig.vars,
+    attributes: extendConfig.attributes,
   });
 
   return Component as unknown as React.ForwardRefExoticComponent<
     TOwnProps & StylesApiProps<any> & React.RefAttributes<HTMLElement>
   > & {
-    extend: (cfg: any) => any;
+    extend: (
+      config: ComponentExtendConfig<DefineComponentProps>,
+    ) => ThemeComponentEntry<DefineComponentProps>;
     withProps: (
       presets: Partial<TOwnProps & StylesApiProps<any>>,
     ) => React.ComponentType<TOwnProps & StylesApiProps<any>>;
-    withDefaults: (
-      defaults: Partial<DefineComponentProps>,
-    ) => ThemeComponentEntry<DefineComponentProps>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };
