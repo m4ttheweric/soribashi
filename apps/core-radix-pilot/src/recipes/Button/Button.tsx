@@ -14,7 +14,7 @@ import classes from './Button.module.css';
 
 type Intent = 'primary' | 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 type Variant = 'filled' | 'outline' | 'subtle' | 'ghost' | 'link';
-type Size = 'sm' | 'md' | 'lg';
+type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface ButtonOwnProps {
   intent?: Intent;

@@ -20,6 +20,15 @@
  * visual connection between arrow and content bubble.
  */
 
+/*
+ * Trigger has no default styling (Tooltip's trigger is a positioning anchor,
+ * not a styled element), but the slot exists in the recipe and consumers
+ * may target it via classNames={{ trigger: '...' }}. Declaring the empty
+ * rule gives the slot a stable, addressable scoped class name.
+ */
+.trigger {
+}
+
 .content {
   background: var(--cr-tooltip-bg);
   color: var(--cr-tooltip-color);

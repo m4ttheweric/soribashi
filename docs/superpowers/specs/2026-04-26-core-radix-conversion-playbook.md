@@ -153,7 +153,7 @@ Pattern for components with no Radix anatomy, no portal, no controlled state —
 
 1. **API split: variant × intent.** Always. `variant` is visual style (`filled`, `outline`, `subtle`, `ghost`, `link`). `intent` is semantic role (`primary`, `neutral`, `success`, `warning`, `danger`, `info`). Never mix them on a single prop. Conflating them produces the variant-explosion + meaning-collision the Button pilot caught in CVI (where `primary`/`secondary` are role and `outline`/`ghost` are style on the same axis — see `docs/superpowers/pilots/2026-04-26-button-conversion.md` § 1.1).
 2. **Authoring primitive:** `definePolymorphicComponent` whenever `as=` is plausible (buttons-as-links is the canonical case). `defineComponent` only for components that genuinely have one element (Skeleton, Dot). The polymorphic primitive is more typesafe than CVI's `asChild` + `Slot` and avoids CVI's silent-ignore footgun (see conversion journal § 1.4) where `asChild` is dropped when combined with `isLoading` / `leftIcon` / `rightIcon`. **Type-param order is `<TOwnProps, TDefaultAs>`** — the reverse compiles but produces confusing-but-not-erroring types (conversion journal § 3 Hard).
-3. **Selectors:** keep a small, named parts list. For Button: `['root', 'label', 'icon', 'spinner']`. Each part gets its own class (`.root`, `.label`, … inside `Button.module.css`) so downstream styling targets parts, not deep selector chains. CSS module scoping makes the class names globally unique at build time without manual prefixes.
+3. **Selectors:** keep a small, named parts list. For Button: `['root', 'inner', 'label', 'icon', 'spinner']` — `inner` wraps the icon + label row so the whole block can animate during loading. Each part gets its own class (`.root`, `.inner`, `.label`, … inside `Button.module.css`) so downstream styling targets parts, not deep selector chains. CSS module scoping makes the class names globally unique at build time without manual prefixes.
 4. **Defaults:** set sensible defaults so consumers can drop the component in without ceremony. Wave 1's Button defaults: `intent: 'primary', variant: 'filled', size: 'md', loading: false, fullWidth: false`.
 
 #### Style approach
@@ -276,7 +276,7 @@ type Variant = 'filled' | 'outline' | 'subtle' | 'ghost' | 'link';
 export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
   name: 'Button',
   defaultElement: 'button',
-  selectors: ['root', 'label', 'icon', 'spinner'] as const,
+  selectors: ['root', 'inner', 'label', 'icon', 'spinner'] as const,
   variants: ['filled', 'outline', 'subtle', 'ghost', 'link'] as const,
   classes,
   defaults: {
@@ -292,7 +292,7 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
 
 Key points:
 - `classes` is the CSS module's default export (`Readonly<Record<string, string>>`), slotted directly into the factory's `classes` config field via ES2015 shorthand.
-- CSS selectors in `Button.module.css` are plain: `.root`, `.label`, `.icon`, `.spinner` — no `cr-Button-*` prefix needed.
+- CSS selectors in `Button.module.css` are plain: `.root`, `.inner`, `.label`, `.icon`, `.spinner` — no `cr-Button-*` prefix needed.
 - `Variant` stays local per recipe (visual treatment unique to Button).
 
 See `apps/core-radix-pilot/src/recipes/Button/Button.tsx` for the full implementation (including the styles-API prop destructure and the polymorphic disabled branch).
@@ -940,7 +940,7 @@ The module's default export is `Readonly<Record<string, string>>` mapping each d
 
 The `.root` selector remains locally scoped; only `:global(.dark)` is exempt.
 
-**Keyframes and CSS custom properties are NOT scoped.** `@keyframes cr-button-spin` and `--cr-button-bg` stay verbatim — CSS modules transform class names only.
+**Keyframes are scoped locally; CSS custom properties are NOT.** `@keyframes cr-button-spin` is renamed by the CSS module compiler (typically to something like `_cr-button-spin_abc123`), AND the corresponding `animation-name: cr-button-spin` reference *inside the same module* is rewritten in tandem so the two stay matched. This means the animation works correctly, but you cannot reference the same keyframe from a different module by its source name. To opt out and keep a globally-named keyframe, wrap the declaration with `:global(...)`: `@keyframes :global(cr-button-spin) { ... }`. CSS custom properties (`--cr-button-bg`, etc.) are not scoped and stay verbatim — they're global by design and consumers can read/override them.
 
 **Consumer override pattern.** Consumers can pass their own CSS module's exports via the recipe's `classNames` prop:
 

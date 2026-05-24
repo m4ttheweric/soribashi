@@ -116,7 +116,7 @@
   outline-color: var(--cr-button-color);
 }
 
-.root:disabled {
+.root:where(:disabled, [aria-disabled='true']) {
   opacity: 0.5;
   cursor: not-allowed;
 }
