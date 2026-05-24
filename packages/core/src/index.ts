@@ -6,6 +6,7 @@ export {
   defineGenericComponent,
   definePolymorphicComponent,
   defineCompound,
+  createSoribashiBuilders,
   cn,
 } from '@soribashi/factory';
 

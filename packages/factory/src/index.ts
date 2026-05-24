@@ -77,3 +77,6 @@ export { isThemeComponentEntry } from './theme-component-entry.ts';
 
 export type { ComponentExtendConfig } from './types/component-extend.ts';
 export type { VocabularyOverride } from '@soribashi/theme';
+
+// Vocab-aware builder factory
+export { createSoribashiBuilders } from './create-builders.ts';
