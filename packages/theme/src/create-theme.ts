@@ -1,7 +1,8 @@
 import { defaultIntentResolver } from './default-intent-resolver.ts';
-import type { ResolvedTheme, SemanticTokens, ThemeDefinition } from './types.ts';
+import type { ResolvedTheme, SemanticTokens, SemanticTokensConfig, ThemeDefinition, ThemeVocabulary } from './types.ts';
 import { composeTheme } from './compose-theme.ts';
 import { normalizeComponents } from './normalize-components.ts';
+import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
 
 const DEFAULT_INTENTS = ['primary', 'neutral', 'danger', 'success', 'warning', 'info'] as const;
 const DEFAULT_VARIANTS = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
@@ -47,9 +48,26 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     ...(merged.semantic?.accent ? { accent: merged.semantic.accent } : {}),
   };
 
+  // TODO(Task 6): populate vocabulary and semanticTokens from merged fields.
+  // Placeholder values keep the type-checker happy during the mid-rename window.
+  const vocabulary: ThemeVocabulary = {
+    size: merged.vocabulary?.size ?? DEFAULT_VOCABULARIES.size,
+    intent: merged.vocabulary?.intent ?? DEFAULT_VOCABULARIES.intent,
+    variant: merged.vocabulary?.variant ?? DEFAULT_VOCABULARIES.variant,
+  };
+
+  const semanticTokens: SemanticTokensConfig = {
+    text: merged.semanticTokens?.text ?? {},
+    surface: merged.semanticTokens?.surface ?? {},
+    border: merged.semanticTokens?.border ?? {},
+    ...(merged.semanticTokens?.accent ? { accent: merged.semanticTokens.accent } : {}),
+  };
+
   return {
     tokens: merged.tokens,
     dark: merged.dark ?? {},
+    vocabulary,
+    semanticTokens,
     semantic,
     intentResolver: merged.intentResolver ?? defaultIntentResolver,
     components: normalizeComponents(merged.components),

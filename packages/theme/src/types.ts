@@ -1,4 +1,5 @@
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import type { Vocabulary } from './define-vocabulary.ts';
 
 // Re-export so consumers can import ThemeComponentEntry from '@soribashi/theme'
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
@@ -63,6 +64,24 @@ export type PartialThemeTokens = {
   heading?: Partial<HeadingTokens>;
 };
 
+// Vocabulary types
+
+/**
+ * Per-axis vocabulary definitions. Each axis is optional in the input;
+ * createTheme() fills missing axes from DEFAULT_VOCABULARIES.
+ */
+export interface ThemeVocabulary {
+  size: Vocabulary;
+  intent: Vocabulary;
+  variant: Vocabulary;
+}
+
+export type PartialThemeVocabulary = {
+  size?: Vocabulary;
+  intent?: Vocabulary;
+  variant?: Vocabulary;
+};
+
 // Semantic-level types
 
 /**
@@ -82,6 +101,24 @@ export type SemanticReference = string;
 export type SemanticSurfaceValue =
   | SemanticReference
   | { value: SemanticReference; foreground?: SemanticReference };
+
+/**
+ * Role-name aliases. Emitted as CSS custom properties at codegen time.
+ * Structurally identical to the old `semantic.text/surface/border/accent`.
+ */
+export interface SemanticTokensConfig {
+  text: Record<string, SemanticReference>;
+  surface: Record<string, SemanticSurfaceValue>;
+  border: Record<string, SemanticReference>;
+  accent?: Record<string, SemanticReference>;
+}
+
+export type PartialSemanticTokensConfig = {
+  text?: Record<string, SemanticReference>;
+  surface?: Record<string, SemanticSurfaceValue>;
+  border?: Record<string, SemanticReference>;
+  accent?: Record<string, SemanticReference>;
+};
 
 export interface SemanticTokens {
   /** Available intent values; constrains components' `intent` prop */
@@ -151,7 +188,16 @@ export interface ComponentThemeConfig {
 export interface ThemeDefinition {
   tokens: ThemeTokens;
   dark?: PartialThemeTokens;
+
+  /** Declared vocabularies (size/intent/variant). createTheme() fills missing axes from defaults. */
+  vocabulary?: PartialThemeVocabulary;
+
+  /** Role-name aliases (text/surface/border/accent) — emitted as CSS vars. */
+  semanticTokens?: PartialSemanticTokensConfig;
+
+  /** @deprecated — use `vocabulary` for size/intent/variant and `semanticTokens` for text/surface/border/accent. Removed in Task 8. */
   semantic?: Partial<SemanticTokens>;
+
   intentResolver?: IntentResolver;
   components?: Record<string, ComponentThemeConfig> | readonly ThemeComponentEntry[];
   /** CSS selector for light scope. Defaults to `:root`. */
@@ -170,6 +216,9 @@ export interface ThemeDefinition {
 export interface ResolvedTheme {
   tokens: ThemeTokens;
   dark: PartialThemeTokens;
+  vocabulary: ThemeVocabulary;          // fully resolved
+  semanticTokens: SemanticTokensConfig; // fully resolved
+  /** @deprecated — kept temporarily for codegen back-compat during the rename. Removed in Task 8. */
   semantic: SemanticTokens;
   intentResolver: IntentResolver;
   components: Record<string, ComponentThemeConfig>;

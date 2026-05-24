@@ -21,6 +21,10 @@ export type {
   HeadingTokens,
   HeadingSize,
   ThemeComponentEntry,
+  ThemeVocabulary,
+  PartialThemeVocabulary,
+  SemanticTokensConfig,
+  PartialSemanticTokensConfig,
 } from './types.ts';
 
 export { isThemeComponentEntry } from './theme-component-entry.ts';
