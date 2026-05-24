@@ -152,3 +152,44 @@ describe('createTheme — semanticTokens field', () => {
     expect(theme.semanticTokens.border.default).toBe('colors.neutral.200');
   });
 });
+
+describe('createTheme — normalizeComponents preserves slot overrides', () => {
+  it('forwards classNames, styles, vars, and attributes from ThemeComponentEntry', () => {
+    const entry = {
+      __soribashiThemeEntry: true as const,
+      name: 'Button',
+      defaultProps: { size: 'standard' as const },
+      classNames: { root: 'my-button-root' },
+      styles: { root: { color: 'red' } },
+      vars: () => ({ root: { '--my-var': 'blue' } }),
+      attributes: { root: { 'data-testid': 'tagged' } },
+    };
+    const theme = createTheme({
+      tokens: minimalTokens,
+      components: [entry],
+    });
+    const resolved = theme.components.Button;
+    expect(resolved).toBeDefined();
+    expect(resolved!.defaultProps).toEqual({ size: 'standard' });
+    expect(resolved!.classNames).toEqual({ root: 'my-button-root' });
+    expect(resolved!.styles).toEqual({ root: { color: 'red' } });
+    expect(typeof resolved!.vars).toBe('function');
+    expect(resolved!.attributes).toEqual({ root: { 'data-testid': 'tagged' } });
+  });
+
+  it('forwards slot overrides even when no vocabulary override is declared', () => {
+    const entry = {
+      __soribashiThemeEntry: true as const,
+      name: 'Tooltip',
+      defaultProps: {},
+      classNames: { content: 'my-tooltip-content' },
+    };
+    const theme = createTheme({
+      tokens: minimalTokens,
+      components: [entry],
+    });
+    expect(theme.components.Tooltip).toBeDefined();
+    expect(theme.components.Tooltip!.classNames).toEqual({ content: 'my-tooltip-content' });
+    expect(theme.components.Tooltip!.vocabulary).toBeUndefined();
+  });
+});

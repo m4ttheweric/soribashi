@@ -1,9 +1,9 @@
-import type { ResolvedTheme } from '@soribashi/theme';
+import type { ComponentThemeConfig, ResolvedTheme } from '@soribashi/theme';
 import { defineComponent } from './define-component.tsx';
 import { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 import { defineCompound } from './define-compound.tsx';
 import { defineGenericComponent } from './define-generic-component.tsx';
-import { registerComponentVocabularies } from './vocabulary-registry.ts';
+import { registerComponentVocabularies, resetRegistry } from './vocabulary-registry.ts';
 
 /**
  * Builder factory — the consumer's entry point for vocab-aware builders.
@@ -22,8 +22,19 @@ import { registerComponentVocabularies } from './vocabulary-registry.ts';
  *     createSoribashiBuilders(theme);
  *
  * Then recipes import from '../builders' instead of '@soribashi/core' directly.
+ *
+ * **Idempotency.** Each call resets the registry before re-registering, so
+ * the registry always reflects exactly the provided theme. This matters for
+ * HMR and test scenarios where `createSoribashiBuilders` is invoked multiple
+ * times: stale component registrations from a previous invocation don't
+ * silently survive into the new theme's view.
  */
 export function createSoribashiBuilders<TTheme extends ResolvedTheme>(theme: TTheme) {
+  // Idempotent reset — prior registrations from earlier createSoribashiBuilders
+  // calls (HMR, tests, re-init) are cleared so the registry reflects the new
+  // theme exactly. Single-tenant assumption per spec § 14 risk 5.
+  resetRegistry();
+
   // Register the global vocabulary under __global__
   registerComponentVocabularies('__global__', {
     size: theme.vocabulary.size,
@@ -32,10 +43,10 @@ export function createSoribashiBuilders<TTheme extends ResolvedTheme>(theme: TTh
   });
 
   // Register per-component vocabularies from theme.components.
-  // After Task 15's normalizeComponents, function-form overrides are already
-  // resolved to concrete Vocabulary values; theme.components is a Record<string, ComponentThemeConfig>.
-  for (const [name, config] of Object.entries(theme.components)) {
-    const componentVocab = (config as { vocabulary?: { size?: any; intent?: any; variant?: any } }).vocabulary;
+  // After normalizeComponents, function-form overrides are already resolved to
+  // concrete Vocabulary values; theme.components is a Record<string, ComponentThemeConfig>.
+  for (const [name, config] of Object.entries(theme.components) as Array<[string, ComponentThemeConfig]>) {
+    const componentVocab = config.vocabulary;
     if (componentVocab) {
       registerComponentVocabularies(name, {
         ...(componentVocab.size !== undefined && { size: componentVocab.size }),

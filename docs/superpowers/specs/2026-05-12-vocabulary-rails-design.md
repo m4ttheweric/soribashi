@@ -415,7 +415,7 @@ The pilot (`apps/core-radix-pilot`) is the only consumer. Migration:
 10. Run all tests; expect 461 + 244 + 47 unchanged.
 11. Run pilot dev server; manually verify visual parity.
 
-Codegen changes are deferred (current codegen reads `semantic`; we add a back-compat shim that maps `semanticTokens` and reads `tokens.fontSize` for size scale as before).
+Codegen migrates in lockstep — every internal call site of `theme.semantic.*` is rewritten to read `theme.semanticTokens.*` (text/surface/border/accent) or `theme.vocabulary.*.values` (intent/variant). No back-compat shim; pre-1.0 hard cutover. The size scale continues to come from `tokens.fontSize` as before.
 
 ## 13. PR rollout — handling the in-flight PR #9
 

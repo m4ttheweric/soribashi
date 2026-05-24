@@ -45,4 +45,32 @@ describe('createSoribashiBuilders', () => {
     expect(resolveVocab('Button', 'size')).toBe(buttonSize);
     expect(resolveVocab('OtherComponent', 'size')?.values).toEqual(['xs', 'md', 'xl']);
   });
+
+  it('is idempotent: a second call replaces registrations rather than merging stale state', () => {
+    // First theme: registers a "LegacyButton" with a vocabulary override.
+    const themeA = createTheme({
+      tokens: minimalTokens,
+      vocabulary: { size: defineVocabulary(['s', 'm', 'l']) },
+      components: [{
+        __soribashiThemeEntry: true,
+        name: 'LegacyButton',
+        defaultProps: {},
+        vocabulary: { size: defineVocabulary(['legacy-small', 'legacy-large']) },
+      }],
+    });
+    createSoribashiBuilders(themeA);
+    expect(resolveVocab('LegacyButton', 'size')?.values).toEqual(['legacy-small', 'legacy-large']);
+
+    // Second theme: no "LegacyButton" entry. After re-initializing, the legacy
+    // registration must NOT survive — the registry should reflect themeB only.
+    const themeB = createTheme({
+      tokens: minimalTokens,
+      vocabulary: { size: defineVocabulary(['xs', 'md', 'xl']) },
+    });
+    createSoribashiBuilders(themeB);
+    // Global vocab updated to themeB's size axis:
+    expect(resolveVocab('AnyComponent', 'size')?.values).toEqual(['xs', 'md', 'xl']);
+    // Legacy per-component override cleared — falls back to themeB's global:
+    expect(resolveVocab('LegacyButton', 'size')?.values).toEqual(['xs', 'md', 'xl']);
+  });
 });

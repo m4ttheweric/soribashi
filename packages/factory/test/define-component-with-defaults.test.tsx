@@ -24,9 +24,17 @@ describe('defineComponent .extend', () => {
   });
 
   it('does not mutate the component', () => {
+    // Snapshot the displayName + the function-vs-component shape BEFORE calling extend.
+    const displayNameBefore = (Foo as any).displayName;
+    const extendBefore = (Foo as any).extend;
+    const withPropsBefore = (Foo as any).withProps;
+    // Calling extend() should NOT alter the component itself — it returns a
+    // new ThemeComponentEntry without touching Foo's identity, statics, or shape.
     (Foo as any).extend({ defaultProps: { a: 1 } });
     (Foo as any).extend({ defaultProps: { b: 2 } });
-    expect(typeof Foo).toBe('object');
+    expect((Foo as any).displayName).toBe(displayNameBefore);
+    expect((Foo as any).extend).toBe(extendBefore);
+    expect((Foo as any).withProps).toBe(withPropsBefore);
   });
 });
 

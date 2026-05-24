@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { defineVocabulary } from '../src/define-vocabulary.ts';
 
 describe('defineVocabulary', () => {
@@ -29,6 +29,15 @@ describe('defineVocabulary', () => {
     // we can verify by trying to safeParse — if the inferred enum is too wide,
     // safeParse would accept any string.
     expect(v.schema.safeParse('tertiary').success).toBe(false);
+  });
+
+  it('preserves literal types at compile time (typeof v[\"type\"])', () => {
+    // The `type` phantom is reachable only via TypeScript; this assertion
+    // would fail typecheck if the `const` modifier on the generic ever
+    // broke and inference widened to `string`.
+    const v = defineVocabulary(['compact', 'standard', 'comfortable']);
+    expectTypeOf(v.type).toEqualTypeOf<'compact' | 'standard' | 'comfortable' | undefined>();
+    expectTypeOf(v.values).toEqualTypeOf<readonly ('compact' | 'standard' | 'comfortable')[]>();
   });
 
   it('exposes the optional `type` phantom as undefined at runtime', () => {

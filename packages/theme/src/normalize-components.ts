@@ -41,25 +41,42 @@ function resolveVocabOverride(
 }
 
 /**
- * Resolves a ThemeComponentEntry's vocabulary field from VocabularyOverride values
- * to concrete Vocabulary values using the resolved global ThemeVocabulary.
+ * Resolves a ThemeComponentEntry into a ComponentThemeConfig.
  *
- * Returns a ComponentThemeConfig with a fully resolved vocabulary field (or no
- * vocabulary field if the entry declared none).
+ * Resolution rules:
+ *   - `vocabulary` — function-form `VocabularyOverride` values are invoked
+ *     with the global vocab; replace-mode values pass through.
+ *   - `defaultProps`, `classNames`, `styles`, `vars`, `attributes` — forwarded
+ *     unchanged. These are not vocabulary; they're the slot-override fields
+ *     `Recipe.extend({...})` accepts.
  */
 function resolveEntryVocabulary(
-  entry: { defaultProps?: Record<string, unknown>; vocabulary?: Record<string, VocabularyOverride> },
+  entry: {
+    defaultProps?: Record<string, unknown>;
+    vocabulary?: Record<string, VocabularyOverride>;
+    classNames?: ComponentThemeConfig['classNames'];
+    styles?: ComponentThemeConfig['styles'];
+    vars?: ComponentThemeConfig['vars'];
+    attributes?: ComponentThemeConfig['attributes'];
+  },
   vocab: ThemeVocabulary,
 ): ComponentThemeConfig {
   const inputVocab = entry.vocabulary as
     | Partial<Record<'size' | 'intent' | 'variant', VocabularyOverride>>
     | undefined;
 
-  if (!inputVocab) {
-    return { defaultProps: entry.defaultProps };
-  }
+  // Build the base config — everything except vocabulary passes through.
+  const base: ComponentThemeConfig = {
+    ...(entry.defaultProps !== undefined && { defaultProps: entry.defaultProps }),
+    ...(entry.classNames !== undefined && { classNames: entry.classNames }),
+    ...(entry.styles !== undefined && { styles: entry.styles }),
+    ...(entry.vars !== undefined && { vars: entry.vars }),
+    ...(entry.attributes !== undefined && { attributes: entry.attributes }),
+  };
 
-  const resolvedVocab: ComponentThemeConfig['vocabulary'] = {};
+  if (!inputVocab) return base;
+
+  const resolvedVocab: NonNullable<ComponentThemeConfig['vocabulary']> = {};
   const size = resolveVocabOverride(inputVocab.size, vocab.size);
   const intent = resolveVocabOverride(inputVocab.intent, vocab.intent);
   const variant = resolveVocabOverride(inputVocab.variant, vocab.variant);
@@ -71,10 +88,7 @@ function resolveEntryVocabulary(
   // Only include vocabulary key if at least one axis was overridden
   const hasAny = size !== undefined || intent !== undefined || variant !== undefined;
 
-  return {
-    defaultProps: entry.defaultProps,
-    ...(hasAny ? { vocabulary: resolvedVocab } : {}),
-  };
+  return hasAny ? { ...base, vocabulary: resolvedVocab } : base;
 }
 
 /**
@@ -106,7 +120,14 @@ export function normalizeComponents(
       }
       // Last-write-wins: later entries override earlier ones with the same name.
       out[entry.name] = resolveEntryVocabulary(
-        entry as { defaultProps?: Record<string, unknown>; vocabulary?: Record<string, VocabularyOverride> },
+        entry as {
+          defaultProps?: Record<string, unknown>;
+          vocabulary?: Record<string, VocabularyOverride>;
+          classNames?: ComponentThemeConfig['classNames'];
+          styles?: ComponentThemeConfig['styles'];
+          vars?: ComponentThemeConfig['vars'];
+          attributes?: ComponentThemeConfig['attributes'];
+        },
         vocabulary,
       );
     }
