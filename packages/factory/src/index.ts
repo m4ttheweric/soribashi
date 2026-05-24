@@ -74,3 +74,5 @@ export type { SlotProps } from './slot.tsx';
 // Theme integration
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
 export { isThemeComponentEntry } from './theme-component-entry.ts';
+
+export type { ComponentExtendConfig, VocabularyOverride } from './types/component-extend.ts';

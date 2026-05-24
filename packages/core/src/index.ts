@@ -20,6 +20,8 @@ export type {
   PartRenderCtx,
   PolymorphicPartRenderCtx,
   PolymorphicRenderCtx,
+  ComponentExtendConfig,
+  VocabularyOverride,
 } from '@soribashi/factory';
 
 // Theme
