@@ -328,11 +328,11 @@ describe('defineCompound — polymorphic parts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Cycle 7.8 — Part-level withDefaults
+// Cycle 7.8 — Part-level extend
 // ---------------------------------------------------------------------------
 
-describe('defineCompound — part withDefaults', () => {
-  it('part .withDefaults uses the flat name (e.g., FooLabel)', () => {
+describe('defineCompound — part extend', () => {
+  it('part .extend uses the flat name (e.g., FooLabel)', () => {
     const Foo = defineCompound({
       name: 'Foo',
       classes: { root: 'foo-root', label: 'foo-label' },
@@ -342,13 +342,13 @@ describe('defineCompound — part withDefaults', () => {
       },
     });
 
-    const entry = (Foo as any).Label.withDefaults({ truncate: true });
+    const entry = (Foo as any).Label.extend({ defaultProps: { truncate: true } });
     expect(entry.__soribashiThemeEntry).toBe(true);
     expect(entry.name).toBe('FooLabel');
     expect(entry.defaultProps).toEqual({ truncate: true });
   });
 
-  it('part-level withDefaults flows through createTheme + useProps', () => {
+  it('part-level extend flows through createTheme + useProps', () => {
     let captured: { truncate?: boolean } | null = null;
 
     const Foo = defineCompound({
@@ -367,7 +367,7 @@ describe('defineCompound — part withDefaults', () => {
 
     const theme = createTheme({
       tokens: baseTokens as never,
-      components: [(Foo as any).Label.withDefaults({ truncate: true })],
+      components: [(Foo as any).Label.extend({ defaultProps: { truncate: true } })],
     });
 
     render(
@@ -796,11 +796,11 @@ describe('defineCompound — cross-slot className/style isolation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Cycle 7.13 — withDefaults accepts StylesApiProps (Copilot round-4 #4)
+// Cycle 7.13 — extend accepts StylesApiProps (Copilot round-4 #4)
 // ---------------------------------------------------------------------------
 
-describe('defineCompound — withDefaults accepts styles-API props', () => {
-  it('Root.withDefaults accepts classNames and styles (StylesApiProps)', () => {
+describe('defineCompound — extend accepts styles-API props', () => {
+  it('Root.extend accepts classNames and styles (StylesApiProps)', () => {
     const Foo = defineCompound({
       name: 'Foo',
       classes: { root: 'foo-root', label: 'foo-label' },
@@ -814,18 +814,18 @@ describe('defineCompound — withDefaults accepts styles-API props', () => {
       },
     });
 
-    // Should compile — classNames is a StylesApiProps field
-    const entry = Foo.withDefaults({
+    // Should compile — classNames is a top-level extend field; className stays in defaultProps
+    const entry = Foo.extend({
       classNames: { root: 'custom-root' },
-      className: 'extra',
+      defaultProps: { className: 'extra' } as any,
     });
 
     expect(entry.__soribashiThemeEntry).toBe(true);
     expect(entry.name).toBe('Foo');
-    expect((entry.defaultProps as any).classNames).toEqual({ root: 'custom-root' });
+    expect((entry.classNames as any)).toEqual({ root: 'custom-root' });
   });
 
-  it('part withDefaults accepts classNames and styles (CompoundStylesApiProps)', () => {
+  it('part extend accepts classNames and styles (CompoundStylesApiProps)', () => {
     const Foo = defineCompound({
       name: 'Foo',
       classes: { root: 'foo-root', label: 'foo-label' },
@@ -842,18 +842,18 @@ describe('defineCompound — withDefaults accepts styles-API props', () => {
     });
 
     // Should compile — mixing own props with CompoundStylesApiProps
-    const entry = (Foo as any).Label.withDefaults({
-      truncate: true,
+    const entry = (Foo as any).Label.extend({
+      defaultProps: { truncate: true },
       classNames: { root: 'custom-label' },
     });
 
     expect(entry.__soribashiThemeEntry).toBe(true);
     expect(entry.name).toBe('FooLabel');
     expect(entry.defaultProps.truncate).toBe(true);
-    expect(entry.defaultProps.classNames).toEqual({ root: 'custom-label' });
+    expect((entry.classNames as any)).toEqual({ root: 'custom-label' });
   });
 
-  it('withDefaults-set classNames flow through createTheme + useProps to the rendered element', () => {
+  it('extend classNames are carried on the ThemeComponentEntry', () => {
     const Foo = defineCompound({
       name: 'Foo',
       classes: { root: 'foo-root', label: 'foo-label' },
@@ -867,19 +867,13 @@ describe('defineCompound — withDefaults accepts styles-API props', () => {
       },
     });
 
-    // Pass classNames via withDefaults — useProps merges theme defaultProps, so the
-    // classNames key should appear in merged props and useStyles should pick it up.
-    const theme = createTheme({
-      tokens: baseTokens as never,
-      components: [
-        Foo.withDefaults({ classNames: { root: 'theme-override' } } as any),
-      ],
-    });
+    // Pass classNames via extend — classNames should be on the ThemeComponentEntry directly.
+    const entry = Foo.extend({ classNames: { root: 'theme-override' } });
 
-    // Should not throw; the theme entry is formed correctly.
-    expect(theme.components['Foo']).toEqual({
-      defaultProps: { classNames: { root: 'theme-override' } },
-    });
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('Foo');
+    expect(entry.defaultProps).toEqual({});
+    expect((entry.classNames as any)).toEqual({ root: 'theme-override' });
   });
 });
 

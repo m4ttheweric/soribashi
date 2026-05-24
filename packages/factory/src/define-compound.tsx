@@ -12,6 +12,7 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { createSafeContext } from './create-safe-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
 import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
@@ -184,8 +185,8 @@ type PartPayload<TPartConfig> = {
  * Static methods shared by all part component shapes (polymorphic and standard).
  */
 type PartStaticMethods<TPartConfig> = {
-  withDefaults: (
-    defaults: Partial<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
+  extend: (
+    config: ComponentExtendConfig<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
   ) => ThemeComponentEntry<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>;
   displayName?: string;
 };
@@ -220,8 +221,8 @@ type CompoundComponent<TParts extends Record<string, PartConfig<any, any, any>>>
     & StylesApiProps<PartPayload<TParts['root']>>
     & React.RefAttributes<unknown>
   > & PartsNamespace<TParts> & {
-    withDefaults: (
-      defaults: Partial<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>,
+    extend: (
+      config: ComponentExtendConfig<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>,
     ) => ThemeComponentEntry<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>;
     displayName?: string;
   };
@@ -345,12 +346,17 @@ export function defineCompound<
 
   Root.displayName = config.name;
 
-  (Root as any).withDefaults = (
-    defaults: Partial<TRootProps>,
+  (Root as any).extend = (
+    extendConfig: ComponentExtendConfig<TRootProps>,
   ): ThemeComponentEntry<TRootProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
-    defaultProps: defaults,
+    vocabulary: extendConfig.vocabulary as any,
+    defaultProps: extendConfig.defaultProps ?? {},
+    classNames: extendConfig.classNames,
+    styles: extendConfig.styles,
+    vars: extendConfig.vars,
+    attributes: extendConfig.attributes,
   });
 
   // -------------------------------------------------------------------------
@@ -430,10 +436,17 @@ export function defineCompound<
 
       PolyPartComponent.displayName = partName;
 
-      (PolyPartComponent as any).withDefaults = (defaults: Partial<any>): ThemeComponentEntry<any> => ({
+      (PolyPartComponent as any).extend = (
+        extendConfig: ComponentExtendConfig<any>,
+      ): ThemeComponentEntry<any> => ({
         __soribashiThemeEntry: true as const,
         name: partName,
-        defaultProps: defaults,
+        vocabulary: extendConfig.vocabulary as any,
+        defaultProps: extendConfig.defaultProps ?? {},
+        classNames: extendConfig.classNames,
+        styles: extendConfig.styles,
+        vars: extendConfig.vars,
+        attributes: extendConfig.attributes,
       });
 
       namespacedParts[capitalize(partKey)] = PolyPartComponent;
@@ -515,10 +528,17 @@ export function defineCompound<
 
     PartComponent.displayName = partName;
 
-    (PartComponent as any).withDefaults = (defaults: Partial<any>): ThemeComponentEntry<any> => ({
+    (PartComponent as any).extend = (
+      extendConfig: ComponentExtendConfig<any>,
+    ): ThemeComponentEntry<any> => ({
       __soribashiThemeEntry: true as const,
       name: partName,
-      defaultProps: defaults,
+      vocabulary: extendConfig.vocabulary as any,
+      defaultProps: extendConfig.defaultProps ?? {},
+      classNames: extendConfig.classNames,
+      styles: extendConfig.styles,
+      vars: extendConfig.vars,
+      attributes: extendConfig.attributes,
     });
 
     namespacedParts[capitalize(partKey)] = PartComponent;
