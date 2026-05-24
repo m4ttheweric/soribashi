@@ -52,7 +52,7 @@ describe('defineComponent .extend type safety', () => {
   });
 });
 
-describe('definePolymorphicComponent .withDefaults', () => {
+describe('definePolymorphicComponent .extend', () => {
   const Bar = definePolymorphicComponent<{ tone?: 'a' | 'b' }, 'div'>({
     name: 'Bar',
     defaultElement: 'div',
@@ -61,11 +61,11 @@ describe('definePolymorphicComponent .withDefaults', () => {
   });
 
   it('exists as a method on the polymorphic component', () => {
-    expect(typeof (Bar as any).withDefaults).toBe('function');
+    expect(typeof (Bar as any).extend).toBe('function');
   });
 
   it('returns a tagged entry with name "Bar"', () => {
-    const entry = (Bar as any).withDefaults({ tone: 'a' });
+    const entry = (Bar as any).extend({ defaultProps: { tone: 'a' } });
     expect(entry.name).toBe('Bar');
     expect(entry.defaultProps).toEqual({ tone: 'a' });
   });

@@ -9,8 +9,7 @@ import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
-
-const identity = <T,>(value: T): T => value;
+import type { ComponentExtendConfig } from './types/component-extend.ts';
 
 /**
  * Render-context type for polymorphic recipes (e.g., Button). Authors type
@@ -122,19 +121,24 @@ export function definePolymorphicComponent<
 
   Component.displayName = config.name;
   (Component as any).classes = config.classes;
-  (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
   type DefinePolymorphicProps = TOwnProps
     & StylesApiProps<any>
     & Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>
     & { variant?: TVariants[number]; intent?: string };
 
-  (Component as any).withDefaults = (
-    defaults: Partial<DefinePolymorphicProps>,
+  (Component as any).extend = (
+    extendConfig: ComponentExtendConfig<DefinePolymorphicProps>,
   ): ThemeComponentEntry<DefinePolymorphicProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
-    defaultProps: defaults,
+    // Vocabulary stored as-is; function-form values resolved by createTheme/normalize-components in Task 15.
+    vocabulary: extendConfig.vocabulary as any,
+    defaultProps: extendConfig.defaultProps ?? {},
+    classNames: extendConfig.classNames,
+    styles: extendConfig.styles,
+    vars: extendConfig.vars,
+    attributes: extendConfig.attributes,
   });
 
   // The component itself is generic over the target element type.
@@ -151,10 +155,9 @@ export function definePolymorphicComponent<
   ) => PolymorphicComponentLike;
 
   return Component as unknown as PolymorphicComponentLike & {
-    extend: (cfg: any) => any;
     withProps: WithPropsFn;
-    withDefaults: (
-      defaults: Partial<DefinePolymorphicProps>,
+    extend: (
+      config: ComponentExtendConfig<DefinePolymorphicProps>,
     ) => ThemeComponentEntry<DefinePolymorphicProps>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;

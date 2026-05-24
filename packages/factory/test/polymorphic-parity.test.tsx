@@ -163,10 +163,12 @@ describe('P4 / P17: withProps() result propagates extend from parent', () => {
     expect(typeof (SmallText as any).extend).toBe('function');
   });
 
-  it('P17b: definePolymorphicComponent.withProps() result extend is identity', () => {
+  it('P17b: definePolymorphicComponent.withProps() result extend returns a ThemeComponentEntry', () => {
     const SmallText = PolyText.withProps({ size: 'sm' });
-    const config = { defaultProps: { size: 'lg' } };
-    expect((SmallText as any).extend(config)).toBe(config);
+    const entry = (SmallText as any).extend({ defaultProps: { size: 'lg' } });
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('PolyText');
+    expect(entry.defaultProps).toEqual({ size: 'lg' });
   });
 
   it('P17c: double-wrapped withProps result also has extend', () => {
@@ -196,10 +198,12 @@ describe('P5: withProps() result displayName', () => {
 });
 
 // ---------------------------------------------------------------------------
-// P6 / P16: extend static — identical to Mantine
+// P6 / P16: extend static
 // Mantine: Component.extend = identity
-// Soribashi: (Component as any).extend = identity
-// Classification: IDENTICAL
+// Soribashi (polymorphicComponent): identity (Mantine parity, escape hatch)
+// Soribashi (definePolymorphicComponent): typed builder → ThemeComponentEntry
+// Classification: INTENTIONAL DIVERGENCE for definePolymorphicComponent
+//   (vocabulary-rails migration, Task 12)
 // ---------------------------------------------------------------------------
 
 describe('P6 / P16: polymorphic components attach extend as identity', () => {
@@ -216,9 +220,11 @@ describe('P6 / P16: polymorphic components attach extend as identity', () => {
     expect(typeof (PolyText as any).extend).toBe('function');
   });
 
-  it('P16b: definePolymorphicComponent extend is identity', () => {
-    const config = { defaultProps: { size: 'lg' as const } };
-    expect((PolyText as any).extend(config)).toBe(config);
+  it('P16b: definePolymorphicComponent extend returns a ThemeComponentEntry', () => {
+    const entry = (PolyText as any).extend({ defaultProps: { size: 'lg' as const } });
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('PolyText');
+    expect(entry.defaultProps).toEqual({ size: 'lg' });
   });
 });
 
