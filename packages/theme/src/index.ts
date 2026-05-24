@@ -24,3 +24,6 @@ export type {
 } from './types.ts';
 
 export { isThemeComponentEntry } from './theme-component-entry.ts';
+
+export { defineVocabulary } from './define-vocabulary.ts';
+export type { Vocabulary } from './define-vocabulary.ts';
