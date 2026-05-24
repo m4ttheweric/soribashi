@@ -142,14 +142,16 @@ describe('G2: defineGenericComponent wraps render in forwardRef', () => {
 // Classification: IDENTICAL
 // ---------------------------------------------------------------------------
 
-describe('G3: defineGenericComponent attaches extend as identity', () => {
+describe('G3: defineGenericComponent attaches extend() returning a ThemeComponentEntry', () => {
   it('G3a: extend is a function', () => {
     expect(typeof (Select as any).extend).toBe('function');
   });
 
-  it('G3b: extend is an identity — returns the same object', () => {
-    const config = { defaultProps: { selected: 'x' } };
-    expect((Select as any).extend(config)).toBe(config);
+  it('G3b: extend returns a ThemeComponentEntry with __soribashiThemeEntry brand', () => {
+    const entry = (Select as any).extend({ defaultProps: { selected: 'x' } });
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('Select');
+    expect(entry.defaultProps).toEqual({ selected: 'x' });
   });
 });
 
@@ -167,10 +169,12 @@ describe('G4 / G5: withProps() result propagates extend and withProps', () => {
     expect(typeof (StyledSelect as any).extend).toBe('function');
   });
 
-  it('G5b: withProps() result extend is identity', () => {
+  it('G5b: withProps() result extend returns a ThemeComponentEntry', () => {
     const StyledSelect = (Select as any).withProps({ selected: 'a' });
-    const config = { defaultProps: { selected: 'b' } };
-    expect((StyledSelect as any).extend(config)).toBe(config);
+    const entry = (StyledSelect as any).extend({ defaultProps: { selected: 'b' } });
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('Select');
+    expect(entry.defaultProps).toEqual({ selected: 'b' });
   });
 
   it('G5c: withProps() result has a withProps method (double-wrap chain — G4)', () => {

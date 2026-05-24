@@ -21,7 +21,7 @@ function describe(value: unknown): string {
  *
  * When an array is provided, each element is validated at runtime — a clear
  * error is thrown if a caller accidentally passes a plain object instead of
- * using `Component.withDefaults({...})`.
+ * using `Component.extend({...})`.
  */
 export function normalizeComponents(
   input: ThemeDefinition['components'] | undefined,
@@ -33,7 +33,7 @@ export function normalizeComponents(
       if (!isThemeComponentEntry(entry)) {
         throw new Error(
           `createTheme: components array contains a non-ThemeComponentEntry value. ` +
-          `Use Component.withDefaults({...}) to construct entries; got: ${describe(entry)}`,
+          `Use Component.extend({...}) to construct entries; got: ${describe(entry)}`,
         );
       }
       // Last-write-wins: later entries override earlier ones with the same name.
