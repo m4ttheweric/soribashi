@@ -1,3 +1,5 @@
+import type { Vocabulary } from './define-vocabulary.ts';
+
 /**
  * Tagged record returned by `Component.withDefaults({...})`. Consumers pass
  * an array of these to `createTheme({ components: [...] })`. The factory's
@@ -15,6 +17,16 @@ export interface ThemeComponentEntry<P = Record<string, unknown>> {
   readonly __soribashiThemeEntry: true;
   readonly name: string;
   readonly defaultProps: Partial<P>;
+  /** Per-component vocabulary overrides — function-form values resolved at createTheme() time. */
+  readonly vocabulary?: {
+    size?: Vocabulary;
+    intent?: Vocabulary;
+    variant?: Vocabulary;
+  };
+  readonly classNames?: unknown;
+  readonly styles?: unknown;
+  readonly vars?: unknown;
+  readonly attributes?: unknown;
 }
 
 /** Returns true only for plain objects (prototype is Object.prototype or null). */
