@@ -148,6 +148,13 @@
  * matching Mantine's calc(button-height / 1.8) ratio. Larger spinner reads
  * better in the button and de-emphasizes the partial-ring asymmetry.
  */
+.cr-Button-root[data-size='xs'] {
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  font-size: var(--font-size-xs);
+  --cr-button-spinner-size: 0.75rem;
+}
+
 .cr-Button-root[data-size='sm'] {
   height: 2rem;
   padding: 0 0.75rem;
@@ -167,6 +174,13 @@
   padding: 0 1.5rem;
   font-size: var(--font-size-lg);
   --cr-button-spinner-size: 1.5rem;
+}
+
+.cr-Button-root[data-size='xl'] {
+  height: 3.5rem;
+  padding: 0 2rem;
+  font-size: var(--font-size-xl);
+  --cr-button-spinner-size: 1.75rem;
 }
 
 .cr-Button-root[data-full-width='true'] {
