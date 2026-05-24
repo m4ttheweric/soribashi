@@ -24,6 +24,20 @@ export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): Theme
       surface: { ...base.semantic.surface, ...(child.semantic?.surface ?? {}) },
       border: { ...base.semantic.border, ...(child.semantic?.border ?? {}) },
     },
+    // Vocabulary: per-axis replace (vocabularies are atomic; child axis fully replaces base axis)
+    vocabulary: {
+      ...base.vocabulary,
+      ...(child.vocabulary ?? {}),
+    },
+    // SemanticTokens: per-slot deep merge (child keys override base keys within each slot)
+    semanticTokens: {
+      text: { ...base.semanticTokens?.text, ...(child.semanticTokens?.text ?? {}) },
+      surface: { ...base.semanticTokens?.surface, ...(child.semanticTokens?.surface ?? {}) },
+      border: { ...base.semanticTokens?.border, ...(child.semanticTokens?.border ?? {}) },
+      ...((base.semanticTokens?.accent || child.semanticTokens?.accent) && {
+        accent: { ...base.semanticTokens?.accent, ...(child.semanticTokens?.accent ?? {}) },
+      }),
+    },
     intentResolver: child.intentResolver ?? base.intentResolver,
     components: { ...base.components, ...normalizeComponents(child.components) },
     scope: child.scope ?? base.scope,
