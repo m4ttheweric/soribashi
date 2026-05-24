@@ -48,8 +48,6 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     ...(merged.semantic?.accent ? { accent: merged.semantic.accent } : {}),
   };
 
-  // TODO(Task 6): populate vocabulary and semanticTokens from merged fields.
-  // Placeholder values keep the type-checker happy during the mid-rename window.
   const vocabulary: ThemeVocabulary = {
     size: merged.vocabulary?.size ?? DEFAULT_VOCABULARIES.size,
     intent: merged.vocabulary?.intent ?? DEFAULT_VOCABULARIES.intent,
@@ -57,9 +55,9 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
   };
 
   const semanticTokens: SemanticTokensConfig = {
-    text: merged.semanticTokens?.text ?? {},
-    surface: merged.semanticTokens?.surface ?? {},
-    border: merged.semanticTokens?.border ?? {},
+    text: merged.semanticTokens?.text ?? DEFAULT_TEXT,
+    surface: merged.semanticTokens?.surface ?? DEFAULT_SURFACE,
+    border: merged.semanticTokens?.border ?? DEFAULT_BORDER,
     ...(merged.semanticTokens?.accent ? { accent: merged.semanticTokens.accent } : {}),
   };
 
