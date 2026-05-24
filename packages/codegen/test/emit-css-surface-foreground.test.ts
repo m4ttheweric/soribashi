@@ -17,7 +17,7 @@ const baseTokens = {
 function makeFloatingTheme() {
   return createTheme({
     tokens: baseTokens as never,
-    semantic: {
+    semanticTokens: {
       surface: {
         default: 'colors.neutral.0',                                              // string form
         floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' }, // object form
@@ -41,7 +41,7 @@ describe('emitCss surface foreground', () => {
   it('emits object-form without foreground as value-only', () => {
     const theme = createTheme({
       tokens: baseTokens as never,
-      semantic: { surface: { floating: { value: 'colors.neutral.0' } } },
+      semanticTokens: { surface: { floating: { value: 'colors.neutral.0' } } },
     });
     const css = emitCss(theme);
     expect(css).toMatch(/--surface-floating:\s*var\(--color-neutral-0\)/);
@@ -67,7 +67,7 @@ describe('emitCss surface foreground', () => {
   it('--__hsl-surface-* companions are emitted as var() references, not literals', () => {
     const theme = createTheme({
       tokens: baseTokens as never,
-      semantic: {
+      semanticTokens: {
         surface: { floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' } },
       },
     });
@@ -86,7 +86,7 @@ describe('emitCss surface foreground', () => {
       dark: {
         colors: { neutral: { '0': 'hsl(0 0% 5%)', '900': 'hsl(0 0% 95%)' } },
       },
-      semantic: {
+      semanticTokens: {
         surface: { floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' } },
       },
       darkMode: { selector: '.dark' },
@@ -106,7 +106,7 @@ describe('emitCss surface foreground', () => {
       dark: {
         colors: { neutral: { '0': 'hsl(0 0% 5%)', '900': 'hsl(0 0% 95%)' } },
       },
-      semantic: {
+      semanticTokens: {
         surface: { floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' } },
       },
       darkMode: { selector: '.dark' },

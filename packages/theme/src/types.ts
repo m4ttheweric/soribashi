@@ -120,33 +120,6 @@ export type PartialSemanticTokensConfig = {
   accent?: Record<string, SemanticReference>;
 };
 
-export interface SemanticTokens {
-  /** Available intent values; constrains components' `intent` prop */
-  intent: readonly string[];
-  /** Available variant values; constrains components' `variant` prop */
-  variant: readonly string[];
-  text: Record<string, SemanticReference>;
-  /**
-   * Layered surface elevation. Each slot is either a plain token reference
-   * (string) or an object `{ value, foreground? }` for surfaces that declare
-   * a paired foreground. Suggested layers: canvas, default, raised, sunken,
-   * overlay. `floating` was added in Wave 2 for the Tooltip pilot.
-   */
-  surface: Record<string, SemanticSurfaceValue>;
-  border: Record<string, SemanticReference>;
-  /**
-   * Optional accent slot for semantic colors that don't fit `text`/`surface`/`border` —
-   * e.g. `accent.feedback` for inline highlight rings, `accent.brand` for non-chrome
-   * brand emphasis. Symmetrical with the other slots: each entry maps a logical name
-   * to a token reference (e.g. `colors.primary.500`). Codegen emits `--accent-{key}`
-   * CSS vars when this slot is present.
-   *
-   * Wave 1 didn't need this; reserved for the CVI integration project's `accent.feedback`
-   * token. See conversion journal § 4 Gap 4.
-   */
-  accent?: Record<string, SemanticReference>;
-}
-
 // Intent resolver types
 
 export interface IntentResolverInput {
@@ -195,9 +168,6 @@ export interface ThemeDefinition {
   /** Role-name aliases (text/surface/border/accent) — emitted as CSS vars. */
   semanticTokens?: PartialSemanticTokensConfig;
 
-  /** @deprecated — use `vocabulary` for size/intent/variant and `semanticTokens` for text/surface/border/accent. Removed in Task 8. */
-  semantic?: Partial<SemanticTokens>;
-
   intentResolver?: IntentResolver;
   components?: Record<string, ComponentThemeConfig> | readonly ThemeComponentEntry[];
   /** CSS selector for light scope. Defaults to `:root`. */
@@ -218,8 +188,6 @@ export interface ResolvedTheme {
   dark: PartialThemeTokens;
   vocabulary: ThemeVocabulary;          // fully resolved
   semanticTokens: SemanticTokensConfig; // fully resolved
-  /** @deprecated — kept temporarily for codegen back-compat during the rename. Removed in Task 8. */
-  semantic: SemanticTokens;
   intentResolver: IntentResolver;
   components: Record<string, ComponentThemeConfig>;
   scope: string;

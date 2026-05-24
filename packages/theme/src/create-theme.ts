@@ -1,11 +1,8 @@
 import { defaultIntentResolver } from './default-intent-resolver.ts';
-import type { ResolvedTheme, SemanticTokens, SemanticTokensConfig, ThemeDefinition, ThemeVocabulary } from './types.ts';
+import type { ResolvedTheme, SemanticTokensConfig, ThemeDefinition, ThemeVocabulary } from './types.ts';
 import { composeTheme } from './compose-theme.ts';
 import { normalizeComponents } from './normalize-components.ts';
 import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
-
-const DEFAULT_INTENTS = ['primary', 'neutral', 'danger', 'success', 'warning', 'info'] as const;
-const DEFAULT_VARIANTS = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
 
 const DEFAULT_TEXT: Record<string, string> = {
   default: 'colors.neutral.900',
@@ -39,15 +36,6 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
 
   const merged: ThemeDefinition = base ? composeTheme(base, definition) : definition;
 
-  const semantic: SemanticTokens = {
-    intent: merged.semantic?.intent ?? DEFAULT_INTENTS,
-    variant: merged.semantic?.variant ?? DEFAULT_VARIANTS,
-    text: merged.semantic?.text ?? DEFAULT_TEXT,
-    surface: merged.semantic?.surface ?? DEFAULT_SURFACE,
-    border: merged.semantic?.border ?? DEFAULT_BORDER,
-    ...(merged.semantic?.accent ? { accent: merged.semantic.accent } : {}),
-  };
-
   const vocabulary: ThemeVocabulary = {
     size: merged.vocabulary?.size ?? DEFAULT_VOCABULARIES.size,
     intent: merged.vocabulary?.intent ?? DEFAULT_VOCABULARIES.intent,
@@ -66,7 +54,6 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     dark: merged.dark ?? {},
     vocabulary,
     semanticTokens,
-    semantic,
     intentResolver: merged.intentResolver ?? defaultIntentResolver,
     components: normalizeComponents(merged.components),
     scope: merged.scope ?? ':root',

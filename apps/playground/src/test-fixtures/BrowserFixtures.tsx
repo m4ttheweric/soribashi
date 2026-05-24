@@ -26,15 +26,18 @@ import {
   createTheme,
   defaultTokens,
   defaultDarkTokens,
+  defineVocabulary,
 } from '@soribashi/core';
 
 const theme = createTheme({
   name: 'browser-fixtures',
   tokens: defaultTokens,
   dark: defaultDarkTokens,
-  semantic: {
-    intent: ['primary', 'neutral', 'danger', 'success', 'warning', 'info'],
-    variant: ['filled', 'outline', 'subtle', 'ghost', 'link'],
+  vocabulary: {
+    intent: defineVocabulary(['primary', 'neutral', 'danger', 'success', 'warning', 'info']),
+    variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']),
+  },
+  semanticTokens: {
     text: {
       default: 'colors.neutral.900',
       muted: 'colors.neutral.500',

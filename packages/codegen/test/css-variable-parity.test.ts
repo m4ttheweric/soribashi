@@ -499,7 +499,7 @@ function buildFullTheme() {
         },
       },
     },
-    semantic: {
+    semanticTokens: {
       text: {
         default: 'colors.neutral.900',
         muted: 'colors.neutral.500',

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createTheme } from '../src/create-theme.ts';
 import { defaultIntentResolver } from '../src/default-intent-resolver.ts';
+import { defineVocabulary } from '../src/define-vocabulary.ts';
 
 describe('createTheme', () => {
   it('returns a normalized theme with required fields populated', () => {
@@ -37,7 +38,7 @@ describe('createTheme', () => {
     expect(theme.darkMode.selector).toBe('.dark .claim-view-islands');
   });
 
-  it('applies default semantic intent and variant if not provided', () => {
+  it('applies default vocabulary intent and variant if not provided', () => {
     const theme = createTheme({
       tokens: {
         colors: { primary: { '500': '#000' } },
@@ -47,18 +48,18 @@ describe('createTheme', () => {
       },
     });
 
-    expect(theme.semantic.intent).toEqual([
+    expect(theme.vocabulary.intent.values).toEqual([
       'primary',
       'neutral',
-      'danger',
       'success',
       'warning',
+      'danger',
       'info',
     ]);
-    expect(theme.semantic.variant).toEqual(['filled', 'outline', 'subtle', 'ghost', 'link']);
+    expect(theme.vocabulary.variant.values).toEqual(['filled', 'outline', 'subtle', 'ghost', 'link']);
   });
 
-  it('respects user-provided semantic intent and variant lists', () => {
+  it('respects user-provided vocabulary intent and variant lists', () => {
     const theme = createTheme({
       tokens: {
         colors: { primary: { '500': '#000' }, brand: { '500': '#fff' } },
@@ -66,14 +67,14 @@ describe('createTheme', () => {
         spacing: { md: '0.5rem' },
         fontSize: { md: '1rem' },
       },
-      semantic: {
-        intent: ['primary', 'brand'] as const,
-        variant: ['filled', 'outline'] as const,
+      vocabulary: {
+        intent: defineVocabulary(['primary', 'brand']),
+        variant: defineVocabulary(['filled', 'outline']),
       },
     });
 
-    expect(theme.semantic.intent).toEqual(['primary', 'brand']);
-    expect(theme.semantic.variant).toEqual(['filled', 'outline']);
+    expect(theme.vocabulary.intent.values).toEqual(['primary', 'brand']);
+    expect(theme.vocabulary.variant.values).toEqual(['filled', 'outline']);
   });
 
   it('uses custom intent resolver when provided', () => {

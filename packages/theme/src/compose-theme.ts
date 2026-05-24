@@ -6,7 +6,8 @@ import { normalizeComponents } from './normalize-components.ts';
  *
  * - tokens: deep-merged per-family
  * - dark: same
- * - semantic: shallow-merged per category (text/surface/border merged key-by-key; intent/variant replaced if specified)
+ * - vocabulary: per-axis replace (vocabularies are atomic; child axis fully replaces base axis)
+ * - semanticTokens: per-slot deep merge (child keys override base keys within each slot)
  * - components: shallow-merged (each child entry REPLACES base's entry for that component)
  * - scope, darkMode, name, intentResolver: child overrides if present
  */
@@ -17,13 +18,6 @@ export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): Theme
       base.dark as ThemeTokens,
       (child.dark ?? {}) as ThemeTokens,
     ) as ThemeDefinition['dark'],
-    semantic: {
-      intent: child.semantic?.intent ?? base.semantic.intent,
-      variant: child.semantic?.variant ?? base.semantic.variant,
-      text: { ...base.semantic.text, ...(child.semantic?.text ?? {}) },
-      surface: { ...base.semantic.surface, ...(child.semantic?.surface ?? {}) },
-      border: { ...base.semantic.border, ...(child.semantic?.border ?? {}) },
-    },
     // Vocabulary: per-axis replace (vocabularies are atomic; child axis fully replaces base axis)
     vocabulary: {
       ...base.vocabulary,

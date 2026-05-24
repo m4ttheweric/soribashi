@@ -420,7 +420,7 @@ describe('Tabs recipe', () => {
   it('Tabs.withDefaults({ variant: "pills" }) round-trips through createTheme', () => {
     const themeWithDefaults = createTheme({
       tokens: theme.tokens,
-      semantic: theme.semantic,
+      semanticTokens: theme.semanticTokens,
       components: [
         Tabs.withDefaults({ variant: 'pills' } as Partial<TabsRootProps>),
       ],
@@ -443,7 +443,7 @@ describe('Tabs recipe', () => {
   it('Tabs.Content.withDefaults({ forceMount: true }) round-trips through createTheme', () => {
     const themeWithDefaults = createTheme({
       tokens: theme.tokens,
-      semantic: theme.semantic,
+      semanticTokens: theme.semanticTokens,
       components: [
         Tabs.Content.withDefaults({ forceMount: true } as Partial<TabsContentProps>),
       ],

@@ -217,7 +217,7 @@ describe('Tooltip recipe', () => {
     const user = userEvent.setup();
     const themeWithDefaults = createTheme({
       tokens: theme.tokens,
-      semantic: theme.semantic,
+      semanticTokens: theme.semanticTokens,
       components: [
         Tooltip.Content.withDefaults({ className: 'theme-default-class' } as any),
       ],

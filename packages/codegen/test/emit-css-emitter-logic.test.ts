@@ -449,7 +449,7 @@ describe('emitCss — semanticToVar reference resolution', () => {
         spacing: {},
         fontSize: {},
       },
-      semantic: {
+      semanticTokens: {
         text: { primary: 'colors.neutral.900' },
       },
     });
@@ -466,7 +466,7 @@ describe('emitCss — semanticToVar reference resolution', () => {
         spacing: {},
         fontSize: {},
       },
-      semantic: {
+      semanticTokens: {
         border: { radius: 'radius.md' },
       },
     });
@@ -483,7 +483,7 @@ describe('emitCss — semanticToVar reference resolution', () => {
         spacing: { md: '1rem' },
         fontSize: {},
       },
-      semantic: {
+      semanticTokens: {
         surface: { gutter: 'spacing.md' },
       },
     });
@@ -500,7 +500,7 @@ describe('emitCss — semanticToVar reference resolution', () => {
         spacing: {},
         fontSize: { md: '1rem' },
       },
-      semantic: {
+      semanticTokens: {
         text: { body: 'fontSize.md' },
       },
     });
@@ -517,7 +517,7 @@ describe('emitCss — semanticToVar reference resolution', () => {
         spacing: {},
         fontSize: {},
       },
-      semantic: {
+      semanticTokens: {
         text: { accent: '#ff0000' },
       },
     });

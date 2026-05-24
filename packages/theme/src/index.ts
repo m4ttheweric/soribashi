@@ -11,7 +11,6 @@ export type {
   ThemeTokens,
   PartialThemeTokens,
   ColorScale,
-  SemanticTokens,
   SemanticReference,
   SemanticSurfaceValue,
   IntentResolver,

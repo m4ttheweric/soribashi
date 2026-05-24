@@ -1,4 +1,4 @@
-import { createTheme, defaultTokens, defaultDarkTokens } from '@soribashi/core';
+import { createTheme, defaultTokens, defaultDarkTokens, defineVocabulary } from '@soribashi/core';
 
 /**
  * Per-tenant scoped themes. Each theme sets `scope` to a class selector so its
@@ -7,9 +7,12 @@ import { createTheme, defaultTokens, defaultDarkTokens } from '@soribashi/core';
  * page render multiple brand styles without a provider swap.
  */
 
-const tenantSemantic = {
-  intent: ['primary', 'neutral', 'danger', 'success', 'warning', 'info'],
-  variant: ['filled', 'outline', 'subtle', 'ghost', 'link'],
+const tenantVocabulary = {
+  intent: defineVocabulary(['primary', 'neutral', 'danger', 'success', 'warning', 'info']),
+  variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']),
+};
+
+const tenantSemanticTokens = {
   text: {
     default: 'colors.neutral.900',
     muted: 'colors.neutral.500',
@@ -59,7 +62,8 @@ export const acmeTheme = createTheme({
     },
   },
   dark: defaultDarkTokens,
-  semantic: tenantSemantic,
+  vocabulary: tenantVocabulary,
+  semanticTokens: tenantSemanticTokens,
 });
 
 export const contosoTheme = createTheme({
@@ -92,7 +96,8 @@ export const contosoTheme = createTheme({
     },
   },
   dark: defaultDarkTokens,
-  semantic: tenantSemantic,
+  vocabulary: tenantVocabulary,
+  semanticTokens: tenantSemanticTokens,
 });
 
 export const tenantThemes = [acmeTheme, contosoTheme];
