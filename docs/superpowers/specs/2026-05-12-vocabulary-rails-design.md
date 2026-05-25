@@ -393,8 +393,10 @@ function resolveVocabForComponent(theme, componentName, axis) {
 
 ## 11. CSS / codegen interaction
 
-Codegen reads `theme.vocabulary` to emit:
-- **Size scale CSS vars** — `--size-<name>-height`, `--size-<name>-padding`, `--size-<name>-font-size`, etc. (Existing codegen already emits `--font-size-xs/sm/md/lg/xl` from `tokens.fontSize`; this widens it.)
+In this PR, codegen does NOT yet read `theme.vocabulary` for any emission — the size-scale CSS vars (`--font-size-xs/sm/md/lg/xl`) continue to come from `tokens.fontSize` exactly as before.
+
+The eventual design (deferred to a future codegen pass):
+- **Size scale CSS vars** — `--size-<name>-height`, `--size-<name>-padding`, `--size-<name>-font-size`, etc. would be emitted from `theme.vocabulary.size.values`.
 - **Data-attribute selectors aren't generated** — they're hand-written in each recipe's `.module.css` and match the vocabulary names. If the vocabulary changes, the CSS file changes too. This is intentional: the CSS expresses how each named size *looks*, and that's recipe-specific styling, not codegen output.
 
 **Defer**: a future codegen pass could emit a `// generated: known size values: 'compact', 'standard', 'comfortable'` doc-comment header in each `.module.css` to remind authors of the valid attribute selectors. Not in this spec.
@@ -415,7 +417,7 @@ The pilot (`apps/core-radix-pilot`) is the only consumer. Migration:
 10. Run all tests; expect 461 + 244 + 47 unchanged.
 11. Run pilot dev server; manually verify visual parity.
 
-Codegen migrates in lockstep — every internal call site of `theme.semantic.*` is rewritten to read `theme.semanticTokens.*` (text/surface/border/accent) or `theme.vocabulary.*.values` (intent/variant). No back-compat shim; pre-1.0 hard cutover. The size scale continues to come from `tokens.fontSize` as before.
+Codegen migrates in lockstep — every internal call site of `theme.semantic.*` is rewritten to read `theme.semanticTokens.*` (text/surface/border/accent) or `theme.vocabulary.*.values` (intent/variant). No back-compat shim; pre-1.0 hard cutover. **Size scale CSS-var emission stays where it is today** — codegen continues to read `tokens.fontSize` to emit `--font-size-xs/sm/md/lg/xl`. Section 11 describes the eventual goal of having codegen also emit `--size-<name>-*` from `theme.vocabulary.size`, but that's deferred to a future pass and is NOT in this PR.
 
 ## 13. PR rollout — handling the in-flight PR #9
 
