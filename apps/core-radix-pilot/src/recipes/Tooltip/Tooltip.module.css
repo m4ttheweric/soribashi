@@ -26,6 +26,7 @@
  * may target it via classNames={{ trigger: '...' }}. Declaring the empty
  * rule gives the slot a stable, addressable scoped class name.
  */
+/* stylelint-disable-next-line block-no-empty */
 .trigger {
 }
 
