@@ -153,7 +153,7 @@ Pattern for components with no Radix anatomy, no portal, no controlled state —
 
 1. **API split: variant × intent.** Always. `variant` is visual style (`filled`, `outline`, `subtle`, `ghost`, `link`). `intent` is semantic role (`primary`, `neutral`, `success`, `warning`, `danger`, `info`). Never mix them on a single prop. Conflating them produces the variant-explosion + meaning-collision the Button pilot caught in CVI (where `primary`/`secondary` are role and `outline`/`ghost` are style on the same axis — see `docs/superpowers/pilots/2026-04-26-button-conversion.md` § 1.1).
 2. **Authoring primitive:** `definePolymorphicComponent` whenever `as=` is plausible (buttons-as-links is the canonical case). `defineComponent` only for components that genuinely have one element (Skeleton, Dot). The polymorphic primitive is more typesafe than CVI's `asChild` + `Slot` and avoids CVI's silent-ignore footgun (see conversion journal § 1.4) where `asChild` is dropped when combined with `isLoading` / `leftIcon` / `rightIcon`. **Type-param order is `<TOwnProps, TDefaultAs>`** — the reverse compiles but produces confusing-but-not-erroring types (conversion journal § 3 Hard).
-3. **Selectors:** keep a small, named parts list. For Button: `['root', 'label', 'icon', 'spinner']`. Each part gets its own class (`cr-Button-root`, `cr-Button-label`, …) so downstream styling targets parts, not deep selector chains.
+3. **Selectors:** keep a small, named parts list. For Button: `['root', 'inner', 'label', 'icon', 'spinner']` — `inner` wraps the icon + label row so the whole block can animate during loading. Each part gets its own class (`.root`, `.inner`, `.label`, … inside `Button.module.css`) so downstream styling targets parts, not deep selector chains. CSS module scoping makes the class names globally unique at build time without manual prefixes.
 4. **Defaults:** set sensible defaults so consumers can drop the component in without ceremony. Wave 1's Button defaults: `intent: 'primary', variant: 'filled', size: 'md', loading: false, fullWidth: false`.
 
 #### Style approach
@@ -161,8 +161,10 @@ Pattern for components with no Radix anatomy, no portal, no controlled state —
 Use CSS data-attribute rules over local CSS variables. For each (variant, intent) pair, set 4-5 local `--cr-{component}-*` vars; the root rule pulls from those vars. Avoid Tailwind class concatenation across the matrix — 30 cells of `cva` produces a class-name explosion that's hard to inspect in DevTools and impossible for designers to edit.
 
 ```css
+/* Button.module.css — plain selectors; scoped by the CSS module compiler */
+
 /* root: pulls from local vars */
-.cr-Button-root {
+.root {
   background: var(--cr-button-bg);
   color: var(--cr-button-color);
   border-color: var(--cr-button-border);
@@ -170,7 +172,7 @@ Use CSS data-attribute rules over local CSS variables. For each (variant, intent
 }
 
 /* per-cell: just sets the local vars */
-.cr-Button-root[data-variant='filled'][data-intent='primary'] {
+.root[data-variant='filled'][data-intent='primary'] {
   --cr-button-bg: var(--color-primary-500);
   --cr-button-color: var(--color-neutral-0);
   --cr-button-border: var(--color-primary-500);
@@ -179,7 +181,7 @@ Use CSS data-attribute rules over local CSS variables. For each (variant, intent
 }
 ```
 
-This collapses 30 (variant × intent) cells to: one root rule + 30 four-line override blocks. If any cell needs more than that, it's a smell — re-evaluate. (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.css`.)
+This collapses 30 (variant × intent) cells to: one root rule + 30 four-line override blocks. If any cell needs more than that, it's a smell — re-evaluate. (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.module.css`.)
 
 > **Codegen pattern (Gap 1 — RESOLVED post-Wave-1):** the codegen emits **two** CSS vars per color: the canonical wrapped var (`--color-primary-500: hsl(221.2 83.2% 53.3%);`) for direct CSS use, and a `--__hsl-` companion (`--__hsl-color-primary-500: 221.2 83.2% 53.3%;`) for Tailwind's `<alpha-value>` pattern and any consumer needing alpha (`hsl(var(--__hsl-color-X-Y) / 0.5)`). The Tailwind config wires the `--__hsl-` companion automatically, so `bg-primary-500/50` works out of the box. **Recipe authors:** prefer the canonical var for opaque chrome; reach for the `--__hsl-` companion (or the Tailwind alpha utility) for translucent surfaces, focus rings, and hover tints. Wave 1's Button.css predates the fix and uses only the canonical pattern — that's still correct, just no longer the only option. (Conversion journal § 4 Gap 1 — RESOLVED.)
 
@@ -206,13 +208,14 @@ This collapses 30 (variant × intent) cells to: one root rule + 30 four-line ove
 - **Focus-indicator pattern (Gap 4 — RESOLVED post-Wave-1):** routing the focus outline through the same `--cr-{component}-bg` var that powers the background makes the outline disappear whenever bg is `transparent` (ghost / link / outline variants). Resolved via a variant-scoped override that re-routes the outline to `--cr-{component}-color` (the cell's text color, always opaque) for transparent variants only:
 
   ```css
-  .cr-Button-root:focus-visible {
+  /* Button.module.css */
+  .root:focus-visible {
     outline: 2px solid var(--cr-button-bg);
     outline-offset: 2px;
   }
-  .cr-Button-root[data-variant='ghost']:focus-visible,
-  .cr-Button-root[data-variant='link']:focus-visible,
-  .cr-Button-root[data-variant='outline']:focus-visible {
+  .root[data-variant='ghost']:focus-visible,
+  .root[data-variant='link']:focus-visible,
+  .root[data-variant='outline']:focus-visible {
     outline-color: var(--cr-button-color);
   }
   ```
@@ -266,17 +269,16 @@ If a recipe has zero own props (rare), the destructure block reduces to the seve
 #### Recipe code snippet
 
 ```tsx
+import classes from './Button.module.css';
+
+type Variant = 'filled' | 'outline' | 'subtle' | 'ghost' | 'link';
+
 export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
   name: 'Button',
   defaultElement: 'button',
-  selectors: ['root', 'label', 'icon', 'spinner'] as const,
+  selectors: ['root', 'inner', 'label', 'icon', 'spinner'] as const,
   variants: ['filled', 'outline', 'subtle', 'ghost', 'link'] as const,
-  classes: {
-    root: 'cr-Button-root',
-    label: 'cr-Button-label',
-    icon: 'cr-Button-icon',
-    spinner: 'cr-Button-spinner',
-  },
+  classes,
   defaults: {
     intent: 'primary',
     variant: 'filled',
@@ -287,6 +289,11 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
   render: ({ Element, props, getStyles }) => { /* ... */ },
 });
 ```
+
+Key points:
+- `classes` is the CSS module's default export (`Readonly<Record<string, string>>`), slotted directly into the factory's `classes` config field via ES2015 shorthand.
+- CSS selectors in `Button.module.css` are plain: `.root`, `.inner`, `.label`, `.icon`, `.spinner` — no `cr-Button-*` prefix needed.
+- `Variant` stays local per recipe (visual treatment unique to Button).
 
 See `apps/core-radix-pilot/src/recipes/Button/Button.tsx` for the full implementation (including the styles-API prop destructure and the polymorphic disabled branch).
 
@@ -302,14 +309,14 @@ Use `defineCompound` (from `@soribashi/core`, re-exported from `@soribashi/facto
 
 **Parts taxonomy — Tooltip has four parts:**
 
-| Part | Class | Role |
+| Part | CSS selector (in `Tooltip.module.css`) | Role |
 |---|---|---|
 | `provider` | — | Class-3 passthrough; wraps `RadixTooltip.Provider`. No soribashi context. |
-| `root` | `cr-Tooltip-root` | Class-1 context-creator; establishes compound context via `RadixTooltip.Root`. |
-| `trigger` | `cr-Tooltip-trigger` | Class-2 context-consumer; reads `ctx.getStyles()` to apply trigger class. |
-| `content` | `cr-Tooltip-content` | Class-2 context-consumer; reads `ctx.side` + `ctx.sideOffset`; renders in a Portal. |
+| `root` | `.root` | Class-1 context-creator; establishes compound context via `RadixTooltip.Root`. |
+| `trigger` | `.trigger` | Class-2 context-consumer; reads `ctx.getStyles()` to apply trigger class. |
+| `content` | `.content` | Class-2 context-consumer; reads `ctx.side` + `ctx.sideOffset`; renders in a Portal. |
 
-**Slot vs part — the `arrow` distinction:** `arrow` is declared in `classes` (`cr-Tooltip-arrow`) so it participates in the var/class resolution system, but it is **not** exported as a separate part. It's a sub-element slot owned by the `content` part and reached via `getStyles({ part: 'arrow' })`. This is the slot-vs-part distinction: a _part_ is a separately-rendered, separately-exported piece of the compound; a _slot_ is a styling hook owned by another part.
+**Slot vs part — the `arrow` distinction:** `arrow` is declared in `classes` (`.arrow` inside `Tooltip.module.css`) so it participates in the var/class resolution system, but it is **not** exported as a separate part. It's a sub-element slot owned by the `content` part and reached via `getStyles({ part: 'arrow' })`. This is the slot-vs-part distinction: a _part_ is a separately-rendered, separately-exported piece of the compound; a _slot_ is a styling hook owned by another part.
 
 #### Style approach
 
@@ -328,7 +335,7 @@ Inside each part's `render`, `getStyles()` returns the class + inline vars for t
 
 #### State handling
 
-Radix owns the open/close lifecycle entirely. `data-state="delayed-open"` / `data-state="closed"` attributes are emitted by Radix directly onto its own elements and propagate into the portal. The recipe has **no state-toggle code** — no `useState`, no `data-state` writes, no visibility classes toggled in `render`. CSS animations keyed to `data-state` in `Tooltip.css` handle the enter/exit transitions automatically.
+Radix owns the open/close lifecycle entirely. `data-state="delayed-open"` / `data-state="closed"` attributes are emitted by Radix directly onto its own elements and propagate into the portal. The recipe has **no state-toggle code** — no `useState`, no `data-state` writes, no visibility classes toggled in `render`. CSS animations keyed to `data-state` in `Tooltip.module.css` handle the enter/exit transitions automatically.
 
 This is the defining characteristic of the transient-overlay category: the recipe author handles styling; Radix handles lifecycle. Contrast with a pure-styled primitive (Wave 1 — Button) where the recipe is the entire render tree.
 
@@ -411,7 +418,7 @@ Pilot harness is already wired from Wave 1 (§ 2.0 template was applied during p
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
 import { defineCompound, type PartRenderCtx } from '@soribashi/core';
-import './Tooltip.css';
+import classes from './Tooltip.module.css';
 
 type Variant = 'default' | 'subtle';
 type Side = 'top' | 'right' | 'bottom' | 'left';
@@ -451,12 +458,7 @@ interface TooltipCtxExtras {
 export const Tooltip = defineCompound({
   name: 'Tooltip',
   variants: ['default', 'subtle'] as const,
-  classes: {
-    root: 'cr-Tooltip-root',
-    trigger: 'cr-Tooltip-trigger',
-    content: 'cr-Tooltip-content',
-    arrow: 'cr-Tooltip-arrow',
-  },
+  classes,
   defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
   vars: (_theme, props) => ({
     // Default variant uses surface.floating + its formalized foreground —
@@ -554,6 +556,11 @@ export const Tooltip = defineCompound({
 });
 ```
 
+Key points:
+- `import classes from './Tooltip.module.css'` replaces the plain `import './Tooltip.css'`; the module default export slots directly into `classes,`.
+- CSS selectors in `Tooltip.module.css` are plain: `.root`, `.trigger`, `.content`, `.arrow` — no `cr-Tooltip-*` prefix needed. The CSS module compiler scopes them at build time.
+- `Variant` stays local (visual treatment unique to Tooltip).
+
 See `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx` for the live source (this snippet is verbatim as of Wave 2).
 
 ### 2.3 Persistent navigational compound (Wave 3 — Tabs)
@@ -568,12 +575,12 @@ Use `defineCompound` (from `@soribashi/core`). The config shape parallels Wave 2
 
 **Parts taxonomy — Tabs has four parts:**
 
-| Part | Class | Role |
+| Part | CSS selector (in `Tabs.module.css`) | Role |
 |---|---|---|
-| `root` | `cr-Tabs-root` | Class-1 context-creator. Establishes compound context via `RadixTabs.Root`. Owns `variant` + controlled `value` / `defaultValue` / `onValueChange`. Emits `data-variant` for descendant CSS. |
-| `list` | `cr-Tabs-list` | Class-2 context-consumer. Wraps `RadixTabs.List`. Reads `ctx.variant` for variant-driven list styling. |
-| `trigger` | `cr-Tabs-trigger` | Class-2 + polymorphic. Wraps `RadixTabs.Trigger` (asChild). Polymorphic with `defaultElement: 'button'`. Consumer chooses element via `as` prop; recipe never exposes Radix's `asChild` publicly. |
-| `content` | `cr-Tabs-content` | Class-2 context-consumer. Wraps `RadixTabs.Content`. `forceMount` passthrough for keep-mounted panels. |
+| `root` | `.root` | Class-1 context-creator. Establishes compound context via `RadixTabs.Root`. Owns `variant` + controlled `value` / `defaultValue` / `onValueChange`. Emits `data-variant` for descendant CSS. |
+| `list` | `.list` | Class-2 context-consumer. Wraps `RadixTabs.List`. Reads `ctx.variant` for variant-driven list styling. |
+| `trigger` | `.trigger` | Class-2 + polymorphic. Wraps `RadixTabs.Trigger` (asChild). Polymorphic with `defaultElement: 'button'`. Consumer chooses element via `as` prop; recipe never exposes Radix's `asChild` publicly. |
+| `content` | `.content` | Class-2 context-consumer. Wraps `RadixTabs.Content`. `forceMount` passthrough for keep-mounted panels. |
 
 #### Polymorphic part API (new in Wave 3)
 
@@ -611,7 +618,8 @@ vars: (_theme, props) => ({
 The pills variant's filled active state collides with the default `--color-primary-500` outline color. Variant-scoped focus override re-routes to a contrast-coherent outline:
 
 ```css
-.cr-Tabs-trigger[data-variant='pills'][data-state='active']:focus-visible {
+/* Tabs.module.css */
+.trigger[data-variant='pills'][data-state='active']:focus-visible {
   outline-color: var(--color-neutral-0);
   outline-offset: -2px;
 }
@@ -745,7 +753,7 @@ import {
   type PartRenderCtx,
   type PolymorphicPartRenderCtx,
 } from '@soribashi/core';
-import './Tabs.css';
+import classes from './Tabs.module.css';
 
 type Variant = 'default' | 'outline' | 'pills';
 
@@ -780,15 +788,10 @@ interface TabsCtxExtras {
 export const Tabs = defineCompound({
   name: 'Tabs',
   variants: ['default', 'outline', 'pills'] as const,
-  classes: {
-    root: 'cr-Tabs-root',
-    list: 'cr-Tabs-list',
-    trigger: 'cr-Tabs-trigger',
-    content: 'cr-Tabs-content',
-  },
+  classes,
   defaults: { variant: 'default' } as Partial<TabsRootProps>,
   vars: (_theme, props) => ({
-    // Variant-driven token vars used by Tabs.css's [data-variant='pills']
+    // Variant-driven token vars used by Tabs.module.css's [data-variant='pills']
     // block for the active-pill background/foreground. Other variants
     // don't read these but the resolver still emits sentinel values so
     // tests can assert the per-variant routing.
@@ -899,9 +902,72 @@ export const Tabs = defineCompound({
 });
 ```
 
+Key points:
+- `import classes from './Tabs.module.css'` replaces the plain `import './Tabs.css'`; the module default export slots directly into `classes,`.
+- CSS selectors in `Tabs.module.css` are plain: `.root`, `.list`, `.trigger`, `.content` — no `cr-Tabs-*` prefix needed. The CSS module compiler scopes them at build time.
+- `Variant` stays local (visual treatment unique to Tabs).
+
 See `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx` for the live source (this snippet is verbatim as of Wave 3).
 
-### 2.4 Form control (Wave 4 — Select)
+### 2.4 CSS modules
+
+Every recipe uses a `RecipeName.module.css` file. Class names inside the module are plain — `.root`, `.trigger`, `.content` — NOT prefixed with `.cr-Recipe-`. The CSS module compiler scopes them at build time.
+
+**Recipe pattern:**
+
+```ts
+import classes from './Button.module.css';
+
+export const Button = definePolymorphicComponent({
+  name: 'Button',
+  // ...
+  classes,
+  // ...
+});
+```
+
+The module's default export is `Readonly<Record<string, string>>` mapping each declared class name to its build-time-scoped form. It slots directly into the factory's `classes?: Partial<Record<TSelectors[number], string>>` config field.
+
+**Data-attribute selectors compose unchanged.** `.root[data-variant='filled']` inside the module becomes `.{scoped-root}[data-variant='filled']` — CSS modules transform class names only, never attribute selectors.
+
+**Global parent classes via `:global()`.** When a recipe needs to react to a global parent class (e.g., `.dark`), wrap the parent in `:global()` so the CSS module compiler doesn't try to scope it:
+
+```css
+:global(.dark) .root::before {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+```
+
+The `.root` selector remains locally scoped; only `:global(.dark)` is exempt.
+
+**Keyframes are scoped locally; CSS custom properties are NOT.** `@keyframes cr-button-spin` is renamed by the CSS module compiler (typically to something like `_cr-button-spin_abc123`), AND the corresponding `animation-name: cr-button-spin` reference *inside the same module* is rewritten in tandem so the two stay matched. This means the animation works correctly, but you cannot reference the same keyframe from a different module by its source name. To opt out and keep a globally-named keyframe, wrap the declaration with `:global(...)`: `@keyframes :global(cr-button-spin) { ... }`. CSS custom properties (`--cr-button-bg`, etc.) are not scoped and stay verbatim — they're global by design and consumers can read/override them.
+
+**Consumer override pattern.** Consumers can pass their own CSS module's exports via the recipe's `classNames` prop:
+
+```tsx
+import myStyles from './my-tooltip.module.css';
+
+<Tooltip classNames={{ root: myStyles.root, content: myStyles.content }}>
+  ...
+</Tooltip>
+```
+
+The factory's `useStyles` already merges instance-level `classNames` on top of recipe-level + theme-level entries — no factory change was required.
+
+**Test pattern.** Tests import the same CSS module and assert against `classes.slot`:
+
+```ts
+import classes from '../recipes/Tooltip/Tooltip.module.css';
+
+expect(content.className).toContain(classes.content);
+expect(document.body.querySelector(`.${classes.content}`)).not.toBeNull();
+```
+
+Refactor-safe: renaming `.content` to `.bubble` in the module breaks the test at compile time, not at runtime.
+
+**Vite + Vitest support.** Native, no config change. Add `apps/core-radix-pilot/src/vite-env.d.ts` containing `/// <reference types="vite/client" />` so TypeScript knows the `*.module.css` default-export shape.
+
+### 2.5 Form control (Wave 4 — Select)
 
 _To be populated by Wave 4._
 

@@ -18,7 +18,7 @@ import {
   type PartRenderCtx,
   type PolymorphicPartRenderCtx,
 } from '@soribashi/core';
-import './Tabs.css';
+import classes from './Tabs.module.css';
 
 type Variant = 'default' | 'outline' | 'pills';
 
@@ -53,12 +53,7 @@ interface TabsCtxExtras {
 export const Tabs = defineCompound({
   name: 'Tabs',
   variants: ['default', 'outline', 'pills'] as const,
-  classes: {
-    root: 'cr-Tabs-root',
-    list: 'cr-Tabs-list',
-    trigger: 'cr-Tabs-trigger',
-    content: 'cr-Tabs-content',
-  },
+  classes,
   defaults: { variant: 'default' } as Partial<TabsRootProps>,
   vars: (_theme, props) => ({
     // Variant-driven token vars used by Tabs.css's [data-variant='pills']

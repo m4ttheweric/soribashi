@@ -18,7 +18,7 @@
  */
 
 /* ─── root ──────────────────────────────────────────────────────────── */
-.cr-Button-root {
+.root {
   /* `position: relative` anchors the absolutely-positioned spinner; */
   /* `overflow: hidden` clips the inner wrapper as it slides off-screen */
   /* during the loading transition (Mantine pattern). */
@@ -49,7 +49,7 @@
  * Button.module.css `.root::before` block. The slight blur + low opacity
  * gives a tactile "frosted" feel without obscuring the button entirely.
  */
-.cr-Button-root::before {
+.root::before {
   content: '';
   pointer-events: none;
   position: absolute;
@@ -62,11 +62,11 @@
   transition: transform 150ms ease, opacity 100ms ease;
 }
 
-.dark .cr-Button-root::before {
+:global(.dark) .root::before {
   background-color: rgba(0, 0, 0, 0.15);
 }
 
-.cr-Button-root:hover {
+.root:hover {
   background: var(--cr-button-hover-bg, var(--cr-button-bg));
 }
 
@@ -88,17 +88,17 @@
  * Intentionally NOT in the `transition` list — the press should snap
  * instantly; only background/border/color animate.
  */
-.cr-Button-root:active {
+.root:active {
   /* background: var(--cr-button-active-bg, var(--cr-button-hover-bg, var(--cr-button-bg))); */
   transform: translateY(1px);
 }
 
 /* Reset the press translate when disabled (Mantine parity) */
-.cr-Button-root:where(:disabled, [aria-disabled='true']):active {
+.root:where(:disabled, [aria-disabled='true']):active {
   transform: none;
 }
 
-.cr-Button-root:focus-visible {
+.root:focus-visible {
   outline: 2px solid var(--cr-button-bg);
   outline-offset: 2px;
 }
@@ -110,13 +110,13 @@
  * which is always opaque and intent-coherent. Resolves Gap 4 from the Wave 1
  * conversion journal.
  */
-.cr-Button-root[data-variant='ghost']:focus-visible,
-.cr-Button-root[data-variant='link']:focus-visible,
-.cr-Button-root[data-variant='outline']:focus-visible {
+.root[data-variant='ghost']:focus-visible,
+.root[data-variant='link']:focus-visible,
+.root[data-variant='outline']:focus-visible {
   outline-color: var(--cr-button-color);
 }
 
-.cr-Button-root:disabled {
+.root:where(:disabled, [aria-disabled='true']) {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -131,13 +131,13 @@
  * itself the visual cue, full opacity reads better with the veil). Override
  * it back to 1 here.
  */
-.cr-Button-root[data-loading='true'] {
+.root[data-loading='true'] {
   opacity: 1;
   cursor: not-allowed;
   transform: none;
 }
 
-.cr-Button-root[data-loading='true']::before {
+.root[data-loading='true']::before {
   transform: translateY(0);
   opacity: 1;
 }
@@ -148,28 +148,42 @@
  * matching Mantine's calc(button-height / 1.8) ratio. Larger spinner reads
  * better in the button and de-emphasizes the partial-ring asymmetry.
  */
-.cr-Button-root[data-size='sm'] {
+.root[data-size='xs'] {
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  font-size: var(--font-size-xs);
+  --cr-button-spinner-size: 0.75rem;
+}
+
+.root[data-size='sm'] {
   height: 2rem;
   padding: 0 0.75rem;
   font-size: var(--font-size-sm);
   --cr-button-spinner-size: 1rem;
 }
 
-.cr-Button-root[data-size='md'] {
+.root[data-size='md'] {
   height: 2.5rem;
   padding: 0 1rem;
   font-size: var(--font-size-base);
   --cr-button-spinner-size: 1.25rem;
 }
 
-.cr-Button-root[data-size='lg'] {
+.root[data-size='lg'] {
   height: 3rem;
   padding: 0 1.5rem;
   font-size: var(--font-size-lg);
   --cr-button-spinner-size: 1.5rem;
 }
 
-.cr-Button-root[data-full-width='true'] {
+.root[data-size='xl'] {
+  height: 3.5rem;
+  padding: 0 2rem;
+  font-size: var(--font-size-xl);
+  --cr-button-spinner-size: 1.75rem;
+}
+
+.root[data-full-width='true'] {
   width: 100%;
 }
 
@@ -181,32 +195,32 @@
 /* link is unstyled chrome with an underline.                            */
 
 /* ── primary ────────────────────────────────────────────────────────── */
-.cr-Button-root[data-variant='filled'][data-intent='primary'] {
+.root[data-variant='filled'][data-intent='primary'] {
   --cr-button-bg: var(--color-primary-500);
   --cr-button-color: var(--color-neutral-0);
   --cr-button-border: var(--color-primary-500);
   --cr-button-hover-bg: var(--color-primary-600);
   --cr-button-active-bg: var(--color-primary-700);
 }
-.cr-Button-root[data-variant='outline'][data-intent='primary'] {
+.root[data-variant='outline'][data-intent='primary'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-primary-700);
   --cr-button-border: var(--color-primary-500);
   --cr-button-hover-bg: var(--color-primary-50);
 }
-.cr-Button-root[data-variant='subtle'][data-intent='primary'] {
+.root[data-variant='subtle'][data-intent='primary'] {
   --cr-button-bg: var(--color-primary-100);
   --cr-button-color: var(--color-primary-800);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-primary-200);
 }
-.cr-Button-root[data-variant='ghost'][data-intent='primary'] {
+.root[data-variant='ghost'][data-intent='primary'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-primary-700);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-primary-50);
 }
-.cr-Button-root[data-variant='link'][data-intent='primary'] {
+.root[data-variant='link'][data-intent='primary'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-primary-700);
   --cr-button-border: transparent;
@@ -215,32 +229,32 @@
 }
 
 /* ── neutral ────────────────────────────────────────────────────────── */
-.cr-Button-root[data-variant='filled'][data-intent='neutral'] {
+.root[data-variant='filled'][data-intent='neutral'] {
   --cr-button-bg: var(--color-neutral-500);
   --cr-button-color: var(--color-neutral-0);
   --cr-button-border: var(--color-neutral-500);
   --cr-button-hover-bg: var(--color-neutral-600);
   --cr-button-active-bg: var(--color-neutral-700);
 }
-.cr-Button-root[data-variant='outline'][data-intent='neutral'] {
+.root[data-variant='outline'][data-intent='neutral'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-neutral-700);
   --cr-button-border: var(--color-neutral-500);
   --cr-button-hover-bg: var(--color-neutral-50);
 }
-.cr-Button-root[data-variant='subtle'][data-intent='neutral'] {
+.root[data-variant='subtle'][data-intent='neutral'] {
   --cr-button-bg: var(--color-neutral-100);
   --cr-button-color: var(--color-neutral-800);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-neutral-200);
 }
-.cr-Button-root[data-variant='ghost'][data-intent='neutral'] {
+.root[data-variant='ghost'][data-intent='neutral'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-neutral-700);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-neutral-50);
 }
-.cr-Button-root[data-variant='link'][data-intent='neutral'] {
+.root[data-variant='link'][data-intent='neutral'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-neutral-700);
   --cr-button-border: transparent;
@@ -249,32 +263,32 @@
 }
 
 /* ── success ────────────────────────────────────────────────────────── */
-.cr-Button-root[data-variant='filled'][data-intent='success'] {
+.root[data-variant='filled'][data-intent='success'] {
   --cr-button-bg: var(--color-success-500);
   --cr-button-color: var(--color-neutral-0);
   --cr-button-border: var(--color-success-500);
   --cr-button-hover-bg: var(--color-success-600);
   --cr-button-active-bg: var(--color-success-700);
 }
-.cr-Button-root[data-variant='outline'][data-intent='success'] {
+.root[data-variant='outline'][data-intent='success'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-success-700);
   --cr-button-border: var(--color-success-500);
   --cr-button-hover-bg: var(--color-success-50);
 }
-.cr-Button-root[data-variant='subtle'][data-intent='success'] {
+.root[data-variant='subtle'][data-intent='success'] {
   --cr-button-bg: var(--color-success-100);
   --cr-button-color: var(--color-success-800);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-success-200);
 }
-.cr-Button-root[data-variant='ghost'][data-intent='success'] {
+.root[data-variant='ghost'][data-intent='success'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-success-700);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-success-50);
 }
-.cr-Button-root[data-variant='link'][data-intent='success'] {
+.root[data-variant='link'][data-intent='success'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-success-700);
   --cr-button-border: transparent;
@@ -283,32 +297,32 @@
 }
 
 /* ── warning ────────────────────────────────────────────────────────── */
-.cr-Button-root[data-variant='filled'][data-intent='warning'] {
+.root[data-variant='filled'][data-intent='warning'] {
   --cr-button-bg: var(--color-warning-500);
   --cr-button-color: var(--color-neutral-0);
   --cr-button-border: var(--color-warning-500);
   --cr-button-hover-bg: var(--color-warning-600);
   --cr-button-active-bg: var(--color-warning-700);
 }
-.cr-Button-root[data-variant='outline'][data-intent='warning'] {
+.root[data-variant='outline'][data-intent='warning'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-warning-700);
   --cr-button-border: var(--color-warning-500);
   --cr-button-hover-bg: var(--color-warning-50);
 }
-.cr-Button-root[data-variant='subtle'][data-intent='warning'] {
+.root[data-variant='subtle'][data-intent='warning'] {
   --cr-button-bg: var(--color-warning-100);
   --cr-button-color: var(--color-warning-800);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-warning-200);
 }
-.cr-Button-root[data-variant='ghost'][data-intent='warning'] {
+.root[data-variant='ghost'][data-intent='warning'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-warning-700);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-warning-50);
 }
-.cr-Button-root[data-variant='link'][data-intent='warning'] {
+.root[data-variant='link'][data-intent='warning'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-warning-700);
   --cr-button-border: transparent;
@@ -317,32 +331,32 @@
 }
 
 /* ── danger ─────────────────────────────────────────────────────────── */
-.cr-Button-root[data-variant='filled'][data-intent='danger'] {
+.root[data-variant='filled'][data-intent='danger'] {
   --cr-button-bg: var(--color-danger-500);
   --cr-button-color: var(--color-neutral-0);
   --cr-button-border: var(--color-danger-500);
   --cr-button-hover-bg: var(--color-danger-600);
   --cr-button-active-bg: var(--color-danger-700);
 }
-.cr-Button-root[data-variant='outline'][data-intent='danger'] {
+.root[data-variant='outline'][data-intent='danger'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-danger-700);
   --cr-button-border: var(--color-danger-500);
   --cr-button-hover-bg: var(--color-danger-50);
 }
-.cr-Button-root[data-variant='subtle'][data-intent='danger'] {
+.root[data-variant='subtle'][data-intent='danger'] {
   --cr-button-bg: var(--color-danger-100);
   --cr-button-color: var(--color-danger-800);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-danger-200);
 }
-.cr-Button-root[data-variant='ghost'][data-intent='danger'] {
+.root[data-variant='ghost'][data-intent='danger'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-danger-700);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-danger-50);
 }
-.cr-Button-root[data-variant='link'][data-intent='danger'] {
+.root[data-variant='link'][data-intent='danger'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-danger-700);
   --cr-button-border: transparent;
@@ -351,32 +365,32 @@
 }
 
 /* ── info ───────────────────────────────────────────────────────────── */
-.cr-Button-root[data-variant='filled'][data-intent='info'] {
+.root[data-variant='filled'][data-intent='info'] {
   --cr-button-bg: var(--color-info-500);
   --cr-button-color: var(--color-neutral-0);
   --cr-button-border: var(--color-info-500);
   --cr-button-hover-bg: var(--color-info-600);
   --cr-button-active-bg: var(--color-info-700);
 }
-.cr-Button-root[data-variant='outline'][data-intent='info'] {
+.root[data-variant='outline'][data-intent='info'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-info-700);
   --cr-button-border: var(--color-info-500);
   --cr-button-hover-bg: var(--color-info-50);
 }
-.cr-Button-root[data-variant='subtle'][data-intent='info'] {
+.root[data-variant='subtle'][data-intent='info'] {
   --cr-button-bg: var(--color-info-100);
   --cr-button-color: var(--color-info-800);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-info-200);
 }
-.cr-Button-root[data-variant='ghost'][data-intent='info'] {
+.root[data-variant='ghost'][data-intent='info'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-info-700);
   --cr-button-border: transparent;
   --cr-button-hover-bg: var(--color-info-50);
 }
-.cr-Button-root[data-variant='link'][data-intent='info'] {
+.root[data-variant='link'][data-intent='info'] {
   --cr-button-bg: transparent;
   --cr-button-color: var(--color-info-700);
   --cr-button-border: transparent;
@@ -391,7 +405,7 @@
  * down and fades out as a single block, revealing the spinner at the
  * button's center. Mantine parity (`.inner` in Button.module.css).
  */
-.cr-Button-inner {
+.inner {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -400,12 +414,12 @@
   transition: transform 150ms ease, opacity 100ms ease;
 }
 
-.cr-Button-root[data-loading='true'] .cr-Button-inner {
+.root[data-loading='true'] .inner {
   transform: translateY(100%);
   opacity: 0;
 }
 
-.cr-Button-label {
+.label {
   display: inline-block;
 }
 
@@ -414,11 +428,11 @@
  * opacity 0 during loading, but Mantine sets the label to opacity 0.2 as a
  * safety in case a consumer overrides inner. Match the Mantine pattern.
  */
-.cr-Button-label[data-loading='true'] {
+.label[data-loading='true'] {
   opacity: 0.2;
 }
 
-.cr-Button-icon {
+.icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -427,7 +441,7 @@
 /*
  * Spinner is rendered unconditionally and positioned absolutely at the
  * button's geometric center. Default state is hidden above center; on
- * loading it animates IN via a transform on the OUTER `.cr-Button-spinner`,
+ * loading it animates IN via a transform on the OUTER `.spinner`,
  * while the rotation animation runs on the INNER `::before` so the two
  * transforms don't compete. (CSS animations override regular transform
  * property values, so combining slide-in + spin on the same element fails.)
@@ -437,7 +451,7 @@
  * JS Transition component for the same effect; this nested-element approach
  * achieves equivalent behavior with a permanent DOM node.
  */
-.cr-Button-spinner {
+.spinner {
   position: absolute;
   /*
    * Centered via the negative-translate-half-self idiom: the element's
@@ -462,7 +476,7 @@
   transition: transform 150ms ease, opacity 100ms ease;
 }
 
-.cr-Button-spinner::before {
+.spinner::before {
   content: '';
   display: block;
   /*
@@ -482,7 +496,7 @@
   animation: cr-button-spin 1s linear infinite;
 }
 
-.cr-Button-root[data-loading='true'] .cr-Button-spinner {
+.root[data-loading='true'] .spinner {
   opacity: 1;
   transform: translate(-50%, calc(-50% + 1px));
 }

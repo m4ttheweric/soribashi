@@ -1,10 +1,10 @@
 /* base — applies to all variants */
-.cr-Tabs-list {
+.list {
   display: flex;
   gap: 0.25rem;
 }
 
-.cr-Tabs-trigger {
+.trigger {
   padding: 0.5rem 1rem;
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -14,52 +14,52 @@
   cursor: pointer;
   transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
 }
-.cr-Tabs-trigger[data-state='active'] {
+.trigger[data-state='active'] {
   color: var(--text-default);
 }
-.cr-Tabs-trigger:disabled,
-.cr-Tabs-trigger[data-disabled] {
+.trigger:disabled,
+.trigger[data-disabled] {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.cr-Tabs-trigger:focus-visible {
+.trigger:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
 /* default — underline-on-active. Matches CVI's existing core-radix style. */
-.cr-Tabs-list[data-variant='default'] {
+.list[data-variant='default'] {
   border-bottom: 1px solid var(--border-default);
 }
-.cr-Tabs-trigger[data-variant='default'] {
+.trigger[data-variant='default'] {
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
-.cr-Tabs-trigger[data-variant='default'][data-state='active'] {
+.trigger[data-variant='default'][data-state='active'] {
   border-bottom-color: var(--text-default);
 }
 
 /* outline — bordered tabs sharing a list border-bottom */
-.cr-Tabs-list[data-variant='outline'] {
+.list[data-variant='outline'] {
   border-bottom: 1px solid var(--border-default);
 }
-.cr-Tabs-trigger[data-variant='outline'] {
+.trigger[data-variant='outline'] {
   border: 1px solid transparent;
   border-bottom: none;
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
   margin-bottom: -1px;
 }
-.cr-Tabs-trigger[data-variant='outline'][data-state='active'] {
+.trigger[data-variant='outline'][data-state='active'] {
   border-color: var(--border-default);
   background: var(--surface-default);
 }
 
 /* pills — rounded button-shaped active. Reads --cr-tabs-active-bg/color from vars. */
-.cr-Tabs-trigger[data-variant='pills'] {
+.trigger[data-variant='pills'] {
   border-radius: var(--radius-full);
 }
-.cr-Tabs-trigger[data-variant='pills'][data-state='active'] {
+.trigger[data-variant='pills'][data-state='active'] {
   background: var(--cr-tabs-active-bg);
   color: var(--cr-tabs-active-color);
 }
@@ -67,16 +67,16 @@
 /* Variant-scoped focus override: pills' filled active state collides with
  * the default outline color (primary-500 on a primary-500 background).
  * Re-route to a contrast-coherent outline. */
-.cr-Tabs-trigger[data-variant='pills'][data-state='active']:focus-visible {
+.trigger[data-variant='pills'][data-state='active']:focus-visible {
   outline-color: var(--color-neutral-0);
   outline-offset: -2px;
 }
 
 /* Content — minimal styling; consumer composes inside. */
-.cr-Tabs-content {
+.content {
   margin-top: 1rem;
 }
-.cr-Tabs-content:focus-visible {
+.content:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }

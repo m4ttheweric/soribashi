@@ -10,11 +10,11 @@
  */
 import type { MouseEvent, ReactNode } from 'react';
 import { definePolymorphicComponent, type PolymorphicRenderCtx } from '@soribashi/core';
-import './Button.css';
+import classes from './Button.module.css';
 
 type Intent = 'primary' | 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 type Variant = 'filled' | 'outline' | 'subtle' | 'ghost' | 'link';
-type Size = 'sm' | 'md' | 'lg';
+type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface ButtonOwnProps {
   intent?: Intent;
@@ -34,13 +34,7 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
   defaultElement: 'button',
   selectors: ['root', 'inner', 'label', 'icon', 'spinner'] as const,
   variants: ['filled', 'outline', 'subtle', 'ghost', 'link'] as const,
-  classes: {
-    root: 'cr-Button-root',
-    inner: 'cr-Button-inner',
-    label: 'cr-Button-label',
-    icon: 'cr-Button-icon',
-    spinner: 'cr-Button-spinner',
-  },
+  classes,
   defaults: {
     intent: 'primary',
     variant: 'filled',
