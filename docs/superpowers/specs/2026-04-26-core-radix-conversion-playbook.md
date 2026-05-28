@@ -7,6 +7,13 @@
 - `docs/superpowers/pilots/2026-04-26-token-consolidation.md`
 - `docs/superpowers/pilots/2026-04-26-button-conversion.md`
 
+> **⚠️ Authoring-model update (2026-05-28).** Two conventions landed on `main` after this playbook's § 2 recipe examples were written. The CSS-modules sections (§§ 2.1-2.4) are current. The *vocabulary* side is not yet reflected in the § 2 recipe code samples below:
+>
+> 1. **CSS modules** (PR #9, `2cc0494`) — recipes use `.module.css` with plain `.root`/`.trigger` selectors and `import classes from './X.module.css'`. **Reflected in §§ 2.1-2.4.**
+> 2. **Vocabulary rails** (PR #10, `ef99d35`) — `size`/`intent`/`variant` are no longer local `type` unions per recipe. They're declared once in the theme via `defineVocabulary(...)`, consumed by recipes that opt in with `vocabularyAxes: [...]`, and validated at runtime by Zod. `withDefaults()` is **removed** — use `Recipe.extend({ defaultProps, vocabulary, ... })`. Recipes are authored via builders from `createSoribashiBuilders(theme)`, imported from a local `builders.ts`, NOT from `@soribashi/core` directly. See `docs/superpowers/specs/2026-05-12-vocabulary-rails-design.md`.
+>
+> **The § 2 recipe code samples below still show the pre-vocabulary-rails pattern** (local `type Size`/`type Intent`, direct `@soribashi/core` imports, no `vocabularyAxes`). They match the pilot recipes *as currently committed* — the pilot recipes are migrated to the vocabulary rails in **PR #11** (`docs/superpowers/sessions/2026-05-28-pilot-migration-handoff.md`). Once PR #11 lands, update §§ 2.1-2.3 to the vocabulary-rails authoring shape.
+
 ## How to read this playbook
 
 The playbook is the synthesis layer over the pilot journals. The journals are the raw evidence — what was tried, what surfaced, what design choices were made and why. The playbook abstracts that into transferable methodology and recommended patterns.

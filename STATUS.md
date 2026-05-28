@@ -1,4 +1,49 @@
-# Soribashi v1 — Implementation Status
+# Soribashi — Implementation Status
+
+> **Current as of 2026-05-28.** The v1 Mantine-adaptation foundation (2026-04-25, recorded below) is complete and stable. Since then the project has been building the **core-radix pilot** — adapting real component recipes (Button, Tooltip, Tabs) on top of the foundation — and hardening the recipe-authoring conventions. This top section tracks that post-v1 work; the v1 record follows unchanged below.
+
+## Post-v1: core-radix pilot + library authoring hygiene
+
+### Recipe pilots (Waves 1-3) — SHIPPED
+
+The `apps/core-radix-pilot` app ports real components from the CVI codebase onto soribashi, one category at a time:
+
+- **Wave 1 — Button** (`#1`): pure-styled-primitive category via `definePolymorphicComponent`. Token consolidation (dropped shad-* layer, renamed error→danger, collapsed surfaces). Journal: `docs/superpowers/pilots/2026-04-26-button-conversion.md`.
+- **Wave 2 — Tooltip** (`#7`): transient-overlay compound via the new `defineCompound` primitive. Wraps Radix, adds the `surface.floating` formalized foreground pairing. Journal: `docs/superpowers/pilots/2026-05-04-tooltip-pilot.md`.
+- **Wave 3 — Tabs** (`#8`): persistent-navigational compound with a polymorphic Trigger part.
+
+### Library authoring hygiene (PR #9 + PR #10) — MERGED 2026-05-28
+
+Two cross-cutting authoring conventions that should have been settled before Wave 1, surfaced during the Wave 3 review and shipped as a 3-PR rollout:
+
+- **PR #9 — CSS modules** (squash `2cc0494`): all three recipes migrated from plain `.css` with `cr-Recipe-slot` global prefixes to `.module.css` with plain `.root`/`.trigger`/`.content` selectors. Build-time scoping replaces convention-only prefixing. Added `vite-env.d.ts` for typed module imports; `:global(.dark)` for the dark-mode rule; `:where(:disabled, [aria-disabled])` for polymorphic disabled state. Playbook §§ 2.1-2.4 codify the pattern. Spec: `docs/superpowers/specs/2026-05-12-css-modules-migration-design.md`.
+- **PR #10 — vocabulary rails** (squash `ef99d35`): soribashi has **no opinion** on `size`/`intent`/`variant` *values*; developers declare their own vocabulary. New surface:
+  - `defineVocabulary(values)` — the only sanctioned vocabulary constructor; wraps Zod so the inferred type and the runtime schema can't drift.
+  - Theme `semantic` field split into `vocabulary` (size/intent/variant enums) + `semanticTokens` (text/surface/border/accent aliases). Hard cutover, no shim.
+  - `Recipe.extend({ vocabulary, defaultProps, classNames, styles, vars, attributes })` replaces `withDefaults()` across all four builders. Vocabulary overrides support replace-mode (a `Vocabulary`) and extend-mode (`(current) => Vocabulary`), resolved at `createTheme()` time.
+  - `createSoribashiBuilders(theme)` — consumer entry point; registers theme vocab in a module-level Zod registry (idempotent) and returns the builders.
+  - `vocabularyAxes` recipe opt-in + dev-only Zod runtime validation with actionable error messages.
+  - Spec: `docs/superpowers/specs/2026-05-12-vocabulary-rails-design.md`.
+
+### Next: PR #11 — pilot recipe migration (NOT YET STARTED)
+
+PR #10 built the rails but did **not** wire the pilot recipes to them. PR #11 makes the pilot consume its own infrastructure: a `builders.ts` calling `createSoribashiBuilders(theme)`, recipes opting into `vocabularyAxes`, Tooltip/Tabs declaring their variant vocabularies via `Recipe.extend()`. Full briefing: `docs/superpowers/sessions/2026-05-28-pilot-migration-handoff.md`.
+
+### Post-v1 test counts (on `main` @ `ef99d35`)
+
+| Package | Tests |
+|---|---|
+| `@soribashi/theme` | 82 |
+| `@soribashi/codegen` | 137 |
+| `@soribashi/factory` | 472 |
+| `@soribashi/blocks` | 244 |
+| `apps/core-radix-pilot` | 47 |
+
+Typecheck clean. (The 785-total figure in the v1 record below predates the pilot + hygiene work and the per-package growth since.)
+
+---
+
+# Soribashi v1 — Implementation Status (foundation record)
 
 **As of 2026-04-25**
 
