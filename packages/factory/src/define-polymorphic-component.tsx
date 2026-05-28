@@ -4,13 +4,14 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { autoVars } from './auto-vars.ts';
 import { makeWithProps } from './with-props.tsx';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
-
-const identity = <T,>(value: T): T => value;
+import type { ComponentExtendConfig } from './types/component-extend.ts';
+import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
 /**
  * Render-context type for polymorphic recipes (e.g., Button). Authors type
@@ -40,9 +41,11 @@ export type PolymorphicRenderCtx<
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > = {
   Element: ElementType;
   props: TOwnProps
+    & InjectedVocabularyProps<TVocabAxes>
     & StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>
     & Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>
     & { variant?: TVariants[number]; intent?: string };
@@ -57,18 +60,20 @@ export interface DefinePolymorphicComponentConfig<
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
   defaultElement: TDefaultAs;
+  vocabularyAxes?: TVocabAxes;
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps>;
+  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
   ) => Partial<Record<TSelectors[number], Record<string, string>>>;
-  render: (ctx: PolymorphicRenderCtx<TOwnProps, TDefaultAs, TSelectors, TVariants>) => React.ReactNode;
+  render: (ctx: PolymorphicRenderCtx<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>) => React.ReactNode;
 }
 
 /**
@@ -79,7 +84,8 @@ export function definePolymorphicComponent<
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
->(config: DefinePolymorphicComponentConfig<TOwnProps, TDefaultAs, TSelectors, TVariants>) {
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+>(config: DefinePolymorphicComponentConfig<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>) {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
@@ -91,6 +97,8 @@ export function definePolymorphicComponent<
       (config.defaults ?? null) as Partial<TOwnProps & StylesApiProps<any>> | null,
       rest as TOwnProps & StylesApiProps<any>,
     );
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)
@@ -121,20 +129,26 @@ export function definePolymorphicComponent<
   });
 
   Component.displayName = config.name;
+  (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
-  (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
   type DefinePolymorphicProps = TOwnProps
     & StylesApiProps<any>
     & Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>
     & { variant?: TVariants[number]; intent?: string };
 
-  (Component as any).withDefaults = (
-    defaults: Partial<DefinePolymorphicProps>,
+  (Component as any).extend = (
+    extendConfig: ComponentExtendConfig<DefinePolymorphicProps>,
   ): ThemeComponentEntry<DefinePolymorphicProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
-    defaultProps: defaults,
+    // Vocabulary stored as-is; function-form values resolved by createTheme/normalize-components in Task 15.
+    vocabulary: extendConfig.vocabulary as any,
+    defaultProps: extendConfig.defaultProps ?? {},
+    classNames: extendConfig.classNames,
+    styles: extendConfig.styles,
+    vars: extendConfig.vars,
+    attributes: extendConfig.attributes,
   });
 
   // The component itself is generic over the target element type.
@@ -151,10 +165,9 @@ export function definePolymorphicComponent<
   ) => PolymorphicComponentLike;
 
   return Component as unknown as PolymorphicComponentLike & {
-    extend: (cfg: any) => any;
     withProps: WithPropsFn;
-    withDefaults: (
-      defaults: Partial<DefinePolymorphicProps>,
+    extend: (
+      config: ComponentExtendConfig<DefinePolymorphicProps>,
     ) => ThemeComponentEntry<DefinePolymorphicProps>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;

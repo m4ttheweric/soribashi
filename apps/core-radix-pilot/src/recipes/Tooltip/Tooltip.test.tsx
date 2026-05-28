@@ -191,7 +191,7 @@ describe('Tooltip recipe', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Styles-API plumbing: instance className / withDefaults round-trip
+  // Styles-API plumbing: instance className / extend round-trip
   // ---------------------------------------------------------------------------
 
   it('Tooltip.Content className from instance props lands on the rendered element', async () => {
@@ -214,13 +214,13 @@ describe('Tooltip recipe', () => {
     expect(content.className).toContain('custom-content-class');
   });
 
-  it('withDefaults-set className for a part lands on the element', async () => {
+  it('extend-set className for a part lands on the element', async () => {
     const user = userEvent.setup();
     const themeWithDefaults = createTheme({
       tokens: theme.tokens,
-      semantic: theme.semantic,
+      semanticTokens: theme.semanticTokens,
       components: [
-        Tooltip.Content.withDefaults({ className: 'theme-default-class' } as any),
+        Tooltip.Content.extend({ defaultProps: { className: 'theme-default-class' } as any }),
       ],
     });
     render(

@@ -1,5 +1,7 @@
+import type { VocabularyOverride } from './vocabulary-override.ts';
+
 /**
- * Tagged record returned by `Component.withDefaults({...})`. Consumers pass
+ * Tagged record returned by `Component.extend({...})`. Consumers pass
  * an array of these to `createTheme({ components: [...] })`. The factory's
  * normalization step (in @soribashi/theme's createTheme) builds the legacy
  * `Record<string, ComponentThemeConfig>` shape from these entries internally.
@@ -15,6 +17,16 @@ export interface ThemeComponentEntry<P = Record<string, unknown>> {
   readonly __soribashiThemeEntry: true;
   readonly name: string;
   readonly defaultProps: Partial<P>;
+  /** Per-component vocabulary overrides — function-form values resolved at createTheme() time. */
+  readonly vocabulary?: {
+    size?: VocabularyOverride;
+    intent?: VocabularyOverride;
+    variant?: VocabularyOverride;
+  };
+  readonly classNames?: unknown;
+  readonly styles?: unknown;
+  readonly vars?: unknown;
+  readonly attributes?: unknown;
 }
 
 /** Returns true only for plain objects (prototype is Object.prototype or null). */

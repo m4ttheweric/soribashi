@@ -418,12 +418,12 @@ describe('Tabs recipe', () => {
     expect(panel.className).toContain('custom-content-class');
   });
 
-  it('Tabs.withDefaults({ variant: "pills" }) round-trips through createTheme', () => {
+  it('Tabs.extend({ defaultProps: { variant: "pills" } }) round-trips through createTheme', () => {
     const themeWithDefaults = createTheme({
       tokens: theme.tokens,
-      semantic: theme.semantic,
+      semanticTokens: theme.semanticTokens,
       components: [
-        Tabs.withDefaults({ variant: 'pills' } as Partial<TabsRootProps>),
+        Tabs.extend({ defaultProps: { variant: 'pills' } as Partial<TabsRootProps> }),
       ],
     });
     render(
@@ -441,12 +441,12 @@ describe('Tabs recipe', () => {
     expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('data-variant', 'pills');
   });
 
-  it('Tabs.Content.withDefaults({ forceMount: true }) round-trips through createTheme', () => {
+  it('Tabs.Content.extend({ defaultProps: { forceMount: true } }) round-trips through createTheme', () => {
     const themeWithDefaults = createTheme({
       tokens: theme.tokens,
-      semantic: theme.semantic,
+      semanticTokens: theme.semanticTokens,
       components: [
-        Tabs.Content.withDefaults({ forceMount: true } as Partial<TabsContentProps>),
+        Tabs.Content.extend({ defaultProps: { forceMount: true } as Partial<TabsContentProps> }),
       ],
     });
     render(
@@ -462,7 +462,7 @@ describe('Tabs recipe', () => {
       </SoribashiProvider>,
     );
 
-    // Even though 'a' is the active tab, 'b' content is mounted via withDefaults forceMount
+    // Even though 'a' is the active tab, 'b' content is mounted via extend forceMount
     expect(screen.getByText('content-a')).toBeInTheDocument();
     expect(screen.getByText('content-b')).toBeInTheDocument();
   });

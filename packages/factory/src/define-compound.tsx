@@ -11,11 +11,14 @@ import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { createSafeContext } from './create-safe-context.ts';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
 import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
+import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -132,11 +135,13 @@ export interface DefineCompoundConfig<
   TParts extends PartsRecord,
   TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
+  vocabularyAxes?: TVocabAxes;
   variants?: TVariants;
   classes?: Partial<Record<string, string>>;
-  defaults?: Partial<ExtractPartProps<TParts['root']>>;
+  defaults?: Partial<ExtractPartProps<TParts['root']> & InjectedVocabularyProps<TVocabAxes>>;
   vars?: (
     theme: ResolvedTheme,
     props: ExtractPartProps<TParts['root']>,
@@ -184,8 +189,8 @@ type PartPayload<TPartConfig> = {
  * Static methods shared by all part component shapes (polymorphic and standard).
  */
 type PartStaticMethods<TPartConfig> = {
-  withDefaults: (
-    defaults: Partial<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
+  extend: (
+    config: ComponentExtendConfig<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
   ) => ThemeComponentEntry<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>;
   displayName?: string;
 };
@@ -220,8 +225,8 @@ type CompoundComponent<TParts extends Record<string, PartConfig<any, any, any>>>
     & StylesApiProps<PartPayload<TParts['root']>>
     & React.RefAttributes<unknown>
   > & PartsNamespace<TParts> & {
-    withDefaults: (
-      defaults: Partial<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>,
+    extend: (
+      config: ComponentExtendConfig<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>,
     ) => ThemeComponentEntry<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>;
     displayName?: string;
   };
@@ -260,7 +265,8 @@ export function defineCompound<
   const TVariants extends readonly string[] = readonly [],
   TCtxExtra extends object = object,
   TClasses extends Partial<Record<string, string>> = Partial<Record<string, string>>,
->(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra> & { classes?: TClasses }): CompoundComponent<TParts> {
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+>(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra, TVocabAxes> & { classes?: TClasses }): CompoundComponent<TParts> {
   if (!config.parts.root) {
     throw new Error(`defineCompound("${config.name}") requires parts.root`);
   }
@@ -291,6 +297,8 @@ export function defineCompound<
       (config.defaults ?? null) as Partial<TRootProps> | null,
       rawProps as TRootProps,
     );
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
 
     const getStyles = useStyles<FactoryPayload>({
       name: config.name,
@@ -344,13 +352,19 @@ export function defineCompound<
   });
 
   Root.displayName = config.name;
+  (Root as any).__vocabularyAxes = config.vocabularyAxes ?? [];
 
-  (Root as any).withDefaults = (
-    defaults: Partial<TRootProps>,
+  (Root as any).extend = (
+    extendConfig: ComponentExtendConfig<TRootProps>,
   ): ThemeComponentEntry<TRootProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
-    defaultProps: defaults,
+    vocabulary: extendConfig.vocabulary as any,
+    defaultProps: extendConfig.defaultProps ?? {},
+    classNames: extendConfig.classNames,
+    styles: extendConfig.styles,
+    vars: extendConfig.vars,
+    attributes: extendConfig.attributes,
   });
 
   // -------------------------------------------------------------------------
@@ -430,10 +444,17 @@ export function defineCompound<
 
       PolyPartComponent.displayName = partName;
 
-      (PolyPartComponent as any).withDefaults = (defaults: Partial<any>): ThemeComponentEntry<any> => ({
+      (PolyPartComponent as any).extend = (
+        extendConfig: ComponentExtendConfig<any>,
+      ): ThemeComponentEntry<any> => ({
         __soribashiThemeEntry: true as const,
         name: partName,
-        defaultProps: defaults,
+        vocabulary: extendConfig.vocabulary as any,
+        defaultProps: extendConfig.defaultProps ?? {},
+        classNames: extendConfig.classNames,
+        styles: extendConfig.styles,
+        vars: extendConfig.vars,
+        attributes: extendConfig.attributes,
       });
 
       namespacedParts[capitalize(partKey)] = PolyPartComponent;
@@ -515,10 +536,17 @@ export function defineCompound<
 
     PartComponent.displayName = partName;
 
-    (PartComponent as any).withDefaults = (defaults: Partial<any>): ThemeComponentEntry<any> => ({
+    (PartComponent as any).extend = (
+      extendConfig: ComponentExtendConfig<any>,
+    ): ThemeComponentEntry<any> => ({
       __soribashiThemeEntry: true as const,
       name: partName,
-      defaultProps: defaults,
+      vocabulary: extendConfig.vocabulary as any,
+      defaultProps: extendConfig.defaultProps ?? {},
+      classNames: extendConfig.classNames,
+      styles: extendConfig.styles,
+      vars: extendConfig.vars,
+      attributes: extendConfig.attributes,
     });
 
     namespacedParts[capitalize(partKey)] = PartComponent;

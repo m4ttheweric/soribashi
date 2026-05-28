@@ -4,30 +4,33 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { autoVars } from './auto-vars.ts';
 import { makeWithProps } from './with-props.tsx';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
-
-const identity = <T,>(value: T): T => value;
+import type { ComponentExtendConfig } from './types/component-extend.ts';
+import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
 export interface DefineComponentConfig<
   TOwnProps,
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
   element?: keyof JSX.IntrinsicElements;
+  vocabularyAxes?: TVocabAxes;
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps>;
+  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
   ) => Partial<Record<TSelectors[number], Record<string, string>>>;
   render: (ctx: {
-    props: TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
+    props: TOwnProps & InjectedVocabularyProps<TVocabAxes> & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
     getStyles: GetStylesFn<
       { props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload
     >;
@@ -42,7 +45,8 @@ export function defineComponent<
   TOwnProps = Record<string, never>,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
->(config: DefineComponentConfig<TOwnProps, TSelectors, TVariants>) {
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+>(config: DefineComponentConfig<TOwnProps, TSelectors, TVariants, TVocabAxes>) {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
   const Component = forwardRef<HTMLElement, any>((rawProps, ref) => {
@@ -51,6 +55,8 @@ export function defineComponent<
       (config.defaults ?? null) as Partial<TOwnProps & StylesApiProps<any>> | null,
       rawProps as TOwnProps & StylesApiProps<any>,
     );
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)
@@ -80,29 +86,35 @@ export function defineComponent<
   });
 
   Component.displayName = config.name;
+  (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
-  (Component as any).extend = identity;
   (Component as any).withProps = makeWithProps(Component as any);
   type DefineComponentProps = TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
 
-  (Component as any).withDefaults = (
-    defaults: Partial<DefineComponentProps>,
+  (Component as any).extend = (
+    extendConfig: ComponentExtendConfig<DefineComponentProps>,
   ): ThemeComponentEntry<DefineComponentProps> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
-    defaultProps: defaults,
+    // Vocabulary stored as-is; function-form values resolved by createTheme/normalize-components.
+    // Cast to any because the entry type expects concrete Vocabulary (post-resolution shape).
+    vocabulary: extendConfig.vocabulary as any,
+    defaultProps: extendConfig.defaultProps ?? {},
+    classNames: extendConfig.classNames,
+    styles: extendConfig.styles,
+    vars: extendConfig.vars,
+    attributes: extendConfig.attributes,
   });
 
   return Component as unknown as React.ForwardRefExoticComponent<
     TOwnProps & StylesApiProps<any> & React.RefAttributes<HTMLElement>
   > & {
-    extend: (cfg: any) => any;
+    extend: (
+      config: ComponentExtendConfig<DefineComponentProps>,
+    ) => ThemeComponentEntry<DefineComponentProps>;
     withProps: (
       presets: Partial<TOwnProps & StylesApiProps<any>>,
     ) => React.ComponentType<TOwnProps & StylesApiProps<any>>;
-    withDefaults: (
-      defaults: Partial<DefineComponentProps>,
-    ) => ThemeComponentEntry<DefineComponentProps>;
     classes?: Partial<Record<TSelectors[number], string>>;
     displayName?: string;
   };

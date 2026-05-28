@@ -1,4 +1,4 @@
-import { createTheme } from '@soribashi/core';
+import { createTheme, defineVocabulary } from '@soribashi/core';
 
 /**
  * Wave 1 consolidated theme for the core-radix pilot.
@@ -326,9 +326,11 @@ export const theme = createTheme({
       },
     },
   },
-  semantic: {
-    intent: ['primary', 'neutral', 'success', 'warning', 'danger', 'info'],
-    variant: ['filled', 'outline', 'subtle', 'ghost', 'link'],
+  vocabulary: {
+    intent: defineVocabulary(['primary', 'neutral', 'success', 'warning', 'danger', 'info']),
+    variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']),
+  },
+  semanticTokens: {
     text: {
       // Per Q3 Wave 1 default: `default`/`muted`/`subtle`/`disabled` lookups
       // against the neutral ramp. Preserves CVI's four-step text taxonomy

@@ -82,7 +82,7 @@ describe('createTheme components array-form normalization', () => {
         tokens: baseTokens,
         components: [{ variant: 'filled' }] as any,
       }),
-    ).toThrow(/Use Component\.withDefaults/);
+    ).toThrow(/Use Component\.extend/);
   });
 });
 

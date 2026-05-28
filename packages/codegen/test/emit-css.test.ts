@@ -146,7 +146,7 @@ describe('emitCss', () => {
         spacing: { md: '0.5rem' },
         fontSize: { md: '1rem' },
       },
-      semantic: {
+      semanticTokens: {
         surface: { default: 'colors.neutral.0', raised: 'colors.neutral.100' },
       },
     });
@@ -156,7 +156,7 @@ describe('emitCss', () => {
     expect(css).toContain('--surface-raised: var(--color-neutral-100);');
   });
 
-  it('emits --accent-* vars when semantic.accent is provided (Gap 4)', () => {
+  it('emits --accent-* vars when semanticTokens.accent is provided (Gap 4)', () => {
     const theme = createTheme({
       tokens: {
         colors: {
@@ -167,7 +167,7 @@ describe('emitCss', () => {
         spacing: { md: '0.5rem' },
         fontSize: { md: '1rem' },
       },
-      semantic: {
+      semanticTokens: {
         accent: {
           feedback: 'colors.warning.500',
           brand: 'colors.primary.500',
@@ -180,7 +180,7 @@ describe('emitCss', () => {
     expect(css).toContain('--accent-brand: var(--color-primary-500);');
   });
 
-  it('does NOT emit --accent-* vars when semantic.accent is omitted (default)', () => {
+  it('does NOT emit --accent-* vars when semanticTokens.accent is omitted (default)', () => {
     const theme = createTheme({
       tokens: {
         colors: { neutral: { '0': '#fff' } },

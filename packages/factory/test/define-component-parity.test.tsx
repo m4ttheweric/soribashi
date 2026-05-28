@@ -72,19 +72,21 @@ describe('DC-8: classes static is accessible', () => {
 });
 
 // ────────────────────────────────────────────────────────────
-// DC-9: extend static (identity)
+// DC-9: extend static — returns ThemeComponentEntry
 // ────────────────────────────────────────────────────────────
 
-describe('DC-9: extend static is the identity function', () => {
-  it('Component.extend is callable', () => {
+describe('DC-9: extend static returns a ThemeComponentEntry', () => {
+  it('Component.extend is callable and returns a tagged entry', () => {
     const C = defineComponent({
-      name: 'C',
+      name: 'TestDC9',
       selectors: ['root'] as const,
       render: ({ getStyles }) => <div {...getStyles('root')} />,
     });
-    const cfg = { foo: 'bar' };
-    // identity: extend returns the input unchanged
-    expect((C as any).extend(cfg)).toBe(cfg);
+    const entry = (C as any).extend({ defaultProps: { size: 'sm' } });
+    // extend now returns a ThemeComponentEntry, not an identity
+    expect(entry.__soribashiThemeEntry).toBe(true);
+    expect(entry.name).toBe('TestDC9');
+    expect(entry.defaultProps).toEqual({ size: 'sm' });
   });
 });
 

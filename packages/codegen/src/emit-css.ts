@@ -234,11 +234,11 @@ function emitDarkTokenLines(
 }
 
 function emitSemanticLines(lines: string[], theme: ResolvedTheme, emitCompanion: boolean): void {
-  for (const [key, ref] of Object.entries(theme.semantic.text).sort(byKey)) {
+  for (const [key, ref] of Object.entries(theme.semanticTokens.text).sort(byKey)) {
     lines.push(`  --text-${key}: ${semanticToVar(ref)};`);
   }
 
-  for (const [key, raw] of Object.entries(theme.semantic.surface).sort(byKey)) {
+  for (const [key, raw] of Object.entries(theme.semanticTokens.surface).sort(byKey)) {
     const pair = resolveSurfacePair(raw);
     lines.push(`  --surface-${key}: ${semanticToVar(pair.value)};`);
     if (emitCompanion) {
@@ -258,12 +258,12 @@ function emitSemanticLines(lines: string[], theme: ResolvedTheme, emitCompanion:
     }
   }
 
-  for (const [key, ref] of Object.entries(theme.semantic.border).sort(byKey)) {
+  for (const [key, ref] of Object.entries(theme.semanticTokens.border).sort(byKey)) {
     lines.push(`  --border-${key}: ${semanticToVar(ref)};`);
   }
 
-  if (theme.semantic.accent) {
-    for (const [key, ref] of Object.entries(theme.semantic.accent).sort(byKey)) {
+  if (theme.semanticTokens.accent) {
+    for (const [key, ref] of Object.entries(theme.semanticTokens.accent).sort(byKey)) {
       lines.push(`  --accent-${key}: ${semanticToVar(ref)};`);
     }
   }

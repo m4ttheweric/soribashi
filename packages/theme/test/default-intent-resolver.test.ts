@@ -5,13 +5,12 @@ import type { ResolvedTheme } from '../src/types.ts';
 const theme = {
   tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
   dark: {},
-  semantic: {
-    intent: ['primary', 'danger'],
-    variant: ['filled', 'outline', 'subtle', 'ghost', 'link'],
-    text: {},
-    surface: {},
-    border: {},
+  vocabulary: {
+    intent: { values: ['primary', 'danger'] },
+    variant: { values: ['filled', 'outline', 'subtle', 'ghost', 'link'] },
+    size: { values: [] },
   },
+  semanticTokens: { text: {}, surface: {}, border: {} },
   intentResolver: defaultIntentResolver,
   components: {},
   scope: ':root',

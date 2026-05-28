@@ -143,7 +143,7 @@ describe('token roundtrip integration', () => {
         spacing: {},
         fontSize: {},
       },
-      semantic: {
+      semanticTokens: {
         surface: {
           canvas: 'colors.neutral.50',
           default: 'colors.neutral.0',

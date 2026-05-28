@@ -53,7 +53,7 @@ describe('theme composition (extends)', () => {
     expect(child.tokens.colors.primary?.['500']).toBe('#bbb');
   });
 
-  it('child semantic overrides base semantic per-key', () => {
+  it('child semanticTokens overrides base semanticTokens per-key', () => {
     const base = createTheme({
       tokens: {
         colors: { primary: { '500': '#aaa' } },
@@ -61,7 +61,7 @@ describe('theme composition (extends)', () => {
         spacing: { md: '0.5rem' },
         fontSize: { md: '1rem' },
       },
-      semantic: {
+      semanticTokens: {
         text: { muted: 'colors.primary.500' },
       },
     });
@@ -74,13 +74,13 @@ describe('theme composition (extends)', () => {
         spacing: {},
         fontSize: {},
       },
-      semantic: {
+      semanticTokens: {
         text: { default: 'colors.primary.500' },
       },
     });
 
-    expect(child.semantic.text.muted).toBe('colors.primary.500');
-    expect(child.semantic.text.default).toBe('colors.primary.500');
+    expect(child.semanticTokens.text.muted).toBe('colors.primary.500');
+    expect(child.semanticTokens.text.default).toBe('colors.primary.500');
   });
 
   it('child scope and darkMode override base', () => {

@@ -11,28 +11,28 @@ describe('SemanticSurfaceValue', () => {
   it('accepts string form (existing behavior)', () => {
     const theme = createTheme({
       tokens: { ...baseTokens, colors: { neutral: { '0': 'hsl(0 0% 100%)', '900': 'hsl(0 0% 10%)' } } },
-      semantic: { surface: { default: 'colors.neutral.0' } },
+      semanticTokens: { surface: { default: 'colors.neutral.0' } },
     });
-    expect(theme.semantic.surface.default).toBe('colors.neutral.0');
+    expect(theme.semanticTokens.surface.default).toBe('colors.neutral.0');
   });
 
   it('accepts object form with foreground', () => {
     const theme = createTheme({
       tokens: { ...baseTokens, colors: { neutral: { '0': 'hsl(0 0% 100%)', '900': 'hsl(0 0% 10%)' } } },
-      semantic: { surface: { floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' } } },
+      semanticTokens: { surface: { floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' } } },
     });
-    expect(theme.semantic.surface.floating).toEqual({ value: 'colors.neutral.900', foreground: 'colors.neutral.0' });
+    expect(theme.semanticTokens.surface.floating).toEqual({ value: 'colors.neutral.900', foreground: 'colors.neutral.0' });
   });
 
   it('accepts object form without foreground (forward-compat opt-in)', () => {
     const theme = createTheme({
       tokens: { ...baseTokens, colors: { neutral: { '0': 'hsl(0 0% 100%)' } } },
-      semantic: { surface: { floating: { value: 'colors.neutral.0' } } },
+      semanticTokens: { surface: { floating: { value: 'colors.neutral.0' } } },
     });
-    expect(theme.semantic.surface.floating).toEqual({ value: 'colors.neutral.0' });
+    expect(theme.semanticTokens.surface.floating).toEqual({ value: 'colors.neutral.0' });
   });
 
-  it('resolves surface.floating through ResolvedTheme.semantic', () => {
+  it('resolves surface.floating through ResolvedTheme.semanticTokens', () => {
     const theme = createTheme({
       tokens: {
         ...baseTokens,
@@ -43,7 +43,7 @@ describe('SemanticSurfaceValue', () => {
           },
         },
       },
-      semantic: {
+      semanticTokens: {
         surface: {
           default: 'colors.neutral.0',
           floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },
@@ -51,7 +51,7 @@ describe('SemanticSurfaceValue', () => {
       },
     });
 
-    expect(theme.semantic.surface).toEqual({
+    expect(theme.semanticTokens.surface).toEqual({
       default: 'colors.neutral.0',
       floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },
     });
