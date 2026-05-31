@@ -150,3 +150,15 @@ describe('Button — ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Button — vocabulary validation (dev)', () => {
+  it('warns when size is outside the declared vocabulary', () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // `size` is string-typed (threading deferred to PR #12); runtime Zod catches it.
+    wrap(<Button size="enormous">x</Button>);
+    expect(
+      errSpy.mock.calls.some((c) => String(c[0]).includes('not in the declared vocabulary')),
+    ).toBe(true);
+    errSpy.mockRestore();
+  });
+});
