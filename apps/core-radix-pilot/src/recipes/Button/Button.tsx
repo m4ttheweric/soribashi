@@ -16,15 +16,12 @@ import classes from './Button.module.css';
 const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
 type Variant = (typeof variants)[number];
 
-// size/intent are vocabulary-axis props kept as `string` because the factory's
-// public return type threads TOwnProps directly — InjectedVocabularyProps<TVocabAxes>
-// threading into the external call-site type is deferred to PR #12.
-// variant is narrowed per-recipe (compile-time) via the hoisted `variants` const;
-// the runtime Zod registry (via vocabularyAxes) enforces size and intent values.
+// size/intent are NOT declared here: the themed builder (createSoribashiBuilders)
+// injects them onto Button's public props, narrowed to the theme's global
+// vocabulary literals (e.g. size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'). variant is
+// per-recipe, so it stays local — narrowed via the hoisted `variants` const.
 export interface ButtonOwnProps {
-  intent?: string;
   variant?: Variant;
-  size?: string;
   loading?: boolean;
   fullWidth?: boolean;
   leftIcon?: ReactNode;
