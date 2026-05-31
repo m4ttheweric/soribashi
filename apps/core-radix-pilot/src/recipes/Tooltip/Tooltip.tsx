@@ -15,10 +15,12 @@
  */
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
-import { defineCompound, type PartRenderCtx } from '@soribashi/core';
+import { defineCompound } from '../../builders.ts';
+import type { PartRenderCtx } from '@soribashi/core';
 import classes from './Tooltip.module.css';
 
-type Variant = 'default' | 'subtle';
+const variants = ['default', 'subtle'] as const;
+type Variant = (typeof variants)[number];
 type Side = 'top' | 'right' | 'bottom' | 'left';
 
 export interface TooltipRootProps {
@@ -55,7 +57,8 @@ interface TooltipCtxExtras {
 
 export const Tooltip = defineCompound({
   name: 'Tooltip',
-  variants: ['default', 'subtle'] as const,
+  vocabularyAxes: ['variant'] as const,
+  variants,
   classes,
   defaults: { variant: 'default', side: 'top' } as Partial<TooltipRootProps>,
   vars: (_theme, props) => ({

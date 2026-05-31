@@ -6,7 +6,7 @@
  *   8.3 — open-on-hover + escape-close
  *   8.4 — asChild, portal, default + subtle variant vars, safe-context throw
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SoribashiProvider, createTheme } from '@soribashi/core';
@@ -240,5 +240,25 @@ describe('Tooltip recipe', () => {
     expect(content).toBeTruthy();
     expect(content.className).toContain(classes.content);
     expect(content.className).toContain('theme-default-class');
+  });
+});
+
+describe('Tooltip — vocabulary validation (dev)', () => {
+  it('warns when variant is outside the declared vocabulary', () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <SoribashiProvider theme={theme}>
+        <Tooltip.Provider>
+          <Tooltip variant={'flashy' as never}>
+            <Tooltip.Trigger>x</Tooltip.Trigger>
+            <Tooltip.Content>tip</Tooltip.Content>
+          </Tooltip>
+        </Tooltip.Provider>
+      </SoribashiProvider>,
+    );
+    expect(
+      errSpy.mock.calls.some((c) => String(c[0]).includes('not in the declared vocabulary')),
+    ).toBe(true);
+    errSpy.mockRestore();
   });
 });
