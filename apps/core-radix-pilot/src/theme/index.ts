@@ -326,9 +326,11 @@ export const theme = createTheme({
       },
     },
   },
+  // Option B: variant is per-recipe, declared in `components` below — NOT here.
+  // The global vocabulary holds only the genuinely-shared axes.
   vocabulary: {
+    size: defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl']),
     intent: defineVocabulary(['primary', 'neutral', 'success', 'warning', 'danger', 'info']),
-    variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']),
   },
   semanticTokens: {
     text: {
@@ -365,5 +367,14 @@ export const theme = createTheme({
       strong: 'colors.neutral.400',
       muted: 'colors.neutral.100',
     },
+  },
+  // Per-recipe variant vocabularies (option B). Record form — NOT Recipe.extend() —
+  // because the theme cannot import the recipes without creating a fatal module
+  // cycle (theme -> recipe -> builders -> theme). normalizeComponents passes this
+  // through unchanged and createSoribashiBuilders registers each for Zod validation.
+  components: {
+    Button: { vocabulary: { variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']) } },
+    Tooltip: { vocabulary: { variant: defineVocabulary(['default', 'subtle']) } },
+    Tabs: { vocabulary: { variant: defineVocabulary(['default', 'outline', 'pills']) } },
   },
 });
