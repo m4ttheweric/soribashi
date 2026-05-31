@@ -16,7 +16,7 @@ import classes from './Button.module.css';
 const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
 type Variant = (typeof variants)[number];
 
-// size/intent are NOT declared here: the themed builder (createSoribashiBuilders)
+// size/intent are NOT declared here: the themed builder (from makeBuilders)
 // injects them onto Button's public props, narrowed to the theme's global
 // vocabulary literals (e.g. size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'). variant is
 // per-recipe, so it stays local — narrowed via the hoisted `variants` const.

@@ -380,12 +380,16 @@ const definition = {
 } as const;
 
 /**
- * Component-free theme. `builders.ts` threads its builder types from
- * `typeof baseTheme` (a TYPE-only import), which carries the global vocabulary
+ * Component-free theme TYPE. `builders.ts` threads its builder types from
+ * `BaseTheme` (a type-only import), which carries the global vocabulary
  * (size/intent) without referencing the recipes — breaking the type cycle that
  * `typeof theme` would create (theme → recipes → builders → theme).
+ *
+ * Exported as a TYPE, not a value: a component-free theme value would be a
+ * footgun (passing it to SoribashiProvider would silently skip per-recipe
+ * variant validation). The runtime always uses the full `theme` below.
  */
-export const baseTheme = createTheme(definition);
+export type BaseTheme = ReturnType<typeof createTheme<typeof definition['vocabulary']>>;
 
 /**
  * The full theme used at runtime. Adds the per-recipe vocabulary entries via

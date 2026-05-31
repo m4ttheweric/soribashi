@@ -10,7 +10,7 @@
  * its `components` array. The runtime registry is populated once by the
  * `registerTheme(theme)` call in `theme/index.ts`.
  */
-import type { baseTheme } from './theme/index.ts';
+import type { BaseTheme } from './theme/index.ts';
 import { makeBuilders } from '@soribashi/core';
 
 export const {
@@ -18,4 +18,4 @@ export const {
   definePolymorphicComponent,
   defineCompound,
   defineGenericComponent,
-} = makeBuilders<typeof baseTheme>();
+} = makeBuilders<BaseTheme>();
