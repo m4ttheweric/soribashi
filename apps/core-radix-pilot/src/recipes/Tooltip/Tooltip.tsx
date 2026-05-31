@@ -16,7 +16,7 @@
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
 import { defineCompound } from '../../builders.ts';
-import type { PartRenderCtx } from '@soribashi/core';
+import { defineVocabulary, type PartRenderCtx } from '@soribashi/core';
 import classes from './Tooltip.module.css';
 
 const variants = ['default', 'subtle'] as const;
@@ -154,4 +154,13 @@ export const Tooltip = defineCompound({
       },
     },
   },
+});
+
+/**
+ * Tooltip's per-recipe variant vocabulary, composed into the theme's
+ * `components` array (theme/index.ts). Derived from the same `variants` const
+ * that types the recipe's `variant` prop — one source of truth.
+ */
+export const tooltipTheme = Tooltip.extend({
+  vocabulary: { variant: defineVocabulary(variants) },
 });

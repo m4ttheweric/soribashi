@@ -1,19 +1,21 @@
 /**
  * Local builder entry point for the pilot.
  *
- * `createSoribashiBuilders(theme)` registers the theme's global vocabulary and
- * every per-component override (theme.components) with the runtime registry,
- * then returns the four builders. Recipes import from here instead of
- * '@soribashi/core' so that (a) the registry is populated before any recipe
- * renders, and (b) PR #12 can swap these for theme-typed builders without
- * touching recipe import sites.
+ * `makeBuilders<typeof theme>()` returns the four builders typed against the
+ * theme's vocabulary — so `definePolymorphicComponent` produces components whose
+ * public props narrow `size`/`intent` to the theme's literal unions. The theme
+ * is imported as a TYPE only: this is what breaks the otherwise-fatal cycle
+ * (`theme → recipe → builders → theme`). Because no theme VALUE is imported here,
+ * `theme/index.ts` is free to import the recipes and use `Recipe.extend(...)` in
+ * its `components` array. The runtime registry is populated once by the
+ * `registerTheme(theme)` call in `theme/index.ts`.
  */
-import { createSoribashiBuilders } from '@soribashi/core';
-import { theme } from './theme/index.ts';
+import type { baseTheme } from './theme/index.ts';
+import { makeBuilders } from '@soribashi/core';
 
 export const {
   defineComponent,
   definePolymorphicComponent,
   defineCompound,
   defineGenericComponent,
-} = createSoribashiBuilders(theme);
+} = makeBuilders<typeof baseTheme>();

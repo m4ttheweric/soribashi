@@ -167,6 +167,14 @@ describe('Button — vocabulary type narrowing (compile-time)', () => {
     void (<Button variant="zigzag">x</Button>);
     expect(true).toBe(true);
   });
+
+  it('accepts narrowed vocab props in .extend({ defaultProps }) (Gap B)', () => {
+    // .extend() defaultProps accept the injected vocab props, narrowed.
+    void Button.extend({ defaultProps: { size: 'md', intent: 'danger', variant: 'filled' } });
+    // @ts-expect-error — 'huge' is not in the theme's size vocabulary
+    void Button.extend({ defaultProps: { size: 'huge' } });
+    expect(true).toBe(true);
+  });
 });
 
 describe('Button — vocabulary validation (dev)', () => {

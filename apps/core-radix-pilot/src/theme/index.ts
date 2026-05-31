@@ -1,4 +1,7 @@
-import { createTheme, defineVocabulary } from '@soribashi/core';
+import { createTheme, defineVocabulary, registerTheme } from '@soribashi/core';
+import { buttonTheme } from '../recipes/Button/Button.tsx';
+import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
+import { tabsTheme } from '../recipes/Tabs/Tabs.tsx';
 
 /**
  * Wave 1 consolidated theme for the core-radix pilot.
@@ -39,7 +42,13 @@ import { createTheme, defineVocabulary } from '@soribashi/core';
  *
  * Open design questions live in the journal § 5 (Q1-Q10).
  */
-export const theme = createTheme({
+// The theme definition WITHOUT per-component entries. `baseTheme` (below) is
+// built from this and carries the global vocabulary type that `builders.ts`
+// threads from. Keeping the builders' threading source component-free is what
+// avoids a TYPE cycle: the full `theme` references the recipes (via .extend()),
+// the recipes reference the builders, and the builders must NOT reference a type
+// that loops back through the recipes — so they thread from `baseTheme`, not `theme`.
+const definition = {
   name: 'core-radix-pilot',
   tokens: {
     colors: {
@@ -368,13 +377,29 @@ export const theme = createTheme({
       muted: 'colors.neutral.100',
     },
   },
-  // Per-recipe variant vocabularies (option B). Record form — NOT Recipe.extend() —
-  // because the theme cannot import the recipes without creating a fatal module
-  // cycle (theme -> recipe -> builders -> theme). normalizeComponents passes this
-  // through unchanged and createSoribashiBuilders registers each for Zod validation.
-  components: {
-    Button: { vocabulary: { variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']) } },
-    Tooltip: { vocabulary: { variant: defineVocabulary(['default', 'subtle']) } },
-    Tabs: { vocabulary: { variant: defineVocabulary(['default', 'outline', 'pills']) } },
-  },
+} as const;
+
+/**
+ * Component-free theme. `builders.ts` threads its builder types from
+ * `typeof baseTheme` (a TYPE-only import), which carries the global vocabulary
+ * (size/intent) without referencing the recipes — breaking the type cycle that
+ * `typeof theme` would create (theme → recipes → builders → theme).
+ */
+export const baseTheme = createTheme(definition);
+
+/**
+ * The full theme used at runtime. Adds the per-recipe vocabulary entries via
+ * `Recipe.extend(...)` — declared canonically now that builders.ts no longer
+ * imports the theme value (no module cycle). Each recipe derives its variant
+ * vocab from the same const that types its `variant` prop.
+ */
+export const theme = createTheme({
+  ...definition,
+  components: [buttonTheme, tooltipTheme, tabsTheme],
 });
+
+// Populate the runtime vocabulary registry (global + per-component) so the
+// dev-only Zod validation resolves. Done here — the single place the fully
+// composed theme exists — so every consumer (the app via SoribashiProvider, and
+// tests that import `theme`) gets registration without a separate call.
+registerTheme(theme);

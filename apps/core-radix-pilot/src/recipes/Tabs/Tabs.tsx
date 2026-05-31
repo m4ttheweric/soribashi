@@ -14,9 +14,10 @@
 import * as RadixTabs from '@radix-ui/react-tabs';
 import type { CSSProperties, ElementType, ReactNode } from 'react';
 import { defineCompound } from '../../builders.ts';
-import type {
-  PartRenderCtx,
-  PolymorphicPartRenderCtx,
+import {
+  defineVocabulary,
+  type PartRenderCtx,
+  type PolymorphicPartRenderCtx,
 } from '@soribashi/core';
 import classes from './Tabs.module.css';
 
@@ -166,4 +167,13 @@ export const Tabs = defineCompound({
       ),
     },
   },
+});
+
+/**
+ * Tabs' per-recipe variant vocabulary, composed into the theme's `components`
+ * array (theme/index.ts). Derived from the same `variants` const that types the
+ * recipe's `variant` prop — one source of truth.
+ */
+export const tabsTheme = Tabs.extend({
+  vocabulary: { variant: defineVocabulary(variants) },
 });

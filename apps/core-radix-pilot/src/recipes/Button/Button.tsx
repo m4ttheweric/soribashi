@@ -10,7 +10,7 @@
  */
 import type { MouseEvent, ReactNode } from 'react';
 import { definePolymorphicComponent } from '../../builders.ts';
-import type { PolymorphicRenderCtx } from '@soribashi/core';
+import { defineVocabulary, type PolymorphicRenderCtx } from '@soribashi/core';
 import classes from './Button.module.css';
 
 const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
@@ -148,4 +148,14 @@ export const Button = definePolymorphicComponent<
       </Element>
     );
   },
+});
+
+/**
+ * Button's per-recipe vocabulary, composed into the theme's `components` array
+ * (see theme/index.ts). `variant` is declared here — not in the global theme
+ * vocabulary — because variant is per-recipe. The vocab is derived from the same
+ * `variants` const that types the `variant` prop, so there is one source of truth.
+ */
+export const buttonTheme = Button.extend({
+  vocabulary: { variant: defineVocabulary(variants) },
 });
