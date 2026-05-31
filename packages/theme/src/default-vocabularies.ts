@@ -29,3 +29,12 @@ export const DEFAULT_VOCABULARIES = {
     'link',
   ]),
 } as const satisfies Record<string, Vocabulary>;
+
+/**
+ * Type view of the default vocabularies, carrying each axis's literal union.
+ * Imported as a TYPE (`import type`) by `types.ts` so `ResolveVocab` can fall
+ * back to the real default literals without creating a runtime dependency on
+ * this module (and transitively on zod). Keeps the defaults DRY — the literal
+ * types stay derived from the single runtime declaration above.
+ */
+export type DefaultVocabularies = typeof DEFAULT_VOCABULARIES;

@@ -1,5 +1,6 @@
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { Vocabulary } from './define-vocabulary.ts';
+import type { DefaultVocabularies } from './default-vocabularies.ts';
 
 // Re-export so consumers can import ThemeComponentEntry from '@soribashi/theme'
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
@@ -80,6 +81,23 @@ export type PartialThemeVocabulary = {
   size?: Vocabulary;
   intent?: Vocabulary;
   variant?: Vocabulary;
+};
+
+/**
+ * Resolves a (partial) declared vocabulary to a full `ThemeVocabulary` at the
+ * TYPE level, mirroring what `createTheme()` does at runtime: each omitted axis
+ * falls back to its default vocabulary. Crucially, declared axes keep their
+ * literal unions (e.g. `Vocabulary<'xs' | 'sm' | 'md' | 'lg' | 'xl'>`) instead
+ * of widening to `Vocabulary<string>`, so `ResolvedTheme<ResolveVocab<V>>`
+ * carries the consumer's exact vocab literals for downstream type threading.
+ *
+ * The `infer X extends Vocabulary` form handles both an absent key and an
+ * explicit `undefined` cleanly, falling back to the default in either case.
+ */
+export type ResolveVocab<V extends PartialThemeVocabulary> = {
+  size: V extends { size: infer S extends Vocabulary } ? S : DefaultVocabularies['size'];
+  intent: V extends { intent: infer I extends Vocabulary } ? I : DefaultVocabularies['intent'];
+  variant: V extends { variant: infer Va extends Vocabulary } ? Va : DefaultVocabularies['variant'];
 };
 
 // Semantic-level types
@@ -164,12 +182,16 @@ export interface ComponentThemeConfig {
 
 // Top-level theme types
 
-export interface ThemeDefinition {
+export interface ThemeDefinition<V extends PartialThemeVocabulary = PartialThemeVocabulary> {
   tokens: ThemeTokens;
   dark?: PartialThemeTokens;
 
-  /** Declared vocabularies (size/intent/variant). createTheme() fills missing axes from defaults. */
-  vocabulary?: PartialThemeVocabulary;
+  /**
+   * Declared vocabularies (size/intent/variant). createTheme() fills missing
+   * axes from defaults. The `V` type parameter captures the consumer's exact
+   * declaration so `createTheme` can preserve literal unions in its return type.
+   */
+  vocabulary?: V;
 
   /** Role-name aliases (text/surface/border/accent) — emitted as CSS vars. */
   semanticTokens?: PartialSemanticTokensConfig;
@@ -188,11 +210,18 @@ export interface ThemeDefinition {
 
 /**
  * The fully-resolved, normalized theme.
+ *
+ * Generic over its resolved vocabulary `V`, defaulting to the wide
+ * `ThemeVocabulary`. The default makes every existing `(theme: ResolvedTheme)`
+ * reference compile unchanged: a narrowed `ResolvedTheme<ResolveVocab<...>>` is
+ * assignable to the default `ResolvedTheme` because each `Vocabulary<'literal'>`
+ * is assignable to `Vocabulary<string>` (the same assignment createTheme already
+ * performs when filling defaults). Builders thread `V` to narrow injected props.
  */
-export interface ResolvedTheme {
+export interface ResolvedTheme<V extends ThemeVocabulary = ThemeVocabulary> {
   tokens: ThemeTokens;
   dark: PartialThemeTokens;
-  vocabulary: ThemeVocabulary;          // fully resolved
+  vocabulary: V;                        // fully resolved
   semanticTokens: SemanticTokensConfig; // fully resolved
   intentResolver: IntentResolver;
   components: Record<string, ComponentThemeConfig>;

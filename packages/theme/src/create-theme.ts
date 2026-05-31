@@ -1,5 +1,12 @@
 import { defaultIntentResolver } from './default-intent-resolver.ts';
-import type { ResolvedTheme, SemanticTokensConfig, ThemeDefinition, ThemeVocabulary } from './types.ts';
+import type {
+  PartialThemeVocabulary,
+  ResolveVocab,
+  ResolvedTheme,
+  SemanticTokensConfig,
+  ThemeDefinition,
+  ThemeVocabulary,
+} from './types.ts';
 import { composeTheme } from './compose-theme.ts';
 import { normalizeComponents } from './normalize-components.ts';
 import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
@@ -31,7 +38,9 @@ const DEFAULT_BORDER: Record<string, string> = {
  * 1. If `definition.extends` is provided, recursively resolve and merge.
  * 2. Apply user fields, falling back to defaults for any omitted field.
  */
-export function createTheme(definition: ThemeDefinition): ResolvedTheme {
+export function createTheme<const V extends PartialThemeVocabulary = PartialThemeVocabulary>(
+  definition: ThemeDefinition<V>,
+): ResolvedTheme<ResolveVocab<V>> {
   const base: ResolvedTheme | null = definition.extends ? createTheme(definition.extends) : null;
 
   const merged: ThemeDefinition = base ? composeTheme(base, definition) : definition;
@@ -49,6 +58,11 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     ...(merged.semanticTokens?.accent ? { accent: merged.semanticTokens.accent } : {}),
   };
 
+  // The runtime fills omitted axes from DEFAULT_VOCABULARIES, which is exactly
+  // what ResolveVocab<V> expresses at the type level — declared axes keep their
+  // literal unions, omitted axes become the defaults. The `vocabulary` const is
+  // typed as the wide ThemeVocabulary, so we assert the narrowed return; the
+  // assertion is sound because the runtime guarantees the ResolveVocab<V> shape.
   return {
     tokens: merged.tokens,
     dark: merged.dark ?? {},
@@ -59,5 +73,5 @@ export function createTheme(definition: ThemeDefinition): ResolvedTheme {
     scope: merged.scope ?? ':root',
     darkMode: merged.darkMode ?? { selector: '.dark' },
     name: merged.name ?? 'default',
-  };
+  } as ResolvedTheme<ResolveVocab<V>>;
 }
