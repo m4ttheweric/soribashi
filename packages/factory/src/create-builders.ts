@@ -4,6 +4,7 @@ import { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 import { defineCompound } from './define-compound.tsx';
 import { defineGenericComponent } from './define-generic-component.tsx';
 import { registerComponentVocabularies, resetRegistry } from './vocabulary-registry.ts';
+import type { ThemedDefinePolymorphicComponent } from './types/themed-builders.ts';
 
 /**
  * Builder factory — the consumer's entry point for vocab-aware builders.
@@ -58,7 +59,16 @@ export function createSoribashiBuilders<TTheme extends ResolvedTheme>(theme: TTh
 
   return {
     defineComponent,
-    definePolymorphicComponent,
+    // Theme-narrowed view: the produced component's PUBLIC props carry the
+    // theme's literal unions for the global axes (size/intent). Runtime is the
+    // same function — the cast only refines the declared type. `variant` stays
+    // recipe-local. defineComponent/defineCompound/defineGenericComponent are
+    // returned raw because the pilot's only global-axis consumer is the
+    // polymorphic Button; extending the same pattern to them is mechanical when
+    // a global-axis consumer appears.
+    definePolymorphicComponent: definePolymorphicComponent as ThemedDefinePolymorphicComponent<
+      TTheme['vocabulary']
+    >,
     defineCompound,
     defineGenericComponent,
   };

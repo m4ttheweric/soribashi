@@ -154,8 +154,10 @@ describe('Button — ref forwarding', () => {
 describe('Button — vocabulary validation (dev)', () => {
   it('warns when size is outside the declared vocabulary', () => {
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    // `size` is string-typed (threading deferred to PR #12); runtime Zod catches it.
-    wrap(<Button size="enormous">x</Button>);
+    // `size` is now compile-time narrowed to the theme's size vocabulary via the
+    // rails threading, so cast past TS to exercise the runtime Zod path for an
+    // out-of-vocabulary value (mirrors the factory model validation test).
+    wrap(<Button size={'enormous' as never}>x</Button>);
     expect(
       errSpy.mock.calls.some((c) => String(c[0]).includes('not in the declared vocabulary')),
     ).toBe(true);
