@@ -7,6 +7,8 @@ export {
   definePolymorphicComponent,
   defineCompound,
   createSoribashiBuilders,
+  makeBuilders,
+  registerTheme,
   cn,
 } from '@soribashi/factory';
 

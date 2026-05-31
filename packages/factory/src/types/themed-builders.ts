@@ -24,8 +24,20 @@ import type { VocabularyAxis, ThemedVocabularyProps } from './vocabulary-axes.ts
  * accepts these props verbatim (they flow through as data-attributes/props).
  */
 
-/** The `.extend()` arg shape — mirrors define-polymorphic-component's DefinePolymorphicProps. */
-type ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs extends ElementType> = TOwnProps &
+/**
+ * The `.extend()` arg shape. Mirrors define-polymorphic-component's
+ * DefinePolymorphicProps AND folds in the theme-narrowed global-axis props, so
+ * `Button.extend({ defaultProps: { size: 'md' } })` type-checks with `size`
+ * narrowed to the theme vocabulary (Gap B fix — without this, removing size/intent
+ * from the recipe's own props leaves them absent from the extend config too).
+ */
+type ThemedPolymorphicExtendProps<
+  TOwnProps,
+  TDefaultAs extends ElementType,
+  TVocab extends ThemeVocabulary,
+  TVocabAxes extends readonly VocabularyAxis[],
+> = TOwnProps &
+  ThemedVocabularyProps<TVocab, TVocabAxes> &
   StylesApiProps<FactoryPayload> &
   Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>;
 
@@ -48,8 +60,10 @@ type ThemedPolymorphicComponent<
     },
   ) => ThemedPolymorphicComponent<TOwnProps, TDefaultAs, TSelectors, TVocab, TVocabAxes>;
   extend: (
-    config: ComponentExtendConfig<ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs>>,
-  ) => ThemeComponentEntry<ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs>>;
+    config: ComponentExtendConfig<
+      ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs, TVocab, TVocabAxes>
+    >,
+  ) => ThemeComponentEntry<ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs, TVocab, TVocabAxes>>;
   classes?: Partial<Record<TSelectors[number], string>>;
   displayName?: string;
 };
