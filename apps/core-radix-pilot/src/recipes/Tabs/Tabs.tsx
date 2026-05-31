@@ -13,14 +13,15 @@
  */
 import * as RadixTabs from '@radix-ui/react-tabs';
 import type { CSSProperties, ElementType, ReactNode } from 'react';
-import {
-  defineCompound,
-  type PartRenderCtx,
-  type PolymorphicPartRenderCtx,
+import { defineCompound } from '../../builders.ts';
+import type {
+  PartRenderCtx,
+  PolymorphicPartRenderCtx,
 } from '@soribashi/core';
 import classes from './Tabs.module.css';
 
-type Variant = 'default' | 'outline' | 'pills';
+const variants = ['default', 'outline', 'pills'] as const;
+type Variant = (typeof variants)[number];
 
 export interface TabsRootProps {
   variant?: Variant;
@@ -52,7 +53,8 @@ interface TabsCtxExtras {
 
 export const Tabs = defineCompound({
   name: 'Tabs',
-  variants: ['default', 'outline', 'pills'] as const,
+  vocabularyAxes: ['variant'] as const,
+  variants,
   classes,
   defaults: { variant: 'default' } as Partial<TabsRootProps>,
   vars: (_theme, props) => ({
