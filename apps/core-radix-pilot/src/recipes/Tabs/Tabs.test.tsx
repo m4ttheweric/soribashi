@@ -467,3 +467,23 @@ describe('Tabs recipe', () => {
     expect(screen.getByText('content-b')).toBeInTheDocument();
   });
 });
+
+describe('Tabs — vocabulary validation (dev)', () => {
+  it('warns when variant is outside the declared vocabulary', () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <SoribashiProvider theme={theme}>
+        <Tabs variant={'zigzag' as never} defaultValue="a">
+          <Tabs.List>
+            <Tabs.Trigger value="a">A</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="a">content</Tabs.Content>
+        </Tabs>
+      </SoribashiProvider>,
+    );
+    expect(
+      errSpy.mock.calls.some((c) => String(c[0]).includes('not in the declared vocabulary')),
+    ).toBe(true);
+    errSpy.mockRestore();
+  });
+});

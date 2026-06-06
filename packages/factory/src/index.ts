@@ -78,5 +78,7 @@ export { isThemeComponentEntry } from './theme-component-entry.ts';
 export type { ComponentExtendConfig } from './types/component-extend.ts';
 export type { VocabularyOverride } from '@soribashi/theme';
 
-// Vocab-aware builder factory
-export { createSoribashiBuilders } from './create-builders.ts';
+// Vocab-aware builder factory. `makeBuilders` + `registerTheme` are the
+// cycle-safe split (type-only theme in builders.ts, value registration at app
+// entry); `createSoribashiBuilders` is the combined convenience.
+export { createSoribashiBuilders, makeBuilders, registerTheme } from './create-builders.ts';

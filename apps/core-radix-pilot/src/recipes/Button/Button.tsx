@@ -9,17 +9,19 @@
  * Journal: docs/superpowers/pilots/2026-04-26-button-conversion.md
  */
 import type { MouseEvent, ReactNode } from 'react';
-import { definePolymorphicComponent, type PolymorphicRenderCtx } from '@soribashi/core';
+import { definePolymorphicComponent } from '../../builders.ts';
+import { defineVocabulary, type PolymorphicRenderCtx } from '@soribashi/core';
 import classes from './Button.module.css';
 
-type Intent = 'primary' | 'neutral' | 'success' | 'warning' | 'danger' | 'info';
-type Variant = 'filled' | 'outline' | 'subtle' | 'ghost' | 'link';
-type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
+type Variant = (typeof variants)[number];
 
+// size/intent are NOT declared here: the themed builder (from makeBuilders)
+// injects them onto Button's public props, narrowed to the theme's global
+// vocabulary literals (e.g. size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'). variant is
+// per-recipe, so it stays local — narrowed via the hoisted `variants` const.
 export interface ButtonOwnProps {
-  intent?: Intent;
   variant?: Variant;
-  size?: Size;
   loading?: boolean;
   fullWidth?: boolean;
   leftIcon?: ReactNode;
@@ -27,13 +29,20 @@ export interface ButtonOwnProps {
   children?: ReactNode;
 }
 
-// Type-param order: <TOwnProps, TDefaultAs> — matches the signature in
-// packages/factory/src/define-polymorphic-component.tsx.
-export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
+// Type-param order: <TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>
+// matches the signature in packages/factory/src/define-polymorphic-component.tsx.
+export const Button = definePolymorphicComponent<
+  ButtonOwnProps,
+  'button',
+  readonly ['root', 'inner', 'label', 'icon', 'spinner'],
+  typeof variants,
+  readonly ['size', 'intent', 'variant']
+>({
   name: 'Button',
   defaultElement: 'button',
+  vocabularyAxes: ['size', 'intent', 'variant'] as const,
   selectors: ['root', 'inner', 'label', 'icon', 'spinner'] as const,
-  variants: ['filled', 'outline', 'subtle', 'ghost', 'link'] as const,
+  variants,
   classes,
   defaults: {
     intent: 'primary',
@@ -47,7 +56,13 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
     props,
     getStyles,
     ref,
-  }: PolymorphicRenderCtx<ButtonOwnProps, 'button', readonly ['root', 'inner', 'label', 'icon', 'spinner']>) => {
+  }: PolymorphicRenderCtx<
+    ButtonOwnProps,
+    'button',
+    readonly ['root', 'inner', 'label', 'icon', 'spinner'],
+    typeof variants,
+    readonly ['size', 'intent', 'variant']
+  >) => {
     // Wave 1 Gap 2 documented convention — recipes destructure their own props
     // alongside the seven styles-API framework keys (classNames, styles, vars,
     // attributes, unstyled, className, style) so `...rest` only carries HTML
@@ -133,4 +148,14 @@ export const Button = definePolymorphicComponent<ButtonOwnProps, 'button'>({
       </Element>
     );
   },
+});
+
+/**
+ * Button's per-recipe vocabulary, composed into the theme's `components` array
+ * (see theme/index.ts). `variant` is declared here — not in the global theme
+ * vocabulary — because variant is per-recipe. The vocab is derived from the same
+ * `variants` const that types the `variant` prop, so there is one source of truth.
+ */
+export const buttonTheme = Button.extend({
+  vocabulary: { variant: defineVocabulary(variants) },
 });

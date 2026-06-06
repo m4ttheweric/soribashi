@@ -1,17 +1,39 @@
+import type { ThemeVocabulary } from '@soribashi/theme';
+
 export type VocabularyAxis = 'size' | 'intent' | 'variant';
 
 /**
- * Type-level prop shape injected by builders for opted-in axes.
- *
- * Caveat: with single-tenant module-level registration, the consumer's theme
- * type isn't reachable at builder definition time without a separate type bridge.
- * In this PR, the injected prop is typed as `string` (lossy) — the pilot-migration
- * PR can add tighter type inference via a separate hook (e.g., re-exporting typed
- * builders from createSoribashiBuilders that read the theme's vocab type).
- *
- * The runtime Zod check still enforces values; this typing decision affects only
- * autocomplete in recipe authoring, not safety.
+ * The vocabulary axes that are GLOBAL (shared across recipes) and therefore
+ * safe to thread from the theme into a recipe's public props. `variant` is
+ * deliberately excluded: it is per-recipe (each recipe declares its own variant
+ * set locally via its `variants` const), so its narrowed type comes from the
+ * recipe itself, not the global theme vocabulary.
+ */
+export type GlobalVocabularyAxis = Extract<VocabularyAxis, 'size' | 'intent'>;
+
+/**
+ * Internal, render-context view of injected axes — typed as `string` because
+ * inside a recipe's `render` the resolved value is just a string. Used by the
+ * builder configs (`define-*.tsx`) for `defaults` and the render ctx props.
  */
 export type InjectedVocabularyProps<TAxes extends readonly VocabularyAxis[]> = {
   [K in TAxes[number]]?: string;
+};
+
+/**
+ * Public, theme-narrowed view of injected axes — used by the themed builders
+ * returned from `createSoribashiBuilders(theme)`. For each opted-in GLOBAL axis,
+ * the injected prop narrows to that axis's declared literal union (e.g.
+ * `size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'`) instead of `string`. `variant` is
+ * excluded (see GlobalVocabularyAxis) and continues to come from the recipe's
+ * own props.
+ *
+ * Threading the theme's literals here is what makes `<Button size="md">`
+ * autocomplete and reject out-of-vocabulary values at compile time.
+ */
+export type ThemedVocabularyProps<
+  TVocab extends ThemeVocabulary,
+  TAxes extends readonly VocabularyAxis[],
+> = {
+  [K in TAxes[number] & GlobalVocabularyAxis]?: NonNullable<TVocab[K]['type']>;
 };

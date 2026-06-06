@@ -150,3 +150,43 @@ describe('Button — ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Button — vocabulary type narrowing (compile-time)', () => {
+  // These assertions are enforced by `bun run typecheck` (the pilot is part of
+  // the root tsconfig). Constructing the elements is enough to type-check their
+  // props; we never render them, so there is no runtime side effect. The
+  // expect-error directives below fail the build if narrowing ever regresses.
+  it('narrows size/intent to the theme vocabulary and variant to the recipe set', () => {
+    // Valid values from the theme's global vocab + the recipe's local variant set.
+    void (<Button size="md" intent="danger" variant="filled">x</Button>);
+    // @ts-expect-error — 'huge' is not in the theme's size vocabulary
+    void (<Button size="huge">x</Button>);
+    // @ts-expect-error — 'chartreuse' is not in the theme's intent vocabulary
+    void (<Button intent="chartreuse">x</Button>);
+    // @ts-expect-error — 'zigzag' is not in Button's local variant set
+    void (<Button variant="zigzag">x</Button>);
+    expect(true).toBe(true);
+  });
+
+  it('accepts narrowed vocab props in .extend({ defaultProps }) (Gap B)', () => {
+    // .extend() defaultProps accept the injected vocab props, narrowed.
+    void Button.extend({ defaultProps: { size: 'md', intent: 'danger', variant: 'filled' } });
+    // @ts-expect-error — 'huge' is not in the theme's size vocabulary
+    void Button.extend({ defaultProps: { size: 'huge' } });
+    expect(true).toBe(true);
+  });
+});
+
+describe('Button — vocabulary validation (dev)', () => {
+  it('warns when size is outside the declared vocabulary', () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // `size` is now compile-time narrowed to the theme's size vocabulary via the
+    // rails threading, so cast past TS to exercise the runtime Zod path for an
+    // out-of-vocabulary value (mirrors the factory model validation test).
+    wrap(<Button size={'enormous' as never}>x</Button>);
+    expect(
+      errSpy.mock.calls.some((c) => String(c[0]).includes('not in the declared vocabulary')),
+    ).toBe(true);
+    errSpy.mockRestore();
+  });
+});

@@ -23,8 +23,13 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 
-    "declaration": true,
-    "declarationMap": true,
+    // Declarations are never emitted in this repo — every package sets
+    // `"types": "./src/index.ts"` (consumed as source) and all tsc runs are
+    // `--noEmit`. Leaving `declaration: true` only triggered TS2742 nameability
+    // checks on inferred types (e.g. the generic `createTheme` return) that can
+    // never actually be emitted, so it's disabled. Re-enable alongside a real
+    // .d.ts build step if packages ever ship compiled types.
+    "declaration": false,
     "sourceMap": true,
 
     "composite": false
