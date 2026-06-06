@@ -25,18 +25,34 @@ import type { VocabularyAxis, ThemedVocabularyProps } from './vocabulary-axes.ts
  */
 
 /**
+ * Guarded `variant` prop. Yields `{ variant?: TVariants[number] }` ONLY when the
+ * recipe declares a real variant tuple; yields `unknown` (an intersection no-op)
+ * when `TVariants` is the default `readonly string[]`. This is what lets the
+ * themed builder surface `variant` from the recipe's `variants` config (closing
+ * the gap CodeRabbit flagged on `.extend()`) WITHOUT collapsing `variant` to a
+ * bare `string` for recipes that declare no variants — `<Box variant="anything">`
+ * stays rejected. `string extends TVariants[number]` is true exactly when the
+ * union has widened to `string` (the no-variants / default case).
+ */
+type VariantProp<TVariants extends readonly string[]> = string extends TVariants[number]
+  ? unknown
+  : { variant?: TVariants[number] };
+
+/**
  * The `.extend()` arg shape. Mirrors define-polymorphic-component's
  * DefinePolymorphicProps AND folds in the theme-narrowed global-axis props, so
  * `Button.extend({ defaultProps: { size: 'md' } })` type-checks with `size`
- * narrowed to the theme vocabulary (Gap B fix — without this, removing size/intent
- * from the recipe's own props leaves them absent from the extend config too).
+ * narrowed to the theme vocabulary (Gap B fix). `VariantProp<TVariants>` restores
+ * the `variant` default the raw builder's DefinePolymorphicProps carried.
  */
 type ThemedPolymorphicExtendProps<
   TOwnProps,
   TDefaultAs extends ElementType,
+  TVariants extends readonly string[],
   TVocab extends ThemeVocabulary,
   TVocabAxes extends readonly VocabularyAxis[],
 > = TOwnProps &
+  VariantProp<TVariants> &
   ThemedVocabularyProps<TVocab, TVocabAxes> &
   StylesApiProps<FactoryPayload> &
   Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>;
@@ -46,31 +62,37 @@ type ThemedPolymorphicComponent<
   TOwnProps,
   TDefaultAs extends ElementType,
   TSelectors extends readonly string[],
+  TVariants extends readonly string[],
   TVocab extends ThemeVocabulary,
   TVocabAxes extends readonly VocabularyAxis[],
 > = (<TAs extends ElementType = TDefaultAs>(
   props: PolymorphicComponentProps<
     TAs,
-    TOwnProps & ThemedVocabularyProps<TVocab, TVocabAxes> & StylesApiProps<any>
+    TOwnProps & VariantProp<TVariants> & ThemedVocabularyProps<TVocab, TVocabAxes> & StylesApiProps<any>
   >,
 ) => ReactElement | null) & {
   withProps: <TAs extends ElementType = TDefaultAs>(
-    presets: Partial<TOwnProps & ThemedVocabularyProps<TVocab, TVocabAxes> & StylesApiProps<any>> & {
+    presets: Partial<
+      TOwnProps & VariantProp<TVariants> & ThemedVocabularyProps<TVocab, TVocabAxes> & StylesApiProps<any>
+    > & {
       as?: TAs;
     },
-  ) => ThemedPolymorphicComponent<TOwnProps, TDefaultAs, TSelectors, TVocab, TVocabAxes>;
+  ) => ThemedPolymorphicComponent<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocab, TVocabAxes>;
   extend: (
     config: ComponentExtendConfig<
-      ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs, TVocab, TVocabAxes>
+      ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs, TVariants, TVocab, TVocabAxes>
     >,
-  ) => ThemeComponentEntry<ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs, TVocab, TVocabAxes>>;
+  ) => ThemeComponentEntry<
+    ThemedPolymorphicExtendProps<TOwnProps, TDefaultAs, TVariants, TVocab, TVocabAxes>
+  >;
   classes?: Partial<Record<TSelectors[number], string>>;
   displayName?: string;
 };
 
 /**
  * Signature of the themed `definePolymorphicComponent`. Same config as the raw
- * builder; the return type folds in the theme's narrowed global-axis props.
+ * builder; the return type folds in the theme's narrowed global-axis props plus
+ * the guarded `variant` (see VariantProp).
  */
 export type ThemedDefinePolymorphicComponent<TVocab extends ThemeVocabulary> = <
   TOwnProps,
@@ -80,7 +102,7 @@ export type ThemedDefinePolymorphicComponent<TVocab extends ThemeVocabulary> = <
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 >(
   config: DefinePolymorphicComponentConfig<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>,
-) => ThemedPolymorphicComponent<TOwnProps, TDefaultAs, TSelectors, TVocab, TVocabAxes>;
+) => ThemedPolymorphicComponent<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocab, TVocabAxes>;
 
 /** Convenience: extract the resolved vocabulary type from a ResolvedTheme. */
 export type VocabularyOf<TTheme extends ResolvedTheme> = TTheme['vocabulary'];
