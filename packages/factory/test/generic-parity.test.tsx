@@ -43,7 +43,8 @@ interface ItemProps<T> {
  * A minimal generic component using the defineGenericComponent constructor.
  * Preserves the type parameter T through withProps.
  */
-const Select = defineGenericComponent<ItemProps<any>>({
+type SelectSignature = <T>(props: ItemProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+const Select = defineGenericComponent<SelectSignature>({
   name: 'Select',
   selectors: ['root', 'item'] as const,
   classes: { root: 'sb-Select-root', item: 'sb-Select-item' },
@@ -298,7 +299,8 @@ describe('G8: GenericComponentFn type — runtime shape', () => {
 describe('G9: hook integration — useProps applies config.defaults', () => {
   it('G9a: config.defaults are applied when instance prop is absent', () => {
     interface ItemWithDefault { id: string }
-    const SelectWithDefault = defineGenericComponent<ItemProps<any>>({
+    type SelectWithDefaultSignature = <T>(props: ItemProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+    const SelectWithDefault = defineGenericComponent<SelectWithDefaultSignature>({
       name: 'SelectWithDefault',
       selectors: ['root'] as const,
       classes: { root: 'sb-Select-root' },
@@ -323,7 +325,8 @@ describe('G9: hook integration — useProps applies config.defaults', () => {
 
   it('G9b: instance prop overrides config.defaults', () => {
     interface ItemWithDefault { id: string }
-    const SelectWithDefault = defineGenericComponent<ItemProps<any>>({
+    type SelectWithDefaultSignature = <T>(props: ItemProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+    const SelectWithDefault = defineGenericComponent<SelectWithDefaultSignature>({
       name: 'SelectWithDefault2',
       selectors: ['root'] as const,
       classes: { root: 'sb-Select-root' },
