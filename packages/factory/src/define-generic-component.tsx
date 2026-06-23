@@ -33,9 +33,10 @@ export type GenericComponentFn = <T>(
  * The static methods attached to a generic component. `withProps` returns
  * the same generic shape so callers can continue to pass type parameters.
  */
-export interface GenericComponentStatics {
+export interface GenericComponentStatics<TSignature = GenericComponentFn> {
   extend: (cfg: ComponentExtendConfig<any>) => ThemeComponentEntry<any>;
-  withProps: (presets: any) => GenericComponentFn & GenericComponentStatics;
+  /** Preserves the generic signature on the partially-applied component. */
+  withProps: (presets: Record<string, unknown>) => TSignature & GenericComponentStatics<TSignature>;
   classes?: Record<string, string>;
   displayName?: string;
 }
@@ -48,11 +49,14 @@ export interface GenericComponentStatics {
  * `User`. `withProps` preserves this — `Select.withProps({ searchable: true })`
  * returns a component that's still generic; you can still write `<Result<User> ...>`.
  *
- * @deprecated — no current consumers; will be removed in a future release if no use case emerges.
+ * The type argument is the author-supplied generic call SIGNATURE (mirrors
+ * Mantine's `genericFactory<Payload>(ui: Payload['signature'])`). It defaults to
+ * `GenericComponentFn` for callers that do not need inference. Runtime behavior
+ * is identical regardless of the signature; all safety is at the call site.
  */
-export function defineGenericComponent<TOwnPropsTemplate>(
+export function defineGenericComponent<TSignature = GenericComponentFn>(
   config: DefineGenericComponentConfig,
-): GenericComponentFn & GenericComponentStatics {
+): TSignature & GenericComponentStatics<TSignature> {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
@@ -89,8 +93,8 @@ export function defineGenericComponent<TOwnPropsTemplate>(
   (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
   (Component as any).extend = (
-    extendConfig: ComponentExtendConfig<TOwnPropsTemplate>,
-  ): ThemeComponentEntry<TOwnPropsTemplate> => ({
+    extendConfig: ComponentExtendConfig<any>,
+  ): ThemeComponentEntry<any> => ({
     __soribashiThemeEntry: true as const,
     name: config.name,
     vocabulary: extendConfig.vocabulary as any,
@@ -102,5 +106,5 @@ export function defineGenericComponent<TOwnPropsTemplate>(
   });
   (Component as any).withProps = makeWithProps(Component as any);
 
-  return Component as unknown as GenericComponentFn & GenericComponentStatics;
+  return Component as unknown as TSignature & GenericComponentStatics<TSignature>;
 }
