@@ -87,3 +87,38 @@ describe('Select clearable', () => {
     expect(onChange).toHaveBeenCalledWith(null, null);
   });
 });
+
+describe('Select correctness + a11y fixes', () => {
+  it('submits the HIGHLIGHTED option after filtering (searchable + keyboard)', () => {
+    const onChange = vi.fn();
+    wrap(<Select data={data} searchable placeholder="Pick" onChange={onChange} />);
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'med' } });
+    fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'ArrowDown' });
+    fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'Enter' });
+    expect(onChange).toHaveBeenCalledWith('md', { value: 'md', label: 'Medium' });
+  });
+
+  it('does not open via keyboard when disabled', () => {
+    wrap(<Select data={data} placeholder="Pick" disabled />);
+    fireEvent.keyDown(screen.getByRole('combobox'), { key: 'ArrowDown' });
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('renders the clear control as a real, keyboard-operable button', () => {
+    const onChange = vi.fn();
+    wrap(<Select data={data} clearable value="sm" onChange={onChange} />);
+    const clear = screen.getByLabelText('Clear');
+    expect(clear.tagName).toBe('BUTTON');
+  });
+
+  it('sets aria-activedescendant to the highlighted option id during keyboard nav', () => {
+    wrap(<Select data={data} placeholder="Pick" />);
+    const combo = screen.getByRole('combobox');
+    fireEvent.click(combo);
+    fireEvent.keyDown(combo, { key: 'ArrowDown' });
+    const active = combo.getAttribute('aria-activedescendant');
+    expect(active).toBeTruthy();
+    expect(document.getElementById(active!)).not.toBeNull();
+  });
+});

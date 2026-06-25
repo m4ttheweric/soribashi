@@ -3,7 +3,7 @@
  * Bounded port of Mantine's use-combobox (no typeahead, no async). Positioning
  * is the component's job (floating-ui), not the hook's.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ComboboxItem, Primitive } from './parse-data.ts';
 
 export function nextEnabledIndex<V extends Primitive>(
@@ -33,6 +33,7 @@ export interface ComboboxKeyResult<V extends Primitive> {
 export function useCombobox<V extends Primitive>(opts: { options: ComboboxItem<V>[]; opened: boolean }) {
   const { options, opened } = opts;
   const [activeIndex, setActiveIndex] = useState<number>(-1);
+  useEffect(() => { setActiveIndex(-1); }, [options]);
 
   const onKeyDown = (e: { key: string; preventDefault: () => void }): ComboboxKeyResult<V> => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {

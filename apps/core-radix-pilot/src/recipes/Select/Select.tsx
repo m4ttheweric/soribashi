@@ -4,7 +4,7 @@
  * (Value narrows from data; `multiple` flips value/onChange). Engine: a minimal
  * useCombobox hook + @floating-ui/react positioning. Field wraps it.
  */
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import { useFloating, flip, shift, size, autoUpdate } from '@floating-ui/react';
 import { defineGenericComponent } from '../../builders.ts';
 import { Field } from '../Field/Field.tsx';
@@ -41,22 +41,14 @@ export type SelectSignature = <const V extends Primitive = string>(
   props: SingleProps<V> | MultiProps<V>,
 ) => React.ReactElement | null;
 
-let _id = 0;
-function useAutoId(provided?: string): string {
-  const ref = useRef<string | undefined>(provided);
-  if (!ref.current) {
-    _id += 1;
-    ref.current = `select-${_id}`;
-  }
-  return provided ?? ref.current;
-}
 
 export const Select = defineGenericComponent<SelectSignature>({
   name: 'Select',
   selectors: ['trigger', 'dropdown', 'option', 'group', 'placeholder', 'pills', 'pill', 'clear'] as const,
   classes,
   render: ({ props }: any) => {
-    const id = useAutoId(props.id);
+    const reactId = useId();
+    const id = props.id ?? reactId;
     const multiple = props.multiple === true;
     const parsed = useMemo(() => parseSelectData(props.data as SelectData<Primitive>), [props.data]);
     const allOptions = useMemo(() => flattenOptions(parsed), [parsed]);
@@ -105,6 +97,7 @@ export const Select = defineGenericComponent<SelectSignature>({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (props.disabled) { return; }
       const r = onKeyDown(e);
       if (r.open) { setOpened(true); }
       if (r.close) { close(); }
@@ -117,39 +110,40 @@ export const Select = defineGenericComponent<SelectSignature>({
 
     return (
       <Field id={id} label={props.label} description={props.description} error={props.error} required={props.required}>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+          {multiple && selectedMulti.length > 0 && (
+            <span className={classes.pills} data-part="pills">
+              {selectedMulti.map((o) => (
+                <span key={String(o.value)} className={classes.pill} data-part="pill" data-testid="select-pill">
+                  {o.label}
+                  <button type="button" aria-label={`Remove ${o.label}`} className={classes.pillRemove}
+                    onClick={(e) => { e.stopPropagation(); submit(o); }}>{'×'}</button>
+                </span>
+              ))}
+            </span>
+          )}
           <button
             ref={refs.setReference}
             type="button" role="combobox" aria-expanded={opened} aria-controls={`${id}-listbox`}
+            aria-activedescendant={activeIndex >= 0 ? `${id}-opt-${activeIndex}` : undefined}
             aria-describedby={[props.description ? `${id}-description` : '', props.error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined}
             aria-invalid={props.error ? true : undefined}
             disabled={props.disabled} data-disabled={props.disabled ? 'true' : undefined}
             className={classes.trigger} data-part="trigger"
             onClick={() => !props.disabled && setOpened((o) => !o)} onKeyDown={handleKeyDown}
+            style={{ flex: 1 }}
           >
-            {multiple && selectedMulti.length > 0 ? (
-              <span className={classes.pills} data-part="pills">
-                {selectedMulti.map((o) => (
-                  <span key={String(o.value)} className={classes.pill} data-part="pill" data-testid="select-pill">
-                    {o.label}
-                    <span role="button" aria-label={`Remove ${o.label}`} className={classes.pillRemove}
-                      onClick={(e) => { e.stopPropagation(); submit(o); }}>{'×'}</span>
-                  </span>
-                ))}
-              </span>
-            ) : !multiple && selectedSingle ? (
+            {!multiple && selectedSingle ? (
               <span data-part="value">{selectedSingle.label}</span>
             ) : (
               <span className={classes.placeholder} data-part="placeholder">{props.placeholder}</span>
             )}
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              {props.clearable && hasValue && (
-                <span role="button" aria-label="Clear" className={classes.clear}
-                  onClick={(e) => { e.stopPropagation(); clear(); }}>{'×'}</span>
-              )}
-              <span aria-hidden>{opened ? '▲' : '▼'}</span>
-            </span>
+            <span aria-hidden>{opened ? '▲' : '▼'}</span>
           </button>
+          {props.clearable && hasValue && (
+            <button type="button" aria-label="Clear" className={classes.clear}
+              onClick={(e) => { e.stopPropagation(); clear(); }}>{'×'}</button>
+          )}
           {opened && (
             <ul ref={refs.setFloating} id={`${id}-listbox`} role="listbox" className={classes.dropdown} data-part="dropdown" style={floatingStyles}>
               {props.searchable && (
@@ -163,7 +157,7 @@ export const Select = defineGenericComponent<SelectSignature>({
               {options.map((opt, i) => {
                 const isSel = multiple ? multiValue.includes(opt.value) : opt.value === singleValue;
                 return (
-                  <li key={String(opt.value)} role="option" aria-selected={isSel} aria-disabled={opt.disabled || undefined}
+                  <li key={String(opt.value)} id={`${id}-opt-${i}`} role="option" aria-selected={isSel} aria-disabled={opt.disabled || undefined}
                     className={classes.option} data-part="option"
                     data-active={i === activeIndex ? 'true' : undefined} data-selected={isSel ? 'true' : undefined}
                     data-disabled={opt.disabled ? 'true' : undefined}
