@@ -122,3 +122,20 @@ describe('Select correctness + a11y fixes', () => {
     expect(document.getElementById(active!)).not.toBeNull();
   });
 });
+
+describe('Select type narrowing (compile-time)', () => {
+  // Enforced by `bun run typecheck`. Elements are constructed, never rendered.
+  it('narrows Value from data and flips onChange on multiple', () => {
+    // single: value narrows to the data union
+    void (<Select data={[{ value: 'sm', label: 'S' }, { value: 'md', label: 'M' }]} onChange={(v) => { const ok: 'sm' | 'md' | null = v; void ok; }} />);
+    // multiple: onChange value is an array of the union
+    void (<Select data={['a', 'b']} multiple onChange={(v) => { const ok: ('a' | 'b')[] = v; void ok; }} />);
+    // numeric values narrow too
+    void (<Select data={[{ value: 1, label: 'one' }]} onChange={(v) => { const ok: 1 | null = v; void ok; }} />);
+    // Value is pinned explicitly so `value` is checked against it (otherwise
+    // `value` would participate in inference and widen V to include 'lg').
+    // @ts-expect-error: 'lg' is not in the Value union 'sm' | 'md'
+    void (<Select<'sm' | 'md'> data={[{ value: 'sm', label: 'S' }]} value={'lg'} />);
+    expect(true).toBe(true);
+  });
+});
