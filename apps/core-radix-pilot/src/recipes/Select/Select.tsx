@@ -57,33 +57,51 @@ export const Select = defineGenericComponent<SelectSignature>({
   classes,
   render: ({ props }: any) => {
     const id = useAutoId(props.id);
+    const multiple = props.multiple === true;
     const parsed = useMemo(() => parseSelectData(props.data as SelectData<Primitive>), [props.data]);
-    const options = useMemo(() => flattenOptions(parsed), [parsed]);
+    const allOptions = useMemo(() => flattenOptions(parsed), [parsed]);
 
     const [opened, setOpened] = useState(false);
-    const [uncontrolled, setUncontrolled] = useState<Primitive | null>(props.defaultValue ?? null);
+    const [query, setQuery] = useState('');
+    const [uncSingle, setUncSingle] = useState<Primitive | null>(props.defaultValue ?? null);
+    const [uncMulti, setUncMulti] = useState<Primitive[]>(Array.isArray(props.defaultValue) ? props.defaultValue : []);
     const isControlled = props.value !== undefined;
-    const value: Primitive | null = isControlled ? (props.value ?? null) : uncontrolled;
-    const selectedOption = options.find((o) => o.value === value) ?? null;
+
+    const singleValue: Primitive | null = multiple ? null : (isControlled ? (props.value ?? null) : uncSingle);
+    const multiValue: Primitive[] = multiple ? (isControlled ? (props.value ?? []) : uncMulti) : [];
+
+    const options = useMemo(
+      () => (props.searchable && query ? allOptions.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())) : allOptions),
+      [allOptions, props.searchable, query],
+    );
 
     const { activeIndex, setActiveIndex, onKeyDown } = useCombobox<Primitive>({ options, opened });
-
     const { refs, floatingStyles } = useFloating({
-      open: opened,
-      onOpenChange: setOpened,
-      whileElementsMounted: autoUpdate,
-      middleware: [flip(), shift({ padding: 8 }), size({
-        apply({ rects, elements }) { elements.floating.style.width = `${rects.reference.width}px`; },
-      })],
+      open: opened, onOpenChange: setOpened, whileElementsMounted: autoUpdate,
+      middleware: [flip(), shift({ padding: 8 }), size({ apply({ rects, elements }) { elements.floating.style.width = `${rects.reference.width}px`; } })],
     });
 
-    const close = () => { setOpened(false); setActiveIndex(-1); };
+    const close = () => { setOpened(false); setActiveIndex(-1); setQuery(''); };
 
     const submit = (opt: ComboboxItem<Primitive>) => {
       if (opt.disabled) { return; }
-      if (!isControlled) { setUncontrolled(opt.value); }
-      props.onChange?.(opt.value, opt);
-      close();
+      if (multiple) {
+        const has = multiValue.includes(opt.value);
+        const nextValues = has ? multiValue.filter((v) => v !== opt.value) : [...multiValue, opt.value];
+        const nextOptions = allOptions.filter((o) => nextValues.includes(o.value));
+        if (!isControlled) { setUncMulti(nextValues); }
+        props.onChange?.(nextValues, nextOptions);
+        setQuery('');
+      } else {
+        if (!isControlled) { setUncSingle(opt.value); }
+        props.onChange?.(opt.value, opt);
+        close();
+      }
+    };
+
+    const clear = () => {
+      if (multiple) { if (!isControlled) { setUncMulti([]); } props.onChange?.([], []); }
+      else { if (!isControlled) { setUncSingle(null); } props.onChange?.(null, null); }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -93,57 +111,72 @@ export const Select = defineGenericComponent<SelectSignature>({
       if (r.submit) { submit(r.submit); }
     };
 
+    const selectedSingle = allOptions.find((o) => o.value === singleValue) ?? null;
+    const selectedMulti = allOptions.filter((o) => multiValue.includes(o.value));
+    const hasValue = multiple ? multiValue.length > 0 : singleValue !== null;
+
     return (
       <Field id={id} label={props.label} description={props.description} error={props.error} required={props.required}>
-        <button
-          ref={refs.setReference}
-          type="button"
-          role="combobox"
-          aria-expanded={opened}
-          aria-controls={`${id}-listbox`}
-          aria-describedby={[props.description ? `${id}-description` : '', props.error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined}
-          aria-invalid={props.error ? true : undefined}
-          disabled={props.disabled}
-          data-disabled={props.disabled ? 'true' : undefined}
-          className={classes.trigger}
-          data-part="trigger"
-          onClick={() => !props.disabled && setOpened((o) => !o)}
-          onKeyDown={handleKeyDown}
-        >
-          <span className={selectedOption ? undefined : classes.placeholder} data-part="placeholder">
-            {selectedOption ? selectedOption.label : props.placeholder}
-          </span>
-          <span aria-hidden>{opened ? '▲' : '▼'}</span>
-        </button>
-        {opened && (
-          <ul
-            ref={refs.setFloating}
-            id={`${id}-listbox`}
-            role="listbox"
-            className={classes.dropdown}
-            data-part="dropdown"
-            style={floatingStyles}
+        <div style={{ position: 'relative' }}>
+          <button
+            ref={refs.setReference}
+            type="button" role="combobox" aria-expanded={opened} aria-controls={`${id}-listbox`}
+            aria-describedby={[props.description ? `${id}-description` : '', props.error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined}
+            aria-invalid={props.error ? true : undefined}
+            disabled={props.disabled} data-disabled={props.disabled ? 'true' : undefined}
+            className={classes.trigger} data-part="trigger"
+            onClick={() => !props.disabled && setOpened((o) => !o)} onKeyDown={handleKeyDown}
           >
-            {options.map((opt, i) => (
-              <li
-                key={String(opt.value)}
-                role="option"
-                aria-selected={opt.value === value}
-                aria-disabled={opt.disabled || undefined}
-                className={classes.option}
-                data-part="option"
-                data-active={i === activeIndex ? 'true' : undefined}
-                data-selected={opt.value === value ? 'true' : undefined}
-                data-disabled={opt.disabled ? 'true' : undefined}
-                onMouseEnter={() => setActiveIndex(i)}
-                onClick={() => submit(opt)}
-              >
-                <span>{opt.label}</span>
-                {opt.value === value && <span aria-hidden>{'✓'}</span>}
-              </li>
-            ))}
-          </ul>
-        )}
+            {multiple && selectedMulti.length > 0 ? (
+              <span className={classes.pills} data-part="pills">
+                {selectedMulti.map((o) => (
+                  <span key={String(o.value)} className={classes.pill} data-part="pill" data-testid="select-pill">
+                    {o.label}
+                    <span role="button" aria-label={`Remove ${o.label}`} className={classes.pillRemove}
+                      onClick={(e) => { e.stopPropagation(); submit(o); }}>{'×'}</span>
+                  </span>
+                ))}
+              </span>
+            ) : !multiple && selectedSingle ? (
+              <span data-part="value">{selectedSingle.label}</span>
+            ) : (
+              <span className={classes.placeholder} data-part="placeholder">{props.placeholder}</span>
+            )}
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              {props.clearable && hasValue && (
+                <span role="button" aria-label="Clear" className={classes.clear}
+                  onClick={(e) => { e.stopPropagation(); clear(); }}>{'×'}</span>
+              )}
+              <span aria-hidden>{opened ? '▲' : '▼'}</span>
+            </span>
+          </button>
+          {opened && (
+            <ul ref={refs.setFloating} id={`${id}-listbox`} role="listbox" className={classes.dropdown} data-part="dropdown" style={floatingStyles}>
+              {props.searchable && (
+                <li role="presentation">
+                  <input role="searchbox" aria-label="Search" autoFocus value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    style={{ width: '100%', border: 0, outline: 'none', padding: '0.25rem 0.5rem', background: 'transparent' }} />
+                </li>
+              )}
+              {options.map((opt, i) => {
+                const isSel = multiple ? multiValue.includes(opt.value) : opt.value === singleValue;
+                return (
+                  <li key={String(opt.value)} role="option" aria-selected={isSel} aria-disabled={opt.disabled || undefined}
+                    className={classes.option} data-part="option"
+                    data-active={i === activeIndex ? 'true' : undefined} data-selected={isSel ? 'true' : undefined}
+                    data-disabled={opt.disabled ? 'true' : undefined}
+                    onMouseEnter={() => setActiveIndex(i)} onClick={() => submit(opt)}>
+                    <span>{opt.label}</span>
+                    {isSel && <span aria-hidden>{'✓'}</span>}
+                  </li>
+                );
+              })}
+              {options.length === 0 && <li role="presentation" className={classes.group}>Nothing found</li>}
+            </ul>
+          )}
+        </div>
       </Field>
     );
   },

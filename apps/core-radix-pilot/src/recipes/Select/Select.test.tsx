@@ -51,3 +51,39 @@ describe('Select single', () => {
     expect(screen.queryByRole('listbox')).toBeNull();
   });
 });
+
+describe('Select multiple', () => {
+  it('toggles values and calls onChange with arrays', () => {
+    const onChange = vi.fn();
+    wrap(<Select data={data} multiple placeholder="Pick" onChange={onChange} />);
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(screen.getByRole('option', { name: 'Small' }));
+    expect(onChange).toHaveBeenLastCalledWith(['sm'], [{ value: 'sm', label: 'Small' }]);
+    fireEvent.click(screen.getByRole('option', { name: 'Medium' }));
+    expect(onChange).toHaveBeenLastCalledWith(['sm', 'md'], [{ value: 'sm', label: 'Small' }, { value: 'md', label: 'Medium' }]);
+  });
+
+  it('renders a pill per selected value and stays open', () => {
+    wrap(<Select data={data} multiple value={['sm', 'md']} />);
+    expect(screen.getAllByTestId('select-pill')).toHaveLength(2);
+  });
+});
+
+describe('Select searchable', () => {
+  it('filters options by the typed query', () => {
+    wrap(<Select data={data} searchable placeholder="Pick" />);
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'med' } });
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(screen.getByRole('option')).toHaveTextContent('Medium');
+  });
+});
+
+describe('Select clearable', () => {
+  it('shows a clear button that resets the value', () => {
+    const onChange = vi.fn();
+    wrap(<Select data={data} clearable value="sm" onChange={onChange} />);
+    fireEvent.click(screen.getByLabelText('Clear'));
+    expect(onChange).toHaveBeenCalledWith(null, null);
+  });
+});
