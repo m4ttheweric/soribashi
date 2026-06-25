@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
@@ -12,7 +13,8 @@ interface SelectOwnProps<T> {
   renderItem?: (item: T) => React.ReactNode;
 }
 
-const Select = defineGenericComponent<SelectOwnProps<any>>({
+type SelectSignature = <T>(props: SelectOwnProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+const Select = defineGenericComponent<SelectSignature>({
   name: 'Select',
   selectors: ['root', 'option'] as const,
   classes: { root: 'sb-Select-root', option: 'sb-Select-option' },
