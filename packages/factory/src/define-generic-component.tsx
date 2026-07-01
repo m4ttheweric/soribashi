@@ -76,6 +76,7 @@ export function defineGenericComponent<TSignature = GenericComponentFn>(
       style: (merged as any).style,
       classNames: (merged as any).classNames,
       styles: (merged as any).styles,
+      vars: (merged as any).vars,
       attributes: (merged as any).attributes,
       unstyled: (merged as any).unstyled,
       props: merged as any,

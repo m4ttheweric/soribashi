@@ -3,7 +3,7 @@ import type { ResolvedTheme } from '@soribashi/theme';
 import { cn } from '../cn.ts';
 import { useTheme } from '../provider/use-theme.ts';
 import type { FactoryPayload, FactoryStylesNames } from '../types/factory-payload.ts';
-import type { ClassNames, Styles, Attributes } from '../types/props.ts';
+import type { ClassNames, Styles, Vars, Attributes } from '../types/props.ts';
 import type {
   GetStylesFn,
   GetStylesResult,
@@ -17,6 +17,7 @@ export interface UseStylesConfig<P extends FactoryPayload> {
   style?: CSSProperties;
   classNames?: ClassNames<P>;
   styles?: Styles<P>;
+  vars?: Vars<P>;
   attributes?: Attributes<P>;
   unstyled?: boolean;
   props: P['props'];
@@ -84,6 +85,10 @@ export function useStyles<P extends FactoryPayload>(
       : {};
     const builtInVars = config.varsResolver ? config.varsResolver(theme, config.props) : {};
 
+    // Instance vars (from the component's own `vars` prop). Mantine order:
+    // varsResolver -> theme component vars -> instance vars (instance highest).
+    const instanceVarsResolved = config.vars ? config.vars(theme, config.props) : {};
+
     // Per-call vars from the part instance (forwarded via options.vars).
     const partVarsResolved = options?.vars
       ? (options.vars as (theme: ResolvedTheme, props: P['props']) => Partial<Record<string, Record<string, string>>>)(theme, config.props)
@@ -99,6 +104,9 @@ export function useStyles<P extends FactoryPayload>(
       ) as CSSProperties,
       filterDefinedValues(
         (themeVarsResolverFromTheme[selector as string] as Record<string, unknown> | undefined) ?? {},
+      ) as CSSProperties,
+      filterDefinedValues(
+        ((instanceVarsResolved as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
       ) as CSSProperties,
       filterDefinedValues(
         (partVarsResolved[selector as string] as Record<string, unknown> | undefined) ?? {},

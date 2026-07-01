@@ -307,6 +307,7 @@ export function defineCompound<
       style: (merged as { style?: CSSProperties }).style,
       classNames: (merged as { classNames?: unknown }).classNames as never,
       styles: (merged as { styles?: unknown }).styles as never,
+      vars: (merged as { vars?: unknown }).vars as never,
       attributes: (merged as { attributes?: unknown }).attributes as never,
       unstyled: (merged as { unstyled?: unknown }).unstyled as never,
       props: merged as Record<string, any>,
