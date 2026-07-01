@@ -5,11 +5,13 @@ import type {
   ResolvedTheme,
   SemanticTokensConfig,
   ThemeDefinition,
+  ThemeTokens,
   ThemeVocabulary,
 } from './types.ts';
 import { composeTheme } from './compose-theme.ts';
 import { normalizeComponents } from './normalize-components.ts';
 import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
+import { defaultTokens } from './tokens/index.ts';
 
 const DEFAULT_TEXT: Record<string, string> = {
   default: 'colors.neutral.900',
@@ -30,6 +32,19 @@ const DEFAULT_BORDER: Record<string, string> = {
   strong: 'colors.neutral.400',
   muted: 'colors.neutral.100',
 };
+
+/**
+ * Breakpoint tokens are structural, not aesthetic: blocks' responsive style
+ * props and visibility.css derive `(min-width: ...)` queries from them, so a
+ * theme without any breakpoints breaks responsiveness outright (everything
+ * collapses to `(min-width: 0)`). Backfill this one family from the defaults.
+ * Other families are intentionally NOT backfilled; teams replace those
+ * wholesale and expect the theme to contain exactly what they declared.
+ */
+function withBreakpointFallback(tokens: ThemeTokens): ThemeTokens {
+  if (tokens.breakpoint && Object.keys(tokens.breakpoint).length > 0) return tokens;
+  return { ...tokens, breakpoint: { ...defaultTokens.breakpoint } };
+}
 
 /**
  * Builds a normalized theme from a (potentially partial) `ThemeDefinition`.
@@ -64,7 +79,7 @@ export function createTheme<const V extends PartialThemeVocabulary = PartialThem
   // typed as the wide ThemeVocabulary, so we assert the narrowed return; the
   // assertion is sound because the runtime guarantees the ResolveVocab<V> shape.
   return {
-    tokens: merged.tokens,
+    tokens: withBreakpointFallback(merged.tokens),
     dark: merged.dark ?? {},
     vocabulary,
     semanticTokens,
