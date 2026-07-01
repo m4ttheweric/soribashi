@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
@@ -8,17 +8,43 @@ import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
-import type { VocabularyAxis } from './types/vocabulary-axes.ts';
+import type { FactoryPayload } from './types/factory-payload.ts';
+import type { GetStylesFn } from './types/render-context.ts';
+import type { VocabularyAxis, VariantProp } from './types/vocabulary-axes.ts';
 
-export interface DefineGenericComponentConfig {
+/**
+ * Render ctx for generic recipes. `props` stays `any` by design: the Wave 4A
+ * TSignature pattern owns call-site prop typing (the author-supplied generic
+ * call signature cannot be projected back into the render body), so internal
+ * prop safety comes from the author's own narrowing. `getStyles` IS typed
+ * against the declared selectors — annotate the render param with
+ * `GenericRenderCtx<typeof selectors>` when passing TSignature explicitly
+ * (explicit type args disable inference of the remaining params).
+ */
+export interface GenericRenderCtx<
+  TSelectors extends readonly string[] = readonly string[],
+> {
+  props: any;
+  getStyles: GetStylesFn<{ props: any; stylesNames: TSelectors[number] } & FactoryPayload>;
+  ref: Ref<unknown>;
+}
+
+export interface DefineGenericComponentConfig<
+  TSelectors extends readonly string[] = readonly string[],
+  TVariants extends readonly string[] = readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+> {
   name: string;
-  vocabularyAxes?: readonly VocabularyAxis[];
-  selectors: readonly string[];
-  variants?: readonly string[];
-  classes?: Record<string, string>;
-  defaults?: Record<string, unknown>;
-  vars?: (theme: ResolvedTheme, props: any) => Record<string, Record<string, string>>;
-  render: (ctx: { props: any; getStyles: any; ref: any }) => React.ReactNode;
+  vocabularyAxes?: TVocabAxes;
+  selectors: TSelectors;
+  variants?: TVariants;
+  classes?: Partial<Record<TSelectors[number], string>>;
+  defaults?: Record<string, unknown> & VariantProp<TVariants>;
+  vars?: (
+    theme: ResolvedTheme,
+    props: any,
+  ) => Partial<Record<TSelectors[number], Record<string, string>>>;
+  render: (ctx: GenericRenderCtx<TSelectors>) => React.ReactNode;
 }
 
 /**
@@ -55,8 +81,13 @@ export interface GenericComponentStatics<TSignature = GenericComponentFn> {
  * `GenericComponentFn` for callers that do not need inference. Runtime behavior
  * is identical regardless of the signature; all safety is at the call site.
  */
-export function defineGenericComponent<TSignature = GenericComponentFn>(
-  config: DefineGenericComponentConfig,
+export function defineGenericComponent<
+  TSignature = GenericComponentFn,
+  const TSelectors extends readonly string[] = readonly string[],
+  const TVariants extends readonly string[] = readonly string[],
+  const TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+>(
+  config: DefineGenericComponentConfig<TSelectors, TVariants, TVocabAxes>,
 ): TSignature & GenericComponentStatics<TSignature> {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
