@@ -30,6 +30,6 @@ export function hashStyleProps(
   styles: Record<string, unknown>,
   media: Record<string, Record<string, unknown>>,
 ): string {
-  const serialized = JSON.stringify(styles) + '|' + JSON.stringify(media);
+  const serialized = `${JSON.stringify(styles)}|${JSON.stringify(media)}`;
   return `sb-h-${hash(serialized)}`;
 }

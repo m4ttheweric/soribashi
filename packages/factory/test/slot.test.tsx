@@ -20,7 +20,7 @@ describe('Slot', () => {
   it('renders the single child element', () => {
     const { getByText } = render(
       <Slot>
-        <button>Click</button>
+        <button type="button">Click</button>
       </Slot>,
     );
     expect(getByText('Click').tagName).toBe('BUTTON');
@@ -30,8 +30,8 @@ describe('Slot', () => {
     expect(() =>
       render(
         <Slot>
-          <button>One</button>
-          <button>Two</button>
+          <button type="button">One</button>
+          <button type="button">Two</button>
         </Slot>,
       ),
     ).toThrow();
@@ -41,8 +41,9 @@ describe('Slot', () => {
     expect(() =>
       render(
         <Slot className="x">
+          {/* biome-ignore lint/complexity/noUselessFragments: the Fragment child is the test subject */}
           <>
-            <button>inside</button>
+            <button type="button">inside</button>
           </>
         </Slot>,
       ),
@@ -61,7 +62,9 @@ describe('Slot', () => {
   it('merges className from slot onto child', () => {
     const { getByText } = render(
       <Slot className="from-slot">
-        <button className="from-child">Click</button>
+        <button type="button" className="from-child">
+          Click
+        </button>
       </Slot>,
     );
     expect(getByText('Click').className).toBe('from-slot from-child');
@@ -72,7 +75,9 @@ describe('Slot', () => {
     const childHandler = vi.fn();
     const { getByText } = render(
       <Slot onClick={slotHandler}>
-        <button onClick={childHandler}>Click</button>
+        <button type="button" onClick={childHandler}>
+          Click
+        </button>
       </Slot>,
     );
     fireEvent.click(getByText('Click'));
@@ -89,7 +94,9 @@ describe('Slot', () => {
     const childRef = createRef<HTMLButtonElement>();
     render(
       <Slot ref={slotRef}>
-        <button ref={childRef}>Click</button>
+        <button type="button" ref={childRef}>
+          Click
+        </button>
       </Slot>,
     );
     expect(slotRef.current).toBeInstanceOf(HTMLButtonElement);
@@ -100,7 +107,7 @@ describe('Slot', () => {
   it('passes through DOM attributes (data-*, aria-*)', () => {
     const { getByText } = render(
       <Slot data-slot="trigger" aria-label="From slot">
-        <button>Click</button>
+        <button type="button">Click</button>
       </Slot>,
     );
     const btn = getByText('Click');
@@ -115,14 +122,16 @@ describe('Slot', () => {
 describe('Slot — React 19 props.ref fallback', () => {
   it('attaches a child ref that lives in props.ref', () => {
     const childRef = createRef<HTMLButtonElement>();
-    render(<Slot>{asReact19Element(<button>Click</button>, childRef)}</Slot>);
+    render(<Slot>{asReact19Element(<button type="button">Click</button>, childRef)}</Slot>);
     expect(childRef.current).toBeInstanceOf(HTMLButtonElement);
   });
 
   it('merges forwardedRef with a props.ref child ref instead of overwriting', () => {
     const slotRef = createRef<HTMLButtonElement>();
     const childRef = createRef<HTMLButtonElement>();
-    render(<Slot ref={slotRef}>{asReact19Element(<button>Click</button>, childRef)}</Slot>);
+    render(
+      <Slot ref={slotRef}>{asReact19Element(<button type="button">Click</button>, childRef)}</Slot>,
+    );
     expect(slotRef.current).toBeInstanceOf(HTMLButtonElement);
     expect(childRef.current).toBeInstanceOf(HTMLButtonElement);
     expect(slotRef.current).toBe(childRef.current);

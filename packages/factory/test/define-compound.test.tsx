@@ -842,7 +842,7 @@ describe('defineCompound — extend accepts styles-API props', () => {
           render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div>,
         },
         label: {
-          render: ({ getStyles, props }: PartRenderCtx<{ truncate?: boolean }, {}>) => (
+          render: ({ getStyles, props }: PartRenderCtx<{ truncate?: boolean }, object>) => (
             <span {...getStyles()} data-truncate={String((props as any).truncate)} />
           ),
         },
@@ -1141,7 +1141,9 @@ describe('defineCompound — context value stability', () => {
       const [, setN] = useState(0);
       return (
         <SoribashiProvider theme={minimalTheme}>
-          <button onClick={() => setN((n) => n + 1)}>bump</button>
+          <button type="button" onClick={() => setN((n) => n + 1)}>
+            bump
+          </button>
           <Foo>
             <MemoLabel />
           </Foo>
@@ -1177,7 +1179,9 @@ describe('defineCompound — context value stability', () => {
       const [variant, setVariant] = useState<'a' | 'b'>('a');
       return (
         <SoribashiProvider theme={minimalTheme}>
-          <button onClick={() => setVariant('b')}>switch</button>
+          <button type="button" onClick={() => setVariant('b')}>
+            switch
+          </button>
           <Foo variant={variant}>
             <MemoLabel />
           </Foo>

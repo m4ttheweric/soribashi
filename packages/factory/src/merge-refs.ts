@@ -7,6 +7,7 @@ import type { Ref, RefCallback } from 'react';
  * extension point, but we declare it explicitly so callers can handle the
  * cleanup without a type error.
  */
+// biome-ignore lint/suspicious/noConfusingVoidType: mirrors React 19's RefCallback return type, where void (not undefined) is the no-cleanup case
 export type MergedRefCallback<T> = (node: T | null) => void | (() => void);
 
 /** Forwards a node to any combination of ref objects and ref callbacks;
@@ -17,6 +18,7 @@ export type MergedRefCallback<T> = (node: T | null) => void | (() => void);
  * a composed cleanup that calls each one in order. On React 18, callback refs
  * return void, so the cleanup path is a no-op. */
 export function mergeRefs<T>(...refs: Array<Ref<T> | undefined | null>): MergedRefCallback<T> {
+  // biome-ignore lint/suspicious/noConfusingVoidType: same React 19 RefCallback contract as MergedRefCallback
   return (node: T | null): void | (() => void) => {
     const cleanups: Array<() => void> = [];
     for (const ref of refs) {

@@ -469,6 +469,7 @@ export function defineCompound<
     // closure every render, but it is pure over (theme, merged props), both
     // captured below. Reusing the previous closure while those are unchanged
     // keeps the ctx value referentially stable so memo'd parts skip renders.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: getStyles is deliberately omitted and theme/stableStyleProps deliberately added; see the comment above
     const ctxValue: CompoundContextValue<TCtxExtra, TVariants> = useMemo(
       () => ({
         variant,

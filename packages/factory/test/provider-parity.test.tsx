@@ -181,7 +181,11 @@ describe('types/polymorphic.ts — PolymorphicProps type constraints (PL*)', () 
     // (not React.MouseEventHandler). We confirm this compiles and the runtime prop arrives.
     let received: number | undefined;
     function TestComp(props: { onClick: (id: number) => void; as?: ElementType }) {
-      return <button onClick={() => props.onClick(42)}>click</button>;
+      return (
+        <button type="button" onClick={() => props.onClick(42)}>
+          click
+        </button>
+      );
     }
     const { getByText } = render(
       <TestComp
@@ -210,7 +214,7 @@ describe('types/polymorphic.ts — PolymorphicProps type constraints (PL*)', () 
     // Confirm that the type doesn't include renderRoot by checking runtime behavior
     // (The type check is the real guard; this confirms no unexpected prop forwarding)
     function TestComp(props: { label: string; as?: ElementType; [k: string]: unknown }) {
-      const unknownProp = props['renderRoot'];
+      const unknownProp = props.renderRoot;
       return <div>{unknownProp === undefined ? 'no-renderRoot' : 'has-renderRoot'}</div>;
     }
     const { getByText } = render(<TestComp label="x" />);

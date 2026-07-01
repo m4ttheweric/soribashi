@@ -26,7 +26,7 @@ type ButtonFactory = FactoryPayload & {
 };
 
 const Button = factory<ButtonFactory>((props, ref) => (
-  <button ref={ref} data-size={props.size} data-color={props.color}>
+  <button type="button" ref={ref} data-size={props.size} data-color={props.color}>
     {props.children}
   </button>
 ));
@@ -166,7 +166,9 @@ describe('B5: withProps() result displayName', () => {
   it('B5b: unnamed component displayName falls back to Component', () => {
     // Create a factory component without setting displayName
     const Unnamed = factory<ButtonFactory>((props, ref) => (
-      <button ref={ref}>{props.children}</button>
+      <button type="button" ref={ref}>
+        {props.children}
+      </button>
     ));
     // No displayName set; soribashi falls back to 'Component'
     const WithPreset = Unnamed.withProps({ size: 'sm' });

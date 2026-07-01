@@ -27,7 +27,11 @@ describe('vocabulary runtime validation', () => {
       name: 'TestButton',
       vocabularyAxes: ['size'] as const,
       selectors: ['root'] as const,
-      render: ({ props }: any) => <button data-size={props.size}>x</button>,
+      render: ({ props }: any) => (
+        <button type="button" data-size={props.size}>
+          x
+        </button>
+      ),
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(
@@ -54,7 +58,11 @@ describe('vocabulary runtime validation', () => {
       name: 'TestButton',
       vocabularyAxes: ['size'] as const,
       selectors: ['root'] as const,
-      render: ({ props }: any) => <button data-size={props.size}>x</button>,
+      render: ({ props }: any) => (
+        <button type="button" data-size={props.size}>
+          x
+        </button>
+      ),
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     // Cast past TS to simulate the runtime-only failure mode
@@ -250,7 +258,11 @@ describe('vocabulary runtime validation', () => {
       name: 'TestButton',
       vocabularyAxes: ['size'] as const,
       selectors: ['root'] as const,
-      render: ({ props }: any) => <button data-size={props.size}>x</button>,
+      render: ({ props }: any) => (
+        <button type="button" data-size={props.size}>
+          x
+        </button>
+      ),
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(

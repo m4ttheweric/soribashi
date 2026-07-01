@@ -10,7 +10,9 @@ type ButtonFactory = FactoryPayload & {
 };
 
 const Button = factory<ButtonFactory>((props) => (
-  <button data-size={props.size}>{props.children}</button>
+  <button type="button" data-size={props.size}>
+    {props.children}
+  </button>
 ));
 
 Button.displayName = 'Button';

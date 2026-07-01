@@ -78,12 +78,6 @@ function reportInvalidValue(
 ): void {
   // eslint-disable-next-line no-console
   console.error(
-    `[soribashi] <${componentName} ${axis}=${JSON.stringify(value)}>: value is not in the declared vocabulary.\n` +
-      `  Allowed: ${allowed.join(', ')}\n` +
-      `  Declared at: the recipe's own \`variants\` config, theme.components.${componentName}.${axis}, or theme.vocabulary.${axis}.\n` +
-      `  To allow this value:\n` +
-      `    1. Extend the component's vocabulary:\n` +
-      `       ${componentName}.extend({ vocabulary: { ${axis}: (cur) => defineVocabulary([...cur.values, ${JSON.stringify(value)}]) } })\n` +
-      `    2. Include that entry in createTheme({ components: [...] }) and call registerTheme(theme).`,
+    `[soribashi] <${componentName} ${axis}=${JSON.stringify(value)}>: value is not in the declared vocabulary.\n  Allowed: ${allowed.join(', ')}\n  Declared at: the recipe's own \`variants\` config, theme.components.${componentName}.${axis}, or theme.vocabulary.${axis}.\n  To allow this value:\n    1. Extend the component's vocabulary:\n       ${componentName}.extend({ vocabulary: { ${axis}: (cur) => defineVocabulary([...cur.values, ${JSON.stringify(value)}]) } })\n    2. Include that entry in createTheme({ components: [...] }) and call registerTheme(theme).`,
   );
 }

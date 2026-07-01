@@ -48,5 +48,6 @@ export function InlineStyles({ selector, styles, media }: InlineStylesProps) {
   const css = [baseRule, mediaRules].filter(Boolean).join(' ');
   // dangerouslySetInnerHTML (Mantine-matched): text children are HTML-escaped
   // by react-dom/server, which breaks quoted CSS values under SSR.
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: css is built from theme tokens, never user HTML; see SSR note above
   return <style dangerouslySetInnerHTML={{ __html: css }} />;
 }
