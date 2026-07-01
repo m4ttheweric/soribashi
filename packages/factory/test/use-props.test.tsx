@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { renderHook } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
+import { renderHook } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { useProps } from '../src/hooks/use-props.ts';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 
 interface ButtonProps {
   size?: 'sm' | 'md' | 'lg';
@@ -56,11 +56,7 @@ describe('useProps', () => {
 
     const { result } = renderHook(
       () =>
-        useProps<ButtonProps>(
-          'Button',
-          { size: 'md', variant: 'filled' },
-          { variant: 'outline' },
-        ),
+        useProps<ButtonProps>('Button', { size: 'md', variant: 'filled' }, { variant: 'outline' }),
       { wrapper: wrapper(themeWithDefaults) },
     );
     expect(result.current.size).toBe('lg');
@@ -69,12 +65,7 @@ describe('useProps', () => {
 
   it('instance props with explicit undefined do NOT override defaults', () => {
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>(
-          'Button',
-          { size: 'md' },
-          { size: undefined as unknown as 'sm' },
-        ),
+      () => useProps<ButtonProps>('Button', { size: 'md' }, { size: undefined as unknown as 'sm' }),
       { wrapper: wrapper() },
     );
     expect(result.current.size).toBe('md');

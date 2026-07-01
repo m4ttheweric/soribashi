@@ -1,3 +1,6 @@
+import { createTheme } from '@soribashi/theme';
+import type { ResolvedTheme } from '@soribashi/theme';
+import { renderHook } from '@testing-library/react';
 /**
  * Parity tests for soribashi `useStyles` vs Mantine `useStyles`.
  *
@@ -9,11 +12,8 @@
  * soribashi behaves as documented (rather than matching Mantine exactly).
  */
 import { describe, expect, it } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import type { ResolvedTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
 import { useStyles } from '../src/hooks/use-styles.ts';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 import type { FactoryPayload } from '../src/types/index.ts';
 
 // ---------------------------------------------------------------------------
@@ -31,11 +31,7 @@ const defaultTheme = createTheme({
 
 const makeWrapper = (theme?: ResolvedTheme) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <SoribashiProvider theme={theme ?? defaultTheme}>
-        {children}
-      </SoribashiProvider>
-    );
+    return <SoribashiProvider theme={theme ?? defaultTheme}>{children}</SoribashiProvider>;
   };
 
 // ---------------------------------------------------------------------------
@@ -806,8 +802,7 @@ describe('US-29: undefined values in vars', () => {
 describe('US-32 (INTENTIONAL_GAP): active option', () => {
   it('active=true sets data-active attribute (soribashi behavior)', () => {
     const { result } = renderHook(
-      () =>
-        useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
+      () => useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
       { wrapper: makeWrapper() },
     );
 
@@ -817,8 +812,7 @@ describe('US-32 (INTENTIONAL_GAP): active option', () => {
 
   it('active=false does NOT set data-active attribute', () => {
     const { result } = renderHook(
-      () =>
-        useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
+      () => useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
       { wrapper: makeWrapper() },
     );
 
@@ -828,8 +822,7 @@ describe('US-32 (INTENTIONAL_GAP): active option', () => {
 
   it('active=undefined does NOT set data-active attribute', () => {
     const { result } = renderHook(
-      () =>
-        useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
+      () => useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
       { wrapper: makeWrapper() },
     );
 
@@ -845,8 +838,7 @@ describe('US-32 (INTENTIONAL_GAP): active option', () => {
 describe('US-12 (INTENTIONAL_GAP): variant option', () => {
   it('variant option sets data-variant attribute', () => {
     const { result } = renderHook(
-      () =>
-        useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
+      () => useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
       { wrapper: makeWrapper() },
     );
 
@@ -856,8 +848,7 @@ describe('US-12 (INTENTIONAL_GAP): variant option', () => {
 
   it('variant=undefined does NOT set data-variant attribute', () => {
     const { result } = renderHook(
-      () =>
-        useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
+      () => useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
       { wrapper: makeWrapper() },
     );
 
@@ -1077,8 +1068,7 @@ describe('style omitted when empty', () => {
 describe('getStyles result shape', () => {
   it('always returns className string', () => {
     const { result } = renderHook(
-      () =>
-        useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
+      () => useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
       { wrapper: makeWrapper() },
     );
 
@@ -1087,8 +1077,7 @@ describe('getStyles result shape', () => {
 
   it('className is empty string when no sources contribute', () => {
     const { result } = renderHook(
-      () =>
-        useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
+      () => useStyles<ButtonFactory>({ name: 'Button', classes: {}, props: {} }),
       { wrapper: makeWrapper() },
     );
 

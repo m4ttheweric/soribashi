@@ -1,9 +1,9 @@
+import { createTheme } from '@soribashi/theme';
+import { fireEvent, render } from '@testing-library/react';
+import { createRef, memo, useState } from 'react';
 // packages/factory/test/define-compound.test.tsx
 import { describe, expect, it } from 'vitest';
-import { createRef, memo, useState } from 'react';
-import { render, fireEvent } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import { defineCompound, SoribashiProvider, type PartRenderCtx } from '../src/index.ts';
+import { type PartRenderCtx, SoribashiProvider, defineCompound } from '../src/index.ts';
 
 const baseTokens = {
   colors: { neutral: { '0': 'hsl(0 0% 100%)' } },
@@ -305,7 +305,9 @@ describe('defineCompound — polymorphic parts', () => {
     const { container } = render(
       <SoribashiProvider theme={minimalTheme}>
         <Foo>
-          <Foo.Trigger as="a" href="/x">link</Foo.Trigger>
+          <Foo.Trigger as="a" href="/x">
+            link
+          </Foo.Trigger>
         </Foo>
       </SoribashiProvider>,
     );
@@ -496,7 +498,11 @@ describe('defineCompound — ctx.variant typed as TVariants[number] | undefined'
       classes: { root: 'foo' },
       parts: {
         root: {
-          render: ({ ctx, getStyles, children }: PartRenderCtx<any, object, readonly ['a', 'b']>) => {
+          render: ({
+            ctx,
+            getStyles,
+            children,
+          }: PartRenderCtx<any, object, readonly ['a', 'b']>) => {
             // ctx.variant should be 'a' | 'b' | undefined
             const _v: 'a' | 'b' | undefined = ctx.variant;
             // @ts-expect-error — 'c' is not in the variants tuple
@@ -533,17 +539,17 @@ describe('defineCompound — ctx.variant typed as TVariants[number] | undefined'
       parts: {
         root: {
           render: ({ ctx }) => {
-          // Canary: ctx is `any` today (per the AnyPartConfig bound in
-          // packages/factory/src/define-compound.tsx). This bogus field access
-          // compiles silently. If TVariants/TCtxExtras inference is ever
-          // restored, `ctx` narrows away from `any` and this line starts
-          // producing TS2339 — typecheck fails, and the canary fires. Update
-          // this test (and the related OQ-7 in the Wave 3 spec) when that
-          // happens.
-          const _ = ctx.thisFieldDoesNotExist;
-          void _;
-          return null;
-        },
+            // Canary: ctx is `any` today (per the AnyPartConfig bound in
+            // packages/factory/src/define-compound.tsx). This bogus field access
+            // compiles silently. If TVariants/TCtxExtras inference is ever
+            // restored, `ctx` narrows away from `any` and this line starts
+            // producing TS2339 — typecheck fails, and the canary fires. Update
+            // this test (and the related OQ-7 in the Wave 3 spec) when that
+            // happens.
+            const _ = ctx.thisFieldDoesNotExist;
+            void _;
+            return null;
+          },
         },
       },
     });
@@ -640,7 +646,9 @@ describe('defineCompound — getStyles slot-key type safety', () => {
     type MySlots = 'root' | 'label' | 'arrow';
 
     // Simulate what a render function sees when explicitly annotated:
-    const renderLabel = (ctx: PartRenderCtx<Record<string, unknown>, object, readonly string[], MySlots>) => {
+    const renderLabel = (
+      ctx: PartRenderCtx<Record<string, unknown>, object, readonly string[], MySlots>,
+    ) => {
       // Should compile: 'arrow' is in MySlots
       const _ok = ctx.getStyles({ part: 'arrow' });
       // @ts-expect-error — 'arroow' is NOT in MySlots
@@ -822,7 +830,7 @@ describe('defineCompound — extend accepts styles-API props', () => {
 
     expect(entry.__soribashiThemeEntry).toBe(true);
     expect(entry.name).toBe('Foo');
-    expect((entry.classNames as any)).toEqual({ root: 'custom-root' });
+    expect(entry.classNames as any).toEqual({ root: 'custom-root' });
   });
 
   it('part extend accepts classNames and styles (CompoundStylesApiProps)', () => {
@@ -850,7 +858,7 @@ describe('defineCompound — extend accepts styles-API props', () => {
     expect(entry.__soribashiThemeEntry).toBe(true);
     expect(entry.name).toBe('FooLabel');
     expect(entry.defaultProps.truncate).toBe(true);
-    expect((entry.classNames as any)).toEqual({ root: 'custom-label' });
+    expect(entry.classNames as any).toEqual({ root: 'custom-label' });
   });
 
   it('extend classNames are carried on the ThemeComponentEntry', () => {
@@ -873,7 +881,7 @@ describe('defineCompound — extend accepts styles-API props', () => {
     expect(entry.__soribashiThemeEntry).toBe(true);
     expect(entry.name).toBe('Foo');
     expect(entry.defaultProps).toEqual({});
-    expect((entry.classNames as any)).toEqual({ root: 'theme-override' });
+    expect(entry.classNames as any).toEqual({ root: 'theme-override' });
   });
 });
 
@@ -912,7 +920,9 @@ describe('defineCompound — polymorphic part full <As> polymorphism', () => {
     const { container: c2 } = render(
       <SoribashiProvider theme={minimalTheme}>
         <Foo>
-          <Foo.Trigger as="a" href="/x">link</Foo.Trigger>
+          <Foo.Trigger as="a" href="/x">
+            link
+          </Foo.Trigger>
         </Foo>
       </SoribashiProvider>,
     );
@@ -1046,10 +1056,7 @@ describe('defineCompound — styles-API merge matrix (new cells)', () => {
         root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
         body: {
           render: ({ getStyles }) => (
-            <div
-              {...getStyles({ style: { color: 'green' } })}
-              data-testid="body-el"
-            >
+            <div {...getStyles({ style: { color: 'green' } })} data-testid="body-el">
               {/* no per-call style for the icon cross-slot call */}
               <span {...getStyles({ part: 'icon' })} data-testid="icon-el" />
             </div>

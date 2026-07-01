@@ -1,5 +1,5 @@
+import { type ResolvedTheme, createTheme } from '@soribashi/theme';
 import { createContext } from 'react';
-import { createTheme, type ResolvedTheme } from '@soribashi/theme';
 
 /**
  * The default theme used when no SoribashiProvider is present in the tree.

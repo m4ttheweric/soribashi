@@ -11,17 +11,33 @@
  * The types/* files are type-only and are verified via typecheck (bun run typecheck).
  */
 
+import { createTheme } from '@soribashi/theme';
+import { render, renderHook } from '@testing-library/react';
 import type { ElementType } from 'react';
 import { describe, expect, it } from 'vitest';
-import { render, renderHook } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
+import { SoribashiContext, defaultContextTheme } from '../src/provider/context.ts';
 import { SoribashiProvider } from '../src/provider/provider.tsx';
 import { useTheme } from '../src/provider/use-theme.ts';
-import { defaultContextTheme, SoribashiContext } from '../src/provider/context.ts';
-import type { PolymorphicProps, PolymorphicRef, PolymorphicComponentProps, SoribashiPolymorphicComponent, PolymorphicRenderProps } from '../src/types/polymorphic.ts';
-import type { FactoryPayload, FactoryProps, FactoryStylesNames, FactoryVars } from '../src/types/factory-payload.ts';
-import type { ClassNames, Styles, Vars, Attributes, StylesApiProps } from '../src/types/props.ts';
-import type { GetStylesResult, GetStylesFn, GetStylesOptions, RenderContext } from '../src/types/render-context.ts';
+import type {
+  FactoryPayload,
+  FactoryProps,
+  FactoryStylesNames,
+  FactoryVars,
+} from '../src/types/factory-payload.ts';
+import type {
+  PolymorphicComponentProps,
+  PolymorphicProps,
+  PolymorphicRef,
+  PolymorphicRenderProps,
+  SoribashiPolymorphicComponent,
+} from '../src/types/polymorphic.ts';
+import type { Attributes, ClassNames, Styles, StylesApiProps, Vars } from '../src/types/props.ts';
+import type {
+  GetStylesFn,
+  GetStylesOptions,
+  GetStylesResult,
+  RenderContext,
+} from '../src/types/render-context.ts';
 
 // --------------------------------------------------------------------------
 // P1-P8: provider.tsx — SoribashiProvider observable behavior
@@ -167,7 +183,13 @@ describe('types/polymorphic.ts — PolymorphicProps type constraints (PL*)', () 
     function TestComp(props: { onClick: (id: number) => void; as?: ElementType }) {
       return <button onClick={() => props.onClick(42)}>click</button>;
     }
-    const { getByText } = render(<TestComp onClick={(id) => { received = id; }} />);
+    const { getByText } = render(
+      <TestComp
+        onClick={(id) => {
+          received = id;
+        }}
+      />,
+    );
     getByText('click').click();
     expect(received).toBe(42);
   });

@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
+import { renderHook } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { useStyles } from '../src/hooks/use-styles.ts';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 import type { FactoryPayload } from '../src/types/index.ts';
 
 type ButtonFactory = FactoryPayload & {

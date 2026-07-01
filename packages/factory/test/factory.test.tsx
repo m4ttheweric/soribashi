@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { factory } from '../src/factory.tsx';
 import type { FactoryPayload } from '../src/types/index.ts';
 

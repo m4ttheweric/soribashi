@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
 import { twMerge } from 'tailwind-merge';
+import { afterEach, describe, expect, it } from 'vitest';
 import { cn, configureClassNameMerge } from '../src/cn.ts';
 
 describe('cn', () => {

@@ -1,11 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { defineComponent } from '../src/define-component.tsx';
-import { definePolymorphicComponent } from '../src/define-polymorphic-component.tsx';
-import { defineGenericComponent } from '../src/define-generic-component.tsx';
 import { defineCompound } from '../src/define-compound.tsx';
+import { defineGenericComponent } from '../src/define-generic-component.tsx';
+import { definePolymorphicComponent } from '../src/define-polymorphic-component.tsx';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 
 const theme = createTheme({
   tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
@@ -33,9 +33,7 @@ describe('instance vars prop — defineComponent', () => {
 
   it('lands instance vars on the right slot', () => {
     const { container } = wrap(
-      <Button
-        vars={() => ({ root: { '--btn-bg': 'red' }, label: { '--label-color': 'blue' } })}
-      >
+      <Button vars={() => ({ root: { '--btn-bg': 'red' }, label: { '--label-color': 'blue' } })}>
         X
       </Button>,
     );
@@ -48,9 +46,7 @@ describe('instance vars prop — defineComponent', () => {
 
   it('filters undefined values from instance vars', () => {
     const { container } = wrap(
-      <Button vars={() => ({ root: { '--defined': 'x', '--empty': undefined as any } })}>
-        X
-      </Button>,
+      <Button vars={() => ({ root: { '--defined': 'x', '--empty': undefined as any } })}>X</Button>,
     );
     const root = container.querySelector('.vb-root') as HTMLElement;
     expect(root.style.getPropertyValue('--defined')).toBe('x');
@@ -90,9 +86,7 @@ describe('instance vars prop — definePolymorphicComponent', () => {
   });
 
   it('lands instance vars on the root slot', () => {
-    const { container } = wrap(
-      <Text vars={() => ({ root: { '--text-size': '14px' } })} />,
-    );
+    const { container } = wrap(<Text vars={() => ({ root: { '--text-size': '14px' } })} />);
     const root = container.querySelector('.vt-root') as HTMLElement;
     expect(root.style.getPropertyValue('--text-size')).toBe('14px');
   });
@@ -108,9 +102,7 @@ describe('instance vars prop — defineGenericComponent', () => {
 
   it('lands instance vars on the root slot', () => {
     const AnyList = List as any;
-    const { container } = wrap(
-      <AnyList vars={() => ({ root: { '--list-gap': '4px' } })} />,
-    );
+    const { container } = wrap(<AnyList vars={() => ({ root: { '--list-gap': '4px' } })} />);
     const root = container.querySelector('.vl-root') as HTMLElement;
     expect(root.style.getPropertyValue('--list-gap')).toBe('4px');
   });
@@ -129,10 +121,12 @@ describe('instance vars prop — defineCompound Root', () => {
   it('lands Root instance vars on the right slots', () => {
     const { container } = wrap(
       <Foo
-        vars={(() => ({
-          root: { '--foo-pad': '8px' },
-          child: { '--child-color': 'green' },
-        })) as any}
+        vars={
+          (() => ({
+            root: { '--foo-pad': '8px' },
+            child: { '--child-color': 'green' },
+          })) as any
+        }
       >
         <Foo.Child />
       </Foo>,

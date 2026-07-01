@@ -11,9 +11,7 @@ const identity = <T,>(value: T): T => value;
  * `Component.extend({...})` output to `createTheme({ components: [...] })`
  * throws. Use defineGenericComponent if the component needs theme entries.
  */
-export function genericComponent(
-  render: (props: any, ref: Ref<unknown>) => React.ReactNode,
-) {
+export function genericComponent(render: (props: any, ref: Ref<unknown>) => React.ReactNode) {
   const Component = forwardRef<unknown, any>(
     (props, ref) => render(props, ref) as React.ReactElement,
   );

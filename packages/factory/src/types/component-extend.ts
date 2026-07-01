@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'react';
 import type { ResolvedTheme, VocabularyOverride } from '@soribashi/theme';
+import type { CSSProperties } from 'react';
 
 /**
  * Configuration passed to `Recipe.extend()`. Replaces the prior `withDefaults`

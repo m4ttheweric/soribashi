@@ -1,3 +1,5 @@
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
 /**
  * Parity tests for soribashi `defineGenericComponent()` vs Mantine `genericFactory()`.
  *
@@ -11,8 +13,6 @@
  */
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
 import { defineGenericComponent } from '../src/define-generic-component.tsx';
 import { SoribashiProvider } from '../src/provider/provider.tsx';
 
@@ -43,7 +43,9 @@ interface ItemProps<T> {
  * A minimal generic component using the defineGenericComponent constructor.
  * Preserves the type parameter T through withProps.
  */
-type SelectSignature = <T>(props: ItemProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+type SelectSignature = <T>(
+  props: ItemProps<T> & React.RefAttributes<unknown>,
+) => React.ReactElement | null;
 const Select = defineGenericComponent<SelectSignature>({
   name: 'Select',
   selectors: ['root', 'item'] as const,
@@ -75,33 +77,28 @@ const Select = defineGenericComponent<SelectSignature>({
 
 describe('G1: defineGenericComponent — constructor model', () => {
   it('G1a: renders correctly with the component body from config.render', () => {
-    const { container } = wrap(
-      <Select
-        items={['apple', 'banana']}
-        getKey={(s: string) => s}
-      />,
-    );
+    const { container } = wrap(<Select items={['apple', 'banana']} getKey={(s: string) => s} />);
     expect(container.querySelector('ul')).toBeInTheDocument();
     expect(container.querySelectorAll('li').length).toBe(2);
   });
 
   it('G1b: applies classes from config.classes to the rendered elements', () => {
-    const { container } = wrap(
-      <Select items={['apple']} getKey={(s: string) => s} />,
-    );
+    const { container } = wrap(<Select items={['apple']} getKey={(s: string) => s} />);
     expect(container.querySelector('ul')?.className).toContain('sb-Select-root');
     expect(container.querySelector('li')?.className).toContain('sb-Select-item');
   });
 
   it('G1c: type parameter flows through — generic over T', () => {
-    interface User { id: string; name: string }
-    const users: User[] = [{ id: '1', name: 'Alice' }, { id: '2', name: 'Bob' }];
+    interface User {
+      id: string;
+      name: string;
+    }
+    const users: User[] = [
+      { id: '1', name: 'Alice' },
+      { id: '2', name: 'Bob' },
+    ];
     const { container } = wrap(
-      <Select<User>
-        items={users}
-        getKey={(u: User) => u.id}
-        renderItem={(u: User) => u.name}
-      />,
+      <Select<User> items={users} getKey={(u: User) => u.id} renderItem={(u: User) => u.name} />,
     );
     const items = container.querySelectorAll('li');
     expect(items[0]?.textContent).toBe('Alice');
@@ -119,13 +116,7 @@ describe('G1: defineGenericComponent — constructor model', () => {
 describe('G2: defineGenericComponent wraps render in forwardRef', () => {
   it('G2a: forwards ref to the underlying DOM element', () => {
     const ref = React.createRef<HTMLUListElement>();
-    wrap(
-      <Select
-        ref={ref as any}
-        items={['a', 'b']}
-        getKey={(s: string) => s}
-      />,
-    );
+    wrap(<Select ref={ref as any} items={['a', 'b']} getKey={(s: string) => s} />);
     expect(ref.current).toBeInstanceOf(HTMLUListElement);
   });
 
@@ -219,22 +210,23 @@ describe('G6: withProps() result displayName', () => {
 
 describe('G7: withProps preserves the generic type parameter', () => {
   it('G7a: withProps result can still be called with a type parameter', () => {
-    interface User { id: string; name: string }
+    interface User {
+      id: string;
+      name: string;
+    }
     const RenderStarSelect = (Select as any).withProps({
       renderItem: (item: any) => `★ ${item.name ?? item}`,
     });
     const users: User[] = [{ id: '1', name: 'Alice' }];
-    const { container } = wrap(
-      <RenderStarSelect<User>
-        items={users}
-        getKey={(u: User) => u.id}
-      />,
-    );
+    const { container } = wrap(<RenderStarSelect<User> items={users} getKey={(u: User) => u.id} />);
     expect(container.querySelector('li')?.textContent).toBe('★ Alice');
   });
 
   it('G7b: withProps presets are applied and instance props can override them', () => {
-    interface Fruit { id: string; label: string }
+    interface Fruit {
+      id: string;
+      label: string;
+    }
     const DefaultSelect = (Select as any).withProps({ selected: 'banana' });
     const fruits: Fruit[] = [
       { id: 'apple', label: 'Apple' },
@@ -255,11 +247,7 @@ describe('G7: withProps preserves the generic type parameter', () => {
   it('G7c: withProps undefined instance prop does NOT override preset (soribashi divergence)', () => {
     const DefaultSelect = (Select as any).withProps({ selected: 'apple' });
     const { container } = wrap(
-      <DefaultSelect
-        items={['apple', 'banana']}
-        getKey={(s: string) => s}
-        selected={undefined}
-      />,
+      <DefaultSelect items={['apple', 'banana']} getKey={(s: string) => s} selected={undefined} />,
     );
     // Soribashi: preset wins because undefined is filtered
     const appleItem = container.querySelectorAll('li')[0];
@@ -298,8 +286,12 @@ describe('G8: GenericComponentFn type — runtime shape', () => {
 
 describe('G9: hook integration — useProps applies config.defaults', () => {
   it('G9a: config.defaults are applied when instance prop is absent', () => {
-    interface ItemWithDefault { id: string }
-    type SelectWithDefaultSignature = <T>(props: ItemProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+    interface ItemWithDefault {
+      id: string;
+    }
+    type SelectWithDefaultSignature = <T>(
+      props: ItemProps<T> & React.RefAttributes<unknown>,
+    ) => React.ReactElement | null;
     const SelectWithDefault = defineGenericComponent<SelectWithDefaultSignature>({
       name: 'SelectWithDefault',
       selectors: ['root'] as const,
@@ -309,23 +301,26 @@ describe('G9: hook integration — useProps applies config.defaults', () => {
         const { items, getKey, selected, ...rest } = props;
         return (
           <ul ref={ref} {...getStyles('root')} {...rest} data-selected={selected}>
-            {items.map((item: any) => <li key={getKey(item)}>{getKey(item)}</li>)}
+            {items.map((item: any) => (
+              <li key={getKey(item)}>{getKey(item)}</li>
+            ))}
           </ul>
         );
       },
     });
     const { container } = wrap(
-      <SelectWithDefault
-        items={[{ id: 'a' }]}
-        getKey={(item: ItemWithDefault) => item.id}
-      />,
+      <SelectWithDefault items={[{ id: 'a' }]} getKey={(item: ItemWithDefault) => item.id} />,
     );
     expect(container.querySelector('ul')?.dataset.selected).toBe('default-key');
   });
 
   it('G9b: instance prop overrides config.defaults', () => {
-    interface ItemWithDefault { id: string }
-    type SelectWithDefaultSignature = <T>(props: ItemProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+    interface ItemWithDefault {
+      id: string;
+    }
+    type SelectWithDefaultSignature = <T>(
+      props: ItemProps<T> & React.RefAttributes<unknown>,
+    ) => React.ReactElement | null;
     const SelectWithDefault = defineGenericComponent<SelectWithDefaultSignature>({
       name: 'SelectWithDefault2',
       selectors: ['root'] as const,
@@ -335,7 +330,9 @@ describe('G9: hook integration — useProps applies config.defaults', () => {
         const { items, getKey, selected, ...rest } = props;
         return (
           <ul ref={ref} {...getStyles('root')} {...rest} data-selected={selected}>
-            {items.map((item: any) => <li key={getKey(item)}>{getKey(item)}</li>)}
+            {items.map((item: any) => (
+              <li key={getKey(item)}>{getKey(item)}</li>
+            ))}
           </ul>
         );
       },
@@ -404,9 +401,7 @@ describe('G12: ref forwarding through withProps chain', () => {
   it('G12a: withProps result forwards ref to the underlying DOM element', () => {
     const StyledSelect = (Select as any).withProps({ selected: 'a' });
     const ref = React.createRef<HTMLUListElement>();
-    wrap(
-      <StyledSelect ref={ref as any} items={['a']} getKey={(s: string) => s} />,
-    );
+    wrap(<StyledSelect ref={ref as any} items={['a']} getKey={(s: string) => s} />);
     expect(ref.current).toBeInstanceOf(HTMLUListElement);
   });
 
@@ -414,9 +409,7 @@ describe('G12: ref forwarding through withProps chain', () => {
     const A = (Select as any).withProps({ selected: 'a' });
     const B = (A as any).withProps({ selected: 'b' });
     const ref = React.createRef<HTMLUListElement>();
-    wrap(
-      <B ref={ref as any} items={['x']} getKey={(s: string) => s} />,
-    );
+    wrap(<B ref={ref as any} items={['x']} getKey={(s: string) => s} />);
     expect(ref.current).toBeInstanceOf(HTMLUListElement);
   });
 });
@@ -433,9 +426,7 @@ describe('G13: withProps stacking — preset accumulation', () => {
     const A = (Select as any).withProps({ selected: 'apple' });
     // second level adds/overrides selected
     const B = (A as any).withProps({ selected: 'banana' });
-    const { container } = wrap(
-      <B items={['apple', 'banana']} getKey={(s: string) => s} />,
-    );
+    const { container } = wrap(<B items={['apple', 'banana']} getKey={(s: string) => s} />);
     const items = container.querySelectorAll('li');
     // second preset (banana) wins
     expect(items[1]?.dataset.selected).toBe('true');

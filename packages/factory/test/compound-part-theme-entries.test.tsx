@@ -1,9 +1,9 @@
-import { render } from '@testing-library/react';
-import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { createTheme, defineVocabulary } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
-import { defineCompound } from '../src/define-compound.tsx';
+import { render } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerTheme } from '../src/create-builders.ts';
+import { defineCompound } from '../src/define-compound.tsx';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 import { resetRegistry } from '../src/vocabulary-registry.ts';
 
 const tokens = { colors: {}, radius: {}, spacing: {}, fontSize: {} };
@@ -98,9 +98,7 @@ describe('compound part theme entries (Part.extend flows through useStyles)', ()
     const Foo = makeFoo();
     const theme = createTheme({
       tokens: tokens as never,
-      components: [
-        (Foo as any).Label.extend({ attributes: { label: { 'data-themed': 'yes' } } }),
-      ],
+      components: [(Foo as any).Label.extend({ attributes: { label: { 'data-themed': 'yes' } } })],
     });
     const { container } = wrap(
       theme,

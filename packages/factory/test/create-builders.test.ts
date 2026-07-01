@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
 import { createTheme, defineVocabulary } from '@soribashi/theme';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createSoribashiBuilders } from '../src/create-builders.ts';
-import { resolveVocab, resetRegistry } from '../src/vocabulary-registry.ts';
+import { resetRegistry, resolveVocab } from '../src/vocabulary-registry.ts';
 
 const minimalTokens = { colors: {}, radius: {}, spacing: {}, fontSize: {} };
 
@@ -19,7 +19,7 @@ describe('createSoribashiBuilders', () => {
     expect(typeof builders.defineGenericComponent).toBe('function');
   });
 
-  it('registers the theme\'s global vocabulary in the registry', () => {
+  it("registers the theme's global vocabulary in the registry", () => {
     const customSize = defineVocabulary(['compact', 'standard']);
     const theme = createTheme({
       tokens: minimalTokens,
@@ -34,12 +34,14 @@ describe('createSoribashiBuilders', () => {
     const theme = createTheme({
       tokens: minimalTokens,
       vocabulary: { size: defineVocabulary(['xs', 'md', 'xl']) },
-      components: [{
-        __soribashiThemeEntry: true,
-        name: 'Button',
-        defaultProps: {},
-        vocabulary: { size: buttonSize },
-      }],
+      components: [
+        {
+          __soribashiThemeEntry: true,
+          name: 'Button',
+          defaultProps: {},
+          vocabulary: { size: buttonSize },
+        },
+      ],
     });
     createSoribashiBuilders(theme);
     expect(resolveVocab('Button', 'size')).toBe(buttonSize);
@@ -51,12 +53,14 @@ describe('createSoribashiBuilders', () => {
     const themeA = createTheme({
       tokens: minimalTokens,
       vocabulary: { size: defineVocabulary(['s', 'm', 'l']) },
-      components: [{
-        __soribashiThemeEntry: true,
-        name: 'LegacyButton',
-        defaultProps: {},
-        vocabulary: { size: defineVocabulary(['legacy-small', 'legacy-large']) },
-      }],
+      components: [
+        {
+          __soribashiThemeEntry: true,
+          name: 'LegacyButton',
+          defaultProps: {},
+          vocabulary: { size: defineVocabulary(['legacy-small', 'legacy-large']) },
+        },
+      ],
     });
     createSoribashiBuilders(themeA);
     expect(resolveVocab('LegacyButton', 'size')?.values).toEqual(['legacy-small', 'legacy-large']);

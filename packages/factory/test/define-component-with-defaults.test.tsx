@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { defineComponent, definePolymorphicComponent, isThemeComponentEntry } from '../src/index.ts';
+import {
+  defineComponent,
+  definePolymorphicComponent,
+  isThemeComponentEntry,
+} from '../src/index.ts';
 
 describe('defineComponent .extend', () => {
   const Foo = defineComponent({
@@ -39,7 +43,9 @@ describe('defineComponent .extend', () => {
 });
 
 describe('defineComponent .extend type safety', () => {
-  interface FooProps { size?: 'sm' | 'md' | 'lg' }
+  interface FooProps {
+    size?: 'sm' | 'md' | 'lg';
+  }
   const Foo = defineComponent<FooProps, readonly ['root'], readonly []>({
     name: 'Foo',
     selectors: ['root'] as const,

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 /**
  * Type tests for phase 2 goal 7 (withProps return types keep statics so
  * `.withProps().withProps()` and `.withProps().extend()` chains type-check;
@@ -5,11 +6,10 @@
  * (vocabulary axes + selector-keyed styles API on public props).
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import type { ReactNode } from 'react';
 import { defineComponent } from '../src/define-component.tsx';
-import { definePolymorphicComponent } from '../src/define-polymorphic-component.tsx';
 import { defineCompound } from '../src/define-compound.tsx';
 import { defineGenericComponent } from '../src/define-generic-component.tsx';
+import { definePolymorphicComponent } from '../src/define-polymorphic-component.tsx';
 
 const chipVariants = ['dot', 'pill'] as const;
 
@@ -18,7 +18,12 @@ interface ChipOwnProps {
 }
 
 describe('goal 7 — defineComponent withProps chains keep statics', () => {
-  const Chip = defineComponent<ChipOwnProps, readonly ['root'], typeof chipVariants, readonly ['size']>({
+  const Chip = defineComponent<
+    ChipOwnProps,
+    readonly ['root'],
+    typeof chipVariants,
+    readonly ['size']
+  >({
     name: 'ChainChip',
     vocabularyAxes: ['size'] as const,
     selectors: ['root'] as const,

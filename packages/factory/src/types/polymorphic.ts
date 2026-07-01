@@ -29,10 +29,10 @@ export type PolymorphicRef<TAs extends ElementType> = ComponentPropsWithRef<TAs>
  * `ref?`) and produced a tangled `RefObject<T> & RefObject<callback | RefObject<T> | null>`
  * type that rejected `createRef<T>()` without casts. Closes Gap 7-types.
  */
-export type PolymorphicComponentProps<
-  TAs extends ElementType,
-  TOwnProps,
-> = PolymorphicProps<TAs, TOwnProps>;
+export type PolymorphicComponentProps<TAs extends ElementType, TOwnProps> = PolymorphicProps<
+  TAs,
+  TOwnProps
+>;
 
 export interface SoribashiPolymorphicComponent<TDefaultAs extends ElementType, TOwnProps> {
   <TAs extends ElementType = TDefaultAs>(

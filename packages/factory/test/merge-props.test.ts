@@ -3,10 +3,7 @@ import { mergeProps } from '../src/merge-props.ts';
 
 describe('mergeProps', () => {
   it('composes className via clsx (slot first, child overrides)', () => {
-    const merged = mergeProps(
-      { className: 'slot-class' },
-      { className: 'child-class' },
-    );
+    const merged = mergeProps({ className: 'slot-class' }, { className: 'child-class' });
     expect(merged.className).toBe('slot-class child-class');
   });
 
@@ -21,10 +18,7 @@ describe('mergeProps', () => {
   it('composes event handlers (slot first, child second; both called)', () => {
     const slotHandler = vi.fn();
     const childHandler = vi.fn();
-    const merged = mergeProps(
-      { onClick: slotHandler },
-      { onClick: childHandler },
-    );
+    const merged = mergeProps({ onClick: slotHandler }, { onClick: childHandler });
 
     const event = { type: 'click' } as unknown as React.MouseEvent;
     (merged.onClick as (e: typeof event) => void)(event);

@@ -1,29 +1,33 @@
+import type { ResolvedTheme } from '@soribashi/theme';
 import {
-  forwardRef,
-  useContext,
-  useMemo,
-  useRef,
   type CSSProperties,
   type ElementType,
   type JSX,
   type ReactNode,
   type Ref,
+  forwardRef,
+  useContext,
+  useMemo,
+  useRef,
 } from 'react';
-import type { ResolvedTheme } from '@soribashi/theme';
+import { createSafeContext } from './create-safe-context.ts';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
-import { useTheme } from './provider/use-theme.ts';
-import { makeWithProps } from './with-props.tsx';
-import { createSafeContext } from './create-safe-context.ts';
-import { validateVocabularyProps } from './validate-vocabulary-props.ts';
-import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
+import { useTheme } from './provider/use-theme.ts';
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
-import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
-import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
-import type { VocabularyAxis, InjectedVocabularyProps, VariantProp } from './types/vocabulary-axes.ts';
+import type { CompoundStylesApiProps, StylesApiProps } from './types/props.ts';
+import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
+import type {
+  InjectedVocabularyProps,
+  VariantProp,
+  VocabularyAxis,
+} from './types/vocabulary-axes.ts';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
+import { makeWithProps } from './with-props.tsx';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -53,7 +57,8 @@ export interface PartRenderCtx<
   TVariants extends readonly string[] = readonly string[],
   TSlotKeys extends string = string,
 > {
-  props: TProps & CompoundStylesApiProps<{ props: TProps; stylesNames: TSlotKeys } & FactoryPayload>;
+  props: TProps &
+    CompoundStylesApiProps<{ props: TProps; stylesNames: TSlotKeys } & FactoryPayload>;
   /**
    * Returns merged className/style/data-* for the given slot (defaults to this
    * part's own slot). Pass `{ part: 'otherSlot' }` to target sibling slots.
@@ -84,7 +89,11 @@ export interface PolymorphicPartRenderCtx<
 // Part config types
 // ---------------------------------------------------------------------------
 
-export interface StandardPartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
+export interface StandardPartConfig<
+  TProps,
+  TCtxExtra,
+  TVariants extends readonly string[] = readonly string[],
+> {
   render: (ctx: PartRenderCtx<TProps, TCtxExtra, TVariants>) => ReactNode;
   defaults?: Partial<TProps>;
 }
@@ -98,7 +107,11 @@ export interface StandardPartConfig<TProps, TCtxExtra, TVariants extends readonl
  * on the standalone shape; do not re-introduce `extends StandardPartConfig`
  * without first solving the variance constraint. See OQ-7 in the Wave 3 spec.
  */
-export interface PolymorphicPartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = readonly string[]> {
+export interface PolymorphicPartConfig<
+  TProps,
+  TCtxExtra,
+  TVariants extends readonly string[] = readonly string[],
+> {
   polymorphic: true;
   defaultElement: keyof JSX.IntrinsicElements;
   render: (ctx: PolymorphicPartRenderCtx<TProps, TCtxExtra, TVariants>) => ReactNode;
@@ -205,8 +218,12 @@ type PartPayload<TPartConfig, TSlotKeys extends string = string> = {
  */
 type PartStaticMethods<TPartConfig, TSlotKeys extends string = string> = {
   extend: (
-    config: ComponentExtendConfig<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>>,
-  ) => ThemeComponentEntry<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>>;
+    config: ComponentExtendConfig<
+      ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>
+    >,
+  ) => ThemeComponentEntry<
+    ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>
+  >;
   displayName?: string;
 };
 
@@ -216,25 +233,34 @@ type PartStaticMethods<TPartConfig, TSlotKeys extends string = string> = {
  * mirrors `PolymorphicComponentLike` from `define-polymorphic-component.tsx`.
  * `<Foo.Trigger as="a" href="/x">` correctly narrows props to anchor attrs.
  */
-type PolymorphicCompoundPart<TPartConfig, TDefaultEl extends ElementType, TSlotKeys extends string = string> =
-  (<TAs extends ElementType = TDefaultEl>(
-    props: PolymorphicComponentProps<TAs, ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>>,
-  ) => React.ReactElement | null) & PartStaticMethods<TPartConfig, TSlotKeys>;
+type PolymorphicCompoundPart<
+  TPartConfig,
+  TDefaultEl extends ElementType,
+  TSlotKeys extends string = string,
+> = (<TAs extends ElementType = TDefaultEl>(
+  props: PolymorphicComponentProps<
+    TAs,
+    ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>
+  >,
+) => React.ReactElement | null) &
+  PartStaticMethods<TPartConfig, TSlotKeys>;
 
 type PartsNamespace<
   TParts extends Record<string, PartConfig<any, any, any>>,
   TSlotKeys extends string = string,
 > = {
-  [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]:
-    TParts[K] extends PolymorphicPartConfig<any, any, any> & { defaultElement: infer DefaultEl }
-      ? DefaultEl extends ElementType
-        ? PolymorphicCompoundPart<TParts[K], DefaultEl, TSlotKeys>
-        : never
-      : React.ForwardRefExoticComponent<
-          ExtractPartProps<TParts[K]>
-          & CompoundStylesApiProps<PartPayload<TParts[K], TSlotKeys>>
-          & React.RefAttributes<unknown>
-        > & PartStaticMethods<TParts[K], TSlotKeys>;
+  [K in Exclude<keyof TParts, 'root'> as Capitalize<
+    K & string
+  >]: TParts[K] extends PolymorphicPartConfig<any, any, any> & { defaultElement: infer DefaultEl }
+    ? DefaultEl extends ElementType
+      ? PolymorphicCompoundPart<TParts[K], DefaultEl, TSlotKeys>
+      : never
+    : React.ForwardRefExoticComponent<
+        ExtractPartProps<TParts[K]> &
+          CompoundStylesApiProps<PartPayload<TParts[K], TSlotKeys>> &
+          React.RefAttributes<unknown>
+      > &
+        PartStaticMethods<TParts[K], TSlotKeys>;
 };
 
 /**
@@ -260,7 +286,9 @@ type CompoundRootPublicProps<
   InjectedVocabularyProps<TVocabAxes> &
   VariantProp<TVariants> &
   TExtra &
-  StylesApiProps<{ props: ExtractPartProps<TParts['root']>; stylesNames: TSlotKeys } & FactoryPayload>;
+  StylesApiProps<
+    { props: ExtractPartProps<TParts['root']>; stylesNames: TSlotKeys } & FactoryPayload
+  >;
 
 /**
  * The value returned by `Root.withProps(...)`. Carries the Root statics but
@@ -274,11 +302,16 @@ type CompoundRootWithProps<
   TSlotKeys extends string,
   TExtra = unknown,
 > = React.ForwardRefExoticComponent<
-  CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra> & React.RefAttributes<unknown>
+  CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra> &
+    React.RefAttributes<unknown>
 > & {
   extend: (
-    config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
-  ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>;
+    config: ComponentExtendConfig<
+      CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>
+    >,
+  ) => ThemeComponentEntry<
+    CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>
+  >;
   withProps: (
     presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
   ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>;
@@ -291,14 +324,18 @@ export type CompoundComponent<
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
   TSlotKeys extends string = string,
   TExtra = unknown,
-> =
-  React.ForwardRefExoticComponent<
-    CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>
-    & React.RefAttributes<unknown>
-  > & PartsNamespace<TParts, TSlotKeys> & {
+> = React.ForwardRefExoticComponent<
+  CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra> &
+    React.RefAttributes<unknown>
+> &
+  PartsNamespace<TParts, TSlotKeys> & {
     extend: (
-      config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
-    ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>;
+      config: ComponentExtendConfig<
+        CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>
+      >,
+    ) => ThemeComponentEntry<
+      CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>
+    >;
     withProps: (
       presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
     ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>;
@@ -344,13 +381,10 @@ function useShallowStable<T extends object>(value: T): T {
 function makeNullCtxProxy(compoundName: string, partKey: string): Record<string, unknown> {
   return new Proxy({} as Record<string, unknown>, {
     get() {
-      throw new Error(
-        `<${compoundName}.${capitalize(partKey)}> must be inside <${compoundName}>`,
-      );
+      throw new Error(`<${compoundName}.${capitalize(partKey)}> must be inside <${compoundName}>`);
     },
   });
 }
-
 
 // ---------------------------------------------------------------------------
 // defineCompound
@@ -396,7 +430,12 @@ export function defineCompound<
       rawProps as TRootProps,
     );
 
-    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
+    validateVocabularyProps(
+      config.name,
+      config.vocabularyAxes ?? [],
+      merged as Record<string, unknown>,
+      config.variants,
+    );
 
     const getStyles = useStyles<FactoryPayload>({
       name: config.name,
@@ -450,12 +489,25 @@ export function defineCompound<
     const rootGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult =>
       (getStyles as GetStylesFn<ConcreteFactoryPayload>)(
         (opts?.part ?? 'root') as string,
-        opts ? { active: opts.active, variant: opts.variant, className: opts.className, style: opts.style, classNames: opts.classNames, styles: opts.styles } : undefined,
+        opts
+          ? {
+              active: opts.active,
+              variant: opts.variant,
+              className: opts.className,
+              style: opts.style,
+              classNames: opts.classNames,
+              styles: opts.styles,
+            }
+          : undefined,
       );
 
     return (
       <CompoundContext.Provider value={ctxValue}>
-        {(config.parts.root.render as (c: PartRenderCtx<TRootProps, TCtxExtra, TVariants>) => ReactNode)({
+        {(
+          config.parts.root.render as (
+            c: PartRenderCtx<TRootProps, TCtxExtra, TVariants>,
+          ) => ReactNode
+        )({
           props: merged,
           getStyles: rootGetStyles,
           ctx: { variant, ...ctxExtras } as TCtxExtra & { variant: TVariants[number] | undefined },
@@ -488,70 +540,85 @@ export function defineCompound<
     if (isPolymorphic) {
       const polyConfig = partConfig as PolymorphicPartConfig<any, any>;
 
-      const PolyPartComponent = forwardRef<unknown, any>(function PolymorphicCompoundPart(rawProps, ref) {
-        const rawCtx = useContext(CompoundContext);
-        const merged = useProps<any>(partName, polyConfig.defaults ?? null, rawProps);
+      const PolyPartComponent = forwardRef<unknown, any>(
+        function PolymorphicCompoundPart(rawProps, ref) {
+          const rawCtx = useContext(CompoundContext);
+          const merged = useProps<any>(partName, polyConfig.defaults ?? null, rawProps);
 
-        // Parts validate against their own registered name so a part-level
-        // vocabulary override (Part.extend({ vocabulary })) is consulted.
-        validateVocabularyProps(partName, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
+          // Parts validate against their own registered name so a part-level
+          // vocabulary override (Part.extend({ vocabulary })) is consulted.
+          validateVocabularyProps(
+            partName,
+            config.vocabularyAxes ?? [],
+            merged as Record<string, unknown>,
+            config.variants,
+          );
 
-        const { as: asProp, ...rest } = merged as { as?: keyof JSX.IntrinsicElements; [key: string]: unknown };
-        const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
-
-        const partGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult => {
-          if (rawCtx === null) {
-            throw new Error(`<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`);
-          }
-          const targetSlot = opts?.part ?? partKey;
-          const isOwnSlot = targetSlot === partKey;
-          const m = rest as {
-            className?: string;
-            style?: CSSProperties;
-            classNames?: GetStylesOptions['classNames'];
-            styles?: GetStylesOptions['styles'];
-            vars?: GetStylesOptions['vars'];
-            attributes?: GetStylesOptions['attributes'];
-            unstyled?: boolean;
+          const { as: asProp, ...rest } = merged as {
+            as?: keyof JSX.IntrinsicElements;
+            [key: string]: unknown;
           };
-          // Mantine-shaped forwarding (mirrors TabsTab / PopoverDropdown pattern):
-          // The part forwards its own styles-API props into ctx.getStyles(slot, options).
-          // useStyles is the merge engine — it handles Root-level + part-instance +
-          // render-call layers independently; no pre-composition at the part level.
-          //
-          // className/style scalars only apply to own-slot calls; cross-slot calls
-          // use undefined because the scalar refers to this part's root element, not
-          // a sibling slot's element. The per-slot record forms (classNames/styles)
-          // are self-targeting by slot key and always pass through.
-          return rawCtx.getStyles(targetSlot as string, {
-            className: isOwnSlot ? (opts?.className ?? m.className) : opts?.className,
-            style: isOwnSlot ? (opts?.style ?? m.style) : opts?.style,
-            classNames: m.classNames,
-            styles: m.styles,
-            callClassNames: opts?.classNames,
-            callStyles: opts?.styles,
-            vars: m.vars,
-            attributes: m.attributes,
-            unstyled: m.unstyled,
-            active: opts?.active,
-            variant: opts?.variant,
-            themeName: partName,
+          const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
+
+          const partGetStyles = (opts?: { part?: string } & GetStylesOptions): GetStylesResult => {
+            if (rawCtx === null) {
+              throw new Error(
+                `<${config.name}.${capitalize(partKey)}> must be inside <${config.name}>`,
+              );
+            }
+            const targetSlot = opts?.part ?? partKey;
+            const isOwnSlot = targetSlot === partKey;
+            const m = rest as {
+              className?: string;
+              style?: CSSProperties;
+              classNames?: GetStylesOptions['classNames'];
+              styles?: GetStylesOptions['styles'];
+              vars?: GetStylesOptions['vars'];
+              attributes?: GetStylesOptions['attributes'];
+              unstyled?: boolean;
+            };
+            // Mantine-shaped forwarding (mirrors TabsTab / PopoverDropdown pattern):
+            // The part forwards its own styles-API props into ctx.getStyles(slot, options).
+            // useStyles is the merge engine — it handles Root-level + part-instance +
+            // render-call layers independently; no pre-composition at the part level.
+            //
+            // className/style scalars only apply to own-slot calls; cross-slot calls
+            // use undefined because the scalar refers to this part's root element, not
+            // a sibling slot's element. The per-slot record forms (classNames/styles)
+            // are self-targeting by slot key and always pass through.
+            return rawCtx.getStyles(targetSlot as string, {
+              className: isOwnSlot ? (opts?.className ?? m.className) : opts?.className,
+              style: isOwnSlot ? (opts?.style ?? m.style) : opts?.style,
+              classNames: m.classNames,
+              styles: m.styles,
+              callClassNames: opts?.classNames,
+              callStyles: opts?.styles,
+              vars: m.vars,
+              attributes: m.attributes,
+              unstyled: m.unstyled,
+              active: opts?.active,
+              variant: opts?.variant,
+              themeName: partName,
+            });
+          };
+
+          const ctxToPass =
+            rawCtx === null
+              ? makeNullCtxProxy(config.name, partKey)
+              : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & {
+                  variant: TVariants[number] | undefined;
+                });
+
+          return (polyConfig.render as (c: any) => ReactNode)({
+            Element,
+            props: rest,
+            getStyles: partGetStyles,
+            ctx: ctxToPass as TCtxExtra & { variant: TVariants[number] | undefined },
+            children: (rest as { children?: ReactNode }).children,
+            ref,
           });
-        };
-
-        const ctxToPass = rawCtx === null
-          ? makeNullCtxProxy(config.name, partKey)
-          : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: TVariants[number] | undefined });
-
-        return (polyConfig.render as (c: any) => ReactNode)({
-          Element,
-          props: rest,
-          getStyles: partGetStyles,
-          ctx: ctxToPass as TCtxExtra & { variant: TVariants[number] | undefined },
-          children: (rest as { children?: ReactNode }).children,
-          ref,
-        });
-      });
+        },
+      );
 
       PolyPartComponent.displayName = partName;
 
@@ -575,7 +642,11 @@ export function defineCompound<
 
       // Parts validate against their own registered name so a part-level
       // vocabulary override (Part.extend({ vocabulary })) is consulted.
-      validateVocabularyProps(partName, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
+      validateVocabularyProps(
+        partName,
+        config.vocabularyAxes ?? [],
+        merged as Record<string, unknown>,
+      );
 
       /**
        * Wraps the Root's getStyles closure with this part's slot as the default,
@@ -626,9 +697,12 @@ export function defineCompound<
         });
       };
 
-      const ctxToPass = rawCtx === null
-        ? makeNullCtxProxy(config.name, partKey)
-        : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & { variant: TVariants[number] | undefined });
+      const ctxToPass =
+        rawCtx === null
+          ? makeNullCtxProxy(config.name, partKey)
+          : ({ variant: rawCtx.variant, ...rawCtx.ctxExtras } as TCtxExtra & {
+              variant: TVariants[number] | undefined;
+            });
 
       return (partConfig.render as (c: PartRenderCtx<any, TCtxExtra, TVariants>) => ReactNode)({
         props: merged,

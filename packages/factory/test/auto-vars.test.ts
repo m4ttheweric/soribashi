@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { autoVars } from '../src/auto-vars.ts';
 
 const theme = createTheme({

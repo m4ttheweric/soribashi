@@ -5,7 +5,14 @@ export type {
   FactoryVars,
 } from './factory-payload.ts';
 
-export type { StylesApiProps, CompoundStylesApiProps, ClassNames, Styles, Vars, Attributes } from './props.ts';
+export type {
+  StylesApiProps,
+  CompoundStylesApiProps,
+  ClassNames,
+  Styles,
+  Vars,
+  Attributes,
+} from './props.ts';
 
 export type {
   RenderContext,

@@ -1,6 +1,6 @@
 import { type ElementType, type Ref, forwardRef } from 'react';
-import { makeWithProps } from './with-props.tsx';
 import type { FactoryPayload } from './types/factory-payload.ts';
+import { makeWithProps } from './with-props.tsx';
 
 const identity = <T,>(value: T): T => value;
 

@@ -1,9 +1,4 @@
-import {
-  type ComponentType,
-  type ForwardRefExoticComponent,
-  type Ref,
-  forwardRef,
-} from 'react';
+import { type ComponentType, type ForwardRefExoticComponent, type Ref, forwardRef } from 'react';
 
 /**
  * Creates a preset variant of a component by pre-applying default props.

@@ -1,12 +1,12 @@
 import {
   Children,
   Fragment,
-  cloneElement,
-  forwardRef,
-  isValidElement,
   type ReactElement,
   type ReactNode,
   type Ref,
+  cloneElement,
+  forwardRef,
+  isValidElement,
 } from 'react';
 import { mergeProps } from './merge-props.ts';
 import { mergeRefs } from './merge-refs.ts';
@@ -53,9 +53,7 @@ export const Slot = forwardRef<unknown, SlotProps>(function Slot(props, forwarde
   // className, style, onClick, and most other props. Throw explicitly so the
   // failure is obvious rather than a silent no-op merge.
   if ((children as ReactElement).type === Fragment) {
-    throw new Error(
-      'Slot does not accept React.Fragment children. Pass a single element instead.',
-    );
+    throw new Error('Slot does not accept React.Fragment children. Pass a single element instead.');
   }
 
   const child = children as ReactElement<{ ref?: Ref<unknown> }>;
@@ -82,13 +80,15 @@ export const Slot = forwardRef<unknown, SlotProps>(function Slot(props, forwarde
  */
 function getChildRef(element: ReactElement): Ref<unknown> | undefined {
   let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get;
-  let mayWarn = getter && 'isReactWarning' in getter && (getter as { isReactWarning?: boolean }).isReactWarning;
+  let mayWarn =
+    getter && 'isReactWarning' in getter && (getter as { isReactWarning?: boolean }).isReactWarning;
   if (mayWarn) {
     return (element as { ref?: Ref<unknown> }).ref;
   }
 
   getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get;
-  mayWarn = getter && 'isReactWarning' in getter && (getter as { isReactWarning?: boolean }).isReactWarning;
+  mayWarn =
+    getter && 'isReactWarning' in getter && (getter as { isReactWarning?: boolean }).isReactWarning;
   if (mayWarn) {
     return (element.props as { ref?: Ref<unknown> }).ref;
   }

@@ -1,13 +1,6 @@
-import type { ElementType } from 'react';
 import type { ResolvedTheme, ThemeVocabulary } from '@soribashi/theme';
-import type {
-  DefineComponentConfig,
-  DefineComponentResult,
-} from '../define-component.tsx';
-import type {
-  DefinePolymorphicComponentConfig,
-  PolymorphicComponentResult,
-} from '../define-polymorphic-component.tsx';
+import type { ElementType } from 'react';
+import type { DefineComponentConfig, DefineComponentResult } from '../define-component.tsx';
 import type {
   AnyPartConfig,
   CompoundComponent,
@@ -22,10 +15,14 @@ import type {
   GenericComponentStatics,
 } from '../define-generic-component.tsx';
 import type {
-  VocabularyAxis,
-  ThemedVocabularyProps,
+  DefinePolymorphicComponentConfig,
+  PolymorphicComponentResult,
+} from '../define-polymorphic-component.tsx';
+import type {
   InjectedVocabularyProps,
+  ThemedVocabularyProps,
   VariantProp,
+  VocabularyAxis,
 } from './vocabulary-axes.ts';
 
 /**
@@ -76,7 +73,13 @@ export type ThemedDefinePolymorphicComponent<TVocab extends ThemeVocabulary> = <
   TVariants extends readonly string[] = readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 >(
-  config: DefinePolymorphicComponentConfig<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes> &
+  config: DefinePolymorphicComponentConfig<
+    TOwnProps,
+    TDefaultAs,
+    TSelectors,
+    TVariants,
+    TVocabAxes
+  > &
     ThemedDefaults<TVocab, TVocabAxes>,
 ) => PolymorphicComponentResult<
   TOwnProps,

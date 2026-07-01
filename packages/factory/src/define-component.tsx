@@ -1,17 +1,21 @@
-import { forwardRef, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
+import { type Ref, forwardRef } from 'react';
+import { autoVars } from './auto-vars.ts';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
-import { autoVars } from './auto-vars.ts';
-import { makeWithProps } from './with-props.tsx';
-import { validateVocabularyProps } from './validate-vocabulary-props.ts';
+import { makeExtendEntry } from './make-extend-entry.ts';
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
-import type { ThemeComponentEntry } from './theme-component-entry.ts';
-import { makeExtendEntry } from './make-extend-entry.ts';
-import type { ComponentExtendConfig } from './types/component-extend.ts';
-import type { VocabularyAxis, InjectedVocabularyProps, VariantProp } from './types/vocabulary-axes.ts';
+import type {
+  InjectedVocabularyProps,
+  VariantProp,
+  VocabularyAxis,
+} from './types/vocabulary-axes.ts';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
+import { makeWithProps } from './with-props.tsx';
 
 export interface DefineComponentConfig<
   TOwnProps,
@@ -38,16 +42,18 @@ export interface DefineComponentConfig<
    * annotated render ctx; vocabulary-axis and variant defaults keep working
    * param-free via the other intersection members.
    */
-  defaults?: Partial<NoInfer<TOwnProps> & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>>;
+  defaults?: Partial<
+    NoInfer<TOwnProps> & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>
+  >;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
   ) => Partial<Record<TSelectors[number], Record<string, string>>>;
   render: (ctx: {
-    props: TOwnProps & InjectedVocabularyProps<TVocabAxes> & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
-    getStyles: GetStylesFn<
-      { props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload
-    >;
+    props: TOwnProps &
+      InjectedVocabularyProps<TVocabAxes> &
+      StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
+    getStyles: GetStylesFn<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
     ref: Ref<HTMLElement>;
   }) => React.ReactNode;
 }
@@ -82,7 +88,9 @@ export type DefineComponentResult<
     }
   >;
   withProps: (
-    presets: Partial<DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>>,
+    presets: Partial<
+      DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>
+    >,
   ) => DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>;
   classes?: Partial<Record<TSelectors[number], string>>;
   displayName?: string;
@@ -127,7 +135,12 @@ export function defineComponent<
       rawProps as TOwnProps & StylesApiProps<any>,
     );
 
-    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
+    validateVocabularyProps(
+      config.name,
+      config.vocabularyAxes ?? [],
+      merged as Record<string, unknown>,
+      config.variants,
+    );
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)
@@ -161,9 +174,15 @@ export function defineComponent<
   (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
   (Component as any).withProps = makeWithProps(Component as any);
-  type DefineComponentProps = TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
+  type DefineComponentProps = TOwnProps &
+    StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
 
   (Component as any).extend = makeExtendEntry<DefineComponentProps>(config.name);
 
-  return Component as unknown as DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes>;
+  return Component as unknown as DefineComponentResult<
+    TOwnProps,
+    TSelectors,
+    TVariants,
+    TVocabAxes
+  >;
 }

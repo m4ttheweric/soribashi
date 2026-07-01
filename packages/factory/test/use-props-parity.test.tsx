@@ -1,3 +1,6 @@
+import { createTheme } from '@soribashi/theme';
+import type { ResolvedTheme } from '@soribashi/theme';
+import { renderHook } from '@testing-library/react';
 /**
  * Parity tests for soribashi `useProps` vs Mantine `useProps`.
  *
@@ -10,11 +13,8 @@
  * at commit 63dafbbf.
  */
 import { describe, expect, it } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import type { ResolvedTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
 import { useProps } from '../src/hooks/use-props.ts';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 
 // ---------------------------------------------------------------------------
 // Test infrastructure
@@ -35,11 +35,7 @@ const defaultTheme = createTheme({
 
 const makeWrapper = (theme?: ResolvedTheme) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <SoribashiProvider theme={theme ?? defaultTheme}>
-        {children}
-      </SoribashiProvider>
-    );
+    return <SoribashiProvider theme={theme ?? defaultTheme}>{children}</SoribashiProvider>;
   };
 
 // ---------------------------------------------------------------------------
@@ -55,10 +51,9 @@ describe('UP-01: defaultProps as object', () => {
       },
     });
 
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', null, {}),
-      { wrapper: makeWrapper(theme) },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Button', null, {}), {
+      wrapper: makeWrapper(theme),
+    });
 
     expect(result.current.size).toBe('lg');
     expect(result.current.variant).toBe('filled');
@@ -77,10 +72,9 @@ describe('UP-01: defaultProps as object', () => {
       },
     });
 
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', null, {}),
-      { wrapper: makeWrapper(theme) },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Button', null, {}), {
+      wrapper: makeWrapper(theme),
+    });
 
     expect(result.current.size).toBe('lg');
   });
@@ -99,10 +93,7 @@ describe('UP-01: defaultProps as object', () => {
       },
     });
 
-    renderHook(
-      () => useProps<ButtonProps>('Button', null, {}),
-      { wrapper: makeWrapper(theme) },
-    );
+    renderHook(() => useProps<ButtonProps>('Button', null, {}), { wrapper: makeWrapper(theme) });
 
     expect(received.length).toBe(1);
     expect(received[0]).toHaveProperty('tokens');
@@ -123,10 +114,9 @@ describe('UP-01: defaultProps as object', () => {
       },
     });
 
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', null, {}),
-      { wrapper: makeWrapper(theme) },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Button', null, {}), {
+      wrapper: makeWrapper(theme),
+    });
 
     expect(result.current.size).toBe('md');
     expect(result.current.variant).toBe('outline');
@@ -141,8 +131,7 @@ describe('UP-01: defaultProps as object', () => {
 describe('UP-02: merge order', () => {
   it('component defaults are lowest priority', () => {
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>('Button', { size: 'sm', variant: 'filled' }, { size: 'lg' }),
+      () => useProps<ButtonProps>('Button', { size: 'sm', variant: 'filled' }, { size: 'lg' }),
       { wrapper: makeWrapper() },
     );
 
@@ -160,10 +149,9 @@ describe('UP-02: merge order', () => {
       },
     });
 
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', { size: 'sm' }, {}),
-      { wrapper: makeWrapper(theme) },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Button', { size: 'sm' }, {}), {
+      wrapper: makeWrapper(theme),
+    });
 
     // theme default overrides component default
     expect(result.current.size).toBe('lg');
@@ -179,7 +167,11 @@ describe('UP-02: merge order', () => {
 
     const { result } = renderHook(
       () =>
-        useProps<ButtonProps>('Button', { size: 'sm', variant: 'filled' }, { size: 'md', variant: 'subtle' }),
+        useProps<ButtonProps>(
+          'Button',
+          { size: 'sm', variant: 'filled' },
+          { size: 'md', variant: 'subtle' },
+        ),
       { wrapper: makeWrapper(theme) },
     );
 
@@ -222,12 +214,7 @@ describe('UP-02: merge order', () => {
 describe('UP-03: filterProps — undefined from instance props', () => {
   it('instance prop with undefined does NOT override default', () => {
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>(
-          'Button',
-          { size: 'md' },
-          { size: undefined as any },
-        ),
+      () => useProps<ButtonProps>('Button', { size: 'md' }, { size: undefined as any }),
       { wrapper: makeWrapper() },
     );
 
@@ -243,8 +230,7 @@ describe('UP-03: filterProps — undefined from instance props', () => {
     });
 
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>('Button', null, { size: undefined as any }),
+      () => useProps<ButtonProps>('Button', null, { size: undefined as any }),
       { wrapper: makeWrapper(theme) },
     );
 
@@ -253,8 +239,7 @@ describe('UP-03: filterProps — undefined from instance props', () => {
 
   it('instance prop with false is NOT filtered (falsy but not undefined)', () => {
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>('Button', { loading: true }, { loading: false }),
+      () => useProps<ButtonProps>('Button', { loading: true }, { loading: false }),
       { wrapper: makeWrapper() },
     );
 
@@ -263,8 +248,7 @@ describe('UP-03: filterProps — undefined from instance props', () => {
 
   it('instance prop with empty string is NOT filtered', () => {
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>('Button', { color: 'blue' }, { color: '' }),
+      () => useProps<ButtonProps>('Button', { color: 'blue' }, { color: '' }),
       { wrapper: makeWrapper() },
     );
 
@@ -272,23 +256,24 @@ describe('UP-03: filterProps — undefined from instance props', () => {
   });
 
   it('instance prop with 0 is NOT filtered', () => {
-    interface NumProps { count?: number }
+    interface NumProps {
+      count?: number;
+    }
 
-    const { result } = renderHook(
-      () =>
-        useProps<NumProps>('Widget', { count: 5 }, { count: 0 }),
-      { wrapper: makeWrapper() },
-    );
+    const { result } = renderHook(() => useProps<NumProps>('Widget', { count: 5 }, { count: 0 }), {
+      wrapper: makeWrapper(),
+    });
 
     expect(result.current.count).toBe(0);
   });
 
   it('instance prop with null is NOT filtered (only undefined is filtered)', () => {
-    interface NullableProps { color?: string | null }
+    interface NullableProps {
+      color?: string | null;
+    }
 
     const { result } = renderHook(
-      () =>
-        useProps<NullableProps>('Widget', { color: 'blue' }, { color: null }),
+      () => useProps<NullableProps>('Widget', { color: 'blue' }, { color: null }),
       { wrapper: makeWrapper() },
     );
 
@@ -341,10 +326,9 @@ describe('UP-04 / UP-05: no theme component entry', () => {
       },
     });
 
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Btn', null, {}),
-      { wrapper: makeWrapper(theme) },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Btn', null, {}), {
+      wrapper: makeWrapper(theme),
+    });
 
     // 'Btn' != 'Button', so no theme defaults
     expect(result.current.size).toBeUndefined();
@@ -357,10 +341,9 @@ describe('UP-04 / UP-05: no theme component entry', () => {
 
 describe('UP-06: defaults=null', () => {
   it('null defaults treated as no defaults', () => {
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', null, { size: 'lg' }),
-      { wrapper: makeWrapper() },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Button', null, { size: 'lg' }), {
+      wrapper: makeWrapper(),
+    });
 
     expect(result.current.size).toBe('lg');
   });
@@ -373,10 +356,9 @@ describe('UP-06: defaults=null', () => {
       },
     });
 
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', null, {}),
-      { wrapper: makeWrapper(theme) },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Button', null, {}), {
+      wrapper: makeWrapper(theme),
+    });
 
     expect(result.current.variant).toBe('outline');
   });
@@ -405,7 +387,12 @@ describe('UP-07: empty instance props', () => {
 describe('UP-08: falsy value preservation', () => {
   it('instance false overrides default true', () => {
     const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', { loading: true, disabled: true }, { loading: false, disabled: false }),
+      () =>
+        useProps<ButtonProps>(
+          'Button',
+          { loading: true, disabled: true },
+          { loading: false, disabled: false },
+        ),
       { wrapper: makeWrapper() },
     );
 
@@ -421,10 +408,9 @@ describe('UP-08: falsy value preservation', () => {
       },
     });
 
-    const { result } = renderHook(
-      () => useProps<ButtonProps>('Button', null, { loading: false }),
-      { wrapper: makeWrapper(theme) },
-    );
+    const { result } = renderHook(() => useProps<ButtonProps>('Button', null, { loading: false }), {
+      wrapper: makeWrapper(theme),
+    });
 
     expect(result.current.loading).toBe(false);
   });
@@ -444,12 +430,7 @@ describe('all three prop sources', () => {
     });
 
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>(
-          'Button',
-          { size: 'md' },
-          { variant: 'outline' },
-        ),
+      () => useProps<ButtonProps>('Button', { size: 'md' }, { variant: 'outline' }),
       { wrapper: makeWrapper(theme) },
     );
 
@@ -460,8 +441,7 @@ describe('all three prop sources', () => {
 
   it('extra instance keys not in defaults pass through', () => {
     const { result } = renderHook(
-      () =>
-        useProps<ButtonProps>('Button', { size: 'md' }, { variant: 'filled', loading: true }),
+      () => useProps<ButtonProps>('Button', { size: 'md' }, { variant: 'filled', loading: true }),
       { wrapper: makeWrapper() },
     );
 

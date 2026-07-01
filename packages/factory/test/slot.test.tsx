@@ -1,6 +1,6 @@
+import { fireEvent, render } from '@testing-library/react';
+import { type ReactElement, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { createRef, type ReactElement } from 'react';
-import { render, fireEvent } from '@testing-library/react';
 import { Slot } from '../src/slot.tsx';
 
 /**

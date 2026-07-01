@@ -1,16 +1,16 @@
-import { forwardRef, type Ref } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
+import { type Ref, forwardRef } from 'react';
+import { autoVars } from './auto-vars.ts';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
-import { autoVars } from './auto-vars.ts';
-import { makeWithProps } from './with-props.tsx';
-import { validateVocabularyProps } from './validate-vocabulary-props.ts';
-import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn } from './types/render-context.ts';
-import type { VocabularyAxis, VariantProp } from './types/vocabulary-axes.ts';
+import type { VariantProp, VocabularyAxis } from './types/vocabulary-axes.ts';
+import { validateVocabularyProps } from './validate-vocabulary-props.ts';
+import { makeWithProps } from './with-props.tsx';
 
 /**
  * Render ctx for generic recipes. `props` stays `any` by design: the Wave 4A
@@ -21,9 +21,7 @@ import type { VocabularyAxis, VariantProp } from './types/vocabulary-axes.ts';
  * `GenericRenderCtx<typeof selectors>` when passing TSignature explicitly
  * (explicit type args disable inference of the remaining params).
  */
-export interface GenericRenderCtx<
-  TSelectors extends readonly string[] = readonly string[],
-> {
+export interface GenericRenderCtx<TSelectors extends readonly string[] = readonly string[]> {
   props: any;
   getStyles: GetStylesFn<{ props: any; stylesNames: TSelectors[number] } & FactoryPayload>;
   ref: Ref<unknown>;
@@ -94,7 +92,12 @@ export function defineGenericComponent<
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
     const merged = useProps(config.name, (config.defaults ?? null) as any, rawProps as any);
 
-    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
+    validateVocabularyProps(
+      config.name,
+      config.vocabularyAxes ?? [],
+      merged as Record<string, unknown>,
+      config.variants,
+    );
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)

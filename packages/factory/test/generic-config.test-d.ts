@@ -7,10 +7,7 @@
  * on that path annotate the render ctx with GenericRenderCtx instead.
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import {
-  defineGenericComponent,
-  type GenericRenderCtx,
-} from '../src/define-generic-component.tsx';
+import { type GenericRenderCtx, defineGenericComponent } from '../src/define-generic-component.tsx';
 
 describe('goal 4 — getStyles typed against selectors', () => {
   it('rejects selector typos when type params are fully inferred', () => {

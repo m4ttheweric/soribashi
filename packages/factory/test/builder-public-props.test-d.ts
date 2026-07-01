@@ -1,3 +1,4 @@
+import type { ComponentProps, ReactNode } from 'react';
 /**
  * Type tests for the vocabulary rails on the RAW builders (phase 2 goals 1-3):
  *   1. Public props include declared vocabulary axes (string-typed raw).
@@ -8,9 +9,8 @@
  * run; expectTypeOf assertions run under vitest's type checker conventions.
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import type { ComponentProps, ReactNode } from 'react';
 import { defineComponent } from '../src/define-component.tsx';
-import { defineCompound, type PartRenderCtx } from '../src/define-compound.tsx';
+import { type PartRenderCtx, defineCompound } from '../src/define-compound.tsx';
 
 const badgeVariants = ['dot', 'pill'] as const;
 

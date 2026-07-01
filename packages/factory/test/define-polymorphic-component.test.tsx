@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { definePolymorphicComponent } from '../src/define-polymorphic-component.tsx';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 
 interface TextOwnProps {
   size?: 'sm' | 'md' | 'lg';
@@ -15,7 +15,18 @@ const Text = definePolymorphicComponent<TextOwnProps, 'p'>({
   classes: { root: 'sb-Text-root' },
   defaults: { size: 'md' },
   render: ({ Element, props, getStyles }) => {
-    const { size, children, classNames, styles, vars, attributes, unstyled, className, style, ...rest } = props as any;
+    const {
+      size,
+      children,
+      classNames,
+      styles,
+      vars,
+      attributes,
+      unstyled,
+      className,
+      style,
+      ...rest
+    } = props as any;
     return (
       <Element {...getStyles('root')} {...rest} data-size={size}>
         {children}

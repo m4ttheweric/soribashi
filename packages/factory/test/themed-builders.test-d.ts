@@ -1,3 +1,5 @@
+import { createTheme, defineVocabulary } from '@soribashi/theme';
+import type { ComponentProps, ReactNode } from 'react';
 /**
  * Type tests for phase 2 goals 1 + 3 on the THEMED path: makeBuilders returns
  * all four builders typed against the theme vocabulary, so global-axis props
@@ -7,8 +9,6 @@
  * size: 'humongous' are compile errors.
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import type { ComponentProps, ReactNode } from 'react';
-import { createTheme, defineVocabulary } from '@soribashi/theme';
 import { makeBuilders } from '../src/create-builders.ts';
 
 const theme = createTheme({
@@ -82,7 +82,13 @@ describe('themed defaults type-check against theme literals (goal 3)', () => {
   });
 
   it('rejects defaults typos on definePolymorphicComponent (audit scenario)', () => {
-    definePolymorphicComponent<BadgeOwnProps, 'span', readonly ['root'], typeof badgeVariants, readonly ['size', 'intent']>({
+    definePolymorphicComponent<
+      BadgeOwnProps,
+      'span',
+      readonly ['root'],
+      typeof badgeVariants,
+      readonly ['size', 'intent']
+    >({
       name: 'ThemedPolyDefaults',
       defaultElement: 'span',
       vocabularyAxes: ['size', 'intent'] as const,

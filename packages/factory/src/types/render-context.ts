@@ -1,6 +1,6 @@
 import type { CSSProperties, Ref } from 'react';
 import type { FactoryPayload, FactoryStylesNames } from './factory-payload.ts';
-import type { ClassNames, Styles, Vars, Attributes } from './props.ts';
+import type { Attributes, ClassNames, Styles, Vars } from './props.ts';
 
 export interface GetStylesResult {
   className: string;

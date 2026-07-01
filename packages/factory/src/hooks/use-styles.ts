@@ -1,14 +1,10 @@
-import type { CSSProperties } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
+import type { CSSProperties } from 'react';
 import { cn } from '../cn.ts';
 import { useTheme } from '../provider/use-theme.ts';
 import type { FactoryPayload, FactoryStylesNames } from '../types/factory-payload.ts';
-import type { ClassNames, Styles, Vars, Attributes } from '../types/props.ts';
-import type {
-  GetStylesFn,
-  GetStylesResult,
-  GetStylesOptions,
-} from '../types/render-context.ts';
+import type { Attributes, ClassNames, Styles, Vars } from '../types/props.ts';
+import type { GetStylesFn, GetStylesOptions, GetStylesResult } from '../types/render-context.ts';
 
 export interface UseStylesConfig<P extends FactoryPayload> {
   /**
@@ -36,9 +32,7 @@ export interface UseStylesConfig<P extends FactoryPayload> {
  * Returns a `getStyles(selector, options?)` function. Resolution precedence
  * (highest to lowest): instance props > theme.components[name] > built-in classes.
  */
-export function useStyles<P extends FactoryPayload>(
-  config: UseStylesConfig<P>,
-): GetStylesFn<P> {
+export function useStyles<P extends FactoryPayload>(config: UseStylesConfig<P>): GetStylesFn<P> {
   const theme = useTheme();
   const baseNames = Array.isArray(config.name) ? config.name : [config.name];
 
@@ -56,7 +50,8 @@ export function useStyles<P extends FactoryPayload>(
 
     const themeClass = cn(
       ...themeEntries.map(
-        (entry) => resolveClassNames(entry.classNames, theme, config.props)[selector as string] ?? '',
+        (entry) =>
+          resolveClassNames(entry.classNames, theme, config.props)[selector as string] ?? '',
       ),
     );
 
@@ -81,7 +76,15 @@ export function useStyles<P extends FactoryPayload>(
     const rootInstanceClass = isRoot ? (config.className ?? '') : '';
     const callSiteClass = options?.className ?? '';
 
-    const className = cn(builtIn, themeClass, instanceClass, partClassNamesClass, callClassNamesClass, rootInstanceClass, callSiteClass);
+    const className = cn(
+      builtIn,
+      themeClass,
+      instanceClass,
+      partClassNamesClass,
+      callClassNamesClass,
+      rootInstanceClass,
+      callSiteClass,
+    );
 
     const themeStyles = mergeStyles(
       themeEntries.map(
@@ -100,12 +103,13 @@ export function useStyles<P extends FactoryPayload>(
     // Undefined values are filtered per entry, so a later entry's undefined
     // never erases an earlier entry's value.
     const themeVars = mergeStyles(
-      themeEntries.map((entry) =>
-        filterDefinedValues(
-          ((entry.vars ? entry.vars(theme, config.props) : {}) as Record<string, unknown>)[
-            selector as string
-          ] as Record<string, unknown> ?? {},
-        ) as CSSProperties,
+      themeEntries.map(
+        (entry) =>
+          filterDefinedValues(
+            (((entry.vars ? entry.vars(theme, config.props) : {}) as Record<string, unknown>)[
+              selector as string
+            ] as Record<string, unknown>) ?? {},
+          ) as CSSProperties,
       ),
     );
     const builtInVars = config.varsResolver ? config.varsResolver(theme, config.props) : {};
@@ -116,7 +120,12 @@ export function useStyles<P extends FactoryPayload>(
 
     // Per-call vars from the part instance (forwarded via options.vars).
     const partVarsResolved = options?.vars
-      ? (options.vars as (theme: ResolvedTheme, props: P['props']) => Partial<Record<string, Record<string, string>>>)(theme, config.props)
+      ? (
+          options.vars as (
+            theme: ResolvedTheme,
+            props: P['props'],
+          ) => Partial<Record<string, Record<string, string>>>
+        )(theme, config.props)
       : {};
 
     const styleParts: CSSProperties[] = [
@@ -125,11 +134,15 @@ export function useStyles<P extends FactoryPayload>(
       partStyles[selector as string] ?? {},
       callStyles[selector as string] ?? {},
       filterDefinedValues(
-        ((builtInVars as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
+        ((builtInVars as Record<string, unknown>)[selector as string] as
+          | Record<string, unknown>
+          | undefined) ?? {},
       ) as CSSProperties,
       themeVars,
       filterDefinedValues(
-        ((instanceVarsResolved as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
+        ((instanceVarsResolved as Record<string, unknown>)[selector as string] as
+          | Record<string, unknown>
+          | undefined) ?? {},
       ) as CSSProperties,
       filterDefinedValues(
         (partVarsResolved[selector as string] as Record<string, unknown> | undefined) ?? {},
@@ -155,7 +168,9 @@ export function useStyles<P extends FactoryPayload>(
       selector as string,
     );
     // Per-call attributes from the part instance (forwarded via options.attributes).
-    const partAttrsMap = options?.attributes as Partial<Record<string, Record<string, unknown>>> | undefined;
+    const partAttrsMap = options?.attributes as
+      | Partial<Record<string, Record<string, unknown>>>
+      | undefined;
     const partCallAttrs = sanitizeAttributes(
       (partAttrsMap?.[selector as string] ?? {}) as Record<string, unknown>,
       names[0]!,

@@ -1,13 +1,10 @@
-import type { CSSProperties, ReactNode } from 'react';
 import type { ResolvedTheme } from '@soribashi/theme';
+import type { CSSProperties, ReactNode } from 'react';
 import type { FactoryPayload, FactoryStylesNames } from './factory-payload.ts';
 
 export type ClassNames<P extends FactoryPayload> =
   | Partial<Record<FactoryStylesNames<P>, string>>
-  | ((
-      theme: ResolvedTheme,
-      props: P['props'],
-    ) => Partial<Record<FactoryStylesNames<P>, string>>);
+  | ((theme: ResolvedTheme, props: P['props']) => Partial<Record<FactoryStylesNames<P>, string>>);
 
 export type Styles<P extends FactoryPayload> =
   | Partial<Record<FactoryStylesNames<P>, CSSProperties>>

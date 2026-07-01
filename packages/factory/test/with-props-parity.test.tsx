@@ -1,3 +1,4 @@
+import { render } from '@testing-library/react';
 /**
  * Parity tests for soribashi `makeWithProps()` vs Mantine's inline `withProps` implementation.
  *
@@ -19,7 +20,6 @@
  */
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
 import { makeWithProps } from '../src/with-props.tsx';
 
 // ---------------------------------------------------------------------------
@@ -43,13 +43,7 @@ interface ButtonProps {
  */
 const BaseButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, size, color, variant, ...rest }, ref) => (
-    <button
-      ref={ref}
-      data-size={size}
-      data-color={color}
-      data-variant={variant}
-      {...rest}
-    >
+    <button ref={ref} data-size={size} data-color={color} data-variant={variant} {...rest}>
       {children}
     </button>
   ),
@@ -62,9 +56,9 @@ const identity = <T,>(value: T): T => value;
 (BaseButton as any).withProps = makeWithProps(BaseButton);
 
 // A second component without a displayName set (for W5 fallback test)
-const Unnamed = React.forwardRef<HTMLDivElement, { label?: string }>(
-  ({ label, ...rest }, ref) => <div ref={ref} data-label={label} {...rest} />,
-);
+const Unnamed = React.forwardRef<HTMLDivElement, { label?: string }>(({ label, ...rest }, ref) => (
+  <div ref={ref} data-label={label} {...rest} />
+));
 // Deliberately do NOT set displayName
 
 // ---------------------------------------------------------------------------
@@ -136,9 +130,13 @@ describe('W2: undefined instance props do NOT override presets (undefined filter
     const withProps = makeWithProps(BaseButton);
     const Styled = withProps({ size: 'lg', color: 'blue' });
     // Override color, leave size undefined → size preset survives, color is overridden
-    const { container } = render(<Styled size={undefined} color="red">X</Styled>);
+    const { container } = render(
+      <Styled size={undefined} color="red">
+        X
+      </Styled>,
+    );
     const btn = container.querySelector('button');
-    expect(btn?.dataset.size).toBe('lg');   // preset survived
+    expect(btn?.dataset.size).toBe('lg'); // preset survived
     expect(btn?.dataset.color).toBe('red'); // instance overrode
   });
 });
@@ -154,7 +152,11 @@ describe('W3: preset merge order — presets first, instance wins (for non-undef
   it('W3a: instance prop value takes precedence over preset for same key', () => {
     const withProps = makeWithProps(BaseButton);
     const Styled = withProps({ size: 'lg', color: 'blue' });
-    const { container } = render(<Styled size="sm" color="green">X</Styled>);
+    const { container } = render(
+      <Styled size="sm" color="green">
+        X
+      </Styled>,
+    );
     const btn = container.querySelector('button');
     expect(btn?.dataset.size).toBe('sm');
     expect(btn?.dataset.color).toBe('green');
@@ -174,7 +176,7 @@ describe('W3: preset merge order — presets first, instance wins (for non-undef
     const Base = withProps({ size: 'lg' });
     const { container } = render(<Base color="red">X</Base>);
     const btn = container.querySelector('button');
-    expect(btn?.dataset.size).toBe('lg');   // from preset
+    expect(btn?.dataset.size).toBe('lg'); // from preset
     expect(btn?.dataset.color).toBe('red'); // from instance
   });
 });
@@ -411,9 +413,7 @@ describe('W11: style handling — no deep merge, preset survives undefined', () 
     const withProps = makeWithProps(BaseButton);
     const Styled = withProps({ style: { fontWeight: 'bold', color: 'red' } } as any);
     // Instance provides only fontSize — fontWeight from preset is NOT merged
-    const { container } = render(
-      <Styled style={{ fontSize: '16px' }}>X</Styled>,
-    );
+    const { container } = render(<Styled style={{ fontSize: '16px' }}>X</Styled>);
     const style = (container.querySelector('button') as HTMLElement)?.style;
     expect(style.fontSize).toBe('16px');
     expect(style.fontWeight).toBe(''); // not merged

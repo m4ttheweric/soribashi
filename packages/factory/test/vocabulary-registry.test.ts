@@ -1,10 +1,10 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { defineVocabulary } from '@soribashi/theme';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  resetRegistry,
   registerComponentVocabularies,
+  resetRegistry,
   resolveVocab,
 } from '../src/vocabulary-registry.ts';
-import { defineVocabulary } from '@soribashi/theme';
 
 describe('vocabulary-registry', () => {
   beforeEach(() => {

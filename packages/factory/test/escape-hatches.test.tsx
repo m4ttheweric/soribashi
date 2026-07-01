@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
-import { polymorphicComponent } from '../src/polymorphic-component.tsx';
+import { describe, expect, it } from 'vitest';
 import { genericComponent } from '../src/generic-component.tsx';
+import { polymorphicComponent } from '../src/polymorphic-component.tsx';
 
 describe('lower-level escape hatches', () => {
   it('polymorphicComponent renders and exposes withProps', () => {

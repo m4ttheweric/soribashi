@@ -9,11 +9,11 @@
  * constructor-model semantics.
  */
 
-import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { defineComponent } from '../src/define-component.tsx';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 
 interface ButtonProps {
   intent?: 'primary' | 'danger';
@@ -196,9 +196,7 @@ describe('DC-3: varsResolver — explicit config.vars overrides autoVars', () =>
       render: ({ getStyles }) => <div {...getStyles('root')} />,
     });
 
-    const { container } = wrap(
-      <WithVars intent="primary" variant="filled" />,
-    );
+    const { container } = wrap(<WithVars intent="primary" variant="filled" />);
     const style = (container.querySelector('div') as HTMLElement).style;
     expect(style.getPropertyValue('--with-vars-custom')).toBe('magenta');
   });
@@ -218,9 +216,7 @@ describe('DC-4: autoVars fallback — intent/variant vars on root', () => {
   });
 
   it('produces --autobtn-bg on root when intent and variant are set', () => {
-    const { container } = wrap(
-      <AutoBtn intent="primary" variant="filled" />,
-    );
+    const { container } = wrap(<AutoBtn intent="primary" variant="filled" />);
     const style = (container.querySelector('button') as HTMLElement).style;
     expect(style.getPropertyValue('--autobtn-bg')).toBe('var(--color-primary-500)');
   });
@@ -255,16 +251,12 @@ describe('DC-5: useStyles integration — Styles API props flow through', () => 
   });
 
   it('instance classNames override adds extra class to the target selector', () => {
-    const { container } = wrap(
-      <Styled classNames={{ root: 'extra-root' }} />,
-    );
+    const { container } = wrap(<Styled classNames={{ root: 'extra-root' }} />);
     expect(container.querySelector('div')?.className).toContain('extra-root');
   });
 
   it('instance styles are applied inline to the target selector', () => {
-    const { container } = wrap(
-      <Styled styles={{ root: { color: 'red' } as any }} />,
-    );
+    const { container } = wrap(<Styled styles={{ root: { color: 'red' } as any }} />);
     const div = container.querySelector('div') as HTMLElement;
     expect(div.style.color).toBe('red');
   });

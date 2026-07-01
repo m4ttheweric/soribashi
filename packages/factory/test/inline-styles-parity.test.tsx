@@ -1,3 +1,4 @@
+import { render } from '@testing-library/react';
 /**
  * Parity tests for soribashi `InlineStyles` bundle vs Mantine `InlineStyles/` bundle.
  *
@@ -12,9 +13,8 @@
  *   - `packages/@mantine/core/src/core/InlineStyles/hash-styles.ts`
  */
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { InlineStyles } from '../src/inline-styles/InlineStyles.tsx';
 import { hashStyleProps } from '../src/hash-style-props.ts';
+import { InlineStyles } from '../src/inline-styles/InlineStyles.tsx';
 
 // ---------------------------------------------------------------------------
 // IS-01 (INTENTIONAL): nonce — not supported in soribashi
@@ -175,11 +175,7 @@ describe('IS-06 (INTENTIONAL): no container query support', () => {
 describe('IS-07 (INTENTIONAL): styles prop accepts unknown values without cast', () => {
   it('IS-07a: CSS custom properties pass through without cast', () => {
     const { container } = render(
-      <InlineStyles
-        selector=".x"
-        styles={{ '--my-var': '42px' }}
-        media={{}}
-      />,
+      <InlineStyles selector=".x" styles={{ '--my-var': '42px' }} media={{}} />,
     );
     const text = container.querySelector('style')?.textContent ?? '';
     expect(text).toContain('--my-var: 42px;');
@@ -187,11 +183,7 @@ describe('IS-07 (INTENTIONAL): styles prop accepts unknown values without cast',
 
   it('IS-07b: arbitrary string values are emitted as-is', () => {
     const { container } = render(
-      <InlineStyles
-        selector=".x"
-        styles={{ color: 'oklch(0.5 0.2 240)' }}
-        media={{}}
-      />,
+      <InlineStyles selector=".x" styles={{ color: 'oklch(0.5 0.2 240)' }} media={{}} />,
     );
     const text = container.querySelector('style')?.textContent ?? '';
     expect(text).toContain('color: oklch(0.5 0.2 240);');
@@ -209,11 +201,7 @@ describe('IS-07 (INTENTIONAL): styles prop accepts unknown values without cast',
 describe('IS-08 / CO-03 (DIVERGENCE — soribashi better): CSS custom property names preserved', () => {
   it('IS-08a: --camelCase custom property passes through unchanged', () => {
     const { container } = render(
-      <InlineStyles
-        selector=".x"
-        styles={{ '--myColor': 'red' }}
-        media={{}}
-      />,
+      <InlineStyles selector=".x" styles={{ '--myColor': 'red' }} media={{}} />,
     );
     const text = container.querySelector('style')?.textContent ?? '';
     // Soribashi: --myColor preserved (correct for CSS custom properties)
@@ -224,11 +212,7 @@ describe('IS-08 / CO-03 (DIVERGENCE — soribashi better): CSS custom property n
 
   it('IS-08b: --multi-word custom property preserved', () => {
     const { container } = render(
-      <InlineStyles
-        selector=".x"
-        styles={{ '--primaryBgColor': '#fff' }}
-        media={{}}
-      />,
+      <InlineStyles selector=".x" styles={{ '--primaryBgColor': '#fff' }} media={{}} />,
     );
     const text = container.querySelector('style')?.textContent ?? '';
     expect(text).toContain('--primaryBgColor: #fff;');
@@ -259,11 +243,7 @@ describe('IS-09 / CO-05 (DIVERGENCE — soribashi better): null values are filte
 
   it('IS-09b: undefined style values are filtered (matches Mantine)', () => {
     const { container } = render(
-      <InlineStyles
-        selector=".x"
-        styles={{ color: 'red', padding: undefined }}
-        media={{}}
-      />,
+      <InlineStyles selector=".x" styles={{ color: 'red', padding: undefined }} media={{}} />,
     );
     const text = container.querySelector('style')?.textContent ?? '';
     expect(text).toContain('color: red;');
@@ -301,9 +281,7 @@ describe('IS-10 (INTENTIONAL): @media keyword has space before query expression'
 describe('ST-02 (INTENTIONAL): styles prop is required (callers always supply it)', () => {
   it('ST-02: component renders when styles is empty object', () => {
     // No TypeScript error; no runtime error; just no base style rule emitted
-    const { container } = render(
-      <InlineStyles selector=".x" styles={{}} media={{}} />,
-    );
+    const { container } = render(<InlineStyles selector=".x" styles={{}} media={{}} />);
     const style = container.querySelector('style');
     expect(style).toBeInTheDocument();
   });
@@ -318,9 +296,7 @@ describe('ST-02 (INTENTIONAL): styles prop is required (callers always supply it
 
 describe('ST-05 (BUG → FIXED): empty base rule is omitted when styles is {}', () => {
   it('ST-05a: no selector rule emitted when styles is {}', () => {
-    const { container } = render(
-      <InlineStyles selector=".x" styles={{}} media={{}} />,
-    );
+    const { container } = render(<InlineStyles selector=".x" styles={{}} media={{}} />);
     const text = container.querySelector('style')?.textContent?.trim() ?? '';
     // No ".x { }" rule emitted — or at minimum, no empty selector block
     expect(text).not.toMatch(/\.x\s*\{\s*\}/);
@@ -473,10 +449,7 @@ describe('HS-06 (INTENTIONAL): hash output prefix is sb-h- (not Mantine __mdi__-
 describe('HS-04 (INTENTIONAL): hashStyleProps media param is a Record not an array', () => {
   it('HS-04a: accepts Record<string, Record<string, unknown>> as media param', () => {
     // Soribashi API — map form
-    const result = hashStyleProps(
-      { color: 'red' },
-      { '(min-width: 48em)': { padding: '1rem' } },
-    );
+    const result = hashStyleProps({ color: 'red' }, { '(min-width: 48em)': { padding: '1rem' } });
     expect(result).toMatch(/^sb-h-/);
   });
 
@@ -562,11 +535,7 @@ describe('IS-11 (BUG → FIXED): SSR output keeps quotes unescaped', () => {
   it('IS-11: quoted CSS values survive renderToString', async () => {
     const { renderToString } = await import('react-dom/server');
     const html = renderToString(
-      <InlineStyles
-        selector=".x"
-        styles={{ fontFamily: '"Inter", sans-serif' }}
-        media={{}}
-      />,
+      <InlineStyles selector=".x" styles={{ fontFamily: '"Inter", sans-serif' }} media={{}} />,
     );
     expect(html).toContain('font-family: "Inter", sans-serif;');
     expect(html).not.toContain('&quot;');

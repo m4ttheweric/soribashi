@@ -11,10 +11,10 @@
  * @mantine/core); soribashi keeps its own implementation. No replacement performed.
  */
 
-import { describe, expect, it } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { stripIdMarkers, useRandomClassName } from '../src/use-random-class-name.ts';
+import { describe, expect, it } from 'vitest';
 import { hashStyleProps } from '../src/hash-style-props.ts';
+import { stripIdMarkers, useRandomClassName } from '../src/use-random-class-name.ts';
 
 // ---------------------------------------------------------------------------
 // Part 1 — use-random-class-name.ts

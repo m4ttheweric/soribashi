@@ -1,3 +1,5 @@
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
 /**
  * Parity tests for soribashi `polymorphicComponent()` + `definePolymorphicComponent()`
  * vs Mantine `polymorphicFactory()` + `createPolymorphicComponent()`.
@@ -13,10 +15,8 @@
  */
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import { polymorphicComponent } from '../src/polymorphic-component.tsx';
 import { definePolymorphicComponent } from '../src/define-polymorphic-component.tsx';
+import { polymorphicComponent } from '../src/polymorphic-component.tsx';
 import { SoribashiProvider } from '../src/provider/provider.tsx';
 
 // ---------------------------------------------------------------------------
@@ -45,12 +45,14 @@ type PolymorphicDivFactory = {
  * A minimal polymorphic component built with the lower-level escape hatch.
  * It renders the `as` element when provided, or falls back to `div`.
  */
-const PolyDiv = polymorphicComponent<PolymorphicDivFactory>(
-  (props, ref) => {
-    const { as: El = 'div', children, ...rest } = props as any;
-    return <El ref={ref} {...rest}>{children}</El>;
-  },
-);
+const PolyDiv = polymorphicComponent<PolymorphicDivFactory>((props, ref) => {
+  const { as: El = 'div', children, ...rest } = props as any;
+  return (
+    <El ref={ref} {...rest}>
+      {children}
+    </El>
+  );
+});
 PolyDiv.displayName = 'PolyDiv';
 
 // ---------------------------------------------------------------------------
@@ -69,8 +71,18 @@ const PolyText = definePolymorphicComponent<TextOwnProps, 'p'>({
   classes: { root: 'sb-PolyText-root' },
   defaults: { size: 'md' },
   render: ({ Element, props, getStyles, ref }) => {
-    const { size, children, classNames, styles, vars, attributes, unstyled, className, style, ...rest } =
-      props as any;
+    const {
+      size,
+      children,
+      classNames,
+      styles,
+      vars,
+      attributes,
+      unstyled,
+      className,
+      style,
+      ...rest
+    } = props as any;
     return (
       <Element ref={ref} {...getStyles('root')} {...rest} data-size={size}>
         {children}
@@ -106,7 +118,11 @@ describe('P1: polymorphicComponent wraps render in forwardRef', () => {
 
   it('P1d: definePolymorphicComponent forwards ref even when as overrides the element', () => {
     const ref = React.createRef<HTMLSpanElement>();
-    wrap(<PolyText as="span" ref={ref as any}>Text</PolyText>);
+    wrap(
+      <PolyText as="span" ref={ref as any}>
+        Text
+      </PolyText>,
+    );
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
   });
 });

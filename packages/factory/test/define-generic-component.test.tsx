@@ -1,9 +1,9 @@
-import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { render, fireEvent } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '../src/provider/provider.tsx';
+import { fireEvent, render } from '@testing-library/react';
+import type React from 'react';
+import { describe, expect, it } from 'vitest';
 import { defineGenericComponent } from '../src/define-generic-component.tsx';
+import { SoribashiProvider } from '../src/provider/provider.tsx';
 
 interface SelectOwnProps<T> {
   items: T[];
@@ -13,7 +13,9 @@ interface SelectOwnProps<T> {
   renderItem?: (item: T) => React.ReactNode;
 }
 
-type SelectSignature = <T>(props: SelectOwnProps<T> & React.RefAttributes<unknown>) => React.ReactElement | null;
+type SelectSignature = <T>(
+  props: SelectOwnProps<T> & React.RefAttributes<unknown>,
+) => React.ReactElement | null;
 const Select = defineGenericComponent<SelectSignature>({
   name: 'Select',
   selectors: ['root', 'option'] as const,
@@ -107,7 +109,9 @@ describe('defineGenericComponent', () => {
 
   it('withProps preserves the generic so callers can still type-parameterize', () => {
     // No `as any` casts — the generic typing flows through withProps.
-    const SearchableSelect = Select.withProps({ renderItem: ((u: any) => `★ ${u.name ?? ''}`) as any });
+    const SearchableSelect = Select.withProps({
+      renderItem: ((u: any) => `★ ${u.name ?? ''}`) as any,
+    });
     const users: User[] = [{ id: '1', name: 'Alice' }];
 
     const { container } = wrap(

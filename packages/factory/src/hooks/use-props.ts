@@ -16,11 +16,7 @@ import { useTheme } from '../provider/use-theme.ts';
  * order and supports the function-form defaultProps Mantine added for
  * theme-driven dynamic defaults.
  */
-export function useProps<P>(
-  name: string,
-  defaults: Partial<P> | null,
-  instanceProps: P,
-): P {
+export function useProps<P>(name: string, defaults: Partial<P> | null, instanceProps: P): P {
   const theme = useTheme();
   const themeDefaultsRaw = theme.components[name]?.defaultProps;
   const themeDefaults = (
@@ -30,7 +26,7 @@ export function useProps<P>(
   ) as Partial<P>;
 
   const merged: Record<string, unknown> = {
-    ...(defaults as Record<string, unknown> | null ?? {}),
+    ...((defaults as Record<string, unknown> | null) ?? {}),
     ...(themeDefaults as Record<string, unknown>),
   };
 

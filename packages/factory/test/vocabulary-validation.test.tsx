@@ -1,9 +1,9 @@
-import { render } from '@testing-library/react';
-import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { createTheme, defineVocabulary } from '@soribashi/theme';
+import { render } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSoribashiBuilders } from '../src/create-builders.ts';
-import { resetRegistry } from '../src/vocabulary-registry.ts';
 import { SoribashiProvider } from '../src/provider/provider.tsx';
+import { resetRegistry } from '../src/vocabulary-registry.ts';
 
 const tokens = { colors: {}, radius: {}, spacing: {}, fontSize: {} };
 
@@ -18,14 +18,23 @@ describe('vocabulary runtime validation', () => {
       vocabulary: { size: defineVocabulary(['small', 'large']) },
     });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Button = defineComponent<{ size?: string }, readonly ['root'], readonly [], readonly ['size']>({
+    const Button = defineComponent<
+      { size?: string },
+      readonly ['root'],
+      readonly [],
+      readonly ['size']
+    >({
       name: 'TestButton',
       vocabularyAxes: ['size'] as const,
       selectors: ['root'] as const,
       render: ({ props }: any) => <button data-size={props.size}>x</button>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Button size="small">x</Button></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Button size="small">x</Button>
+      </SoribashiProvider>,
+    );
     expect(errSpy).not.toHaveBeenCalled();
     errSpy.mockRestore();
   });
@@ -36,7 +45,12 @@ describe('vocabulary runtime validation', () => {
       vocabulary: { size: defineVocabulary(['small', 'large']) },
     });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Button = defineComponent<{ size?: string }, readonly ['root'], readonly [], readonly ['size']>({
+    const Button = defineComponent<
+      { size?: string },
+      readonly ['root'],
+      readonly [],
+      readonly ['size']
+    >({
       name: 'TestButton',
       vocabularyAxes: ['size'] as const,
       selectors: ['root'] as const,
@@ -44,7 +58,11 @@ describe('vocabulary runtime validation', () => {
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     // Cast past TS to simulate the runtime-only failure mode
-    render(<SoribashiProvider theme={theme}><Button size={"medium" as never}>x</Button></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Button size={'medium' as never}>x</Button>
+      </SoribashiProvider>,
+    );
     expect(errSpy).toHaveBeenCalled();
     const firstCall = errSpy.mock.calls[0];
     expect(firstCall).toBeDefined();
@@ -60,7 +78,12 @@ describe('vocabulary runtime validation', () => {
   it('recipe-local variant passes validation without theme registration', () => {
     const theme = createTheme({ tokens });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Chip = defineComponent<{ variant?: string }, readonly ['root'], readonly ['dot', 'pill'], readonly ['variant']>({
+    const Chip = defineComponent<
+      { variant?: string },
+      readonly ['root'],
+      readonly ['dot', 'pill'],
+      readonly ['variant']
+    >({
       name: 'TestChip',
       vocabularyAxes: ['variant'] as const,
       variants: ['dot', 'pill'] as const,
@@ -68,7 +91,11 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip variant="dot">x</Chip></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Chip variant="dot">x</Chip>
+      </SoribashiProvider>,
+    );
     expect(errSpy).not.toHaveBeenCalled();
     errSpy.mockRestore();
   });
@@ -76,7 +103,12 @@ describe('vocabulary runtime validation', () => {
   it('recipe-local variant from its own defaults passes validation', () => {
     const theme = createTheme({ tokens });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Chip = defineComponent<{ variant?: string }, readonly ['root'], readonly ['dot', 'pill'], readonly ['variant']>({
+    const Chip = defineComponent<
+      { variant?: string },
+      readonly ['root'],
+      readonly ['dot', 'pill'],
+      readonly ['variant']
+    >({
       name: 'TestChipDefaults',
       vocabularyAxes: ['variant'] as const,
       variants: ['dot', 'pill'] as const,
@@ -85,7 +117,11 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip>x</Chip></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Chip>x</Chip>
+      </SoribashiProvider>,
+    );
     expect(errSpy).not.toHaveBeenCalled();
     errSpy.mockRestore();
   });
@@ -93,7 +129,12 @@ describe('vocabulary runtime validation', () => {
   it('value outside recipe-local variants still errors', () => {
     const theme = createTheme({ tokens });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Chip = defineComponent<{ variant?: string }, readonly ['root'], readonly ['dot', 'pill'], readonly ['variant']>({
+    const Chip = defineComponent<
+      { variant?: string },
+      readonly ['root'],
+      readonly ['dot', 'pill'],
+      readonly ['variant']
+    >({
       name: 'TestChipBogus',
       vocabularyAxes: ['variant'] as const,
       variants: ['dot', 'pill'] as const,
@@ -101,7 +142,11 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip variant={"bogus" as never}>x</Chip></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Chip variant={'bogus' as never}>x</Chip>
+      </SoribashiProvider>,
+    );
     expect(errSpy).toHaveBeenCalled();
     const message = errSpy.mock.calls[0]![0] as string;
     expect(message).toContain('not in the declared vocabulary');
@@ -113,7 +158,12 @@ describe('vocabulary runtime validation', () => {
   it('error message mentions both halves of the registration story', () => {
     const theme = createTheme({ tokens });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Chip = defineComponent<{ variant?: string }, readonly ['root'], readonly ['dot'], readonly ['variant']>({
+    const Chip = defineComponent<
+      { variant?: string },
+      readonly ['root'],
+      readonly ['dot'],
+      readonly ['variant']
+    >({
       name: 'TestChipMessage',
       vocabularyAxes: ['variant'] as const,
       variants: ['dot'] as const,
@@ -121,7 +171,11 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip variant={"bogus" as never}>x</Chip></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Chip variant={'bogus' as never}>x</Chip>
+      </SoribashiProvider>,
+    );
     const message = errSpy.mock.calls[0]![0] as string;
     expect(message).toContain('.extend(');
     expect(message).toContain('createTheme');
@@ -132,15 +186,22 @@ describe('vocabulary runtime validation', () => {
   it('per-component theme override wins over recipe-local variants', () => {
     const theme = createTheme({
       tokens,
-      components: [{
-        __soribashiThemeEntry: true,
-        name: 'TestChipOverride',
-        defaultProps: {},
-        vocabulary: { variant: defineVocabulary(['special']) },
-      }],
+      components: [
+        {
+          __soribashiThemeEntry: true,
+          name: 'TestChipOverride',
+          defaultProps: {},
+          vocabulary: { variant: defineVocabulary(['special']) },
+        },
+      ],
     });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Chip = defineComponent<{ variant?: string }, readonly ['root'], readonly ['dot'], readonly ['variant']>({
+    const Chip = defineComponent<
+      { variant?: string },
+      readonly ['root'],
+      readonly ['dot'],
+      readonly ['variant']
+    >({
       name: 'TestChipOverride',
       vocabularyAxes: ['variant'] as const,
       variants: ['dot'] as const,
@@ -148,11 +209,19 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip variant={"special" as never}>x</Chip></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Chip variant={'special' as never}>x</Chip>
+      </SoribashiProvider>,
+    );
     expect(errSpy).not.toHaveBeenCalled();
     errSpy.mockClear();
     // 'dot' is recipe-local but the theme override replaced the vocabulary
-    render(<SoribashiProvider theme={theme}><Chip variant="dot">x</Chip></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Chip variant="dot">x</Chip>
+      </SoribashiProvider>,
+    );
     expect(errSpy).toHaveBeenCalled();
     errSpy.mockRestore();
   });
@@ -162,25 +231,40 @@ describe('vocabulary runtime validation', () => {
     const theme = createTheme({
       tokens,
       vocabulary: { size: defineVocabulary(['s', 'm', 'l']) },
-      components: [{
-        __soribashiThemeEntry: true,
-        name: 'TestButton',
-        defaultProps: {},
-        vocabulary: { size: buttonSize },
-      }],
+      components: [
+        {
+          __soribashiThemeEntry: true,
+          name: 'TestButton',
+          defaultProps: {},
+          vocabulary: { size: buttonSize },
+        },
+      ],
     });
     const { defineComponent } = createSoribashiBuilders(theme);
-    const Button = defineComponent<{ size?: string }, readonly ['root'], readonly [], readonly ['size']>({
+    const Button = defineComponent<
+      { size?: string },
+      readonly ['root'],
+      readonly [],
+      readonly ['size']
+    >({
       name: 'TestButton',
       vocabularyAxes: ['size'] as const,
       selectors: ['root'] as const,
       render: ({ props }: any) => <button data-size={props.size}>x</button>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Button size={"compact" as never}>x</Button></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Button size={'compact' as never}>x</Button>
+      </SoribashiProvider>,
+    );
     expect(errSpy).not.toHaveBeenCalled();
     errSpy.mockClear();
-    render(<SoribashiProvider theme={theme}><Button size="s">x</Button></SoribashiProvider>);
+    render(
+      <SoribashiProvider theme={theme}>
+        <Button size="s">x</Button>
+      </SoribashiProvider>,
+    );
     // 's' is in global but NOT in button's override — should warn
     expect(errSpy).toHaveBeenCalled();
     errSpy.mockRestore();

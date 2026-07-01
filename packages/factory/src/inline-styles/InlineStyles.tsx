@@ -43,10 +43,7 @@ export function InlineStyles({ selector, styles, media }: InlineStylesProps) {
   const baseDecls = rulesFromStyles(styles);
   const baseRule = baseDecls ? `${selector} { ${baseDecls} }` : '';
   const mediaRules = Object.entries(media)
-    .map(
-      ([query, mStyles]) =>
-        `@media ${query} { ${selector} { ${rulesFromStyles(mStyles)} } }`,
-    )
+    .map(([query, mStyles]) => `@media ${query} { ${selector} { ${rulesFromStyles(mStyles)} } }`)
     .join(' ');
   const css = [baseRule, mediaRules].filter(Boolean).join(' ');
   // dangerouslySetInnerHTML (Mantine-matched): text children are HTML-escaped

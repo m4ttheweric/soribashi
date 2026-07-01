@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
 import { render, renderHook } from '@testing-library/react';
-import { useRandomClassName } from '../src/use-random-class-name.ts';
+import { describe, expect, it } from 'vitest';
 import { hashStyleProps } from '../src/hash-style-props.ts';
 import { InlineStyles } from '../src/inline-styles/InlineStyles.tsx';
+import { useRandomClassName } from '../src/use-random-class-name.ts';
 
 describe('useRandomClassName', () => {
   it('returns a non-empty string', () => {
@@ -57,11 +57,7 @@ describe('hashStyleProps', () => {
 describe('InlineStyles', () => {
   it('renders a style element with base styles', () => {
     const { container } = render(
-      <InlineStyles
-        selector=".my-class"
-        styles={{ padding: '1rem', color: 'red' }}
-        media={{}}
-      />,
+      <InlineStyles selector=".my-class" styles={{ padding: '1rem', color: 'red' }} media={{}} />,
     );
     const style = container.querySelector('style');
     expect(style).toBeInTheDocument();

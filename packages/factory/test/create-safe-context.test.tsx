@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { createSafeContext } from '../src/create-safe-context.ts';
 
 describe('createSafeContext', () => {

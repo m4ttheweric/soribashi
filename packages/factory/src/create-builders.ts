@@ -1,15 +1,15 @@
 import type { ComponentThemeConfig, ResolvedTheme } from '@soribashi/theme';
 import { defineComponent } from './define-component.tsx';
-import { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 import { defineCompound } from './define-compound.tsx';
 import { defineGenericComponent } from './define-generic-component.tsx';
-import { registerComponentVocabularies, resetRegistry } from './vocabulary-registry.ts';
+import { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 import type {
   ThemedDefineComponent,
-  ThemedDefinePolymorphicComponent,
   ThemedDefineCompound,
   ThemedDefineGenericComponent,
+  ThemedDefinePolymorphicComponent,
 } from './types/themed-builders.ts';
+import { registerComponentVocabularies, resetRegistry } from './vocabulary-registry.ts';
 
 /**
  * Registers a theme's global + per-component vocabularies with the runtime
@@ -40,7 +40,9 @@ export function registerTheme<TTheme extends ResolvedTheme>(theme: TTheme): void
   // Register per-component vocabularies from theme.components.
   // After normalizeComponents, function-form overrides are already resolved to
   // concrete Vocabulary values; theme.components is a Record<string, ComponentThemeConfig>.
-  for (const [name, config] of Object.entries(theme.components) as Array<[string, ComponentThemeConfig]>) {
+  for (const [name, config] of Object.entries(theme.components) as Array<
+    [string, ComponentThemeConfig]
+  >) {
     const componentVocab = config.vocabulary;
     if (componentVocab) {
       registerComponentVocabularies(name, {

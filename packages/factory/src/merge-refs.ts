@@ -16,9 +16,7 @@ export type MergedRefCallback<T> = (node: T | null) => void | (() => void);
  * function, the merged ref collects all returned cleanups and itself returns
  * a composed cleanup that calls each one in order. On React 18, callback refs
  * return void, so the cleanup path is a no-op. */
-export function mergeRefs<T>(
-  ...refs: Array<Ref<T> | undefined | null>
-): MergedRefCallback<T> {
+export function mergeRefs<T>(...refs: Array<Ref<T> | undefined | null>): MergedRefCallback<T> {
   return (node: T | null): void | (() => void) => {
     const cleanups: Array<() => void> = [];
     for (const ref of refs) {

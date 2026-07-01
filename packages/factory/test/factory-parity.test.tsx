@@ -1,3 +1,4 @@
+import { render } from '@testing-library/react';
 /**
  * Parity tests for soribashi `factory()` vs Mantine `factory()`.
  *
@@ -11,7 +12,6 @@
  */
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
 import { factory } from '../src/factory.tsx';
 import type { FactoryPayload } from '../src/types/index.ts';
 
@@ -55,7 +55,11 @@ describe('B1: factory() wraps render in forwardRef', () => {
     // React.forwardRef creates a "react.forward_ref" type component
     // We assert on the shape of the component, not the internal symbol
     const ref = React.createRef<HTMLButtonElement>();
-    const { container } = render(<Button ref={ref} size="lg">X</Button>);
+    const { container } = render(
+      <Button ref={ref} size="lg">
+        X
+      </Button>,
+    );
     // ref is populated = forwardRef is working
     expect(ref.current).not.toBeNull();
     expect(container.querySelector('button')?.dataset.size).toBe('lg');
@@ -138,9 +142,7 @@ describe('B4: withProps() result propagates extend from parent', () => {
 
   it('B4c: double-wrapped withProps result also has extend', () => {
     const Large = Button.withProps({ size: 'lg' });
-    const LargeBlue = (Large as any).withProps
-      ? (Large as any).withProps({ color: 'blue' })
-      : null;
+    const LargeBlue = (Large as any).withProps ? (Large as any).withProps({ color: 'blue' }) : null;
     if (LargeBlue) {
       expect(typeof (LargeBlue as any).extend).toBe('function');
     }

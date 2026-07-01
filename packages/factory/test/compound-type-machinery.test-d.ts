@@ -1,3 +1,4 @@
+import type { ComponentProps, ReactNode } from 'react';
 /**
  * Type tests for phase 2 goal 6 — compound type machinery:
  *   (a) slot keys thread into part public props and getStyles annotations
@@ -6,14 +7,13 @@
  *       ARE forwarded by parts, so the type no longer omits them)
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import type { ComponentProps, ReactNode } from 'react';
 import {
-  defineCompound,
   type PartRenderCtx,
   type PolymorphicPartRenderCtx,
+  defineCompound,
 } from '../src/define-compound.tsx';
-import type { CompoundStylesApiProps, StylesApiProps, ClassNames } from '../src/types/props.ts';
 import type { FactoryPayload } from '../src/types/factory-payload.ts';
+import type { ClassNames, CompoundStylesApiProps, StylesApiProps } from '../src/types/props.ts';
 
 interface MachineRootProps {
   children?: ReactNode;
@@ -84,7 +84,8 @@ describe('goal 6b — PartRenderCtx carries framework keys', () => {
 
   it('props classNames are keyed by the slot keys', () => {
     expectTypeOf<Ctx['props']['classNames']>().toEqualTypeOf<
-      ClassNames<{ props: MachineLabelProps; stylesNames: 'root' | 'label' } & FactoryPayload> | undefined
+      | ClassNames<{ props: MachineLabelProps; stylesNames: 'root' | 'label' } & FactoryPayload>
+      | undefined
     >();
   });
 });

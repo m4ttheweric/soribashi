@@ -1,4 +1,4 @@
-import { resolveVocab, resolveComponentVocab, type VocabularyAxis } from './vocabulary-registry.ts';
+import { type VocabularyAxis, resolveComponentVocab, resolveVocab } from './vocabulary-registry.ts';
 
 /**
  * Detect whether the consumer is running in a dev build.
