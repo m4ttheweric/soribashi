@@ -163,3 +163,38 @@ describe('typed compound defaults against the variants tuple (goal 3, raw)', () 
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// Goal 5 — NoInfer on defaults (the README footgun)
+// ---------------------------------------------------------------------------
+
+describe('goal 5 — defaults no longer poison call-site prop types (NoInfer)', () => {
+  it('zero-type-param recipe with vocab-axis defaults keeps axes wide at call sites', () => {
+    const Toggle = defineComponent({
+      name: 'NoInferToggle',
+      vocabularyAxes: ['size'] as const,
+      selectors: ['root'] as const,
+      variants: ['on', 'off'] as const,
+      defaults: { size: 'md', variant: 'on' },
+      render: () => null,
+    });
+    type ToggleProps = ComponentProps<typeof Toggle>;
+    // Previously size was inferred as the literal 'md' from defaults, so any
+    // other value failed to compile. Axes stay string-typed on the raw builder.
+    const ok: ToggleProps = { size: 'lg', variant: 'off' };
+    void ok;
+    expectTypeOf<ToggleProps['size']>().toEqualTypeOf<string | undefined>();
+  });
+
+  it('own-prop defaults require TOwnProps from an explicit param or render annotation', () => {
+    const Chip = defineComponent<{ tone?: string }, readonly ['root']>({
+      name: 'NoInferChip',
+      selectors: ['root'] as const,
+      defaults: { tone: 'md' },
+      render: () => null,
+    });
+    type ChipProps = ComponentProps<typeof Chip>;
+    const ok: ChipProps = { tone: 'lg' };
+    void ok;
+  });
+});

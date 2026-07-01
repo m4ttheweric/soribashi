@@ -30,7 +30,15 @@ export interface DefineComponentConfig<
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>>;
+  /**
+   * NoInfer keeps `defaults` out of TOwnProps inference: without it, a
+   * zero-type-param recipe with `defaults: { size: 'md' }` locked `size` to
+   * the literal 'md' at every call site (the README footgun). Own-prop
+   * defaults now require TOwnProps to come from an explicit type param or an
+   * annotated render ctx; vocabulary-axis and variant defaults keep working
+   * param-free via the other intersection members.
+   */
+  defaults?: Partial<NoInfer<TOwnProps> & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
@@ -101,7 +109,11 @@ export type DefineComponentPublicProps<
  * The daily-use component authoring API.
  */
 export function defineComponent<
-  TOwnProps = Record<string, never>,
+  // Record<never, never> (no index signature) rather than Record<string, never>:
+  // an index signature of `never` would poison the vocabulary-axis and styles
+  // intersections for zero-type-param recipes now that NoInfer keeps `defaults`
+  // out of TOwnProps inference.
+  TOwnProps = Record<never, never>,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],

@@ -69,7 +69,7 @@ export interface DefinePolymorphicComponentConfig<
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes>>;
+  defaults?: Partial<NoInfer<TOwnProps> & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },

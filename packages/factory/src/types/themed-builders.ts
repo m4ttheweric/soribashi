@@ -54,7 +54,7 @@ type ThemedDefaults<
 > = { defaults?: Partial<ThemedVocabularyProps<TVocab, TVocabAxes>> };
 
 export type ThemedDefineComponent<TVocab extends ThemeVocabulary> = <
-  TOwnProps = Record<string, never>,
+  TOwnProps = Record<never, never>,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
