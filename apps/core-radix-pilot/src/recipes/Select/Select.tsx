@@ -5,7 +5,7 @@
  * useCombobox hook + @floating-ui/react positioning. Field wraps it.
  */
 import { useId, useMemo, useState, type ReactNode } from 'react';
-import { useFloating, flip, shift, size, autoUpdate } from '@floating-ui/react';
+import { useFloating, offset, flip, shift, size, autoUpdate } from '@floating-ui/react';
 import { defineGenericComponent } from '../../builders.ts';
 import { Field } from '../Field/Field.tsx';
 import { parseSelectData, flattenOptions, type ComboboxItem, type SelectData, type Primitive } from './parse-data.ts';
@@ -70,7 +70,7 @@ export const Select = defineGenericComponent<SelectSignature>({
     const { activeIndex, setActiveIndex, onKeyDown } = useCombobox<Primitive>({ options, opened });
     const { refs, floatingStyles } = useFloating({
       open: opened, onOpenChange: setOpened, whileElementsMounted: autoUpdate,
-      middleware: [flip(), shift({ padding: 8 }), size({ apply({ rects, elements }) { elements.floating.style.width = `${rects.reference.width}px`; } })],
+      middleware: [offset(4), flip(), shift({ padding: 8 }), size({ apply({ rects, elements }) { elements.floating.style.width = `${rects.reference.width}px`; } })],
     });
 
     const close = () => { setOpened(false); setActiveIndex(-1); setQuery(''); };
