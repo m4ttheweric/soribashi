@@ -9,13 +9,18 @@ import type { ResolvedTheme } from '@soribashi/theme';
 /**
  * A style-prop value: either a flat T (applied at all breakpoints) OR an object
  * keyed by breakpoint name where each entry overrides at that breakpoint.
+ * The named keys mirror the default breakpoint map; `(string & {})` keeps
+ * custom theme breakpoints assignable (they are validated at parse time
+ * against theme.tokens.breakpoint).
  *
  *   p="md"                                     // flat
  *   p={{ base: 'xs', sm: 'sm', md: 'md' }}     // responsive
  */
 export type StyleProp<T> =
   | T
-  | Partial<Record<'base' | 'xs' | 'sm' | 'md' | 'lg' | 'xl', T>>;
+  | Partial<
+      Record<'base' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | (string & {}), T>
+    >;
 
 /**
  * A function that resolves a token value (e.g., 'md' or 16) to a CSS string.
