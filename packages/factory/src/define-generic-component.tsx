@@ -6,6 +6,7 @@ import { autoVars } from './auto-vars.ts';
 import { makeWithProps } from './with-props.tsx';
 import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { VocabularyAxis } from './types/vocabulary-axes.ts';
 
@@ -93,18 +94,7 @@ export function defineGenericComponent<TSignature = GenericComponentFn>(
   Component.displayName = config.name;
   (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
-  (Component as any).extend = (
-    extendConfig: ComponentExtendConfig<any>,
-  ): ThemeComponentEntry<any> => ({
-    __soribashiThemeEntry: true as const,
-    name: config.name,
-    vocabulary: extendConfig.vocabulary as any,
-    defaultProps: extendConfig.defaultProps ?? {},
-    classNames: extendConfig.classNames,
-    styles: extendConfig.styles,
-    vars: extendConfig.vars,
-    attributes: extendConfig.attributes,
-  });
+  (Component as any).extend = makeExtendEntry<any>(config.name);
   (Component as any).withProps = makeWithProps(Component as any);
 
   return Component as unknown as TSignature & GenericComponentStatics<TSignature>;

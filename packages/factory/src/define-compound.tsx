@@ -1,6 +1,8 @@
 import {
   forwardRef,
   useContext,
+  useMemo,
+  useRef,
   type CSSProperties,
   type ElementType,
   type JSX,
@@ -10,9 +12,11 @@ import {
 import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
+import { useTheme } from './provider/use-theme.ts';
 import { createSafeContext } from './create-safe-context.ts';
 import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
@@ -245,6 +249,27 @@ function capitalize(s: string): string {
  * passthrough parts that ignore `ctx` are unaffected; context-consuming parts
  * see the friendly error rather than a null-deref TypeError.
  */
+function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  if (a === b) return true;
+  const aKeys = Object.keys(a);
+  if (aKeys.length !== Object.keys(b).length) return false;
+  return aKeys.every((key) => Object.is(a[key], b[key]));
+}
+
+/**
+ * Returns the previous render's value while the new one is shallow-equal, so
+ * downstream useMemo deps stay referentially stable. The render-phase ref
+ * write is idempotent (equal input -> same stored value), which keeps it safe
+ * under StrictMode double-rendering.
+ */
+function useShallowStable<T extends object>(value: T): T {
+  const ref = useRef(value);
+  if (!shallowEqual(ref.current as Record<string, unknown>, value as Record<string, unknown>)) {
+    ref.current = value;
+  }
+  return ref.current;
+}
+
 function makeNullCtxProxy(compoundName: string, partKey: string): Record<string, unknown> {
   return new Proxy({} as Record<string, unknown>, {
     get() {
@@ -318,13 +343,29 @@ export function defineCompound<
     });
 
     const variant = (merged as { variant?: string }).variant as TVariants[number] | undefined;
-    const ctxExtras = config.context ? config.context(merged) : ({} as TCtxExtra);
+    // config.context may call React hooks (documented contract), so it runs
+    // unconditionally on every render; only its RESULT is stabilized below.
+    const ctxExtras = useShallowStable(config.context ? config.context(merged) : ({} as TCtxExtra));
 
-    const ctxValue: CompoundContextValue<TCtxExtra, TVariants> = {
-      variant,
-      getStyles: getStyles as GetStylesFn<ConcreteFactoryPayload>,
-      ctxExtras,
-    };
+    const theme = useTheme();
+    // getStyles doesn't read children, and children are recreated on every
+    // parent render, so they're excluded from the stability comparison.
+    const { children: _stabilityChildren, ...stylePropsOnly } = merged as Record<string, unknown>;
+    const stableStyleProps = useShallowStable(stylePropsOnly);
+
+    // getStyles is intentionally omitted from the deps: useStyles rebuilds the
+    // closure every render, but it is pure over (theme, merged props), both
+    // captured below. Reusing the previous closure while those are unchanged
+    // keeps the ctx value referentially stable so memo'd parts skip renders.
+    const ctxValue: CompoundContextValue<TCtxExtra, TVariants> = useMemo(
+      () => ({
+        variant,
+        getStyles: getStyles as GetStylesFn<ConcreteFactoryPayload>,
+        ctxExtras,
+      }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [variant, ctxExtras, theme, stableStyleProps],
+    );
 
     /**
      * Root's getStyles adapter. For the root selector the root instance
@@ -355,18 +396,7 @@ export function defineCompound<
   Root.displayName = config.name;
   (Root as any).__vocabularyAxes = config.vocabularyAxes ?? [];
 
-  (Root as any).extend = (
-    extendConfig: ComponentExtendConfig<TRootProps>,
-  ): ThemeComponentEntry<TRootProps> => ({
-    __soribashiThemeEntry: true as const,
-    name: config.name,
-    vocabulary: extendConfig.vocabulary as any,
-    defaultProps: extendConfig.defaultProps ?? {},
-    classNames: extendConfig.classNames,
-    styles: extendConfig.styles,
-    vars: extendConfig.vars,
-    attributes: extendConfig.attributes,
-  });
+  (Root as any).extend = makeExtendEntry<TRootProps>(config.name);
 
   // -------------------------------------------------------------------------
   // Non-root parts
@@ -450,18 +480,7 @@ export function defineCompound<
 
       PolyPartComponent.displayName = partName;
 
-      (PolyPartComponent as any).extend = (
-        extendConfig: ComponentExtendConfig<any>,
-      ): ThemeComponentEntry<any> => ({
-        __soribashiThemeEntry: true as const,
-        name: partName,
-        vocabulary: extendConfig.vocabulary as any,
-        defaultProps: extendConfig.defaultProps ?? {},
-        classNames: extendConfig.classNames,
-        styles: extendConfig.styles,
-        vars: extendConfig.vars,
-        attributes: extendConfig.attributes,
-      });
+      (PolyPartComponent as any).extend = makeExtendEntry<any>(partName);
 
       namespacedParts[capitalize(partKey)] = PolyPartComponent;
       continue;
@@ -547,18 +566,7 @@ export function defineCompound<
 
     PartComponent.displayName = partName;
 
-    (PartComponent as any).extend = (
-      extendConfig: ComponentExtendConfig<any>,
-    ): ThemeComponentEntry<any> => ({
-      __soribashiThemeEntry: true as const,
-      name: partName,
-      vocabulary: extendConfig.vocabulary as any,
-      defaultProps: extendConfig.defaultProps ?? {},
-      classNames: extendConfig.classNames,
-      styles: extendConfig.styles,
-      vars: extendConfig.vars,
-      attributes: extendConfig.attributes,
-    });
+    (PartComponent as any).extend = makeExtendEntry<any>(partName);
 
     namespacedParts[capitalize(partKey)] = PartComponent;
   }

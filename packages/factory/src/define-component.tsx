@@ -9,6 +9,7 @@ import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
@@ -19,6 +20,11 @@ export interface DefineComponentConfig<
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
+  /**
+   * @deprecated Dead config key — defineComponent never reads it (the render
+   * function decides the element). Kept only because existing app recipes
+   * still pass it; delete together with those call sites.
+   */
   element?: keyof JSX.IntrinsicElements;
   vocabularyAxes?: TVocabAxes;
   selectors: TSelectors;
@@ -92,20 +98,7 @@ export function defineComponent<
   (Component as any).withProps = makeWithProps(Component as any);
   type DefineComponentProps = TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
 
-  (Component as any).extend = (
-    extendConfig: ComponentExtendConfig<DefineComponentProps>,
-  ): ThemeComponentEntry<DefineComponentProps> => ({
-    __soribashiThemeEntry: true as const,
-    name: config.name,
-    // Vocabulary stored as-is; function-form values resolved by createTheme/normalize-components.
-    // Cast to any because the entry type expects concrete Vocabulary (post-resolution shape).
-    vocabulary: extendConfig.vocabulary as any,
-    defaultProps: extendConfig.defaultProps ?? {},
-    classNames: extendConfig.classNames,
-    styles: extendConfig.styles,
-    vars: extendConfig.vars,
-    attributes: extendConfig.attributes,
-  });
+  (Component as any).extend = makeExtendEntry<DefineComponentProps>(config.name);
 
   return Component as unknown as React.ForwardRefExoticComponent<
     TOwnProps & StylesApiProps<any> & React.RefAttributes<HTMLElement>

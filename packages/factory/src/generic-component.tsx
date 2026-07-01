@@ -5,6 +5,11 @@ const identity = <T,>(value: T): T => value;
 
 /**
  * Lower-level generic factory escape hatch.
+ *
+ * NOTE: `extend` is the identity function (Mantine parity), NOT the
+ * ThemeComponentEntry builder the define* builders attach. Passing
+ * `Component.extend({...})` output to `createTheme({ components: [...] })`
+ * throws. Use defineGenericComponent if the component needs theme entries.
  */
 export function genericComponent(
   render: (props: any, ref: Ref<unknown>) => React.ReactNode,

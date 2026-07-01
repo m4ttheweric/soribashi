@@ -20,7 +20,7 @@ const wrap = (ui: React.ReactNode, t = theme) =>
 // Reference: mantine/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/resolve-vars.ts
 
 describe('instance vars prop — defineComponent', () => {
-  const Button = defineComponent({
+  const Button = defineComponent<{ children?: React.ReactNode }>({
     name: 'VarsButton',
     selectors: ['root', 'label'] as const,
     classes: { root: 'vb-root', label: 'vb-label' },
@@ -64,7 +64,7 @@ describe('instance vars prop — defineComponent', () => {
         VarsPrecedence: { vars: () => ({ root: { '--v': 'from-theme' } }) },
       },
     });
-    const Precedence = defineComponent({
+    const Precedence = defineComponent<{ children?: React.ReactNode }>({
       name: 'VarsPrecedence',
       selectors: ['root'] as const,
       classes: { root: 'vp-root' },

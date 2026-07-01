@@ -10,6 +10,7 @@ import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
 
@@ -140,19 +141,7 @@ export function definePolymorphicComponent<
     & Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>>
     & { variant?: TVariants[number]; intent?: string };
 
-  (Component as any).extend = (
-    extendConfig: ComponentExtendConfig<DefinePolymorphicProps>,
-  ): ThemeComponentEntry<DefinePolymorphicProps> => ({
-    __soribashiThemeEntry: true as const,
-    name: config.name,
-    // Vocabulary stored as-is; function-form values resolved by createTheme/normalize-components in Task 15.
-    vocabulary: extendConfig.vocabulary as any,
-    defaultProps: extendConfig.defaultProps ?? {},
-    classNames: extendConfig.classNames,
-    styles: extendConfig.styles,
-    vars: extendConfig.vars,
-    attributes: extendConfig.attributes,
-  });
+  (Component as any).extend = makeExtendEntry<DefinePolymorphicProps>(config.name);
 
   // The component itself is generic over the target element type.
   // Callers can pass `as="span"` and TS instantiates TAs='span' so the
