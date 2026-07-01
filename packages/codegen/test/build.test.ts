@@ -5,11 +5,19 @@ import { tmpdir } from 'node:os';
 import { createTheme } from '@soribashi/theme';
 import { build } from '../src/build.ts';
 
-// build() now validates semanticTokens refs against tokens. These minimal
-// fixtures do not define the neutral family that createTheme's default
-// semanticTokens reference, so give them explicitly empty semantic slots to
-// keep each test focused on its own behavior.
-const noSemanticTokens = { text: {}, surface: {}, border: {} };
+// build() validates semanticTokens refs against tokens, and createTheme's
+// default semanticTokens now merge per-key (empty slots no longer blank
+// them). Give every fixture the neutral shades those defaults reference so
+// each test stays focused on its own behavior.
+const neutral = {
+  '0': 'hsl(0 0% 100%)',
+  '50': 'hsl(210 40% 98%)',
+  '100': 'hsl(210 40% 96%)',
+  '200': 'hsl(214 32% 91%)',
+  '400': 'hsl(215 20% 65%)',
+  '500': 'hsl(215 16% 47%)',
+  '900': 'hsl(222 47% 11%)',
+};
 
 describe('build', () => {
   let tempDir: string;
@@ -24,9 +32,8 @@ describe('build', () => {
 
   it('writes theme.css to output.css path', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: { md: '0.5rem' },
         spacing: { md: '0.5rem' },
         fontSize: { md: '1rem' },
@@ -46,9 +53,8 @@ describe('build', () => {
 
   it('writes Tailwind v3 config when mode=v3', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: { md: '0.5rem' },
         spacing: {},
         fontSize: {},
@@ -73,9 +79,8 @@ describe('build', () => {
 
   it('writes Tailwind v4 css when mode=v4', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {},
         spacing: {},
         fontSize: {},
@@ -99,9 +104,8 @@ describe('build', () => {
 
   it('writes both v3 and v4 outputs when mode=both', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {},
         spacing: {},
         fontSize: {},
@@ -125,8 +129,7 @@ describe('build', () => {
 
   it('creates parent directories as needed', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
-      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      tokens: { colors: { neutral }, radius: {}, spacing: {}, fontSize: {} },
     });
     const cssPath = join(tempDir, 'nested/dir/theme.css');
     await build({
@@ -138,8 +141,7 @@ describe('build', () => {
 
   it('returns a result describing what was written', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
-      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      tokens: { colors: { neutral }, radius: {}, spacing: {}, fontSize: {} },
     });
     const cssPath = join(tempDir, 'theme.css');
     const result = await build({
@@ -152,9 +154,8 @@ describe('build', () => {
 
   it('emits --__hsl- companion vars when no Tailwind output is configured (auto)', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
       },
     });
@@ -166,9 +167,8 @@ describe('build', () => {
 
   it('emits --__hsl- companion vars when Tailwind mode=v3 (auto)', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
       },
     });
@@ -184,9 +184,8 @@ describe('build', () => {
 
   it('SKIPS --__hsl- companion vars when Tailwind mode=v4 (auto — v4 uses color-mix())', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
       },
     });
@@ -203,9 +202,8 @@ describe('build', () => {
 
   it('emits --__hsl- companion vars when Tailwind mode=both (auto)', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
       },
     });
@@ -222,9 +220,8 @@ describe('build', () => {
 
   it('honors explicit emit.emitCompanionHsl=false even with v3 Tailwind', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
       },
     });
@@ -241,9 +238,8 @@ describe('build', () => {
 
   it('honors explicit emit.emitCompanionHsl=true even with v4-only Tailwind', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
       },
     });

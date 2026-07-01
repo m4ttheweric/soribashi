@@ -7,14 +7,23 @@ import type { ThemeDefinition } from '@soribashi/theme';
 import { validateTheme } from '../src/validate-theme.ts';
 import { build } from '../src/build.ts';
 
-const emptySemanticTokens = { text: {}, surface: {}, border: {} };
+// createTheme's default semanticTokens merge per-key under any overrides, so
+// the fixture palette must cover every neutral shade those defaults reference.
+const neutral = {
+  '0': 'hsl(0 0% 100%)',
+  '50': 'hsl(210 40% 98%)',
+  '100': 'hsl(210 40% 96%)',
+  '200': 'hsl(214 32% 91%)',
+  '400': 'hsl(215 20% 65%)',
+  '500': 'hsl(215 16% 47%)',
+  '900': 'hsl(222 47% 11%)',
+};
 
 function themeWith(overrides: Partial<ThemeDefinition>) {
   return createTheme({
-    semanticTokens: emptySemanticTokens,
     ...overrides,
     tokens: {
-      colors: { neutral: { '0': '#fff', '500': 'hsl(215 16% 47%)', '900': 'hsl(222 47% 11%)' } },
+      colors: { neutral },
       radius: { md: '0.5rem' },
       spacing: { md: '1rem' },
       fontSize: { md: '1rem' },
@@ -56,7 +65,6 @@ describe('validateTheme — semantic token references', () => {
   it('rejects an unknown token namespace, naming the ref and slot', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         text: { default: 'color.neutral.900' },
       },
     });
@@ -69,7 +77,6 @@ describe('validateTheme — semantic token references', () => {
   it('rejects a colors ref with the wrong arity', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         text: { default: 'colors.neutral' },
       },
     });
@@ -81,7 +88,6 @@ describe('validateTheme — semantic token references', () => {
   it('rejects a ref to a nonexistent color family', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         surface: { default: 'colors.brand.500' },
       },
     });
@@ -93,7 +99,6 @@ describe('validateTheme — semantic token references', () => {
   it('rejects a ref to a nonexistent shade, naming the exact ref and slot', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         text: { default: 'colors.neutral.950' },
       },
     });
@@ -106,7 +111,6 @@ describe('validateTheme — semantic token references', () => {
   it('rejects a radius/spacing/fontSize ref with a missing key', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         border: { rounded: 'radius.xl' },
       },
     });
@@ -118,7 +122,6 @@ describe('validateTheme — semantic token references', () => {
   it('validates the object-form surface foreground slot', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         surface: { floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.999' } },
       },
     });
@@ -130,7 +133,6 @@ describe('validateTheme — semantic token references', () => {
   it('validates accent slot refs', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         accent: { primary: 'colors.missing.500' },
       },
     });
@@ -141,7 +143,6 @@ describe('validateTheme — semantic token references', () => {
   it('aggregates multiple errors into one actionable message', () => {
     const theme = themeWith({
       semanticTokens: {
-        ...emptySemanticTokens,
         text: { default: 'colors.neutral.999', muted: 'bogus.thing' },
       },
     });
@@ -196,7 +197,7 @@ describe('validateTheme — custom-property-unsafe token names', () => {
   it('accepts hyphenated and underscored names', () => {
     const theme = themeWith({
       tokens: {
-        colors: { 'blue-gray': { '500': 'hsl(215 16% 47%)' }, brand_alt: { '500': '#123' } },
+        colors: { neutral, 'blue-gray': { '500': 'hsl(215 16% 47%)' }, brand_alt: { '500': '#123' } },
         radius: {},
         spacing: {},
         fontSize: {},
@@ -213,7 +214,6 @@ describe('build — fails on invalid semantic token refs', () => {
     try {
       const theme = themeWith({
         semanticTokens: {
-          ...emptySemanticTokens,
           text: { default: 'colors.neutral.999' },
         },
       });

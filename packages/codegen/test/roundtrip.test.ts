@@ -5,11 +5,19 @@ import { tmpdir } from 'node:os';
 import { createTheme } from '@soribashi/theme';
 import { build } from '../src/build.ts';
 
-// build() now validates semanticTokens refs against tokens. These minimal
-// fixtures do not define the neutral family that createTheme's default
-// semanticTokens reference, so give them explicitly empty semantic slots to
-// keep each test focused on its own behavior.
-const noSemanticTokens = { text: {}, surface: {}, border: {} };
+// build() validates semanticTokens refs against tokens, and createTheme's
+// default semanticTokens now merge per-key (empty slots no longer blank
+// them). Give every fixture the neutral shades those defaults reference so
+// each test stays focused on its own behavior.
+const neutral = {
+  '0': 'hsl(0 0% 100%)',
+  '50': 'hsl(210 40% 98%)',
+  '100': 'hsl(210 40% 96%)',
+  '200': 'hsl(214 32% 91%)',
+  '400': 'hsl(215 20% 65%)',
+  '500': 'hsl(215 16% 47%)',
+  '900': 'hsl(222 47% 11%)',
+};
 
 describe('token roundtrip integration', () => {
   let tempDir: string;
@@ -24,9 +32,9 @@ describe('token roundtrip integration', () => {
 
   it('a new color family added to the theme appears in both theme.css and tailwind config', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
         colors: {
+          neutral,
           primary: { '500': 'hsl(217 91% 60%)' },
           brand: {
             '50': 'hsl(160 100% 95%)',
@@ -62,9 +70,8 @@ describe('token roundtrip integration', () => {
 
   it('a removed color family disappears from outputs', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': '#000' } },
+        colors: { neutral, primary: { '500': '#000' } },
         radius: {},
         spacing: {},
         fontSize: {},
@@ -84,9 +91,8 @@ describe('token roundtrip integration', () => {
 
   it('extending a base theme produces inherited + new tokens', async () => {
     const baseTheme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': '#aaa' } },
+        colors: { neutral, primary: { '500': '#aaa' } },
         radius: { md: '0.5rem' },
         spacing: {},
         fontSize: {},
@@ -95,7 +101,6 @@ describe('token roundtrip integration', () => {
     });
 
     const tenantTheme = createTheme({
-      semanticTokens: noSemanticTokens,
       extends: baseTheme,
       tokens: {
         colors: { brand: { '500': '#ff0' } },
@@ -120,9 +125,8 @@ describe('token roundtrip integration', () => {
 
   it('custom scope and dark mode propagate through codegen end-to-end', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': 'hsl(217 91% 60%)' } },
+        colors: { neutral, primary: { '500': 'hsl(217 91% 60%)' } },
         radius: {},
         spacing: {},
         fontSize: {},
@@ -149,17 +153,12 @@ describe('token roundtrip integration', () => {
   it('semantic surface tokens reach the emitted CSS', async () => {
     const theme = createTheme({
       tokens: {
-        colors: { neutral: { '0': '#fff', '50': '#fafafa', '100': '#f4f4f5' } },
+        colors: { neutral },
         radius: {},
         spacing: {},
         fontSize: {},
       },
       semanticTokens: {
-        // text/border left explicitly empty: their defaults reference neutral
-        // shades (900/500/400/200) this fixture does not define, and build()
-        // validates refs.
-        text: {},
-        border: {},
         surface: {
           canvas: 'colors.neutral.50',
           default: 'colors.neutral.0',
@@ -182,9 +181,8 @@ describe('token roundtrip integration', () => {
 
   it('byte-identical output across runs (determinism)', async () => {
     const theme = createTheme({
-      semanticTokens: noSemanticTokens,
       tokens: {
-        colors: { primary: { '500': '#000' }, brand: { '500': '#fff' } },
+        colors: { neutral, primary: { '500': '#000' }, brand: { '500': '#fff' } },
         radius: { md: '0.5rem' },
         spacing: { md: '0.5rem' },
         fontSize: { md: '1rem' },
