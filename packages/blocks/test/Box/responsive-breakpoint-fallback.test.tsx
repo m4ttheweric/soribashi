@@ -4,7 +4,7 @@ import { createTheme } from '@soribashi/theme';
 import { SoribashiProvider } from '@soribashi/factory';
 import { Box } from '../../src/Box/Box.tsx';
 
-const themeWithoutBreakpoints = createTheme({
+const resolved = createTheme({
   tokens: {
     colors: {},
     radius: {},
@@ -12,6 +12,10 @@ const themeWithoutBreakpoints = createTheme({
     fontSize: {},
   },
 });
+// createTheme backfills default breakpoints; strip them so the runtime
+// fallback path is still exercised.
+const { breakpoint: _backfilled, ...tokens } = resolved.tokens;
+const themeWithoutBreakpoints = { ...resolved, tokens };
 
 const wrap = (ui: React.ReactNode) =>
   render(<SoribashiProvider theme={themeWithoutBreakpoints}>{ui}</SoribashiProvider>);
