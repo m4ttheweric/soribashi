@@ -29,7 +29,7 @@ export const AspectRatio = defineComponent<AspectRatioOwnProps>({
       '--ar-ratio': String((props as AspectRatioOwnProps).ratio ?? 1),
     },
   }),
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       ratio: _r,
       children,
@@ -43,7 +43,7 @@ export const AspectRatio = defineComponent<AspectRatioOwnProps>({
       ...rest
     } = props as any;
     return (
-      <Box {...getStyles('root')} {...rest}>
+      <Box ref={ref} {...getStyles('root')} {...rest}>
         {children}
       </Box>
     );

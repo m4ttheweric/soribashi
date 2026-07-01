@@ -58,7 +58,7 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
     }
     return { root: vars };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       cols: _co,
       spacing: _sp,
@@ -84,6 +84,7 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
 
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         mod={[autoFlowAttr ? { 'auto-flow': autoFlowAttr } : null, mod].filter(Boolean) as any}
         {...rest}

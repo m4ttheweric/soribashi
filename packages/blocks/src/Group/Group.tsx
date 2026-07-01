@@ -64,7 +64,7 @@ export const Group = defineComponent<GroupOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       gap: _gap,
       align: _align,
@@ -88,6 +88,7 @@ export const Group = defineComponent<GroupOwnProps>({
 
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         mod={[{ grow: !!grow }, mod].filter(Boolean) as any}
         {...rest}

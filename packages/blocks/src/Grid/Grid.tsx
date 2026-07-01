@@ -80,7 +80,7 @@ const GridRoot = defineComponent<GridOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       gap: _g,
       rowGap: _rg,
@@ -102,7 +102,7 @@ const GridRoot = defineComponent<GridOwnProps>({
     } = props as any;
     return (
       <GridProvider value={{ columns: columns ?? 12, grow }}>
-        <Box {...getStyles('root')} {...rest}>
+        <Box ref={ref} {...getStyles('root')} {...rest}>
           <div {...getStyles('inner')}>{children}</div>
         </Box>
       </GridProvider>
@@ -127,7 +127,7 @@ const GridCol = defineComponent<GridColOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       span,
       offset,
@@ -167,6 +167,7 @@ const GridCol = defineComponent<GridColOwnProps>({
 
     return (
       <Box
+        ref={ref}
         {...stylesResult}
         style={{ ...(stylesResult.style as object | undefined), ...colVars }}
         {...rest}

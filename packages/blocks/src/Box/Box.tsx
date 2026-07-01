@@ -39,7 +39,7 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
   defaultElement: 'div',
   selectors: ['root'] as const,
   classes: { root: 'sb-Box-root' },
-  render: ({ Element, props, getStyles }) => {
+  render: ({ Element, props, getStyles, ref }) => {
     const {
       mod,
       variant,
@@ -104,6 +104,7 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
           />
         )}
         <Element
+          ref={ref}
           {...baseStyles}
           className={className}
           style={mergedStyle}

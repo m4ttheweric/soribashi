@@ -54,7 +54,7 @@ export const Flex = defineComponent<FlexOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       gap: _g,
       rowGap: _rg,
@@ -74,7 +74,7 @@ export const Flex = defineComponent<FlexOwnProps>({
       ...rest
     } = props as any;
     return (
-      <Box {...getStyles('root')} {...rest}>
+      <Box ref={ref} {...getStyles('root')} {...rest}>
         {children}
       </Box>
     );

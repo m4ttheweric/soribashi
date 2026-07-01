@@ -41,7 +41,7 @@ export const Paper = defineComponent<PaperOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       shadow: _sh,
       radius: _rd,
@@ -59,6 +59,7 @@ export const Paper = defineComponent<PaperOwnProps>({
     } = props as any;
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         mod={[{ 'with-border': !!withBorder }, mod].filter(Boolean) as any}
         {...rest}
