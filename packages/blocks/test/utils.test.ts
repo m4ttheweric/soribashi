@@ -69,6 +69,24 @@ describe('getSpacing', () => {
     // '2xl' starts with '2' → raw CSS pass-through, not a token
     expect(getSpacing('2xl')).toBe('2xl');
   });
+  it('passes CSS-wide and sizing keywords through unchanged', () => {
+    for (const keyword of [
+      'auto',
+      'inherit',
+      'initial',
+      'unset',
+      'revert',
+      'revert-layer',
+      'fit-content',
+      'max-content',
+      'min-content',
+    ]) {
+      expect(getSpacing(keyword)).toBe(keyword);
+    }
+  });
+  it('passes leading-dot values through as raw CSS', () => {
+    expect(getSpacing('.5rem')).toBe('.5rem');
+  });
 });
 
 describe('getRadius', () => {
@@ -109,6 +127,14 @@ describe('getSize', () => {
     expect(getSize('100px', 'foo')).toBe('100px');
     expect(getSize('var(--x)', 'foo')).toBe('var(--x)');
     expect(getSize('calc(100% - 8px)', 'foo')).toBe('calc(100% - 8px)');
+  });
+  it('passes through hsla() and leading-dot values', () => {
+    expect(getSize('hsla(217, 91%, 60%, 0.5)', 'foo')).toBe('hsla(217, 91%, 60%, 0.5)');
+    expect(getSize('.5rem', 'foo')).toBe('.5rem');
+  });
+  it('passes CSS keywords through for any prefix', () => {
+    expect(getSize('auto', 'spacing')).toBe('auto');
+    expect(getSize('fit-content', 'spacing')).toBe('fit-content');
   });
   it('returns undefined for undefined', () => {
     expect(getSize(undefined, 'foo')).toBeUndefined();
