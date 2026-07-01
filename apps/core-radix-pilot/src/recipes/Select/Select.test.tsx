@@ -112,6 +112,21 @@ describe('Select correctness + a11y fixes', () => {
     expect(clear.tagName).toBe('BUTTON');
   });
 
+  it('closes on outside pointer press', () => {
+    wrap(<Select data={data} placeholder="Pick" />);
+    fireEvent.click(screen.getByRole('combobox'));
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('does not clear or remove when disabled', () => {
+    const onChange = vi.fn();
+    wrap(<Select data={data} clearable disabled value="sm" onChange={onChange} />);
+    fireEvent.click(screen.getByLabelText('Clear'));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('sets aria-activedescendant to the highlighted option id during keyboard nav', () => {
     wrap(<Select data={data} placeholder="Pick" />);
     const combo = screen.getByRole('combobox');
