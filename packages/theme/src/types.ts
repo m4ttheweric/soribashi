@@ -147,6 +147,12 @@ export type PartialSemanticTokensConfig = {
 export interface IntentResolverInput {
   intent: string;
   variant: string;
+  /**
+   * The fully-resolved theme, for resolvers that derive values from tokens or
+   * vocabulary. The default resolver does not consult it; it emits fixed
+   * `var(--color-{intent}-{shade})` references instead (see the scale
+   * contract on `IntentResolver`).
+   */
   theme: ResolvedTheme;
 }
 
@@ -159,6 +165,15 @@ export interface IntentResolverResult {
   hoverColor?: string;
 }
 
+/**
+ * Maps `(intent, variant)` to concrete CSS values.
+ *
+ * Scale contract when using the DEFAULT resolver: every scale named by the
+ * intent vocabulary must define shades `50`, `100`, `200`, `500`, `600`,
+ * `700`, `800`, and `foreground` (text paired with the `500` background).
+ * Themes whose scales cannot provide those shades must supply their own
+ * resolver here.
+ */
 export type IntentResolver = (input: IntentResolverInput) => IntentResolverResult;
 
 // Component theme override types
