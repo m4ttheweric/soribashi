@@ -89,16 +89,18 @@ export function definePolymorphicComponent<
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
-    const { as: asProp, ...rest } = rawProps as { as?: ElementType };
-    const Element: ElementType = asProp ?? config.defaultElement;
-
     const merged = useProps<TOwnProps & StylesApiProps<any>>(
       config.name,
       (config.defaults ?? null) as Partial<TOwnProps & StylesApiProps<any>> | null,
-      rest as TOwnProps & StylesApiProps<any>,
+      rawProps as TOwnProps & StylesApiProps<any>,
     );
 
-    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
+    // `as` resolves AFTER useProps (Mantine semantics) so theme defaultProps
+    // can retarget the element; stripping it here keeps it off the DOM.
+    const { as: asProp, ...rest } = merged as { as?: ElementType };
+    const Element: ElementType = asProp ?? config.defaultElement;
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], rest as Record<string, unknown>, config.variants);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)
@@ -110,20 +112,20 @@ export function definePolymorphicComponent<
     >({
       name: config.name,
       classes: config.classes as any,
-      className: (merged as any).className,
-      style: (merged as any).style,
-      classNames: (merged as any).classNames,
-      styles: (merged as any).styles,
-      vars: (merged as any).vars,
-      attributes: (merged as any).attributes,
-      unstyled: (merged as any).unstyled,
-      props: merged as any,
+      className: (rest as any).className,
+      style: (rest as any).style,
+      classNames: (rest as any).classNames,
+      styles: (rest as any).styles,
+      vars: (rest as any).vars,
+      attributes: (rest as any).attributes,
+      unstyled: (rest as any).unstyled,
+      props: rest as any,
       varsResolver: varsResolver as any,
     });
 
     return config.render({
       Element,
-      props: merged as any,
+      props: rest as any,
       getStyles: getStyles as any,
       ref,
     }) as React.ReactElement;

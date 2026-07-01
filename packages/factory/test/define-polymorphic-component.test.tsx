@@ -91,3 +91,43 @@ describe('definePolymorphicComponent', () => {
     expect(container.querySelector('p')).toBeNull();
   });
 });
+
+// `as` must resolve AFTER useProps (Mantine semantics) so a theme can
+// retarget the element via defaultProps, and the resolved `as` must be
+// stripped before props reach the DOM.
+describe('definePolymorphicComponent — as resolved post-useProps', () => {
+  const themedAs = createTheme({
+    tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+    components: { Text: { defaultProps: { as: 'a' } } },
+  });
+
+  it('theme defaultProps { as } retargets the rendered element', () => {
+    const { container } = render(
+      <SoribashiProvider theme={themedAs}>
+        <Text>X</Text>
+      </SoribashiProvider>,
+    );
+    expect(container.querySelector('a')).toBeInTheDocument();
+    expect(container.querySelector('p')).toBeNull();
+  });
+
+  it('theme-supplied as does not leak to the DOM', () => {
+    const { container } = render(
+      <SoribashiProvider theme={themedAs}>
+        <Text>X</Text>
+      </SoribashiProvider>,
+    );
+    expect(container.querySelector('a')?.hasAttribute('as')).toBe(false);
+  });
+
+  it('instance as beats theme defaultProps as', () => {
+    const { container } = render(
+      <SoribashiProvider theme={themedAs}>
+        <Text as="span">X</Text>
+      </SoribashiProvider>,
+    );
+    expect(container.querySelector('span')).toBeInTheDocument();
+    expect(container.querySelector('a')).toBeNull();
+    expect(container.querySelector('span')?.hasAttribute('as')).toBe(false);
+  });
+});
