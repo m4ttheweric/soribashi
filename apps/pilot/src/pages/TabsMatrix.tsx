@@ -152,9 +152,15 @@ function ControlledCell() {
         <Tabs.Content value="c">C panel</Tabs.Content>
       </Tabs>
       <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.25rem' }}>
-        <button onClick={() => setTab('a')}>Set A</button>
-        <button onClick={() => setTab('b')}>Set B</button>
-        <button onClick={() => setTab('c')}>Set C</button>
+        <button type="button" onClick={() => setTab('a')}>
+          Set A
+        </button>
+        <button type="button" onClick={() => setTab('b')}>
+          Set B
+        </button>
+        <button type="button" onClick={() => setTab('c')}>
+          Set C
+        </button>
       </div>
     </section>
   );

@@ -43,43 +43,51 @@ export function App() {
           >
             <strong style={{ fontFamily: 'var(--font-family-sans)' }}>recipe pilot</strong>
             <button
+              type="button"
               onClick={() => setPage('tokens')}
               aria-current={page === 'tokens' ? 'page' : undefined}
             >
               Tokens
             </button>
             <button
+              type="button"
               onClick={() => setPage('screen')}
               aria-current={page === 'screen' ? 'page' : undefined}
             >
               Screen replica
             </button>
             <button
+              type="button"
               onClick={() => setPage('buttons')}
               aria-current={page === 'buttons' ? 'page' : undefined}
             >
               Button matrix
             </button>
             <button
+              type="button"
               onClick={() => setPage('tooltips')}
               aria-current={page === 'tooltips' ? 'page' : undefined}
             >
               Tooltip matrix
             </button>
             <button
+              type="button"
               onClick={() => setPage('tabs')}
               aria-current={page === 'tabs' ? 'page' : undefined}
             >
               Tabs matrix
             </button>
             <button
+              type="button"
               onClick={() => setPage('selects')}
               aria-current={page === 'selects' ? 'page' : undefined}
             >
               Select matrix
             </button>
             <span style={{ marginLeft: 'auto' }}>
-              <button onClick={() => setDark(!dark)}>{dark ? 'Light' : 'Dark'}</button>
+              <button type="button" onClick={() => setDark(!dark)}>
+                {dark ? 'Light' : 'Dark'}
+              </button>
             </span>
           </header>
 

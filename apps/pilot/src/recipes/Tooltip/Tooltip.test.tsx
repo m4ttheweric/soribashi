@@ -45,7 +45,7 @@ describe('Tooltip recipe', () => {
       withProviders(
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <button>init-trigger</button>
+            <button type="button">init-trigger</button>
           </Tooltip.Trigger>
           <Tooltip.Content>init-tooltip-content</Tooltip.Content>
         </Tooltip>,
@@ -67,7 +67,7 @@ describe('Tooltip recipe', () => {
       withProvidersFastDelay(
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <button>hover-trigger</button>
+            <button type="button">hover-trigger</button>
           </Tooltip.Trigger>
           <Tooltip.Content>hover-tooltip-content</Tooltip.Content>
         </Tooltip>,
@@ -97,7 +97,9 @@ describe('Tooltip recipe', () => {
       withProvidersFastDelay(
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <button data-testid="custom-btn">trigger</button>
+            <button type="button" data-testid="custom-btn">
+              trigger
+            </button>
           </Tooltip.Trigger>
           <Tooltip.Content>tip</Tooltip.Content>
         </Tooltip>,
@@ -114,7 +116,7 @@ describe('Tooltip recipe', () => {
       withProvidersFastDelay(
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <button>portal-trigger</button>
+            <button type="button">portal-trigger</button>
           </Tooltip.Trigger>
           <Tooltip.Content>portal-tooltip-text</Tooltip.Content>
         </Tooltip>,
@@ -136,7 +138,7 @@ describe('Tooltip recipe', () => {
       withProvidersFastDelay(
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <button>default-trigger</button>
+            <button type="button">default-trigger</button>
           </Tooltip.Trigger>
           <Tooltip.Content>default-tip-text</Tooltip.Content>
         </Tooltip>,
@@ -160,7 +162,7 @@ describe('Tooltip recipe', () => {
       withProvidersFastDelay(
         <Tooltip variant="subtle">
           <Tooltip.Trigger asChild>
-            <button>subtle-trigger</button>
+            <button type="button">subtle-trigger</button>
           </Tooltip.Trigger>
           <Tooltip.Content>subtle-tip-text</Tooltip.Content>
         </Tooltip>,
@@ -184,7 +186,7 @@ describe('Tooltip recipe', () => {
         <SoribashiProvider theme={theme}>
           <Tooltip.Provider>
             <Tooltip.Trigger asChild>
-              <button>x</button>
+              <button type="button">x</button>
             </Tooltip.Trigger>
           </Tooltip.Provider>
         </SoribashiProvider>,
@@ -202,7 +204,7 @@ describe('Tooltip recipe', () => {
       withProvidersFastDelay(
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <button>t</button>
+            <button type="button">t</button>
           </Tooltip.Trigger>
           <Tooltip.Content className="custom-content-class">hi</Tooltip.Content>
         </Tooltip>,
@@ -232,7 +234,7 @@ describe('Tooltip recipe', () => {
         <Tooltip.Provider delayDuration={0}>
           <Tooltip>
             <Tooltip.Trigger asChild>
-              <button>wd-trigger</button>
+              <button type="button">wd-trigger</button>
             </Tooltip.Trigger>
             <Tooltip.Content>wd-tip</Tooltip.Content>
           </Tooltip>
