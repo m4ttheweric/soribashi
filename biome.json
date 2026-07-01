@@ -33,7 +33,20 @@
       "semicolons": "always"
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": true
+    }
+  },
   "files": {
     "ignore": ["dist/**", "build/**", "node_modules/**", "**/*.generated.*"]
-  }
+  },
+  "overrides": [
+    {
+      "include": ["**/tsconfig.json", "**/tsconfig.*.json"],
+      "json": {
+        "parser": { "allowComments": true }
+      }
+    }
+  ]
 }
