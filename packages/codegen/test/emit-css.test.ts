@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createTheme, defaultTokens } from '@soribashi/theme';
 import { emitCss } from '../src/emit-css.ts';
 
@@ -417,5 +417,50 @@ describe('emitCss with EmitCssOptions.removeDefaultVariables', () => {
     const cssA = emitCss(theme, { removeDefaultVariables: false });
     const cssB = emitCss(theme);
     expect(cssA).toBe(cssB);
+  });
+});
+
+describe('emitCss with EmitCssOptions.removeDefaultVariables warning', () => {
+  it('warns loudly when the option removes variables', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const theme = createTheme({ tokens: defaultTokens });
+      emitCss(theme, { removeDefaultVariables: true });
+      expect(warn).toHaveBeenCalledTimes(1);
+      const message = String(warn.mock.calls[0]?.[0]);
+      expect(message).toContain('removeDefaultVariables');
+      expect(message).toMatch(/baseline stylesheet/i);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn when nothing matches the defaults', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const theme = createTheme({
+        tokens: {
+          colors: { acme: { '500': 'hsl(300 50% 50%)' } },
+          radius: {},
+          spacing: {},
+          fontSize: {},
+        },
+      });
+      emitCss(theme, { removeDefaultVariables: true });
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn when the option is off', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const theme = createTheme({ tokens: defaultTokens });
+      emitCss(theme);
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

@@ -15,6 +15,22 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   // concrete boolean before calling emitCss based on the Tailwind output mode.
   const emitCompanion = opts.emitCompanionHsl !== false;
 
+  if (opts.removeDefaultVariables) {
+    const removed =
+      countEmittedTokenVars(theme, emitCompanion) -
+      countEmittedTokenVars(effectiveTheme, emitCompanion);
+    if (removed > 0) {
+      // Nothing in soribashi ships a baseline stylesheet (no equivalent of
+      // @mantine/core/styles.css), so deduped output is broken unless the
+      // consumer provides one. Warn loudly until that story exists.
+      console.warn(
+        `[soribashi] removeDefaultVariables removed ${removed} variable(s) that match the soribashi defaults. ` +
+          `The generated CSS is NOT self-contained: a baseline stylesheet defining the soribashi default ` +
+          `variables must be loaded before it, or the removed variables will be undefined at runtime.`,
+      );
+    }
+  }
+
   const lines: string[] = [HEADER, ''];
 
   // :root block
@@ -70,6 +86,13 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   }
 
   return `${lines.join('\n')}\n`;
+}
+
+function countEmittedTokenVars(theme: ResolvedTheme, emitCompanion: boolean): number {
+  const scratch: string[] = [];
+  emitTokenLines(scratch, theme.tokens, emitCompanion);
+  emitDarkTokenLines(scratch, theme.dark, emitCompanion);
+  return scratch.length;
 }
 
 function emitTokenLines(
