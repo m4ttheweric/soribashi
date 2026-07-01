@@ -1,4 +1,5 @@
 import { pathToFileURL } from 'node:url';
+import type { ResolvedTheme } from '@soribashi/theme';
 import type { CodegenConfig } from './types.ts';
 
 /**
@@ -34,6 +35,23 @@ export async function loadConfig(absolutePath: string): Promise<CodegenConfig> {
   if (!config.output?.css) {
     throw new Error(
       `[soribashi] Config at ${absolutePath} must have "output.css" set to the output path for theme.css.`,
+    );
+  }
+
+  // A raw ThemeDefinition (author forgot createTheme()) crashes deep inside
+  // the emitters with a bare TypeError; catch it here with a useful message.
+  // vocabulary/semanticTokens/scope are always present on a ResolvedTheme and
+  // absent from typical definitions.
+  const theme: Partial<ResolvedTheme> = config.theme;
+  const looksResolved =
+    typeof theme === 'object' &&
+    theme !== null &&
+    theme.vocabulary !== undefined &&
+    theme.semanticTokens !== undefined &&
+    typeof theme.scope === 'string';
+  if (!looksResolved) {
+    throw new Error(
+      `[soribashi] Config at ${absolutePath}: config.theme does not look like a ResolvedTheme; did you forget to wrap it in createTheme()?`,
     );
   }
 

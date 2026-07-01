@@ -54,6 +54,12 @@ export interface EmitCssOptions {
   /**
    * If true, removes token entries that exactly match the soribashi default theme
    * before emitting. Reduces CSS payload for themes that mostly inherit from defaults.
+   *
+   * CONSTRAINT: the deduped output is not self-contained. Soribashi does not ship
+   * a baseline stylesheet (no equivalent of @mantine/core/styles.css), so anything
+   * this option removes must be defined by a consumer-provided baseline stylesheet
+   * loaded before the generated CSS; otherwise the removed variables are undefined
+   * at runtime. emitCss warns at build time whenever the option removes anything.
    * @default false
    */
   removeDefaultVariables?: boolean;

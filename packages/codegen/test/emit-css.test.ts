@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createTheme, defaultTokens } from '@soribashi/theme';
 import { emitCss } from '../src/emit-css.ts';
 
@@ -113,6 +113,48 @@ describe('emitCss', () => {
     });
 
     const css = emitCss(theme);
+    expect(css).toContain('.dark {');
+    expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
+  });
+
+  it('does not emit an empty .dark block for composed themes without dark overrides', () => {
+    // composeTheme materializes every token section in `dark` as an empty
+    // object, so a key-count check on theme.dark sees ~11 entries with
+    // nothing to emit.
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+    const extended = createTheme({
+      extends: base,
+      tokens: { colors: { brand: { '500': 'hsl(10 80% 50%)' } }, radius: {}, spacing: {}, fontSize: {} },
+    });
+
+    expect(Object.keys(extended.dark).length).toBeGreaterThan(0);
+    const css = emitCss(extended);
+    expect(css).not.toContain('.dark');
+  });
+
+  it('still emits the .dark block for composed themes with real dark overrides', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+    const extended = createTheme({
+      extends: base,
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      dark: { colors: { primary: { '500': 'hsl(0 0% 80%)' } } },
+    });
+
+    const css = emitCss(extended);
     expect(css).toContain('.dark {');
     expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
   });
@@ -375,5 +417,86 @@ describe('emitCss with EmitCssOptions.removeDefaultVariables', () => {
     const cssA = emitCss(theme, { removeDefaultVariables: false });
     const cssB = emitCss(theme);
     expect(cssA).toBe(cssB);
+  });
+});
+
+describe('emitCss with EmitCssOptions.removeDefaultVariables warning', () => {
+  it('warns loudly when the option removes variables', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const theme = createTheme({ tokens: defaultTokens });
+      emitCss(theme, { removeDefaultVariables: true });
+      expect(warn).toHaveBeenCalledTimes(1);
+      const message = String(warn.mock.calls[0]?.[0]);
+      expect(message).toContain('removeDefaultVariables');
+      expect(message).toMatch(/baseline stylesheet/i);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn when nothing matches the defaults', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const theme = createTheme({
+        tokens: {
+          colors: { acme: { '500': 'hsl(300 50% 50%)' } },
+          radius: {},
+          spacing: {},
+          fontSize: {},
+        },
+      });
+      emitCss(theme, { removeDefaultVariables: true });
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn when the option is off', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const theme = createTheme({ tokens: defaultTokens });
+      emitCss(theme);
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
+
+describe('emitCss zIndex tokens', () => {
+  it('emits --z-index-* vars, coercing numeric values to strings', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        zIndex: { app: 100, modal: '200', max: 9999 },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--z-index-app: 100;');
+    expect(css).toContain('--z-index-modal: 200;');
+    expect(css).toContain('--z-index-max: 9999;');
+  });
+
+  it('emits dark zIndex overrides in the .dark block', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        zIndex: { modal: 200 },
+      },
+      dark: { zIndex: { modal: 300 } },
+    });
+
+    const css = emitCss(theme);
+    const darkBlock = css.slice(css.indexOf('.dark {'));
+    expect(darkBlock).toContain('--z-index-modal: 300;');
   });
 });

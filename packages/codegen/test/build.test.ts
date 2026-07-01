@@ -5,6 +5,12 @@ import { tmpdir } from 'node:os';
 import { createTheme } from '@soribashi/theme';
 import { build } from '../src/build.ts';
 
+// build() now validates semanticTokens refs against tokens. These minimal
+// fixtures do not define the neutral family that createTheme's default
+// semanticTokens reference, so give them explicitly empty semantic slots to
+// keep each test focused on its own behavior.
+const noSemanticTokens = { text: {}, surface: {}, border: {} };
+
 describe('build', () => {
   let tempDir: string;
 
@@ -18,6 +24,7 @@ describe('build', () => {
 
   it('writes theme.css to output.css path', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: { md: '0.5rem' },
@@ -39,6 +46,7 @@ describe('build', () => {
 
   it('writes Tailwind v3 config when mode=v3', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: { md: '0.5rem' },
@@ -65,6 +73,7 @@ describe('build', () => {
 
   it('writes Tailwind v4 css when mode=v4', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {},
@@ -90,6 +99,7 @@ describe('build', () => {
 
   it('writes both v3 and v4 outputs when mode=both', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {},
@@ -115,6 +125,7 @@ describe('build', () => {
 
   it('creates parent directories as needed', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
     });
     const cssPath = join(tempDir, 'nested/dir/theme.css');
@@ -127,6 +138,7 @@ describe('build', () => {
 
   it('returns a result describing what was written', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
     });
     const cssPath = join(tempDir, 'theme.css');
@@ -140,6 +152,7 @@ describe('build', () => {
 
   it('emits --__hsl- companion vars when no Tailwind output is configured (auto)', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
@@ -153,6 +166,7 @@ describe('build', () => {
 
   it('emits --__hsl- companion vars when Tailwind mode=v3 (auto)', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
@@ -170,6 +184,7 @@ describe('build', () => {
 
   it('SKIPS --__hsl- companion vars when Tailwind mode=v4 (auto — v4 uses color-mix())', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
@@ -188,6 +203,7 @@ describe('build', () => {
 
   it('emits --__hsl- companion vars when Tailwind mode=both (auto)', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
@@ -206,6 +222,7 @@ describe('build', () => {
 
   it('honors explicit emit.emitCompanionHsl=false even with v3 Tailwind', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
@@ -224,6 +241,7 @@ describe('build', () => {
 
   it('honors explicit emit.emitCompanionHsl=true even with v4-only Tailwind', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
         radius: {}, spacing: {}, fontSize: {},
