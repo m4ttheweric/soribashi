@@ -36,6 +36,7 @@ export function useCombobox<V extends Primitive>(opts: {
 }) {
   const { options, opened } = opts;
   const [activeIndex, setActiveIndex] = useState<number>(-1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: resetting the active option must key off options identity only; deps are behavior-sensitive and revisited in the planned Select recipe rework
   useEffect(() => {
     setActiveIndex(-1);
   }, [options]);

@@ -86,6 +86,7 @@ export function ScreenReplica() {
             <Tooltip side="bottom">
               <Tooltip.Trigger asChild>
                 <div
+                  // biome-ignore lint/a11y/noNoninteractiveTabindex: deliberate; keeps the tooltip trigger keyboard-focusable so the tooltip opens on Tab focus, not just hover
                   tabIndex={0}
                   className="text-3xl font-semibold"
                   style={{
@@ -154,6 +155,7 @@ export function ScreenReplica() {
                 <Tooltip side="right">
                   <Tooltip.Trigger asChild>
                     <span
+                      // biome-ignore lint/a11y/noNoninteractiveTabindex: deliberate; keeps the tooltip trigger keyboard-focusable so the tooltip opens on Tab focus, not just hover
                       tabIndex={0}
                       style={{ cursor: 'default', borderBottom: '1px dotted var(--border-muted)' }}
                     >
@@ -209,6 +211,7 @@ export function ScreenReplica() {
         <Tooltip side="top">
           <Tooltip.Trigger asChild>
             <span
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: deliberate; keeps the tooltip trigger keyboard-focusable so the tooltip opens on Tab focus, not just hover
               tabIndex={0}
               className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
               style={{
@@ -226,6 +229,7 @@ export function ScreenReplica() {
         <Tooltip side="top">
           <Tooltip.Trigger asChild>
             <span
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: deliberate; keeps the tooltip trigger keyboard-focusable so the tooltip opens on Tab focus, not just hover
               tabIndex={0}
               className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
               style={{
@@ -243,6 +247,7 @@ export function ScreenReplica() {
         <Tooltip side="top">
           <Tooltip.Trigger asChild>
             <span
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: deliberate; keeps the tooltip trigger keyboard-focusable so the tooltip opens on Tab focus, not just hover
               tabIndex={0}
               className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium"
               style={{

@@ -296,9 +296,12 @@ export const Select = defineGenericComponent<SelectSignature>({
             </button>
           </div>
           {opened && (
+            // biome-ignore lint/a11y/useFocusableInteractive: focus stays on the combobox input per the ARIA combobox pattern; listbox focus handling lands with the planned Select recipe rework
             <ul
               ref={refs.setFloating}
+              // biome-ignore lint/a11y/useSemanticElements: a native select cannot host the styled floating dropdown; markup revision is tracked for the planned Select recipe rework
               id={`${id}-listbox`}
+              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: the ul is the listbox of an input-driven combobox; role placement is revisited in the planned Select recipe rework
               role="listbox"
               className={classes.dropdown}
               data-part="dropdown"
@@ -308,9 +311,13 @@ export const Select = defineGenericComponent<SelectSignature>({
               {options.map((opt, i) => {
                 const isSel = multiple ? multiValue.includes(opt.value) : opt.value === singleValue;
                 return (
+                  // biome-ignore lint/a11y/useFocusableInteractive: options are non-focusable by design; the combobox input keeps focus and aria-activedescendant tracks the active option, revisited in the planned Select recipe rework
+                  // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard selection is handled by the combobox input keydown, not per-option handlers; part of the planned Select recipe rework
                   <li
                     key={String(opt.value)}
                     id={`${id}-opt-${i}`}
+                    // biome-ignore lint/a11y/useSemanticElements: a native option element cannot carry the styled markup; tracked for the planned Select recipe rework
+                    // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: li acts as an ARIA option inside the combobox listbox; role placement is revisited in the planned Select recipe rework
                     role="option"
                     aria-selected={isSel}
                     aria-disabled={opt.disabled || undefined}
