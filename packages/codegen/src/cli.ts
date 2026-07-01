@@ -1,11 +1,15 @@
 import { resolve, join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { loadConfig } from './load-config.ts';
 import { build } from './build.ts';
 import { watch } from './watch.ts';
 
 export interface CliOptions {
   cwd?: string;
+  /**
+   * Suppresses informational output (build summaries, watch status, help).
+   * Errors always print to stderr, even when silent.
+   */
   silent?: boolean;
 }
 
@@ -15,21 +19,57 @@ const DEFAULT_CONFIG_NAMES = [
   'soribashi.config.mjs',
 ];
 
+const USAGE = `Usage: soribashi <build|watch> [options]
+
+Commands:
+  build             Generate theme CSS (and Tailwind outputs) once
+  watch             Build, then rebuild when watched files change
+
+Options:
+  --config <path>   Path to the config file (default: ${DEFAULT_CONFIG_NAMES.join(', ')})
+  --verbose         Include stack traces in error output (DEBUG env var does the same)
+  -h, --help        Show this help and exit
+  -v, --version     Print the @soribashi/codegen version and exit`;
+
+interface ParsedArgs {
+  command?: string;
+  configFlag?: string;
+  verbose: boolean;
+  help: boolean;
+  version: boolean;
+  error?: string;
+}
+
 export async function runCli(argv: string[], options: CliOptions = {}): Promise<number> {
   const cwd = options.cwd ?? process.cwd();
   const log = options.silent ? () => {} : console.log;
-  const error = options.silent ? () => {} : console.error;
+  const error: typeof console.error = (...args) => console.error(...args);
 
-  const command = argv[0];
+  const args = parseArgs(argv);
 
-  if (!command || (command !== 'build' && command !== 'watch')) {
-    error(`Usage: soribashi <build|watch> [--config <path>]`);
-    error(`Unknown command: ${command ?? '(none)'}`);
+  if (args.help) {
+    log(USAGE);
+    return 0;
+  }
+
+  if (args.version) {
+    log(readOwnVersion());
+    return 0;
+  }
+
+  if (args.error) {
+    error(`[soribashi] ${args.error}`);
+    error(USAGE);
     return 1;
   }
 
-  const configFlag = parseConfigFlag(argv);
-  const configPath = configFlag ? resolve(cwd, configFlag) : findConfig(cwd);
+  if (!args.command || (args.command !== 'build' && args.command !== 'watch')) {
+    error(`[soribashi] Unknown command: ${args.command ?? '(none)'}`);
+    error(USAGE);
+    return 1;
+  }
+
+  const configPath = args.configFlag ? resolve(cwd, args.configFlag) : findConfig(cwd);
 
   if (!configPath) {
     error(
@@ -44,34 +84,65 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
   }
 
   try {
-    const config = await loadConfig(configPath);
-
-    if (command === 'build') {
+    if (args.command === 'build') {
+      const config = await loadConfig(configPath);
       const result = await build(config);
       log(`[soribashi] wrote ${result.written.length} file(s):`);
       for (const path of result.written) log(`  ${path}`);
       return 0;
     }
 
-    if (command === 'watch') {
-      const handle = await watch(config, { silent: options.silent });
-      log(`[soribashi] watching for changes... (Ctrl+C to stop)`);
-      await new Promise(() => {});
-      await handle.stop();
-      return 0;
-    }
-
-    return 1;
+    const config = await loadConfig(configPath);
+    const handle = await watch(config, { silent: options.silent });
+    log(`[soribashi] watching for changes... (Ctrl+C to stop)`);
+    await new Promise(() => {});
+    await handle.stop();
+    return 0;
   } catch (err) {
     error(`[soribashi] error: ${err instanceof Error ? err.message : String(err)}`);
+    if ((args.verbose || process.env.DEBUG) && err instanceof Error && err.stack) {
+      error(err.stack);
+    }
     return 1;
   }
 }
 
-function parseConfigFlag(argv: string[]): string | null {
-  const idx = argv.indexOf('--config');
-  if (idx === -1 || idx === argv.length - 1) return null;
-  return argv[idx + 1] ?? null;
+function parseArgs(argv: string[]): ParsedArgs {
+  const args: ParsedArgs = { verbose: false, help: false, version: false };
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]!;
+    if (arg === '--help' || arg === '-h') {
+      args.help = true;
+    } else if (arg === '--version' || arg === '-v') {
+      args.version = true;
+    } else if (arg === '--verbose') {
+      args.verbose = true;
+    } else if (arg === '--config') {
+      const value = argv[i + 1];
+      if (value === undefined || value.startsWith('-')) {
+        args.error ??= `--config requires a path argument`;
+      } else {
+        args.configFlag = value;
+        i++;
+      }
+    } else if (arg.startsWith('-')) {
+      args.error ??= `Unknown flag: ${arg}`;
+    } else if (args.command === undefined) {
+      args.command = arg;
+    } else {
+      args.error ??= `Unexpected argument: ${arg}`;
+    }
+  }
+
+  return args;
+}
+
+function readOwnVersion(): string {
+  const pkg = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
+  ) as { version?: string };
+  return pkg.version ?? '0.0.0';
 }
 
 function findConfig(cwd: string): string | null {
