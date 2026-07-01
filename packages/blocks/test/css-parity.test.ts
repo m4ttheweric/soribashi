@@ -26,8 +26,7 @@ import { ALLOWLIST, buildAllowlistSet, makeFindingKey } from './css-parity-allow
 const hasMantineCheckout = existsSync(MANTINE_ROOT);
 if (!hasMantineCheckout) {
   console.warn(
-    `[css-parity] Mantine checkout not found at ${MANTINE_ROOT}; skipping parity suite. ` +
-      'Set MANTINE_ROOT to a mantine@63dafbbf checkout to run it.',
+    `[css-parity] Mantine checkout not found at ${MANTINE_ROOT}; skipping parity suite. Set MANTINE_ROOT to a mantine@63dafbbf checkout to run it.`,
   );
 }
 
