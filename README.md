@@ -130,6 +130,10 @@ bun run lint       # biome
 
 Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md). 980+ tests across packages. Packages are versioned at `0.0.0` and not yet published.
 
+## Manifesto
+
+For the full story -- what was imagined, what was built, and why -- see [MANIFESTO.md](./MANIFESTO.md).
+
 ## Attribution
 
 Soribashi adapts patterns from [Mantine](https://mantine.dev) (MIT). Factory, blocks, and style-props machinery are derived from Mantine's open-source code. Every adapted source file carries a header comment pointing to the original. See [THIRD-PARTY-LICENSES.md](./THIRD-PARTY-LICENSES.md).
