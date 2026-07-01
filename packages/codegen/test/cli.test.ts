@@ -15,6 +15,7 @@ describe('runCli flags', () => {
     log = vi.spyOn(console, 'log').mockImplementation(() => {});
     error = vi.spyOn(console, 'error').mockImplementation(() => {});
     savedDebug = process.env.DEBUG;
+    // biome-ignore lint/performance/noDelete: assigning undefined stores the string "undefined" in process.env; delete is the only way to unset
     delete process.env.DEBUG;
   });
 

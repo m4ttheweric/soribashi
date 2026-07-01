@@ -29,7 +29,7 @@ import { emitCss } from '../src/emit-css.ts';
 //   'INTENTIONAL_GAP'  - soribashi deliberately does not emit this; ledger entry exists
 // ---------------------------------------------------------------------------
 
-export interface ParityEntry {
+interface ParityEntry {
   mantineVar: string;
   soribashiVar: string | null;
   status: 'mapped' | 'INTENTIONAL_GAP';
@@ -492,7 +492,7 @@ function buildCanonicalList(): ParityEntry[] {
   return entries;
 }
 
-export const PARITY_TABLE = buildCanonicalList();
+const PARITY_TABLE = buildCanonicalList();
 
 // ---------------------------------------------------------------------------
 // The test theme — uses soribashi default tokens for a realistic full theme
@@ -579,6 +579,7 @@ function parseDeclaredVars(css: string): Set<string> {
   // Match `  --foo-bar: ...;` lines
   const re = /^\s+(--[a-zA-Z0-9-]+)\s*:/gm;
   let m: RegExpExecArray | null;
+  // biome-ignore lint/suspicious/noAssignInExpressions: canonical RegExp.exec iteration loop
   while ((m = re.exec(css)) !== null) {
     if (m[1] !== undefined) vars.add(m[1]);
   }

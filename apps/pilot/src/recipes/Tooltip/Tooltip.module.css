@@ -27,6 +27,7 @@
  * rule gives the slot a stable, addressable scoped class name.
  */
 /* stylelint-disable-next-line block-no-empty */
+/* biome-ignore lint/suspicious/noEmptyBlock: deliberate empty slot anchor; consumers target the trigger slot via classNames */
 .trigger {
 }
 

@@ -99,6 +99,7 @@ describe('Box — style props', () => {
 
   it('non-style props pass through unchanged', () => {
     const { container } = wrap(
+      // biome-ignore lint/a11y/useSemanticElements: role is a sample attribute for the passthrough assertion, not a real landmark
       <Box p="md" id="x" role="region" aria-label="hi">
         X
       </Box>,

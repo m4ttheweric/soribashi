@@ -48,6 +48,7 @@ export interface TabsContentProps {
   children?: ReactNode;
 }
 
+// biome-ignore lint/complexity/noBannedTypes: intentional no-extras marker; Record<string, never> would intersect ctx.variant to never in PartRenderCtx
 type TabsCtxExtras = {};
 
 export const Tabs = defineCompound({
