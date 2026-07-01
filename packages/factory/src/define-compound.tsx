@@ -387,6 +387,10 @@ export function defineCompound<
         const rawCtx = useContext(CompoundContext);
         const merged = useProps<any>(partName, polyConfig.defaults ?? null, rawProps);
 
+        // Parts validate against their own registered name so a part-level
+        // vocabulary override (Part.extend({ vocabulary })) is consulted.
+        validateVocabularyProps(partName, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
+
         const { as: asProp, ...rest } = merged as { as?: keyof JSX.IntrinsicElements; [key: string]: unknown };
         const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
 
@@ -426,6 +430,7 @@ export function defineCompound<
             unstyled: m.unstyled,
             active: opts?.active,
             variant: opts?.variant,
+            themeName: partName,
           });
         };
 
@@ -474,6 +479,10 @@ export function defineCompound<
         rawProps,
       );
 
+      // Parts validate against their own registered name so a part-level
+      // vocabulary override (Part.extend({ vocabulary })) is consulted.
+      validateVocabularyProps(partName, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
+
       /**
        * Wraps the Root's getStyles closure with this part's slot as the default,
        * forwarding the part's own styles-API props into the options argument.
@@ -519,6 +528,7 @@ export function defineCompound<
           unstyled: m.unstyled,
           active: opts?.active,
           variant: opts?.variant,
+          themeName: partName,
         });
       };
 

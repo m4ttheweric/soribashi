@@ -11,7 +11,12 @@ import type {
 } from '../types/render-context.ts';
 
 export interface UseStylesConfig<P extends FactoryPayload> {
-  name: string;
+  /**
+   * Theme lookup name(s). With an array, theme entries are resolved for every
+   * listed name and later names take precedence (Mantine's
+   * `name: string | string[]` contract for compound sub-components).
+   */
+  name: string | string[];
   classes?: Partial<Record<FactoryStylesNames<P>, string>>;
   className?: string;
   style?: CSSProperties;
@@ -35,17 +40,25 @@ export function useStyles<P extends FactoryPayload>(
   config: UseStylesConfig<P>,
 ): GetStylesFn<P> {
   const theme = useTheme();
-  const themeComponent = theme.components[config.name] ?? {};
+  const baseNames = Array.isArray(config.name) ? config.name : [config.name];
 
   return (selector, options?: GetStylesOptions): GetStylesResult => {
     const isRoot = (selector as string) === 'root';
+
+    // Compound parts append their flat part name (e.g. TabsTab) per call so a
+    // theme entry produced by `Part.extend({...})` applies to the part's slots.
+    const names = options?.themeName ? [...baseNames, options.themeName] : baseNames;
+    const themeEntries = names.map((n) => theme.components[n] ?? {});
 
     // Suppress built-in class when config or per-call unstyled is set.
     const isUnstyled = config.unstyled || options?.unstyled;
     const builtIn = isUnstyled ? '' : (config.classes?.[selector] ?? '');
 
-    const themeClassNames = resolveClassNames(themeComponent.classNames, theme, config.props);
-    const themeClass = themeClassNames[selector as string] ?? '';
+    const themeClass = cn(
+      ...themeEntries.map(
+        (entry) => resolveClassNames(entry.classNames, theme, config.props)[selector as string] ?? '',
+      ),
+    );
 
     // Root-level classNames (from <Root classNames={...}>).
     const instanceClassNamesRaw = config.classNames as ClassNames<P> | undefined;
@@ -70,7 +83,11 @@ export function useStyles<P extends FactoryPayload>(
 
     const className = cn(builtIn, themeClass, instanceClass, partClassNamesClass, callClassNamesClass, rootInstanceClass, callSiteClass);
 
-    const themeStyles = resolveStyles(themeComponent.styles, theme, config.props);
+    const themeStyles = mergeStyles(
+      themeEntries.map(
+        (entry) => resolveStyles(entry.styles, theme, config.props)[selector as string] ?? {},
+      ),
+    );
     const instanceStylesRaw = config.styles as Styles<P> | undefined;
     const instanceStyles = resolveStyles(instanceStylesRaw, theme, config.props);
     // Part instance styles (Mantine-matched layer).
@@ -80,9 +97,17 @@ export function useStyles<P extends FactoryPayload>(
     const callStylesRaw = options?.callStyles as Styles<P> | undefined;
     const callStyles = resolveStyles(callStylesRaw, theme, config.props);
 
-    const themeVarsResolverFromTheme = themeComponent.vars
-      ? themeComponent.vars(theme, config.props)
-      : {};
+    // Undefined values are filtered per entry, so a later entry's undefined
+    // never erases an earlier entry's value.
+    const themeVars = mergeStyles(
+      themeEntries.map((entry) =>
+        filterDefinedValues(
+          ((entry.vars ? entry.vars(theme, config.props) : {}) as Record<string, unknown>)[
+            selector as string
+          ] as Record<string, unknown> ?? {},
+        ) as CSSProperties,
+      ),
+    );
     const builtInVars = config.varsResolver ? config.varsResolver(theme, config.props) : {};
 
     // Instance vars (from the component's own `vars` prop). Mantine order:
@@ -95,16 +120,14 @@ export function useStyles<P extends FactoryPayload>(
       : {};
 
     const styleParts: CSSProperties[] = [
-      themeStyles[selector as string] ?? {},
+      themeStyles,
       instanceStyles[selector as string] ?? {},
       partStyles[selector as string] ?? {},
       callStyles[selector as string] ?? {},
       filterDefinedValues(
         ((builtInVars as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
       ) as CSSProperties,
-      filterDefinedValues(
-        (themeVarsResolverFromTheme[selector as string] as Record<string, unknown> | undefined) ?? {},
-      ) as CSSProperties,
+      themeVars,
       filterDefinedValues(
         ((instanceVarsResolved as Record<string, unknown>)[selector as string] as Record<string, unknown> | undefined) ?? {},
       ) as CSSProperties,
@@ -118,10 +141,10 @@ export function useStyles<P extends FactoryPayload>(
 
     const style = mergeStyles(styleParts);
 
-    const themeAttrs = (themeComponent.attributes?.[selector as string] ?? {}) as Record<
-      string,
-      unknown
-    >;
+    const themeAttrs = Object.assign(
+      {},
+      ...themeEntries.map((entry) => entry.attributes?.[selector as string] ?? {}),
+    ) as Record<string, unknown>;
     const instanceAttrs = (config.attributes?.[selector] as Record<string, unknown>) ?? {};
     // Per-call attributes from the part instance (forwarded via options.attributes).
     const partAttrsMap = options?.attributes as Partial<Record<string, Record<string, unknown>>> | undefined;
