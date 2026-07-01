@@ -1,5 +1,6 @@
 import type {
   ComponentThemeConfig,
+  ComposableThemeDefinition,
   PartialThemeTokens,
   ResolvedTheme,
   ThemeDefinition,
@@ -21,7 +22,10 @@ import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
  *
  * The child's `extends` is NOT resolved here; passing one is an error (see below).
  */
-export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): ThemeDefinition {
+export function composeTheme(
+  base: ResolvedTheme,
+  child: ComposableThemeDefinition,
+): ThemeDefinition {
   if (child.extends) {
     throw new Error(
       'composeTheme: the child definition declares `extends`, which composeTheme does not resolve. ' +
@@ -38,7 +42,7 @@ export function composeTheme(base: ResolvedTheme, child: ThemeDefinition): Theme
   };
 
   return {
-    tokens: mergeTokens(base.tokens, child.tokens),
+    tokens: mergeTokens(base.tokens, child.tokens ?? {}),
     dark: mergeDarkTokens(base.dark, child.dark ?? {}),
     // Vocabulary: per-axis replace (vocabularies are atomic; child axis fully replaces base axis)
     vocabulary: mergedVocabulary,
@@ -96,7 +100,7 @@ function mergeDarkTokens(base: PartialThemeTokens, child: PartialThemeTokens): P
   return out as PartialThemeTokens;
 }
 
-function mergeTokens(base: ThemeTokens, child: ThemeTokens): ThemeTokens {
+function mergeTokens(base: ThemeTokens, child: Partial<ThemeTokens>): ThemeTokens {
   return {
     colors: mergeNamedScales(base.colors ?? {}, child.colors ?? {}),
     radius: { ...(base.radius ?? {}), ...(child.radius ?? {}) },

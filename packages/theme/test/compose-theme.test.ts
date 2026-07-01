@@ -391,6 +391,45 @@ describe('theme composition (extends)', () => {
   });
 });
 
+describe('createTheme: partial tokens with extends', () => {
+  it('a child may omit tokens entirely and inherit the full base set', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+
+    const child = createTheme({ extends: base, name: 'tokenless-child' });
+
+    expect(child.tokens.colors.primary?.['500']).toBe('#aaa');
+    expect(child.tokens.radius.md).toBe('0.5rem');
+    expect(child.name).toBe('tokenless-child');
+  });
+
+  it('a child may declare only the families it overrides', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+
+    const child = createTheme({
+      extends: base,
+      tokens: { radius: { md: '1rem' } },
+    });
+
+    expect(child.tokens.radius.md).toBe('1rem');
+    expect(child.tokens.colors.primary?.['500']).toBe('#aaa');
+    expect(child.tokens.spacing.md).toBe('0.5rem');
+  });
+});
+
 describe('composeTheme: dark families stay honest', () => {
   it('extending a theme without dark overrides yields an empty dark object', () => {
     const base = createTheme({

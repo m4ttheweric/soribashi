@@ -7,6 +7,9 @@ export { composeTheme } from './compose-theme.ts';
 
 export type {
   ThemeDefinition,
+  ComposableThemeDefinition,
+  ExtendingThemeDefinition,
+  VocabOfExtends,
   ResolvedTheme,
   ThemeTokens,
   PartialThemeTokens,

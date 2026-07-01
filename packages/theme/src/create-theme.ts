@@ -1,5 +1,7 @@
 import { defaultIntentResolver } from './default-intent-resolver.ts';
 import type {
+  ComposableThemeDefinition,
+  ExtendingThemeDefinition,
   PartialThemeVocabulary,
   ResolveVocab,
   ResolvedTheme,
@@ -7,6 +9,7 @@ import type {
   ThemeDefinition,
   ThemeTokens,
   ThemeVocabulary,
+  VocabOfExtends,
 } from './types.ts';
 import { composeTheme } from './compose-theme.ts';
 import { normalizeComponents } from './normalize-components.ts';
@@ -55,16 +58,36 @@ function withBreakpointFallback(tokens: ThemeTokens): ThemeTokens {
  * Resolution order:
  * 1. If `definition.extends` is provided, recursively resolve and merge.
  * 2. Apply user fields, falling back to defaults for any omitted field.
+ *
+ * Two call forms:
+ * - with `extends`, tokens may be partial or omitted (the base supplies the
+ *   rest) and omitted vocabulary axes inherit the BASE's axes, which the
+ *   return type reflects via `VocabOfExtends`
+ * - without `extends`, tokens are required in full and omitted axes resolve
+ *   to the default vocabularies
  */
+export function createTheme<
+  const V extends PartialThemeVocabulary = PartialThemeVocabulary,
+  const E extends ComposableThemeDefinition = ComposableThemeDefinition,
+>(definition: ExtendingThemeDefinition<V, E>): ResolvedTheme<ResolveVocab<V, VocabOfExtends<E>>>;
 export function createTheme<const V extends PartialThemeVocabulary = PartialThemeVocabulary>(
   definition: ThemeDefinition<V>,
-): ResolvedTheme<ResolveVocab<V>> {
-  const base: ResolvedTheme | null = definition.extends ? createTheme(definition.extends) : null;
+): ResolvedTheme<ResolveVocab<V>>;
+export function createTheme(definition: ComposableThemeDefinition): ResolvedTheme {
+  return resolveTheme(definition);
+}
+
+// The non-overloaded worker: the overloads above narrow the vocabulary for
+// callers (the runtime fills omitted axes from the base or the defaults, which
+// ResolveVocab/VocabOfExtends mirror at the type level); internally everything
+// is honestly wide.
+function resolveTheme(definition: ComposableThemeDefinition): ResolvedTheme {
+  const base: ResolvedTheme | null = definition.extends ? resolveTheme(definition.extends) : null;
 
   // composeTheme rejects a child carrying `extends` (it cannot resolve one);
   // it is already resolved into `base` here, so strip it before composing.
   const { extends: _resolved, ...childDefinition } = definition;
-  const merged: ThemeDefinition = base ? composeTheme(base, childDefinition) : definition;
+  const merged = base ? composeTheme(base, childDefinition) : childDefinition;
 
   const vocabulary: ThemeVocabulary = {
     size: merged.vocabulary?.size ?? DEFAULT_VOCABULARIES.size,
@@ -81,13 +104,18 @@ export function createTheme<const V extends PartialThemeVocabulary = PartialThem
     ...(merged.semanticTokens?.accent ? { accent: merged.semanticTokens.accent } : {}),
   };
 
-  // The runtime fills omitted axes from DEFAULT_VOCABULARIES, which is exactly
-  // what ResolveVocab<V> expresses at the type level — declared axes keep their
-  // literal unions, omitted axes become the defaults. The `vocabulary` const is
-  // typed as the wide ThemeVocabulary, so we assert the narrowed return; the
-  // assertion is sound because the runtime guarantees the ResolveVocab<V> shape.
+  // The empty-family fallback only fires for untyped callers: the overloads
+  // require full tokens exactly when there is no base to supply them.
+  const tokens: ThemeTokens = {
+    colors: {},
+    radius: {},
+    spacing: {},
+    fontSize: {},
+    ...merged.tokens,
+  } as ThemeTokens;
+
   return {
-    tokens: withBreakpointFallback(merged.tokens),
+    tokens: withBreakpointFallback(tokens),
     dark: merged.dark ?? {},
     vocabulary,
     semanticTokens,
@@ -96,5 +124,5 @@ export function createTheme<const V extends PartialThemeVocabulary = PartialThem
     scope: merged.scope ?? ':root',
     darkMode: merged.darkMode ?? { selector: '.dark' },
     name: merged.name ?? 'default',
-  } as ResolvedTheme<ResolveVocab<V>>;
+  };
 }
