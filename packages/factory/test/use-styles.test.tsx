@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
 import { SoribashiProvider } from '../src/provider/provider.tsx';
@@ -216,5 +216,79 @@ describe('useStyles', () => {
     const root = result.current('root');
     expect(root.style).toBeDefined();
     expect((root.style as any)['--btn-bg']).toBe('red');
+  });
+});
+
+describe('attributes cannot clobber className/style', () => {
+  it('filters className out of instance attributes and keeps other keys', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = renderHook(
+      () =>
+        useStyles<ButtonFactory>({
+          name: 'Button',
+          classes: { root: 'sb-Button-root' },
+          attributes: { root: { className: 'evil', 'data-ok': 'yes' } } as any,
+          props: {},
+        }),
+      { wrapper: wrapper() },
+    );
+
+    const root = result.current('root');
+    expect(root.className).toContain('sb-Button-root');
+    expect(root.className).not.toContain('evil');
+    expect((root as any)['data-ok']).toBe('yes');
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it('filters style out of theme attributes so it cannot fight the computed style', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const themeWithBadAttrs = createTheme({
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      components: {
+        Button: {
+          attributes: { root: { style: { color: 'red' }, 'data-x': '1' } } as any,
+        },
+      },
+    });
+
+    const { result } = renderHook(
+      () =>
+        useStyles<ButtonFactory>({
+          name: 'Button',
+          classes: { root: 'sb-Button-root' },
+          props: {},
+        }),
+      { wrapper: wrapper(themeWithBadAttrs) },
+    );
+
+    const root = result.current('root');
+    expect(root.style).toBeUndefined();
+    expect((root as any)['data-x']).toBe('1');
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it('filters className/style out of per-call part attributes', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = renderHook(
+      () =>
+        useStyles<ButtonFactory>({
+          name: 'Button',
+          classes: { root: 'sb-Button-root' },
+          props: {},
+        }),
+      { wrapper: wrapper() },
+    );
+
+    const root = result.current('root', {
+      attributes: { root: { className: 'evil', style: { color: 'red' }, 'data-part': 'p' } } as any,
+    });
+    expect(root.className).toContain('sb-Button-root');
+    expect(root.className).not.toContain('evil');
+    expect(root.style).toBeUndefined();
+    expect((root as any)['data-part']).toBe('p');
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
   });
 });

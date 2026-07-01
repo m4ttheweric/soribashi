@@ -141,14 +141,26 @@ export function useStyles<P extends FactoryPayload>(
 
     const style = mergeStyles(styleParts);
 
-    const themeAttrs = Object.assign(
-      {},
-      ...themeEntries.map((entry) => entry.attributes?.[selector as string] ?? {}),
-    ) as Record<string, unknown>;
-    const instanceAttrs = (config.attributes?.[selector] as Record<string, unknown>) ?? {};
+    const themeAttrs = sanitizeAttributes(
+      Object.assign(
+        {},
+        ...themeEntries.map((entry) => entry.attributes?.[selector as string] ?? {}),
+      ) as Record<string, unknown>,
+      names[0]!,
+      selector as string,
+    );
+    const instanceAttrs = sanitizeAttributes(
+      (config.attributes?.[selector] as Record<string, unknown>) ?? {},
+      names[0]!,
+      selector as string,
+    );
     // Per-call attributes from the part instance (forwarded via options.attributes).
     const partAttrsMap = options?.attributes as Partial<Record<string, Record<string, unknown>>> | undefined;
-    const partCallAttrs = (partAttrsMap?.[selector as string] ?? {}) as Record<string, unknown>;
+    const partCallAttrs = sanitizeAttributes(
+      (partAttrsMap?.[selector as string] ?? {}) as Record<string, unknown>,
+      names[0]!,
+      selector as string,
+    );
 
     const result: GetStylesResult = {
       className,
@@ -200,6 +212,28 @@ function mergeStyles(parts: CSSProperties[]): CSSProperties {
  *
  * Reference: mantine/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/merge-vars.ts
  */
+/**
+ * Drops `className` and `style` from an attributes map. Attributes are spread
+ * into the getStyles result AFTER the computed className (and the computed
+ * style is assigned after them), so either key would silently fight the
+ * styles-API output. Warn in dev and route authors to classNames/styles.
+ */
+function sanitizeAttributes(
+  attrs: Record<string, unknown>,
+  componentName: string,
+  selector: string,
+): Record<string, unknown> {
+  if (!('className' in attrs) && !('style' in attrs)) return attrs;
+  if (typeof process === 'undefined' || process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[soribashi] attributes for ${componentName} slot "${selector}" contain className/style; these keys are ignored. Use classNames/styles instead.`,
+    );
+  }
+  const { className: _className, style: _style, ...rest } = attrs;
+  return rest;
+}
+
 function filterDefinedValues(obj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const key in obj) {
