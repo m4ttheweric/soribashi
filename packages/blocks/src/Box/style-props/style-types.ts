@@ -4,6 +4,7 @@
  * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
  * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
  */
+import type { ResolvedTheme } from '@soribashi/theme';
 
 /**
  * A style-prop value: either a flat T (applied at all breakpoints) OR an object
@@ -18,8 +19,10 @@ export type StyleProp<T> =
 
 /**
  * A function that resolves a token value (e.g., 'md' or 16) to a CSS string.
+ * Receives the resolved theme (Mantine parity) so resolvers can consult
+ * theme tokens, e.g. getThemeColor only maps names found in theme colors.
  */
-export type StylePropResolver = (value: unknown) => string | undefined;
+export type StylePropResolver = (value: unknown, theme?: ResolvedTheme) => string | undefined;
 
 /**
  * One entry in STYLE_PROPS_DATA: maps a prop name (like 'p') to the CSS

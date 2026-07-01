@@ -8,19 +8,28 @@
  *   - Token names: --mantine-color-{family}-{shade} → --color-{family}-{shade}
  *   - Drops Mantine's parseThemeColor object-return; this returns the resolved CSS string directly
  *   - Recognizes soribashi semantic surface/text/border tokens (e.g., 'surface.raised')
+ *   - Theme argument is optional (Mantine requires it); without it, dot-paths
+ *     still resolve structurally but bare names always pass through.
  */
+import type { ResolvedTheme } from '@soribashi/theme';
+
+const COLOR_KEYWORDS = new Set(['transparent', 'inherit', 'currentColor', 'currentcolor']);
 
 /**
  * Resolves a theme color reference to a CSS color value:
- *   - 'primary.500'         → var(--color-primary-500)
- *   - 'primary'             → var(--color-primary-500) (default shade)
+ *   - 'primary.500'         → var(--color-primary-500) (family checked against theme when given)
+ *   - 'primary'             → var(--color-primary-500) only when 'primary' is in theme.tokens.colors
  *   - 'surface.raised'      → var(--surface-raised)
  *   - 'text.muted'          → var(--text-muted)
  *   - 'border.strong'       → var(--border-strong)
- *   - any other CSS value   → returned verbatim
+ *   - any other CSS value   → returned verbatim ('white', '#fff', 'rgb(…)', keywords)
  */
-export function getThemeColor(value: string | undefined): string | undefined {
+export function getThemeColor(
+  value: string | undefined,
+  theme?: ResolvedTheme,
+): string | undefined {
   if (value === undefined || value === null) return undefined;
+  if (COLOR_KEYWORDS.has(value)) return value;
 
   // dot-path forms: family.shade or namespace.name
   if (value.includes('.')) {
@@ -28,21 +37,19 @@ export function getThemeColor(value: string | undefined): string | undefined {
     if (namespace === 'surface' || namespace === 'text' || namespace === 'border') {
       return `var(--${namespace}-${key})`;
     }
-    // assume color family.shade
-    return `var(--color-${namespace}-${key})`;
+    // Without a theme the dot structure alone signals a color reference;
+    // with one, only known families resolve (Mantine parity).
+    if (theme === undefined || Object.hasOwn(theme.tokens.colors ?? {}, namespace!)) {
+      return `var(--color-${namespace}-${key})`;
+    }
+    return value;
   }
 
-  // bare name: assume color family with default 500 shade
-  // (heuristic: lower-case, alphabetic-only names probably target color scales)
-  if (/^[a-z][a-z-]*$/.test(value)) {
-    // could be a CSS keyword like 'red', 'transparent', 'inherit', etc.
-    // We can't reliably tell — prefer literal pass-through for short generic words.
-    if (value === 'transparent' || value === 'inherit' || value === 'currentColor') {
-      return value;
-    }
+  // bare name: resolve to the default 500 shade only when the theme declares
+  // the family; otherwise it is a CSS color ('white', 'red', ...) — pass through
+  if (theme !== undefined && Object.hasOwn(theme.tokens.colors ?? {}, value)) {
     return `var(--color-${value}-500)`;
   }
 
-  // anything else (rgb, hsl, hex, var, etc.) passes through
   return value;
 }

@@ -102,13 +102,13 @@ export function parseStyleProps(input: ParseStylePropsInput): ParsedStyleProps {
       const responsive = propValue as Partial<Record<'base' | BreakpointKey, unknown>>;
 
       if (responsive.base !== undefined) {
-        const resolved = def.resolver(responsive.base);
+        const resolved = def.resolver(responsive.base, input.theme);
         if (resolved !== undefined) applyToProperty(styles, def.property, resolved);
       }
 
       for (const bp of BREAKPOINT_KEYS) {
         if (responsive[bp] === undefined) continue;
-        const resolved = def.resolver(responsive[bp]);
+        const resolved = def.resolver(responsive[bp], input.theme);
         if (resolved === undefined) continue;
         const query = mediaQueryFor(input.theme, bp);
         if (query === undefined) continue;
@@ -119,7 +119,7 @@ export function parseStyleProps(input: ParseStylePropsInput): ParsedStyleProps {
       // For base-only objects like { base: 'md' }, extract the base value before resolving.
       const flatValue = getBaseValue(propValue);
       if (flatValue === undefined || flatValue === null) continue;
-      const resolved = def.resolver(flatValue);
+      const resolved = def.resolver(flatValue, input.theme);
       if (resolved !== undefined) applyToProperty(inlineStyles, def.property, resolved);
     }
   }

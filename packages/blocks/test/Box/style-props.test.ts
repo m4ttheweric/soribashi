@@ -7,7 +7,7 @@ import { getBoxMod } from '../../src/Box/get-box-mod.ts';
 
 const theme = createTheme({
   tokens: {
-    colors: {},
+    colors: { primary: { '500': 'hsl(217 91% 60%)' } },
     radius: { md: '0.5rem' },
     spacing: { sm: '0.5rem', md: '0.75rem', lg: '1rem' },
     fontSize: {},
