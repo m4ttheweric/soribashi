@@ -57,17 +57,17 @@ function buildCanonicalList(): ParityEntry[] {
   // ---- Always-emitted (variables section) -----------------------------------
 
   // z-index scale
-  // Mantine hardcodes 5 z-index vars; soribashi has tokens.zIndex but emit-css.ts
-  // does not emit it. These are INTENTIONAL_GAP because z-index values are
-  // application-concern tokens that soribashi defers to the consumer.
+  // Mantine hardcodes 5 z-index layers; soribashi emits tokens.zIndex as
+  // --z-index-* vars (numbers coerced to strings). Previously an
+  // INTENTIONAL_GAP because emit-css.ts skipped the accepted tokens.
   for (const [name] of [
     ['app', '100'], ['modal', '200'], ['popover', '300'], ['overlay', '400'], ['max', '9999'],
   ] as const) {
     entries.push({
       mantineVar: `--mantine-z-index-${name}`,
       soribashiVar: `--z-index-${name}`,
-      status: 'INTENTIONAL_GAP',
-      notes: 'Mantine hardcodes 5 z-index layers; soribashi supports tokens.zIndex but does not emit --z-index-* vars by default. Application-concern tokens deferred to consumer.',
+      status: 'mapped',
+      notes: `tokens.zIndex.${name} → --z-index-${name}`,
     });
   }
 
@@ -487,6 +487,7 @@ function buildFullTheme() {
         xl: '0 20px 25px rgba(0,0,0,0.1)',
       },
       breakpoint: { xs: '36em', sm: '48em', md: '62em', lg: '75em', xl: '88em' },
+      zIndex: { app: 100, modal: 200, popover: 300, overlay: 400, max: 9999 },
       heading: {
         textWrap: 'wrap',
         sizes: {

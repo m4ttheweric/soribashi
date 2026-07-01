@@ -60,6 +60,14 @@ export function emitTailwindV4(theme: ResolvedTheme): string {
     }
   }
 
+  if (theme.tokens.zIndex) {
+    // Not an official v4 theme namespace; the vars still land in the compiled
+    // CSS and are usable via arbitrary values like `z-(--z-index-modal)`.
+    for (const [key, value] of Object.entries(theme.tokens.zIndex).sort(byKey)) {
+      lines.push(`  --z-index-${key}: ${value};`);
+    }
+  }
+
   lines.push('}');
 
   return `${lines.join('\n')}\n`;

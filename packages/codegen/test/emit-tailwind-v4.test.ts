@@ -62,3 +62,21 @@ describe('emitTailwindV4', () => {
     expect(emitTailwindV4(theme)).toBe(emitTailwindV4(theme));
   });
 });
+
+describe('emitTailwindV4 zIndex', () => {
+  it('emits --z-index-* lines in the @theme block', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        zIndex: { app: 100, modal: '200' },
+      },
+    });
+
+    const css = emitTailwindV4(theme);
+    expect(css).toContain('--z-index-app: 100;');
+    expect(css).toContain('--z-index-modal: 200;');
+  });
+});

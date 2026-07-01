@@ -55,6 +55,10 @@ export function emitTailwindV3(theme: ResolvedTheme): string {
     emitVarMap(lines, theme.tokens.shadow, 'boxShadow', 'shadow', 4);
   }
 
+  if (theme.tokens.zIndex) {
+    emitVarMap(lines, theme.tokens.zIndex, 'zIndex', 'z-index', 4);
+  }
+
   if (theme.tokens.breakpoint) {
     lines.push('    screens: {');
     const entries = Object.entries(theme.tokens.breakpoint).sort(byKey);
@@ -72,7 +76,7 @@ export function emitTailwindV3(theme: ResolvedTheme): string {
 
 function emitVarMap(
   lines: string[],
-  source: Record<string, string>,
+  source: Record<string, string | number>,
   configKey: string,
   varPrefix: string,
   indent: number,

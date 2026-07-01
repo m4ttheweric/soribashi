@@ -464,3 +464,39 @@ describe('emitCss with EmitCssOptions.removeDefaultVariables warning', () => {
     }
   });
 });
+
+describe('emitCss zIndex tokens', () => {
+  it('emits --z-index-* vars, coercing numeric values to strings', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        zIndex: { app: 100, modal: '200', max: 9999 },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--z-index-app: 100;');
+    expect(css).toContain('--z-index-modal: 200;');
+    expect(css).toContain('--z-index-max: 9999;');
+  });
+
+  it('emits dark zIndex overrides in the .dark block', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        zIndex: { modal: 200 },
+      },
+      dark: { zIndex: { modal: 300 } },
+    });
+
+    const css = emitCss(theme);
+    const darkBlock = css.slice(css.indexOf('.dark {'));
+    expect(darkBlock).toContain('--z-index-modal: 300;');
+  });
+});

@@ -91,3 +91,22 @@ describe('emitTailwindV3', () => {
     expect(config.split('\n')[0]).toMatch(/auto-generated/i);
   });
 });
+
+describe('emitTailwindV3 zIndex', () => {
+  it('maps zIndex tokens to var references', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        zIndex: { app: 100, modal: '200' },
+      },
+    });
+
+    const config = emitTailwindV3(theme);
+    expect(config).toContain('zIndex: {');
+    expect(config).toContain("app: 'var(--z-index-app)'");
+    expect(config).toContain("modal: 'var(--z-index-modal)'");
+  });
+});

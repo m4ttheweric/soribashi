@@ -154,6 +154,12 @@ function emitTokenLines(
     }
   }
 
+  if (tokens.zIndex) {
+    for (const [key, value] of Object.entries(tokens.zIndex).sort(byKey)) {
+      lines.push(`  --z-index-${key}: ${value};`);
+    }
+  }
+
   if (tokens.heading) {
     if (tokens.heading.textWrap !== undefined) {
       lines.push(`  --heading-text-wrap: ${tokens.heading.textWrap};`);
@@ -236,6 +242,12 @@ function emitDarkTokenLines(
   if (dark.breakpoint) {
     for (const [key, value] of Object.entries(dark.breakpoint).sort(byKey)) {
       if (value !== undefined) lines.push(`  --breakpoint-${key}: ${value};`);
+    }
+  }
+
+  if (dark.zIndex) {
+    for (const [key, value] of Object.entries(dark.zIndex).sort(byKey)) {
+      if (value !== undefined) lines.push(`  --z-index-${key}: ${value};`);
     }
   }
 
