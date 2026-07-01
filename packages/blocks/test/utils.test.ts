@@ -165,6 +165,14 @@ describe('getLineHeight', () => {
   it('passes through numbers as-is (line-height is unitless)', () => {
     expect(getLineHeight(1.5)).toBe('1.5');
   });
+  it('resolves custom token keys open-endedly', () => {
+    expect(getLineHeight('xs')).toBe('var(--line-height-xs)');
+    expect(getLineHeight('custom-key')).toBe('var(--line-height-custom-key)');
+  });
+  it('passes raw CSS strings through', () => {
+    expect(getLineHeight('1.5')).toBe('1.5');
+    expect(getLineHeight('normal')).toBe('normal');
+  });
 });
 
 describe('getShadow', () => {
@@ -173,6 +181,14 @@ describe('getShadow', () => {
   });
   it('passes through other strings', () => {
     expect(getShadow('0 1px 2px black')).toBe('0 1px 2px black');
+  });
+  it('resolves xs and custom token keys open-endedly', () => {
+    expect(getShadow('xs')).toBe('var(--shadow-xs)');
+    expect(getShadow('custom-key')).toBe('var(--shadow-custom-key)');
+  });
+  it('passes none and inset shadows through', () => {
+    expect(getShadow('none')).toBe('none');
+    expect(getShadow('inset 0 1px 2px black')).toBe('inset 0 1px 2px black');
   });
 });
 

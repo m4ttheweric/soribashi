@@ -133,6 +133,7 @@ export function parseStyleProps(input: ParseStylePropsInput): ParsedStyleProps {
 
   for (const [propName, propValue] of Object.entries(input.styleProps)) {
     if (propValue === undefined || propValue === null) continue;
+    if (!Object.hasOwn(input.data, propName)) continue;
     const def = input.data[propName];
     if (!def) continue;
 
@@ -163,5 +164,25 @@ export function parseStyleProps(input: ParseStylePropsInput): ParsedStyleProps {
     }
   }
 
-  return { hasResponsiveStyles, inlineStyles, styles, media };
+  return { hasResponsiveStyles, inlineStyles, styles, media: sortMediaAscending(media) };
+}
+
+function minWidthInPx(query: string): number {
+  const match = query.match(/min-width:\s*([\d.]+)(rem|em|px)?/);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  const value = Number.parseFloat(match[1]!);
+  return match[2] === 'px' ? value : value * 16;
+}
+
+/**
+ * Media rules must be emitted smallest-first: later rules win at equal
+ * specificity, so with first-seen ordering an alias pair (ms/mis both set
+ * marginInlineStart) could let a smaller breakpoint override a larger one.
+ */
+function sortMediaAscending(
+  media: Record<string, Record<string, string>>,
+): Record<string, Record<string, string>> {
+  return Object.fromEntries(
+    Object.entries(media).sort(([a], [b]) => minWidthInPx(a) - minWidthInPx(b)),
+  );
 }

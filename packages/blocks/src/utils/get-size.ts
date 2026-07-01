@@ -17,6 +17,8 @@ import { rem } from './rem.ts';
 /**
  * CSS-wide keywords plus intrinsic sizing keywords that must never be
  * mistaken for design-token keys (mx="auto" is not var(--spacing-auto)).
+ * Exported for sibling resolvers (get-shadow, get-line-height, get-title-size)
+ * that share the raw-vs-token heuristic but emit different var prefixes.
  */
 const CSS_KEYWORDS = new Set([
   'auto',
@@ -37,12 +39,14 @@ const CSS_KEYWORDS = new Set([
  *   - String starting with a digit, '.', or '-' → true (e.g. '100px', '.5rem', '-4')
  *   - String starting with a CSS function  → true (e.g. 'calc(…)', 'var(…)')
  *   - CSS keyword (auto, inherit, fit-content, …) → true
+ *   - String containing a space → true (multi-value CSS; token keys have no spaces)
  *   - Anything else                         → false → treat as token key
  */
-function isRawCss(value: string): boolean {
+export function isRawCss(value: string): boolean {
   const first = value[0];
   if (first === undefined) return false;
   if (CSS_KEYWORDS.has(value)) return true;
+  if (value.includes(' ')) return true;
   // Digit-leading, dot-leading, or signed number
   if ((first >= '0' && first <= '9') || first === '.' || first === '-' || first === '+') {
     return true;
