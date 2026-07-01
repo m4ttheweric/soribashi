@@ -9,8 +9,13 @@
  *     (emitted by codegen from theme.tokens.heading.sizes; see emit-css.ts)
  *   - Font-size key path uses --font-size-{key} (no `--mantine-` prefix).
  *   - rem() helper imported from local utils.
+ *   - Font-size keys resolve open-endedly (any token-looking key becomes
+ *     var(--font-size-{key}), matching getSpacing/getRadius) instead of a
+ *     closed xs..3xl allowlist. Digit-leading {n}xl keys are carved out of
+ *     the raw-CSS heuristic since they are documented font-size tokens.
  */
 import { rem } from '../utils/rem.ts';
+import { isRawCss } from '../utils/get-size.ts';
 
 export type TitleOrder = 1 | 2 | 3 | 4 | 5 | 6;
 export type TitleSize = `h${TitleOrder}` | string | number;
@@ -22,7 +27,12 @@ export interface GetTitleSizeResult {
 }
 
 const HEADINGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
-const FONT_SIZE_KEYS = new Set(['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']);
+
+function isFontSizeToken(value: string): boolean {
+  // '2xl'/'3xl' are digit-leading (raw CSS per the shared heuristic) but are
+  // documented font-size tokens on Title, so they stay resolvable.
+  return /^\d+xl$/.test(value) || !isRawCss(value);
+}
 
 export function getTitleSize(order: TitleOrder, size?: TitleSize): GetTitleSizeResult {
   const titleSize = size !== undefined ? size : `h${order}`;
@@ -35,7 +45,7 @@ export function getTitleSize(order: TitleOrder, size?: TitleSize): GetTitleSizeR
     };
   }
 
-  if (typeof titleSize === 'string' && FONT_SIZE_KEYS.has(titleSize)) {
+  if (typeof titleSize === 'string' && isFontSizeToken(titleSize)) {
     return {
       fontSize: `var(--font-size-${titleSize})`,
       fontWeight: `var(--heading-h${order}-font-weight)`,

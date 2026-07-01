@@ -24,7 +24,9 @@ export function extractStyleProps(
   const rest: Record<string, unknown> = {};
 
   for (const key in props) {
-    if (key in data) {
+    // Object.hasOwn: `key in data` matched inherited keys, so a prop named
+    // like a prototype member ('constructor') crashed the resolver pass.
+    if (Object.hasOwn(data, key)) {
       styleProps[key] = props[key];
     } else {
       rest[key] = props[key];

@@ -37,7 +37,7 @@ export const Stack = defineComponent<StackOwnProps>({
       '--stack-justify': String((props as StackOwnProps).justify ?? 'flex-start'),
     },
   }),
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       gap: _gap,
       align: _align,
@@ -53,7 +53,7 @@ export const Stack = defineComponent<StackOwnProps>({
       ...rest
     } = props as any;
     return (
-      <Box {...getStyles('root')} {...rest}>
+      <Box ref={ref} {...getStyles('root')} {...rest}>
         {children}
       </Box>
     );

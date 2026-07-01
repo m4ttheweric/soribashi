@@ -9,9 +9,10 @@ export type BoxMod = string | Record<string, unknown> | (string | Record<string,
 
 /**
  * Transforms a mod key (property name or bare string) into a `data-*` attribute
- * name. camelCase is converted to kebab-case per Mantine convention:
+ * name. camelCase is converted to kebab-case per Mantine convention (only
+ * lowercase-to-uppercase transitions split; a leading capital does not):
  *   isActive  → data-is-active
- *   XLarge    → data-x-large
+ *   XLarge    → data-xlarge
  *   data-foo  → data-foo   (already-prefixed keys are preserved verbatim)
  */
 function transformModKey(key: string): string {
@@ -24,12 +25,13 @@ function transformModKey(key: string): string {
  * Converts a `mod` value into a flat record of `data-*` attributes.
  *
  *   getBoxMod('active')                       => { 'data-active': true }
- *   getBoxMod({ isActive: true, loading: 0 }) => { 'data-is-active': true }
+ *   getBoxMod({ isActive: true, loading: 0 }) => { 'data-is-active': true, 'data-loading': 0 }
  *   getBoxMod([{ active: true }, 'open'])     => { 'data-active': true, 'data-open': true }
  *   getBoxMod({ size: 'lg' })                  => { 'data-size': 'lg' }
  *
- * Falsy values (false, null, undefined, 0, '') are omitted.
- * Truthy non-boolean values become the data-attribute value (e.g., `'lg'`).
+ * false, null, undefined, and '' are omitted; numeric 0 is a real value and
+ * is kept (see get-box-mod-zero.test.ts).
+ * Non-boolean values become the data-attribute value (e.g., `'lg'`, `0`).
  * String inputs become a `data-{key}: true` entry.
  */
 export function getBoxMod(value: BoxMod | undefined): Record<string, unknown> {

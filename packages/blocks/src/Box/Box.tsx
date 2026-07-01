@@ -17,6 +17,7 @@ import {
   useTheme,
 } from '@soribashi/factory';
 import type { CSSProperties } from 'react';
+import { isDev } from '../utils/is-dev.ts';
 import { extractStyleProps } from './style-props/extract-style-props.ts';
 import { parseStyleProps } from './style-props/parse-style-props.ts';
 import { STYLE_PROPS_DATA } from './style-props/style-props-data.ts';
@@ -24,6 +25,8 @@ import { getBoxMod, type BoxMod } from './get-box-mod.ts';
 import type { BoxOwnProps, BoxStyleProps } from './Box.types.ts';
 
 export type { BoxOwnProps, BoxMod, BoxStyleProps };
+
+let warnedSxIgnored = false;
 
 /**
  * Polymorphic root primitive. Accepts the full set of Mantine-style style props
@@ -39,7 +42,7 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
   defaultElement: 'div',
   selectors: ['root'] as const,
   classes: { root: 'sb-Box-root' },
-  render: ({ Element, props, getStyles }) => {
+  render: ({ Element, props, getStyles, ref }) => {
     const {
       mod,
       variant,
@@ -58,9 +61,17 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
       visibleFrom,
       lightHidden,
       darkHidden,
-      sx: _sx,
+      sx,
       ...remainingProps
     } = props as any;
+
+    if (sx !== undefined && isDev() && !warnedSxIgnored) {
+      warnedSxIgnored = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[soribashi] The sx prop is accepted but never applied; use style, style props, or the Styles API instead.',
+      );
+    }
 
     const theme = useTheme();
     const { styleProps, rest } = extractStyleProps(remainingProps, STYLE_PROPS_DATA);
@@ -104,6 +115,7 @@ export const Box = definePolymorphicComponent<BoxOwnProps, 'div'>({
           />
         )}
         <Element
+          ref={ref}
           {...baseStyles}
           className={className}
           style={mergedStyle}

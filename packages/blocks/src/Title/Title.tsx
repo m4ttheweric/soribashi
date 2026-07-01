@@ -49,7 +49,7 @@ export const Title = defineComponent<TitleOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       order,
       size: _size,
@@ -73,6 +73,7 @@ export const Title = defineComponent<TitleOwnProps>({
 
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         as={`h${order}` as any}
         mod={[

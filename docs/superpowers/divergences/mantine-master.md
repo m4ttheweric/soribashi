@@ -164,7 +164,7 @@ Per the 2026-04-25 blocks adaptation pass (see `docs/superpowers/plans/2026-04-2
 | `Paper` | a11y defaults plus light/dark border via `:root` / `.dark`. |
 | `Flex` | Adapted; flat values for own props (responsive `StyleProp<T>` deferred — see below). |
 | `Grid` + `Grid.Col` | Mantine column-math helpers (`getColumnFlexBasis`/`getColumnMaxWidth`/`getColumnFlexGrow`/`getColumnOffset`) ported and parameterized on `columns`. `GridProvider` context wires `columns` + `grow` to children. Responsive `StyleProp<T>` for col span / offset / order still deferred. |
-| `SimpleGrid` | Block strategy fully adapted (`minColWidth` / `autoFlow` / `autoRows` / `type='media'`). `type='container'` mode deferred. |
+| `SimpleGrid` | Block strategy fully adapted (`minColWidth` / `autoFlow` / `autoRows`). Media-query behavior is the only mode; the `type` prop is not exposed until `type='container'` is implemented (2026-07-01). |
 | `Container` | Both block and grid strategies implemented. Grid strategy: `strategy="grid"` renders a CSS Grid template; direct children default to the center column; children with `data-breakout` span the full viewport; `data-breakout > [data-container]` children are re-constrained to `--container-size`. |
 | `Text` | `lineClamp`, `gradient`, `inline`, `inherit`, RTL truncate (`truncate='start'`), `span` shorthand. |
 | `Title` | `order` (1-6), `size` accepts `h1`-`h6` token, `lineClamp`, `textWrap`, vars from `theme.tokens.heading.sizes`. |
@@ -184,7 +184,7 @@ After the adaptation pass, a second-pass validation against Mantine `63dafbbf` s
 | 5 | `hiddenFrom` / `visibleFrom` / `sx` / `lightHidden` / `darkHidden` leaked to DOM | Explicitly consumed in Box destructure; not forwarded to DOM |
 | 6 | Visibility props not implemented | `hiddenFrom`/`visibleFrom`/`lightHidden`/`darkHidden` now apply `sb-{hidden,visible}-from-{bp}` / `sb-{light,dark}-hidden` classes backed by `packages/blocks/src/Box/visibility.css` |
 | 7 | Style-prop set missing 12 props | Added `mis`/`mie`/`pis`/`pie`/`ff`/`fs`/`tt`/`td`/`bgsz`/`bgp`/`bgr`/`bga` |
-| 8 | Prop renames (`Grid.Col alignSelf`, `SimpleGrid minColumnWidth`/`autoCols`/`type='simple'`) | Renamed to `align`, `minColWidth`, `autoFlow`, `type='media'`. Added `autoRows` on SimpleGrid. |
+| 8 | Prop renames (`Grid.Col alignSelf`, `SimpleGrid minColumnWidth`/`autoCols`/`type='simple'`) | Renamed to `align`, `minColWidth`, `autoFlow`. Added `autoRows` on SimpleGrid. The `type` prop was later removed from the public props as dead surface (2026-07-01, see deferred entry). |
 | 9 | `--heading-text-wrap` referenced by `Title.css` but never emitted | `emit-css.ts` now emits the var when `theme.tokens.heading.textWrap` is set |
 | 10 | `getSize`/`getSpacing`/`getRadius`/`getFontSize` over-restrictive `STANDARD_KEYS` allowlist | Replaced with Mantine's `isNumberLike` heuristic (open-ended token resolution); `getRadius(undefined)` falls back to `var(--radius-md)` |
 | 11 | `rem.ts` did not handle px-strings | Now parses `'8px'` → `'0.5rem'`, recurses on space- and comma-separated values, passes through CSS functions |
@@ -264,9 +264,9 @@ Captured during the 2026-04-25 blocks adaptation pass — items the plan called 
 
 ### `SimpleGrid` `type='container'` mode
 
-- **Status:** Default `type='media'` mode (responsive via media queries) works. `type='container'` (responsive via container queries) is not yet implemented.
+- **Status:** Media-query responsiveness works. `type='container'` (responsive via container queries) is not yet implemented. The `type` prop itself was removed from `SimpleGridOwnProps` on 2026-07-01: it was typed with a documented default but had no effect, which read as a working feature. A runtime-passed `type` is still stripped so it cannot leak to the DOM.
 - **Why deferred:** Same rationale as above — niche, scope reduction.
-- **To implement:** Add the `type` prop, emit `@container` queries in addition to `@media` when `type='container'`.
+- **To implement:** Reintroduce the `type` prop, emit `@container` queries in addition to `@media` when `type='container'`.
 
 ---
 

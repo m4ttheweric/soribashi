@@ -4,22 +4,30 @@
  * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
  * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
  */
+import type { ResolvedTheme } from '@soribashi/theme';
 
 /**
  * A style-prop value: either a flat T (applied at all breakpoints) OR an object
  * keyed by breakpoint name where each entry overrides at that breakpoint.
+ * The named keys mirror the default breakpoint map; `(string & {})` keeps
+ * custom theme breakpoints assignable (they are validated at parse time
+ * against theme.tokens.breakpoint).
  *
  *   p="md"                                     // flat
  *   p={{ base: 'xs', sm: 'sm', md: 'md' }}     // responsive
  */
 export type StyleProp<T> =
   | T
-  | Partial<Record<'base' | 'xs' | 'sm' | 'md' | 'lg' | 'xl', T>>;
+  | Partial<
+      Record<'base' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | (string & {}), T>
+    >;
 
 /**
  * A function that resolves a token value (e.g., 'md' or 16) to a CSS string.
+ * Receives the resolved theme (Mantine parity) so resolvers can consult
+ * theme tokens, e.g. getThemeColor only maps names found in theme colors.
  */
-export type StylePropResolver = (value: unknown) => string | undefined;
+export type StylePropResolver = (value: unknown, theme?: ResolvedTheme) => string | undefined;
 
 /**
  * One entry in STYLE_PROPS_DATA: maps a prop name (like 'p') to the CSS

@@ -24,8 +24,6 @@ export interface SimpleGridOwnProps extends BoxOwnProps {
   spacing?: string | number;
   /** Override row spacing */
   verticalSpacing?: string | number;
-  /** Determines type of queries used for responsive styles @default 'media' */
-  type?: 'media' | 'container';
   /** Mode for grid-template-columns when minColWidth is set: auto-fill packs as many
    *  as fit, auto-fit collapses empty tracks. @default 'auto-fill' (when minColWidth set) */
   autoFlow?: 'auto-fill' | 'auto-fit';
@@ -58,11 +56,13 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
     }
     return { root: vars };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       cols: _co,
       spacing: _sp,
       verticalSpacing: _vs,
+      // Not in the public props (container mode unimplemented); still stripped
+      // here so a runtime-passed value cannot leak to the DOM as an attribute.
       type: _ty,
       autoFlow,
       minColWidth,
@@ -84,6 +84,7 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
 
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         mod={[autoFlowAttr ? { 'auto-flow': autoFlowAttr } : null, mod].filter(Boolean) as any}
         {...rest}

@@ -69,6 +69,24 @@ describe('getSpacing', () => {
     // '2xl' starts with '2' → raw CSS pass-through, not a token
     expect(getSpacing('2xl')).toBe('2xl');
   });
+  it('passes CSS-wide and sizing keywords through unchanged', () => {
+    for (const keyword of [
+      'auto',
+      'inherit',
+      'initial',
+      'unset',
+      'revert',
+      'revert-layer',
+      'fit-content',
+      'max-content',
+      'min-content',
+    ]) {
+      expect(getSpacing(keyword)).toBe(keyword);
+    }
+  });
+  it('passes leading-dot values through as raw CSS', () => {
+    expect(getSpacing('.5rem')).toBe('.5rem');
+  });
 });
 
 describe('getRadius', () => {
@@ -110,6 +128,14 @@ describe('getSize', () => {
     expect(getSize('var(--x)', 'foo')).toBe('var(--x)');
     expect(getSize('calc(100% - 8px)', 'foo')).toBe('calc(100% - 8px)');
   });
+  it('passes through hsla() and leading-dot values', () => {
+    expect(getSize('hsla(217, 91%, 60%, 0.5)', 'foo')).toBe('hsla(217, 91%, 60%, 0.5)');
+    expect(getSize('.5rem', 'foo')).toBe('.5rem');
+  });
+  it('passes CSS keywords through for any prefix', () => {
+    expect(getSize('auto', 'spacing')).toBe('auto');
+    expect(getSize('fit-content', 'spacing')).toBe('fit-content');
+  });
   it('returns undefined for undefined', () => {
     expect(getSize(undefined, 'foo')).toBeUndefined();
   });
@@ -139,6 +165,14 @@ describe('getLineHeight', () => {
   it('passes through numbers as-is (line-height is unitless)', () => {
     expect(getLineHeight(1.5)).toBe('1.5');
   });
+  it('resolves custom token keys open-endedly', () => {
+    expect(getLineHeight('xs')).toBe('var(--line-height-xs)');
+    expect(getLineHeight('custom-key')).toBe('var(--line-height-custom-key)');
+  });
+  it('passes raw CSS strings through', () => {
+    expect(getLineHeight('1.5')).toBe('1.5');
+    expect(getLineHeight('normal')).toBe('normal');
+  });
 });
 
 describe('getShadow', () => {
@@ -148,37 +182,77 @@ describe('getShadow', () => {
   it('passes through other strings', () => {
     expect(getShadow('0 1px 2px black')).toBe('0 1px 2px black');
   });
+  it('resolves xs and custom token keys open-endedly', () => {
+    expect(getShadow('xs')).toBe('var(--shadow-xs)');
+    expect(getShadow('custom-key')).toBe('var(--shadow-custom-key)');
+  });
+  it('passes none and inset shadows through', () => {
+    expect(getShadow('none')).toBe('none');
+    expect(getShadow('inset 0 1px 2px black')).toBe('inset 0 1px 2px black');
+  });
 });
 
 describe('getThemeColor', () => {
+  const theme = {
+    tokens: {
+      colors: {
+        primary: { '500': 'hsl(217 91% 60%)' },
+        danger: { '700': 'hsl(0 74% 42%)' },
+      },
+    },
+  } as never;
+
   it('resolves family.shade to var(--color-{family}-{shade})', () => {
-    expect(getThemeColor('primary.500')).toBe('var(--color-primary-500)');
+    expect(getThemeColor('primary.500', theme)).toBe('var(--color-primary-500)');
+    expect(getThemeColor('danger.700', theme)).toBe('var(--color-danger-700)');
+  });
+
+  it('assumes family.shade for dot-paths when no theme is given', () => {
     expect(getThemeColor('danger.700')).toBe('var(--color-danger-700)');
   });
 
-  it('resolves bare color name to default shade 500', () => {
-    expect(getThemeColor('primary')).toBe('var(--color-primary-500)');
+  it('passes dot-paths through when the family is not in theme colors', () => {
+    expect(getThemeColor('unknown.500', theme)).toBe('unknown.500');
+  });
+
+  it('resolves bare names that are theme color families to shade 500', () => {
+    expect(getThemeColor('primary', theme)).toBe('var(--color-primary-500)');
+  });
+
+  it('passes bare names through when not in theme colors', () => {
+    expect(getThemeColor('white', theme)).toBe('white');
+    expect(getThemeColor('black', theme)).toBe('black');
+    expect(getThemeColor('red', theme)).toBe('red');
+  });
+
+  it('passes bare names through when no theme is given', () => {
+    expect(getThemeColor('primary')).toBe('primary');
+  });
+
+  it('is safe against prototype key names', () => {
+    expect(getThemeColor('constructor', theme)).toBe('constructor');
   });
 
   it('resolves semantic surface/text/border refs', () => {
-    expect(getThemeColor('surface.raised')).toBe('var(--surface-raised)');
-    expect(getThemeColor('text.muted')).toBe('var(--text-muted)');
-    expect(getThemeColor('border.strong')).toBe('var(--border-strong)');
+    expect(getThemeColor('surface.raised', theme)).toBe('var(--surface-raised)');
+    expect(getThemeColor('text.muted', theme)).toBe('var(--text-muted)');
+    expect(getThemeColor('border.strong', theme)).toBe('var(--border-strong)');
   });
 
   it('passes through CSS keywords', () => {
-    expect(getThemeColor('transparent')).toBe('transparent');
-    expect(getThemeColor('inherit')).toBe('inherit');
-    expect(getThemeColor('currentColor')).toBe('currentColor');
+    expect(getThemeColor('transparent', theme)).toBe('transparent');
+    expect(getThemeColor('inherit', theme)).toBe('inherit');
+    expect(getThemeColor('currentColor', theme)).toBe('currentColor');
+    expect(getThemeColor('currentcolor', theme)).toBe('currentcolor');
   });
 
   it('passes through CSS color values', () => {
-    expect(getThemeColor('#fff')).toBe('#fff');
-    expect(getThemeColor('rgb(0 0 0)')).toBe('rgb(0 0 0)');
-    expect(getThemeColor('var(--my-color)')).toBe('var(--my-color)');
+    expect(getThemeColor('#fff', theme)).toBe('#fff');
+    expect(getThemeColor('rgb(0 0 0)', theme)).toBe('rgb(0 0 0)');
+    expect(getThemeColor('var(--my-color)', theme)).toBe('var(--my-color)');
   });
 
   it('returns undefined for undefined', () => {
-    expect(getThemeColor(undefined)).toBeUndefined();
+    expect(getThemeColor(undefined, theme)).toBeUndefined();
   });
 });

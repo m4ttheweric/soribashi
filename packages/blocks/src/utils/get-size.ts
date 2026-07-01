@@ -9,22 +9,48 @@
  *   - Replaced STANDARD_KEYS allowlist with Mantine's isNumberLike heuristic:
  *     any string that looks like a raw CSS value passes through; everything
  *     else is treated as a design-token key and resolved to var(--prefix-key).
+ *   - Adds an explicit CSS keyword allowlist (Mantine instead routes unknown
+ *     strings through rem(), which passes them through unchanged).
  */
 import { rem } from './rem.ts';
+
+/**
+ * CSS-wide keywords plus intrinsic sizing keywords that must never be
+ * mistaken for design-token keys (mx="auto" is not var(--spacing-auto)).
+ * Exported for sibling resolvers (get-shadow, get-line-height, get-title-size)
+ * that share the raw-vs-token heuristic but emit different var prefixes.
+ */
+const CSS_KEYWORDS = new Set([
+  'auto',
+  'inherit',
+  'initial',
+  'unset',
+  'revert',
+  'revert-layer',
+  'fit-content',
+  'max-content',
+  'min-content',
+]);
 
 /**
  * Returns true when `value` should be treated as a raw CSS value rather
  * than a design-token key.  Mirrors Mantine's `isNumberLike` heuristic:
  *   - JS number → true (will be rem()-converted)
- *   - String starting with a digit or '-'  → true (e.g. '100px', '-4', '1.5rem')
+ *   - String starting with a digit, '.', or '-' → true (e.g. '100px', '.5rem', '-4')
  *   - String starting with a CSS function  → true (e.g. 'calc(…)', 'var(…)')
+ *   - CSS keyword (auto, inherit, fit-content, …) → true
+ *   - String containing a space → true (multi-value CSS; token keys have no spaces)
  *   - Anything else                         → false → treat as token key
  */
-function isRawCss(value: string): boolean {
+export function isRawCss(value: string): boolean {
   const first = value[0];
   if (first === undefined) return false;
-  // Digit-leading or negative number
-  if ((first >= '0' && first <= '9') || first === '-' || first === '+') return true;
+  if (CSS_KEYWORDS.has(value)) return true;
+  if (value.includes(' ')) return true;
+  // Digit-leading, dot-leading, or signed number
+  if ((first >= '0' && first <= '9') || first === '.' || first === '-' || first === '+') {
+    return true;
+  }
   // CSS function tokens
   if (
     value.startsWith('calc(') ||
@@ -35,6 +61,7 @@ function isRawCss(value: string): boolean {
     value.startsWith('env(') ||
     value.startsWith('rgba(') ||
     value.startsWith('rgb(') ||
+    value.startsWith('hsla(') ||
     value.startsWith('hsl(') ||
     value.includes('rgba(')
   ) {

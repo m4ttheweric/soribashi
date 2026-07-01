@@ -25,7 +25,7 @@ export const Center = defineComponent<CenterOwnProps>({
   selectors: ['root'] as const,
   classes: { root: 'sb-Center-root' },
   defaults: { inline: false } as Partial<CenterOwnProps>,
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       inline,
       children,
@@ -41,6 +41,7 @@ export const Center = defineComponent<CenterOwnProps>({
     } = props as any;
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         mod={[{ inline: !!inline }, mod].filter(Boolean) as any}
         {...rest}

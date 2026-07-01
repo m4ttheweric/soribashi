@@ -111,6 +111,10 @@ export interface BoxOwnProps extends BoxStyleProps {
   lightHidden?: boolean;
   /** Hide the component in dark color scheme */
   darkHidden?: boolean;
-  /** CSS-in-JS escape hatch (consumed but not yet applied; prevents DOM leakage) */
+  /**
+   * NOT applied — soribashi has no CSS-in-JS runtime. The value is consumed
+   * (so it cannot leak to the DOM) and a dev-only warning is emitted when set.
+   * Use `style`, style props, or the Styles API instead.
+   */
   sx?: Record<string, unknown>;
 }

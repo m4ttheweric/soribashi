@@ -16,8 +16,15 @@ describe('borderResolver', () => {
       '0.125rem dashed var(--surface-raised)',
     );
   });
-  it('"1px solid red" → token-resolved (red as a color family alias)', () => {
-    expect(borderResolver('1px solid red')).toBe('0.0625rem solid var(--color-red-500)');
+  it('"1px solid red" → CSS color passes through when theme lacks a red family', () => {
+    const theme = { tokens: { colors: { primary: { '500': 'x' } } } } as never;
+    expect(borderResolver('1px solid red', theme)).toBe('0.0625rem solid red');
+  });
+  it('"1px solid red" → token-resolved when theme declares a red family', () => {
+    const theme = { tokens: { colors: { red: { '500': 'x' } } } } as never;
+    expect(borderResolver('1px solid red', theme)).toBe(
+      '0.0625rem solid var(--color-red-500)',
+    );
   });
   it('"1px solid #abc" → hex passes through getThemeColor unchanged', () => {
     expect(borderResolver('1px solid #abc')).toBe('0.0625rem solid #abc');

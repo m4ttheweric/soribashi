@@ -5,10 +5,8 @@
  * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
  *
  * Soribashi changes:
- *   - Signature: (value) instead of Mantine's (value, theme).
- *     Mantine's colorResolver requires a theme argument because it consults
- *     theme.colors at render time. Soribashi's getThemeColor returns CSS
- *     variable references resolved at paint time — no theme arg needed.
+ *   - Signature matches Mantine's (value, theme); getThemeColor consults
+ *     theme.tokens.colors so only declared families resolve to CSS variables.
  *   - Color syntax: 'primary.500' (50–950 shade scale) instead of Mantine's
  *     'primary.5' (0–9 shade scale). Inherited from getThemeColor.
  */
@@ -16,7 +14,7 @@ import { rem } from '../../../utils/rem.ts';
 import { getThemeColor } from '../../../utils/get-theme-color.ts';
 import type { StylePropResolver } from '../style-types.ts';
 
-export const borderResolver: StylePropResolver = (value) => {
+export const borderResolver: StylePropResolver = (value, theme) => {
   if (value === undefined || value === null) return undefined;
   if (typeof value === 'number') return rem(value);
   if (typeof value !== 'string') return String(value);
@@ -29,7 +27,7 @@ export const borderResolver: StylePropResolver = (value) => {
   let result = String(sizeOut);
   if (style) result += ` ${style}`;
   if (colorTuple.length > 0) {
-    const resolved = getThemeColor(colorTuple.join(' '));
+    const resolved = getThemeColor(colorTuple.join(' '), theme);
     if (resolved !== undefined) result += ` ${resolved}`;
   }
   return result.trim();

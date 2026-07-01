@@ -15,6 +15,23 @@ const theme = createTheme({
 const wrap = (ui: React.ReactNode) =>
   render(<SoribashiProvider theme={theme}>{ui}</SoribashiProvider>);
 
+describe('SimpleGrid — dead type prop removed', () => {
+  it('rejects the type prop at compile time until container mode exists', () => {
+    const { container } = wrap(
+      // @ts-expect-error — type was removed from the public props (container mode unimplemented)
+      <SimpleGrid type="container">X</SimpleGrid>,
+    );
+    expect(container.firstChild).not.toBeNull();
+  });
+
+  it('strips a runtime-passed type value so it cannot leak to the DOM', () => {
+    const props = { type: 'media' } as Record<string, unknown>;
+    const { container } = wrap(<SimpleGrid {...props}>X</SimpleGrid>);
+    const el = container.querySelector('div') as HTMLElement;
+    expect(el.getAttribute('type')).toBeNull();
+  });
+});
+
 describe('SimpleGrid — prop renames (finding #8)', () => {
   it('minColWidth sets --sg-min-col-width CSS var', () => {
     const { container } = wrap(<SimpleGrid minColWidth="200px">X</SimpleGrid>);
@@ -48,13 +65,6 @@ describe('SimpleGrid — prop renames (finding #8)', () => {
     expect(el.dataset.autoFlow).toBe('auto-fit');
   });
 
-  it('type prop accepts "media" without error', () => {
-    expect(() => wrap(<SimpleGrid type="media">X</SimpleGrid>)).not.toThrow();
-  });
-
-  it('type prop accepts "container" without error', () => {
-    expect(() => wrap(<SimpleGrid type="container">X</SimpleGrid>)).not.toThrow();
-  });
 });
 
 describe('SimpleGrid — autoRows prop (finding #8 addition)', () => {

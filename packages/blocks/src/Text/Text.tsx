@@ -67,7 +67,7 @@ export const Text = defineComponent<TextOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       size: _sz,
       lineClamp,
@@ -91,6 +91,7 @@ export const Text = defineComponent<TextOwnProps>({
     const tag = span ? 'span' : 'p';
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         as={tag}
         variant={variant}

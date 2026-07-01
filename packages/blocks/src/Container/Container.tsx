@@ -40,7 +40,7 @@ export const Container = defineComponent<ContainerOwnProps>({
       },
     };
   },
-  render: ({ props, getStyles }) => {
+  render: ({ props, getStyles, ref }) => {
     const {
       size: _sz,
       fluid,
@@ -58,6 +58,7 @@ export const Container = defineComponent<ContainerOwnProps>({
     } = props as any;
     return (
       <Box
+        ref={ref}
         {...getStyles('root')}
         mod={[
           { strategy, fluid: !!fluid },
