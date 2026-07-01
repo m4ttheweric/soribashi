@@ -13,6 +13,9 @@ test-results/
 playwright-report/
 tests/browser-parity/playwright-report/
 
+.claude/settings.local.json
+.local-dev/
+
 .vscode/
 .idea/
 *.swp
@@ -28,4 +31,3 @@ Thumbs.db
 npm-debug.log*
 bun-debug.log*
 test/dist
-*.tsbuildinfo
