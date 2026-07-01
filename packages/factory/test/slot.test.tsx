@@ -1,7 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createRef } from 'react';
+import { createRef, type ReactElement } from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { Slot } from '../src/slot.tsx';
+
+/**
+ * Builds an element shaped like React 19's output: ref lives in props,
+ * element.ref is null. Lets the props.ref fallback path run on a React 18
+ * runtime.
+ */
+function asReact19Element(element: ReactElement, ref: React.Ref<unknown>): ReactElement {
+  return {
+    ...element,
+    ref: null,
+    props: { ...(element.props as object), ref },
+  } as unknown as ReactElement;
+}
 
 describe('Slot', () => {
   it('renders the single child element', () => {
@@ -36,9 +49,13 @@ describe('Slot', () => {
     ).toThrow(/Fragment/);
   });
 
-  it('returns null for non-element children', () => {
+  it('returns null for non-element children and warns in dev', () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const { container } = render(<Slot>plain text</Slot>);
     expect(container.firstChild).toBeNull();
+    expect(errSpy).toHaveBeenCalled();
+    expect(String(errSpy.mock.calls[0]![0])).toContain('Slot');
+    errSpy.mockRestore();
   });
 
   it('merges className from slot onto child', () => {
@@ -89,5 +106,25 @@ describe('Slot', () => {
     const btn = getByText('Click');
     expect(btn.getAttribute('data-slot')).toBe('trigger');
     expect(btn.getAttribute('aria-label')).toBe('From slot');
+  });
+});
+
+// React 19 removed element.ref; the child's ref lives in props.ref. Slot must
+// read that fallback and merge it with the forwarded ref rather than
+// overwriting it (the Radix getElementRef pattern).
+describe('Slot — React 19 props.ref fallback', () => {
+  it('attaches a child ref that lives in props.ref', () => {
+    const childRef = createRef<HTMLButtonElement>();
+    render(<Slot>{asReact19Element(<button>Click</button>, childRef)}</Slot>);
+    expect(childRef.current).toBeInstanceOf(HTMLButtonElement);
+  });
+
+  it('merges forwardedRef with a props.ref child ref instead of overwriting', () => {
+    const slotRef = createRef<HTMLButtonElement>();
+    const childRef = createRef<HTMLButtonElement>();
+    render(<Slot ref={slotRef}>{asReact19Element(<button>Click</button>, childRef)}</Slot>);
+    expect(slotRef.current).toBeInstanceOf(HTMLButtonElement);
+    expect(childRef.current).toBeInstanceOf(HTMLButtonElement);
+    expect(slotRef.current).toBe(childRef.current);
   });
 });
