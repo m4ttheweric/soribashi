@@ -3,10 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "workspaces": ["packages/*", "apps/*"],
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
