@@ -41,7 +41,16 @@ export function registerComponentVocabularies(
  *   3. undefined (caller decides what to do — typically skip validation)
  */
 export function resolveVocab(componentName: string, axis: VocabularyAxis): Vocabulary | undefined {
-  const componentVocab = registry.get(componentName);
-  if (componentVocab?.[axis]) return componentVocab[axis];
-  return registry.get(GLOBAL_KEY)?.[axis];
+  return resolveComponentVocab(componentName, axis) ?? registry.get(GLOBAL_KEY)?.[axis];
+}
+
+/**
+ * Per-component-only lookup (no __global__ fallback). Lets validation decide
+ * whether a recipe-local fallback should apply before the global vocabulary.
+ */
+export function resolveComponentVocab(
+  componentName: string,
+  axis: VocabularyAxis,
+): Vocabulary | undefined {
+  return registry.get(componentName)?.[axis];
 }

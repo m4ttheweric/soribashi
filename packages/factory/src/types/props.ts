@@ -40,12 +40,13 @@ export interface StylesApiProps<P extends FactoryPayload> {
 }
 
 /**
- * Adapted from @mantine/core
- * Source: packages/@mantine/core/src/core/styles-api/styles-api.types.ts (commit 63dafbbf)
+ * Styles API surface for compound subcomponents (e.g., Tabs.List, Accordion.Item).
  *
- * Variant of StylesApiProps for compound subcomponents (e.g., Tabs.List, Accordion.Item).
- * Compound subcomponents inherit Styles API surface from their parent and shouldn't
- * redeclare `unstyled` (set on the parent) or `attributes` (also set on the parent).
+ * Diverges from Mantine's CompoundStylesApiProps (which omits `unstyled` and
+ * `attributes`): soribashi's part runtime forwards BOTH from the part instance
+ * into getStyles (see define-compound partGetStyles), so the type matches the
+ * runtime contract. Kept as a named alias so part surfaces stay distinguishable
+ * from root surfaces at use sites.
  */
 export interface CompoundStylesApiProps<TPayload extends FactoryPayload>
-  extends Omit<StylesApiProps<TPayload>, 'unstyled' | 'attributes'> {}
+  extends StylesApiProps<TPayload> {}

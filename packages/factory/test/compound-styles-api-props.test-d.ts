@@ -7,11 +7,15 @@ interface TestPayload extends FactoryPayload {
   stylesNames: 'root';
 }
 
+// Phase 2 goal 6d: the part runtime forwards unstyled and attributes from the
+// part instance into getStyles, so CompoundStylesApiProps no longer omits them
+// (intentional divergence from Mantine, whose parts don't forward either).
 describe('CompoundStylesApiProps', () => {
-  it('omits `unstyled` and `attributes` from StylesApiProps', () => {
+  it('matches the full StylesApiProps surface, including unstyled/attributes', () => {
     type Compound = CompoundStylesApiProps<TestPayload>;
-    expectTypeOf<Compound>().not.toHaveProperty('unstyled');
-    expectTypeOf<Compound>().not.toHaveProperty('attributes');
+    type Full = StylesApiProps<TestPayload>;
+    expectTypeOf<Compound['unstyled']>().toEqualTypeOf<Full['unstyled']>();
+    expectTypeOf<Compound['attributes']>().toEqualTypeOf<Full['attributes']>();
   });
 
   it('retains `classNames`, `styles`, `vars` from StylesApiProps', () => {

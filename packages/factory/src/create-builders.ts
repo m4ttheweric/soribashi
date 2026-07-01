@@ -4,7 +4,12 @@ import { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 import { defineCompound } from './define-compound.tsx';
 import { defineGenericComponent } from './define-generic-component.tsx';
 import { registerComponentVocabularies, resetRegistry } from './vocabulary-registry.ts';
-import type { ThemedDefinePolymorphicComponent } from './types/themed-builders.ts';
+import type {
+  ThemedDefineComponent,
+  ThemedDefinePolymorphicComponent,
+  ThemedDefineCompound,
+  ThemedDefineGenericComponent,
+} from './types/themed-builders.ts';
 
 /**
  * Registers a theme's global + per-component vocabularies with the runtime
@@ -51,9 +56,9 @@ export function registerTheme<TTheme extends ResolvedTheme>(theme: TTheme): void
  * Returns the four vocab-aware builders, typed against the theme `TTheme`
  * supplied as a TYPE argument (no theme value needed). The builder
  * implementations are theme-independent — `TTheme` only refines the declared
- * types so a recipe's PUBLIC props narrow to the theme's global-axis literals
- * (size/intent). `variant` stays recipe-local; defineComponent/defineCompound/
- * defineGenericComponent are returned raw (no global-axis consumers yet).
+ * types so a recipe's PUBLIC props (and `defaults`) narrow to the theme's
+ * global-axis literals (size/intent). `variant` stays recipe-local, narrowed
+ * by the recipe's own variants tuple.
  *
  * Because no theme VALUE is imported, `builders.ts` can do:
  *
@@ -65,12 +70,14 @@ export function registerTheme<TTheme extends ResolvedTheme>(theme: TTheme): void
  */
 export function makeBuilders<TTheme extends ResolvedTheme>() {
   return {
-    defineComponent,
+    defineComponent: defineComponent as ThemedDefineComponent<TTheme['vocabulary']>,
     definePolymorphicComponent: definePolymorphicComponent as ThemedDefinePolymorphicComponent<
       TTheme['vocabulary']
     >,
-    defineCompound,
-    defineGenericComponent,
+    defineCompound: defineCompound as ThemedDefineCompound<TTheme['vocabulary']>,
+    defineGenericComponent: defineGenericComponent as ThemedDefineGenericComponent<
+      TTheme['vocabulary']
+    >,
   };
 }
 

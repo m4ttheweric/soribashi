@@ -1,7 +1,7 @@
 // packages/factory/test/define-compound.test.tsx
 import { describe, expect, it } from 'vitest';
-import { createRef } from 'react';
-import { render } from '@testing-library/react';
+import { createRef, memo, useState } from 'react';
+import { render, fireEvent } from '@testing-library/react';
 import { createTheme } from '@soribashi/theme';
 import { defineCompound, SoribashiProvider, type PartRenderCtx } from '../src/index.ts';
 
@@ -1104,5 +1104,129 @@ describe('defineCompound — styles-API merge matrix (new cells)', () => {
     // vars is keyed by slot name so 'body' var only shows on body slot
     expect(body.style.getPropertyValue('--body-var')).toBe('red');
     expect(icon.style.getPropertyValue('--body-var')).toBe('');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Context value stability — memo'd parts skip re-renders
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — context value stability', () => {
+  it('memoized part skips re-render when Root re-renders with unchanged props', () => {
+    let labelRenders = 0;
+    const Foo = defineCompound({
+      name: 'MemoFoo',
+      classes: { root: 'mf-root', label: 'mf-label' },
+      context: () => ({ fixed: 'x' }),
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        label: {
+          render: ({ getStyles }) => {
+            labelRenders += 1;
+            return <span {...getStyles()} />;
+          },
+        },
+      },
+    });
+    const MemoLabel = memo((Foo as any).Label as React.ComponentType);
+
+    function Harness() {
+      const [, setN] = useState(0);
+      return (
+        <SoribashiProvider theme={minimalTheme}>
+          <button onClick={() => setN((n) => n + 1)}>bump</button>
+          <Foo>
+            <MemoLabel />
+          </Foo>
+        </SoribashiProvider>
+      );
+    }
+
+    const { getByText } = render(<Harness />);
+    expect(labelRenders).toBe(1);
+    fireEvent.click(getByText('bump'));
+    expect(labelRenders).toBe(1);
+  });
+
+  it('context value updates when root props actually change (variant)', () => {
+    const seen: Array<string | undefined> = [];
+    const Foo = defineCompound({
+      name: 'VariantMemoFoo',
+      variants: ['a', 'b'] as const,
+      classes: { root: 'vmf-root', label: 'vmf-label' },
+      parts: {
+        root: { render: ({ getStyles, children }) => <div {...getStyles()}>{children}</div> },
+        label: {
+          render: ({ getStyles, ctx }) => {
+            seen.push((ctx as any).variant);
+            return <span {...getStyles()} />;
+          },
+        },
+      },
+    });
+    const MemoLabel = memo((Foo as any).Label as React.ComponentType);
+
+    function Harness() {
+      const [variant, setVariant] = useState<'a' | 'b'>('a');
+      return (
+        <SoribashiProvider theme={minimalTheme}>
+          <button onClick={() => setVariant('b')}>switch</button>
+          <Foo variant={variant}>
+            <MemoLabel />
+          </Foo>
+        </SoribashiProvider>
+      );
+    }
+
+    const { getByText } = render(<Harness />);
+    fireEvent.click(getByText('switch'));
+    expect(seen).toContain('a');
+    expect(seen).toContain('b');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Root statics — withProps and classes (phase 2 goal 6c)
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — Root statics', () => {
+  const makeStaticsFoo = () =>
+    defineCompound({
+      name: 'StaticsFoo',
+      variants: ['default', 'pills'] as const,
+      classes: { root: 'sf-root', label: 'sf-label' },
+      parts: {
+        root: {
+          render: ({ getStyles, ctx, children }) => (
+            <div {...getStyles()} data-variant={(ctx as any).variant}>
+              {children}
+            </div>
+          ),
+        },
+        label: { render: ({ getStyles }) => <span {...getStyles()} /> },
+      },
+    });
+
+  it('Root.withProps pre-applies presets', () => {
+    const Foo = makeStaticsFoo();
+    const PillFoo = Foo.withProps({ variant: 'pills' });
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <PillFoo />
+      </SoribashiProvider>,
+    );
+    expect(container.querySelector('.sf-root')?.getAttribute('data-variant')).toBe('pills');
+  });
+
+  it('Root.withProps result still chains extend', () => {
+    const Foo = makeStaticsFoo();
+    const entry = Foo.withProps({ variant: 'pills' }).extend({ classNames: { root: 'x' } });
+    expect((entry as any).__soribashiThemeEntry).toBe(true);
+    expect((entry as any).name).toBe('StaticsFoo');
+  });
+
+  it('Root.classes exposes the configured classes', () => {
+    const Foo = makeStaticsFoo();
+    expect(Foo.classes).toEqual({ root: 'sf-root', label: 'sf-label' });
   });
 });

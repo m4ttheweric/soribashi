@@ -35,6 +35,13 @@ export type GetStylesFn<P extends FactoryPayload> = (
 export interface GetStylesOptions {
   active?: boolean;
   variant?: string;
+  /**
+   * Additional theme lookup name appended to the useStyles config names for
+   * this call. Compound parts pass their flat registered name (e.g. `TabsTab`)
+   * so theme entries produced by `Part.extend({...})` apply; later names take
+   * precedence over earlier ones.
+   */
+  themeName?: string;
   style?: CSSProperties;
   className?: string;
   /** Part instance classNames (Mantine-matched layer: forwarded from the part's own props). */

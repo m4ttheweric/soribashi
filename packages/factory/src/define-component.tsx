@@ -9,8 +9,9 @@ import type { FactoryPayload } from './types/factory-payload.ts';
 import type { StylesApiProps } from './types/props.ts';
 import type { GetStylesFn } from './types/render-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
+import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
-import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
+import type { VocabularyAxis, InjectedVocabularyProps, VariantProp } from './types/vocabulary-axes.ts';
 
 export interface DefineComponentConfig<
   TOwnProps,
@@ -19,12 +20,25 @@ export interface DefineComponentConfig<
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
 > {
   name: string;
+  /**
+   * @deprecated Dead config key — defineComponent never reads it (the render
+   * function decides the element). Kept only because existing app recipes
+   * still pass it; delete together with those call sites.
+   */
   element?: keyof JSX.IntrinsicElements;
   vocabularyAxes?: TVocabAxes;
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes>>;
+  /**
+   * NoInfer keeps `defaults` out of TOwnProps inference: without it, a
+   * zero-type-param recipe with `defaults: { size: 'md' }` locked `size` to
+   * the literal 'md' at every call site (the README footgun). Own-prop
+   * defaults now require TOwnProps to come from an explicit type param or an
+   * annotated render ctx; vocabulary-axis and variant defaults keep working
+   * param-free via the other intersection members.
+   */
+  defaults?: Partial<NoInfer<TOwnProps> & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
@@ -39,10 +53,67 @@ export interface DefineComponentConfig<
 }
 
 /**
+ * Public component type produced by `defineComponent`. Call-site props include
+ * the declared vocabulary axes (string-typed on the raw builder; theme-narrowed
+ * via makeBuilders), the recipe's variant tuple, and the selector-keyed styles
+ * API. `withProps` returns the same shape so static chains keep type-checking.
+ */
+export type DefineComponentResult<
+  TOwnProps,
+  TSelectors extends readonly string[],
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+  TExtra = unknown,
+> = React.ForwardRefExoticComponent<
+  DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> &
+    React.RefAttributes<HTMLElement>
+> & {
+  extend: (
+    config: ComponentExtendConfig<
+      DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> & {
+        variant?: TVariants[number];
+        intent?: string;
+      }
+    >,
+  ) => ThemeComponentEntry<
+    DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> & {
+      variant?: TVariants[number];
+      intent?: string;
+    }
+  >;
+  withProps: (
+    presets: Partial<DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>>,
+  ) => DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>;
+  classes?: Partial<Record<TSelectors[number], string>>;
+  displayName?: string;
+};
+
+/**
+ * `TExtra` is the theme-narrowing hook: the themed builders (makeBuilders)
+ * instantiate it with `ThemedVocabularyProps<TVocab, TVocabAxes>` so global
+ * axes intersect down from `string` to the theme's literal unions.
+ */
+export type DefineComponentPublicProps<
+  TOwnProps,
+  TSelectors extends readonly string[],
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+  TExtra = unknown,
+> = TOwnProps &
+  InjectedVocabularyProps<TVocabAxes> &
+  VariantProp<TVariants> &
+  TExtra &
+  StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
+
+/**
  * The daily-use component authoring API.
  */
 export function defineComponent<
-  TOwnProps = Record<string, never>,
+  // Record<never, never> (no index signature) rather than Record<string, never>:
+  // an index signature of `never` would poison the vocabulary-axis and styles
+  // intersections for zero-type-param recipes now that NoInfer keeps `defaults`
+  // out of TOwnProps inference.
+  TOwnProps = Record<never, never>,
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
@@ -56,7 +127,7 @@ export function defineComponent<
       rawProps as TOwnProps & StylesApiProps<any>,
     );
 
-    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)
@@ -72,6 +143,7 @@ export function defineComponent<
       style: (merged as any).style,
       classNames: (merged as any).classNames,
       styles: (merged as any).styles,
+      vars: (merged as any).vars,
       attributes: (merged as any).attributes,
       unstyled: (merged as any).unstyled,
       props: merged as any,
@@ -91,31 +163,7 @@ export function defineComponent<
   (Component as any).withProps = makeWithProps(Component as any);
   type DefineComponentProps = TOwnProps & StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
 
-  (Component as any).extend = (
-    extendConfig: ComponentExtendConfig<DefineComponentProps>,
-  ): ThemeComponentEntry<DefineComponentProps> => ({
-    __soribashiThemeEntry: true as const,
-    name: config.name,
-    // Vocabulary stored as-is; function-form values resolved by createTheme/normalize-components.
-    // Cast to any because the entry type expects concrete Vocabulary (post-resolution shape).
-    vocabulary: extendConfig.vocabulary as any,
-    defaultProps: extendConfig.defaultProps ?? {},
-    classNames: extendConfig.classNames,
-    styles: extendConfig.styles,
-    vars: extendConfig.vars,
-    attributes: extendConfig.attributes,
-  });
+  (Component as any).extend = makeExtendEntry<DefineComponentProps>(config.name);
 
-  return Component as unknown as React.ForwardRefExoticComponent<
-    TOwnProps & StylesApiProps<any> & React.RefAttributes<HTMLElement>
-  > & {
-    extend: (
-      config: ComponentExtendConfig<DefineComponentProps>,
-    ) => ThemeComponentEntry<DefineComponentProps>;
-    withProps: (
-      presets: Partial<TOwnProps & StylesApiProps<any>>,
-    ) => React.ComponentType<TOwnProps & StylesApiProps<any>>;
-    classes?: Partial<Record<TSelectors[number], string>>;
-    displayName?: string;
-  };
+  return Component as unknown as DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes>;
 }

@@ -1,4 +1,4 @@
-import { resolveVocab, type VocabularyAxis } from './vocabulary-registry.ts';
+import { resolveVocab, resolveComponentVocab, type VocabularyAxis } from './vocabulary-registry.ts';
 
 /**
  * Detect whether the consumer is running in a dev build.
@@ -32,28 +32,58 @@ const isDev = (): boolean => {
 /**
  * Validate vocabulary-axis props against the registry's Zod schemas.
  * Dev-only — production bundles eliminate the call via the isDev() check.
+ *
+ * `localVariants` (the recipe's own `config.variants`) is the authoritative
+ * fallback for the `variant` axis: it is checked before the registry's
+ * __global__ vocabulary, so a recipe-local variant never false-positives
+ * against theme-wide defaults. A per-component theme registration still wins.
  */
 export function validateVocabularyProps(
   componentName: string,
   axes: readonly VocabularyAxis[],
   props: Record<string, unknown>,
+  localVariants?: readonly string[],
 ): void {
   if (!isDev()) return;
   for (const axis of axes) {
     const value = props[axis];
     if (value === undefined) continue;
+
+    if (
+      axis === 'variant' &&
+      localVariants &&
+      localVariants.length > 0 &&
+      !resolveComponentVocab(componentName, 'variant')
+    ) {
+      if (!localVariants.includes(value as string)) {
+        reportInvalidValue(componentName, axis, value, localVariants);
+      }
+      continue;
+    }
+
     const vocab = resolveVocab(componentName, axis);
     if (!vocab) continue; // No registration → no validation (back-compat path)
     const result = vocab.schema.safeParse(value);
     if (!result.success) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[soribashi] <${componentName} ${axis}=${JSON.stringify(value)}> — value is not in the declared vocabulary.\n` +
-          `  Allowed: ${vocab.values.join(', ')}\n` +
-          `  Declared at: theme.components.${componentName}.${axis} or theme.vocabulary.${axis}.\n` +
-          `  To allow this value, extend the component's vocabulary:\n` +
-          `    ${componentName}.extend({ vocabulary: { ${axis}: (cur) => defineVocabulary([...cur.values, ${JSON.stringify(value)}]) } })`,
-      );
+      reportInvalidValue(componentName, axis, value, vocab.values);
     }
   }
+}
+
+function reportInvalidValue(
+  componentName: string,
+  axis: VocabularyAxis,
+  value: unknown,
+  allowed: readonly string[],
+): void {
+  // eslint-disable-next-line no-console
+  console.error(
+    `[soribashi] <${componentName} ${axis}=${JSON.stringify(value)}>: value is not in the declared vocabulary.\n` +
+      `  Allowed: ${allowed.join(', ')}\n` +
+      `  Declared at: the recipe's own \`variants\` config, theme.components.${componentName}.${axis}, or theme.vocabulary.${axis}.\n` +
+      `  To allow this value:\n` +
+      `    1. Extend the component's vocabulary:\n` +
+      `       ${componentName}.extend({ vocabulary: { ${axis}: (cur) => defineVocabulary([...cur.values, ${JSON.stringify(value)}]) } })\n` +
+      `    2. Include that entry in createTheme({ components: [...] }) and call registerTheme(theme).`,
+  );
 }

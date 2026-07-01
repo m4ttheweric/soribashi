@@ -28,7 +28,7 @@ export { useStyles } from './hooks/use-styles.ts';
 export { createVarsResolver } from './create-vars-resolver.ts';
 
 // Utilities
-export { cn } from './cn.ts';
+export { cn, configureClassNameMerge } from './cn.ts';
 export type { ClassValue } from './cn.ts';
 export { useRandomClassName } from './use-random-class-name.ts';
 export { hashStyleProps } from './hash-style-props.ts';
@@ -64,7 +64,7 @@ export type {
 export type { FactoryComponent } from './factory.tsx';
 export type { DefineComponentConfig } from './define-component.tsx';
 export type { DefinePolymorphicComponentConfig, PolymorphicRenderCtx } from './define-polymorphic-component.tsx';
-export type { DefineGenericComponentConfig } from './define-generic-component.tsx';
+export type { DefineGenericComponentConfig, GenericRenderCtx } from './define-generic-component.tsx';
 export type { UseStylesConfig } from './hooks/use-styles.ts';
 
 // asChild slot-merging primitive

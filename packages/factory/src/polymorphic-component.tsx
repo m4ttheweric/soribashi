@@ -6,6 +6,11 @@ const identity = <T,>(value: T): T => value;
 
 /**
  * Lower-level polymorphic factory escape hatch.
+ *
+ * NOTE: `extend` is the identity function (Mantine parity), NOT the
+ * ThemeComponentEntry builder the define* builders attach. Passing
+ * `Component.extend({...})` output to `createTheme({ components: [...] })`
+ * throws. Use definePolymorphicComponent if the component needs theme entries.
  */
 export function polymorphicComponent<P extends FactoryPayload & { defaultElement: ElementType }>(
   render: (props: P['props'] & { as?: ElementType }, ref: Ref<unknown>) => React.ReactNode,

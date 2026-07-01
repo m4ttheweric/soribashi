@@ -40,6 +40,12 @@ export const Slot = forwardRef<unknown, SlotProps>(function Slot(props, forwarde
 
   // Non-element single child (text, number, null, etc.) — render nothing.
   if (!isValidElement(children)) {
+    if (children != null && process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[soribashi] <Slot> expects a single React element child; received a non-element child and rendered nothing.',
+      );
+    }
     return null;
   }
 
@@ -53,15 +59,39 @@ export const Slot = forwardRef<unknown, SlotProps>(function Slot(props, forwarde
   }
 
   const child = children as ReactElement<{ ref?: Ref<unknown> }>;
-  const childRef = (child as { ref?: Ref<unknown> }).ref;
+  const childRef = getChildRef(child);
 
   const merged = mergeProps(slotProps, child.props as Record<string, unknown>);
 
   if (forwardedRef !== null && forwardedRef !== undefined) {
-    (merged as { ref?: Ref<unknown> }).ref = mergeRefs(forwardedRef, childRef);
+    (merged as { ref?: Ref<unknown> }).ref = childRef
+      ? mergeRefs(forwardedRef, childRef)
+      : forwardedRef;
   } else if (childRef) {
     (merged as { ref?: Ref<unknown> }).ref = childRef;
   }
 
   return cloneElement(child, merged);
 });
+
+/**
+ * Reads the child's own ref across React versions (Radix's getElementRef
+ * pattern). React <= 18 stores it on the element; React 19 moved it to props.
+ * Dev builds install warning getters on the wrong-location property, so probe
+ * property descriptors for the isReactWarning flag before touching either.
+ */
+function getChildRef(element: ReactElement): Ref<unknown> | undefined {
+  let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get;
+  let mayWarn = getter && 'isReactWarning' in getter && (getter as { isReactWarning?: boolean }).isReactWarning;
+  if (mayWarn) {
+    return (element as { ref?: Ref<unknown> }).ref;
+  }
+
+  getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get;
+  mayWarn = getter && 'isReactWarning' in getter && (getter as { isReactWarning?: boolean }).isReactWarning;
+  if (mayWarn) {
+    return (element.props as { ref?: Ref<unknown> }).ref;
+  }
+
+  return (element.props as { ref?: Ref<unknown> }).ref ?? (element as { ref?: Ref<unknown> }).ref;
+}
