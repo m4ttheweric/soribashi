@@ -3,7 +3,7 @@
 **Status:** Draft
 **Date:** 2026-05-04
 **Audience:** Implementation engineers
-**Target host (read-only reference):** `apps/adjuster/src/components/ClaimViewIslands` ("CVI") — the path within the consuming `assured` repo
+**Target host (read-only reference):** `apps/adjuster/src/components/the host component library` (the host library) — the path within the consuming repo
 **Wave:** 2 of N. Sequenced after Wave 1 (`docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md`).
 
 ---
@@ -20,7 +20,7 @@ soribashi is the authoring framework, not a component library. Two distinct DX s
 - **Authoring DX** — the design-system author writing Tooltip in their library (analog: a Mantine core team member). Wave 2's deliverable is shaped around making this pleasant.
 - **Consuming DX** — the application engineer composing `<Tooltip><Tooltip.Trigger>...</Tooltip.Trigger></Tooltip>` in their app code. The pilot proves the API enables a pleasant composition.
 
-The pilot library (`apps/core-radix-pilot/`) plays the role of a hypothetical downstream consumer of soribashi — analogous to CVI's `core-radix/` directory. It chooses to wrap `@radix-ui/react-tooltip` for its headless substrate. soribashi itself ships zero new runtime dependencies; the Radix dep lives only in the pilot app.
+The pilot library (`apps/pilot/`) plays the role of a hypothetical downstream consumer of soribashi — analogous to the host library's `host/` directory. It chooses to wrap `@radix-ui/react-tooltip` for its headless substrate. soribashi itself ships zero new runtime dependencies; the Radix dep lives only in the pilot app.
 
 ---
 
@@ -39,17 +39,17 @@ The pilot library (`apps/core-radix-pilot/`) plays the role of a hypothetical do
 | `packages/theme/` | `surface.floating` semantic-token slot |
 | `packages/theme/` | `createTheme({ components: [...] })` accepts an array of `withDefaults`-tagged entries; legacy `Record<string, ComponentThemeConfig>` form remains for back-compat |
 | `packages/codegen/` | Codegen emits paired `--surface-{name}-foreground` when the object form is used |
-| `apps/core-radix-pilot/` | `Tooltip` recipe wrapping `@radix-ui/react-tooltip`, demonstrating `defineCompound` + `Slot` + the floating-surface formalization |
-| `apps/core-radix-pilot/src/pages/` | `TooltipMatrix.tsx` page |
-| `apps/core-radix-pilot/src/pages/` | `ScreenReplica.tsx` integration of Tooltips at relevant points |
-| `docs/superpowers/specs/.../core-radix-conversion-playbook.md` | § 2.2 populated; § 4 / § 5 entries for floating-surface pattern |
+| `apps/pilot/` | `Tooltip` recipe wrapping `@radix-ui/react-tooltip`, demonstrating `defineCompound` + `Slot` + the floating-surface formalization |
+| `apps/pilot/src/pages/` | `TooltipMatrix.tsx` page |
+| `apps/pilot/src/pages/` | `ScreenReplica.tsx` integration of Tooltips at relevant points |
+| `docs/superpowers/specs/.../recipe-conversion-playbook.md` | § 2.2 populated; § 4 / § 5 entries for floating-surface pattern |
 
 **Out of scope (deferred to later waves or other projects):**
 
 - Wave 3 (Tabs), Wave 4 (Select).
 - Eject-per-part (option C from the brainstorm). Backwards-compatible to add when a future wave hits a config-shape wall.
 - IconButton, ButtonDropdown, other Wave-1-category siblings (post-Wave-4 sweep).
-- CVI integration / migration to Wave 2 patterns (separate integration project).
+- the host library integration / migration to Wave 2 patterns (separate integration project).
 - Wholesale per-surface foreground formalization for Wave-1 surfaces (`canvas`/`default`/`raised`/`sunken`/`scrim`). Stays informal; gradual opt-in per future surface.
 - A `Tooltip.Group` part. Radix's Provider already covers the shared-delay use case.
 - Animation primitives. Pilot's Tooltip uses inline `@keyframes`; future may extract.
@@ -150,8 +150,8 @@ The factory does not statically partition parts into the three classes; the clas
 Each component the factory produces — every `defineComponent` output, and every part of a `defineCompound` output — gets a `withDefaults({...})` method. The method returns a tagged record carrying the component's internal `name` plus the consumer-supplied defaults. Consumers register defaults by passing these tagged records to `createTheme({ components: [...] })`:
 
 ```ts
-import { Tooltip } from 'core-radix-pilot';
-import { Button } from 'core-radix-pilot';
+import { Tooltip } from 'pilot';
+import { Button } from 'pilot';
 
 const theme = createTheme({
   tokens, semantic,
@@ -295,7 +295,7 @@ export interface SemanticSurfaces {
 ### 5.4 Pilot theme value
 
 ```ts
-// apps/core-radix-pilot/src/theme/index.ts (extension)
+// apps/pilot/src/theme/index.ts (extension)
 semantic: {
   surface: {
     canvas:  'colors.neutral.50',
@@ -309,7 +309,7 @@ semantic: {
 }
 ```
 
-The pilot's choice to make `surface.floating` *inverted* from `surface.default` is deliberate. A non-inverted floating value (alias to `surface.default`) would not exercise the formalization — the formalized foreground is only load-bearing when the surfaces actually differ. CVI's integration project may later override `surface.floating` to a non-inverted value (e.g., `{ value: 'colors.neutral.0', foreground: 'colors.neutral.700' }`); both are expressible in the same model.
+The pilot's choice to make `surface.floating` *inverted* from `surface.default` is deliberate. A non-inverted floating value (alias to `surface.default`) would not exercise the formalization — the formalized foreground is only load-bearing when the surfaces actually differ. the host library's integration project may later override `surface.floating` to a non-inverted value (e.g., `{ value: 'colors.neutral.0', foreground: 'colors.neutral.700' }`); both are expressible in the same model.
 
 ### 5.5 Convention added to playbook
 
@@ -324,14 +324,14 @@ New entry in playbook § 3 (or a new playbook section if § 3 doesn't fit):
 ### 6.1 Files
 
 ```text
-apps/core-radix-pilot/src/recipes/Tooltip/
+apps/pilot/src/recipes/Tooltip/
   Tooltip.tsx
   Tooltip.css
   Tooltip.test.tsx
-apps/core-radix-pilot/src/pages/
+apps/pilot/src/pages/
   TooltipMatrix.tsx               (new)
   ScreenReplica.tsx               (modified — adds Tooltip integrations)
-apps/core-radix-pilot/src/App.tsx (modified — mounts <Tooltip.Provider> at app root)
+apps/pilot/src/App.tsx (modified — mounts <Tooltip.Provider> at app root)
 ```
 
 ### 6.2 Anatomy exposed
@@ -468,7 +468,7 @@ export const Tooltip = defineCompound({
 ```ts
 // app theme setup
 import { createTheme } from '@soribashi/core';
-import { Tooltip, Button } from 'core-radix-pilot';
+import { Tooltip, Button } from 'pilot';
 
 export const theme = createTheme({
   tokens, semantic,
@@ -488,7 +488,7 @@ Full `variant × side` matrix (2 × 4 = 8 cells), plus three special cases: long
 
 ### 6.7 `ScreenReplica.tsx` integration
 
-Adds Tooltips wherever CVI uses them in production: icon-only buttons (e.g., the activity-panel filter row's IconButton equivalents), truncated text with overflow ellipses, status indicators. Used as the visual-review fixture for the design owner.
+Adds Tooltips wherever the host library uses them in production: icon-only buttons (e.g., the activity-panel filter row's IconButton equivalents), truncated text with overflow ellipses, status indicators. Used as the visual-review fixture for the design owner.
 
 ---
 
@@ -542,7 +542,7 @@ Mirrors Wave 1's three-layer model + factory unit tests + codegen tests.
 
 ### 8.2 Pilot Tooltip tests (new)
 
-`apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`:
+`apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx`:
 - Renders `Tooltip.Provider + Root + Trigger + Content` together
 - Hover trigger → content appears (`userEvent.hover` + Radix's open lifecycle)
 - Click outside or escape → content disappears
@@ -595,7 +595,7 @@ The implementation plan (separate document, produced via writing-plans) sequence
 2. `packages/theme/` `createTheme` array-form normalization (small; no breaking change to existing record form). Independent of phase 1 but bundled here.
 3. `packages/codegen/` emit-css extension + tests — enables `--surface-floating-foreground` var.
 4. `packages/factory/` — `Component.withDefaults` method on `defineComponent` output (small; uses phase 2's normalization), `Slot` (independent), `compound: true` flag on `defineComponent` (substrate), `defineCompound` (top-level). `defineCompound` depends on the flag; `Slot` and `withDefaults` are independent.
-5. `apps/core-radix-pilot/` — theme update with `surface.floating`, Tooltip recipe, Tooltip tests, TooltipMatrix page, App.tsx Provider mount, ScreenReplica integration. The pilot's theme also exercises the array-form `components: [...]` registration with `Tooltip.Provider.withDefaults({...})` etc.
+5. `apps/pilot/` — theme update with `surface.floating`, Tooltip recipe, Tooltip tests, TooltipMatrix page, App.tsx Provider mount, ScreenReplica integration. The pilot's theme also exercises the array-form `components: [...]` registration with `Tooltip.Provider.withDefaults({...})` etc.
 6. Playbook § 2.2 + § 3 + new gradual-formalization convention.
 
 Phases 1-3 + the codegen test slice can land first as a small standalone PR if useful. Phases 4-6 form the bulk of the wave.
@@ -605,7 +605,7 @@ Phases 1-3 + the codegen test slice can land first as a small standalone PR if u
 ## 10. Cross-references
 
 - **Wave 1 spec:** `docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md`
-- **Wave 1 playbook:** `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` (§ 2.2 to be populated by Wave 2; § 5 Q11 the surface-token decision this resolves)
+- **Wave 1 playbook:** `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (§ 2.2 to be populated by Wave 2; § 5 Q11 the surface-token decision this resolves)
 - **Token-consolidation journal:** `docs/superpowers/pilots/2026-04-26-token-consolidation.md` § 5 Q11 (surface↔foreground), § 5 Q1 (popover/card collapse — fed into floating-surface decision), the `surface.scrim` rename note that explicitly reserved "overlay/floating" naming for Wave 2
 - **Button conversion journal:** `docs/superpowers/pilots/2026-04-26-button-conversion.md` (Wave-1 recipe authoring patterns this extends)
 - **Wave 1 handoff:** `docs/superpowers/sessions/2026-04-28-handoff.md` (Wave 2 = option A in next-task menu)
@@ -620,7 +620,7 @@ Phases 1-3 + the codegen test slice can land first as a small standalone PR if u
 
 ## 11. Open design questions
 
-- **OQ-1.** `surface.floating` light-mode default value. Pilot picks `neutral.900` to deliberately exercise the inverted case; CVI integration may pick a non-inverted value. Pilot's choice acceptable, or should pilot match CVI's actual tooltip surface (non-inverted)? Net: visual demo only — token model handles both.
+- **OQ-1.** `surface.floating` light-mode default value. Pilot picks `neutral.900` to deliberately exercise the inverted case; the host library integration may pick a non-inverted value. Pilot's choice acceptable, or should pilot match the host library's actual tooltip surface (non-inverted)? Net: visual demo only — token model handles both.
 - **OQ-2.** Should `Tooltip.Provider`'s props pass through to `RadixTooltip.Provider` 1:1, or trim/rename? Pilot default: 1:1 passthrough (least surprising for Radix users). With theme-set defaults via `Tooltip.Provider.withDefaults({...})` (§ 3.5) absorbing most of the configuration burden, the per-instance prop surface mostly serves "Radix transparency" rather than ergonomics — reinforcing the 1:1 default.
 - **OQ-3.** Naming for the new surface slot — `surface.floating` vs `surface.popover` vs `surface.overlay`. Wave-1 token-consolidation journal already reserved "overlay/floating" naming for Wave 2 when renaming the modal-backdrop slot from `surface.overlay` → `surface.scrim`. Spec picks `surface.floating` (matches Floating UI's vocabulary; doesn't presume the surface is for popovers vs tooltips vs menus). Confirm.
 - **OQ-4.** `Slot` lives in `packages/factory/src/slot.tsx` and is exported from `@soribashi/core`. Right module placement, or should it sit in a `@soribashi/utils` package (does not currently exist)? Spec default: `packages/factory/`.

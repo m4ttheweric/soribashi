@@ -371,7 +371,7 @@ Run:
 ```bash
 bun run typecheck && echo "typecheck PASS"
 bun run --filter '@soribashi/*' test 2>&1 | grep -E "Tests |Exited with code"
-(cd apps/core-radix-pilot && bunx vitest run --reporter=basic 2>&1 | grep -E "Test Files|Tests ")
+(cd apps/pilot && bunx vitest run --reporter=basic 2>&1 | grep -E "Test Files|Tests ")
 ```
 Expected: typecheck PASS; theme 82, codegen 137, factory 473 (472 + the new signature test), blocks 244; pilot 52 (unchanged; PR A touches only the factory). No pre-existing test broken.
 

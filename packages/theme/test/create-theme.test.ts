@@ -30,12 +30,12 @@ describe('createTheme', () => {
         spacing: { md: '0.5rem' },
         fontSize: { md: '1rem' },
       },
-      scope: '.claim-view-islands',
-      darkMode: { selector: '.dark .claim-view-islands' },
+      scope: '.app-scope',
+      darkMode: { selector: '.dark .app-scope' },
     });
 
-    expect(theme.scope).toBe('.claim-view-islands');
-    expect(theme.darkMode.selector).toBe('.dark .claim-view-islands');
+    expect(theme.scope).toBe('.app-scope');
+    expect(theme.darkMode.selector).toBe('.dark .app-scope');
   });
 
   it('applies default vocabulary intent and variant if not provided', () => {

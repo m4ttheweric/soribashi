@@ -37,7 +37,7 @@ export const Button = definePolymorphicComponent({
 
 The default export shape is `Readonly<Record<string, string>>` mapping each declared class name to its build-time-scoped form. This matches the factory's `classes?: Partial<Record<TSelectors[number], string>>` config field structurally — no factory change.
 
-**Vite + Vitest pipeline.** Native support, no config changes. Add `apps/core-radix-pilot/src/vite-env.d.ts` with `/// <reference types="vite/client" />` for typed `import classes from './X.module.css'`.
+**Vite + Vitest pipeline.** Native support, no config changes. Add `apps/pilot/src/vite-env.d.ts` with `/// <reference types="vite/client" />` for typed `import classes from './X.module.css'`.
 
 **Data-attribute selectors.** `.root[data-variant='filled']` inside the module becomes `.{scoped-root}[data-variant='filled']` — CSS modules transform class names only, not attribute selectors. The existing intent×variant matrix on Button works unchanged.
 
@@ -57,7 +57,7 @@ One commit per recipe. Order: Tooltip → Tabs → Button (smallest first, sanit
 
 - `bun run typecheck` clean
 - `bun run --filter '@soribashi/*' test` — 461 + 244 unchanged
-- `cd apps/core-radix-pilot && bunx vitest run` — 47 unchanged
+- `cd apps/pilot && bunx vitest run` — 47 unchanged
 - Manual visual sanity in dev playground
 
 ## References

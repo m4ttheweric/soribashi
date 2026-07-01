@@ -17,7 +17,7 @@
   - `@soribashi/codegen` — 137 passed
   - `@soribashi/factory` — 461 passed
   - `@soribashi/blocks` — 244 passed
-- `cd apps/core-radix-pilot && bunx vitest run` — 47 passed
+- `cd apps/pilot && bunx vitest run` — 47 passed
 
 After this plan completes: test counts grow (new tests for `defineVocabulary`, `extend()`, `createSoribashiBuilders`, Zod validation). Existing tests' counts may shift slightly as `semantic.*` → `vocabulary` + `semanticTokens` renames flow through. Pilot tests stay at 47 (pilot recipes are NOT migrated in this PR — only the pilot's `theme.ts` updates to keep building).
 
@@ -853,7 +853,7 @@ Now that the new fields work end-to-end, delete the old `semantic` field from th
 - Modify: `packages/codegen/src/emit-css.ts` (read semanticTokens instead of semantic)
 - Modify: existing theme tests that use `theme.semantic.X` (grep + update)
 - Modify: existing codegen tests that use `theme.semantic.X` (grep + update)
-- Modify: `apps/core-radix-pilot/src/theme/*.ts` (update theme builder to use new field names — does NOT migrate recipes)
+- Modify: `apps/pilot/src/theme/*.ts` (update theme builder to use new field names — does NOT migrate recipes)
 
 - [ ] **Step 8.1: Find all internal call sites that reference `theme.semantic`**
 
@@ -891,7 +891,7 @@ Same kind of edit across `packages/codegen/test/*.ts`. Many tests likely constru
 
 - [ ] **Step 8.5: Update the pilot's theme.ts**
 
-In `apps/core-radix-pilot/src/theme/index.ts` (or wherever the pilot's theme is constructed), find the `semantic: { ... }` block. Split it:
+In `apps/pilot/src/theme/index.ts` (or wherever the pilot's theme is constructed), find the `semantic: { ... }` block. Split it:
 
 ```ts
 // BEFORE
@@ -951,7 +951,7 @@ In `packages/theme/src/index.ts`:
 ```bash
 bun run typecheck 2>&1 | tail -5
 bun run --filter '@soribashi/*' test 2>&1 | grep "Tests" | head -5
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
+cd apps/pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
 cd /Users/matt/Documents/GitHub/soribashi/.claude/worktrees/vocabulary-rails-core
 ```
 Expected:
@@ -967,7 +967,7 @@ If any test fails because of a missed `.semantic.X` reference, find and update i
 - [ ] **Step 8.8: Commit**
 
 ```bash
-git add -A packages/theme/ packages/codegen/ apps/core-radix-pilot/src/theme/
+git add -A packages/theme/ packages/codegen/ apps/pilot/src/theme/
 git commit -m "$(cat <<'EOF'
 refactor(theme): hard-remove deprecated semantic field — vocabulary + semanticTokens are canonical
 
@@ -979,7 +979,7 @@ ThemeDefinition + ResolvedTheme. Migrates all internal callers:
 - packages/codegen/src/emit-css.ts: reads theme.semanticTokens
 - packages/theme/test/*: tests updated to use new field names
 - packages/codegen/test/*: tests updated to use new field names
-- apps/core-radix-pilot/src/theme/index.ts: theme uses
+- apps/pilot/src/theme/index.ts: theme uses
   vocabulary + semanticTokens instead of semantic. defineVocabulary
   used for intent + variant axes (preserves the previous values).
 
@@ -1274,7 +1274,7 @@ For each call site, replace `Recipe.withDefaults({ ...props })` with `Recipe.ext
 
 ```bash
 bun run --filter '@soribashi/factory' test 2>&1 | grep -E "Tests|FAIL" | head -10
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
+cd apps/pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
 cd /Users/matt/Documents/GitHub/soribashi/.claude/worktrees/vocabulary-rails-core
 ```
 Expected: factory 461 (unchanged), pilot 47 (unchanged).
@@ -1291,7 +1291,7 @@ Expected: clean.
 - [ ] **Step 11.6: Commit**
 
 ```bash
-git add packages/factory/src/define-component.tsx packages/factory/test/ apps/core-radix-pilot/src/
+git add packages/factory/src/define-component.tsx packages/factory/test/ apps/pilot/src/
 git commit -m "$(cat <<'EOF'
 feat(factory): defineComponent — extend() replaces withDefaults()
 
@@ -2223,7 +2223,7 @@ Expected: clean.
 - [ ] **Step 19.6: Pilot tests still pass**
 
 ```bash
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
+cd apps/pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
 cd /Users/matt/Documents/GitHub/soribashi/.claude/worktrees/vocabulary-rails-core
 ```
 Expected: 47 passed. Pilot recipes haven't opted into `vocabularyAxes` so validation is a no-op for them.
@@ -2268,7 +2268,7 @@ By this point the pilot's `theme.ts` was already updated in Task 8 (rename to vo
 ```bash
 bun run typecheck 2>&1 | tail -3
 bun run --filter '@soribashi/*' test 2>&1 | grep "Tests" | head -5
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
+cd apps/pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
 cd /Users/matt/Documents/GitHub/soribashi/.claude/worktrees/vocabulary-rails-core
 ```
 
@@ -2283,7 +2283,7 @@ Expected counts (approximate — may shift slightly based on test additions):
 - [ ] **Step 20.2: Start the dev server and verify manually**
 
 ```bash
-cd apps/core-radix-pilot && bun run dev
+cd apps/pilot && bun run dev
 ```
 
 Open `http://localhost:5174`. Visually verify Button / Tooltip / Tabs still render correctly. Pilot recipes haven't migrated to vocabularyAxes yet, so their visual surface is unchanged from main.
@@ -2291,7 +2291,7 @@ Open `http://localhost:5174`. Visually verify Button / Tooltip / Tabs still rend
 If anything is broken in the dev playground (not in tests), the most likely cause is a `theme.semantic.X` reference that escaped the Task 8 migration. Grep for it:
 
 ```bash
-grep -rn "semantic\." apps/core-radix-pilot/src/ --include="*.ts" --include="*.tsx" | grep -v "semanticTokens"
+grep -rn "semantic\." apps/pilot/src/ --include="*.ts" --include="*.tsx" | grep -v "semanticTokens"
 ```
 
 Anything matching is a bug — fix and re-test.
@@ -2335,7 +2335,7 @@ Expected: `(no bare type exports — good)`. The only exports related to these a
 ```bash
 bun run typecheck 2>&1 | tail -3
 bun run --filter '@soribashi/*' test 2>&1 | grep "Tests" | head -5
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
+cd apps/pilot && bunx vitest run --reporter=basic 2>&1 | tail -4
 cd /Users/matt/Documents/GitHub/soribashi/.claude/worktrees/vocabulary-rails-core
 ```
 Expected: all clean, all counts as in Task 20.
@@ -2361,7 +2361,7 @@ The vocab rails are in place:
 - Pilot continues to build (recipes not yet migrated)
 
 **Next PR (pilot migration):**
-1. Create `apps/core-radix-pilot/src/builders.ts` calling `createSoribashiBuilders(theme)`
+1. Create `apps/pilot/src/builders.ts` calling `createSoribashiBuilders(theme)`
 2. Pilot recipes (Button / Tooltip / Tabs) switch imports from `@soribashi/core` to `'../builders'`
 3. Pilot recipes add `vocabularyAxes: [...]` and drop local `Intent` / `Variant` / `Size` declarations
 4. Tooltip + Tabs get `Recipe.extend({ vocabulary: { variant: defineVocabulary([...]) } })` entries in `theme.components`

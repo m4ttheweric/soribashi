@@ -128,7 +128,7 @@ bun run lint       # biome
 
 ## Status
 
-Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md). 980+ tests across packages. Packages are versioned at `0.0.0` and not yet published.
+Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md). 980+ tests across packages. Packages are versioned at `0.0.0` and not yet published.
 
 ## Manifesto
 

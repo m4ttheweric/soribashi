@@ -14,7 +14,7 @@ That is what Soribashi is: the framework without the library. The bridge from "o
 
 ## What was imagined
 
-The original vision, sketched in the Deterministic UI Patterns RFC, started from a specific frustration: an internal component library (CVI, ClaimViewIslands) that had three parallel color-token systems, no semantic theming layer, and no way to express design intent through props. Feature developers were making ad-hoc color and spacing decisions in every file. The system was drifting, and manual code review was the only guardrail.
+The original vision, sketched in the Deterministic UI Patterns RFC, started from a specific frustration: an internal component library that had three parallel color-token systems, no semantic theming layer, and no way to express design intent through props. Feature developers were making ad-hoc color and spacing decisions in every file. The system was drifting, and manual code review was the only guardrail.
 
 The RFC proposed a CSS-schema-first architecture layered on top of shadcn: typed codegen, layout blocks, and constrained component APIs that would make the governed path the path of least resistance. The idea was that if `intent="primary"` always did the right thing, and reaching for raw color values required stepping outside the system, most developers would stay on the governed path by default. Not because they were forced to, but because it was easier.
 
@@ -61,7 +61,7 @@ The foundation proves the framework works. The pilots prove it scales to real co
 
 ### The conversion playbook
 
-The pilots produced a transferable methodology: a 6-step token consolidation loop and category-specific authoring patterns documented in the [core-radix Conversion Playbook](docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md). The playbook is designed to extend -- each wave appended its category pattern and contributed gaps to the shared registry.
+The pilots produced a transferable methodology: a 6-step token consolidation loop and category-specific authoring patterns documented in the [Recipe Conversion Playbook](docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md). The playbook is designed to extend -- each wave appended its category pattern and contributed gaps to the shared registry.
 
 ### Vocabulary rails
 

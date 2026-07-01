@@ -1,0 +1,113 @@
+/**
+ * Tooltip recipe styles — Wave 2 pilot
+ *
+ * .content: floating surface using the CSS custom properties
+ * emitted by the vars resolver (--sb-tooltip-bg / --sb-tooltip-color).
+ * These are injected as inline styles on the content slot by defineCompound
+ * when the root's vars() callback runs.
+ *
+ * Animations match shadcn/ui's tooltip (tailwindcss-animate utilities)
+ * behavior, hand-rolled in plain CSS:
+ *   - 150ms duration, fade + scale-95 + 8px slide
+ *   - direction-aware: tooltip slides in FROM the trigger direction
+ *     (e.g. data-side="top" → starts below, slides UP into position)
+ *   - exit: fade-out + scale-out-to-95
+ *
+ * Radix's <Presence> wrapper keeps the Content node mounted during the
+ * data-state="closed" animation so the exit can complete cleanly.
+ *
+ * .arrow: SVG fill matches the tooltip background for seamless
+ * visual connection between arrow and content bubble.
+ */
+
+/*
+ * Trigger has no default styling (Tooltip's trigger is a positioning anchor,
+ * not a styled element), but the slot exists in the recipe and consumers
+ * may target it via classNames={{ trigger: '...' }}. Declaring the empty
+ * rule gives the slot a stable, addressable scoped class name.
+ */
+/* stylelint-disable-next-line block-no-empty */
+.trigger {
+}
+
+.content {
+  background: var(--sb-tooltip-bg);
+  color: var(--sb-tooltip-color);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md, 6px);
+  font-size: var(--font-size-sm, 0.875rem);
+  line-height: 1.4;
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+  z-index: 50;
+  max-width: 18rem;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  /* Motion radiates from the trigger via Radix's transform-origin. */
+  transform-origin: var(--radix-tooltip-content-transform-origin, center);
+  animation-duration: 150ms;
+  animation-fill-mode: forwards;
+}
+
+/* --- IN animations -------------------------------------------------------
+ * For each side, the tooltip starts CLOSER to the trigger (translated TOWARD
+ * the trigger by 8px) and slides into final position. This matches shadcn's
+ * `slide-in-from-{opposite-side}-2` pattern.
+ */
+.content[data-state="delayed-open"][data-side="top"],
+.content[data-state="instant-open"][data-side="top"] {
+  animation-name: sb-tooltip-enter-from-bottom;
+  animation-timing-function: ease-out;
+}
+.content[data-state="delayed-open"][data-side="right"],
+.content[data-state="instant-open"][data-side="right"] {
+  animation-name: sb-tooltip-enter-from-left;
+  animation-timing-function: ease-out;
+}
+.content[data-state="delayed-open"][data-side="bottom"],
+.content[data-state="instant-open"][data-side="bottom"] {
+  animation-name: sb-tooltip-enter-from-top;
+  animation-timing-function: ease-out;
+}
+.content[data-state="delayed-open"][data-side="left"],
+.content[data-state="instant-open"][data-side="left"] {
+  animation-name: sb-tooltip-enter-from-right;
+  animation-timing-function: ease-out;
+}
+
+/* --- OUT animation ------------------------------------------------------- */
+.content[data-state="closed"] {
+  animation-name: sb-tooltip-exit;
+  animation-timing-function: ease-in;
+}
+
+.arrow {
+  fill: var(--sb-tooltip-bg);
+}
+
+/* Side=top → tooltip is above trigger → enter FROM bottom (closer to trigger). */
+@keyframes sb-tooltip-enter-from-bottom {
+  from { opacity: 0; transform: translateY(8px)  scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+/* Side=right → tooltip is right of trigger → enter FROM left. */
+@keyframes sb-tooltip-enter-from-left {
+  from { opacity: 0; transform: translateX(-8px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0)    scale(1); }
+}
+/* Side=bottom → tooltip is below trigger → enter FROM top. */
+@keyframes sb-tooltip-enter-from-top {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+/* Side=left → tooltip is left of trigger → enter FROM right. */
+@keyframes sb-tooltip-enter-from-right {
+  from { opacity: 0; transform: translateX(8px)  scale(0.95); }
+  to   { opacity: 1; transform: translateX(0)    scale(1); }
+}
+
+/* Exit: symmetric fade + scale-down (no slide; matches shadcn's
+ * data-[state=closed]:animate-out fade-out-0 zoom-out-95). */
+@keyframes sb-tooltip-exit {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.95); }
+}

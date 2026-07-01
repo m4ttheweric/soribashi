@@ -8,9 +8,9 @@
 
 ### 1.1 Variants (visual style)
 
-CVI's variant set: `primary`, `secondary`, `outline`, `ghost`, `danger`, `success`.
+the host library's variant set: `primary`, `secondary`, `outline`, `ghost`, `danger`, `success`.
 
-**Inconsistency:** The variant prop in CVI's Button mixes visual style (`outline`, `ghost`) with semantic role (`primary`, `secondary`, `danger`, `success`) — three are visual, three are intent-shaped. This conflates two orthogonal axes.
+**Inconsistency:** The variant prop in the host library's Button mixes visual style (`outline`, `ghost`) with semantic role (`primary`, `secondary`, `danger`, `success`) — three are visual, three are intent-shaped. This conflates two orthogonal axes.
 
 **Wave 1 consolidation:** Split into:
 - `variant` (visual): `filled`, `outline`, `subtle`, `ghost`, `link`
@@ -18,7 +18,7 @@ CVI's variant set: `primary`, `secondary`, `outline`, `ghost`, `danger`, `succes
 
 Rationale: matches the existing soribashi convention (see `apps/playground/src/components/Button/Button.tsx` and the playground theme). Lets one component express ALL the (variant × intent) cells without an explosion of one-off variants.
 
-**Migration map for CVI's existing usages** (informational — actual migration is the integration project's work):
+**Migration map for the host library's existing usages** (informational — actual migration is the integration project's work):
 - `<Button variant="primary">` → `<Button intent="primary" variant="filled">`
 - `<Button variant="secondary">` → `<Button intent="neutral" variant="filled">` (or `subtle` — see § 4)
 - `<Button variant="outline">` → `<Button intent="neutral" variant="outline">`
@@ -28,11 +28,11 @@ Rationale: matches the existing soribashi convention (see `apps/playground/src/c
 
 ### 1.2 Sizes
 
-CVI: `sm`, `md`, `lg`. Wave 1: same.
+Host: `sm`, `md`, `lg`. Wave 1: same.
 
 ### 1.3 States
 
-| CVI prop | CVI behavior | Wave 1 prop |
+| the host library prop | the host library behavior | Wave 1 prop |
 |---|---|---|
 | `isLoading` | Shows spinner, suppresses click | `loading` (renamed) |
 | `disabled` | HTMLButton disabled | `disabled` (passthrough) |
@@ -43,12 +43,12 @@ CVI: `sm`, `md`, `lg`. Wave 1: same.
 
 ### 1.4 Polymorphism
 
-CVI uses Radix Slot (`asChild` prop). Wave 1 uses soribashi's `definePolymorphicComponent` with an `as` prop. Why the change: `as` is more typesafe, the soribashi convention, and removes the `Slot` runtime dependency from the recipe. Migration map:
+The host library uses Radix Slot (`asChild` prop). Wave 1 uses soribashi's `definePolymorphicComponent` with an `as` prop. Why the change: `as` is more typesafe, the soribashi convention, and removes the `Slot` runtime dependency from the recipe. Migration map:
 - `<Button asChild><a href="/x">Link</a></Button>` → `<Button as="a" href="/x">Link</Button>`
 
 This is a meaningful API divergence — flag in the journal as a finding for design review.
 
-**CVI footgun:** `asChild` is silently ignored when combined with `isLoading`, `leftIcon`, or `rightIcon`. The implementation guard at `apps/core-radix-pilot/src/reference/core-radix-button/Button.tsx:144` reads `if (asChild && !isLoading && !leftIcon && !rightIcon)` — when any of those props is set, execution falls through to the regular `<button>` branch with no warning, no dev-mode log, no type error. The `as` prop replacement in Wave 1 avoids this class of bug because polymorphism is independent of icon/loading rendering — `<Button as="a" loading leftIcon={...}>` correctly renders an `<a>` with both leftIcon and a spinner.
+**Host footgun:** `asChild` is silently ignored when combined with `isLoading`, `leftIcon`, or `rightIcon`. The implementation guard at `apps/pilot/src/reference/original-button/Button.tsx:144` reads `if (asChild && !isLoading && !leftIcon && !rightIcon)` — when any of those props is set, execution falls through to the regular `<button>` branch with no warning, no dev-mode log, no type error. The `as` prop replacement in Wave 1 avoids this class of bug because polymorphism is independent of icon/loading rendering — `<Button as="a" loading leftIcon={...}>` correctly renders an `<a>` with both leftIcon and a spinner.
 
 ## 2. Consolidated Button shape (Task 1.3)
 
@@ -58,31 +58,31 @@ _Populated as recipe is authored._
 
 ### Easy
 
-- **`defineComponent` / `definePolymorphicComponent` carried the recipe shape end-to-end.** Going from CVI's hand-rolled `forwardRef` + `cva` + manual prop-merging to a soribashi recipe was largely a transcription exercise: the factory handles `ref` forwarding, the `getStyles` helper threads consumer overrides through `classNames`/`styles`/`vars`/`attributes`/`unstyled`, and the polymorphic variant gives a typed `as` prop without bespoke generics. Once the destructure-styles-API-props pattern was internalized (see § 4 Gap 2), authoring the recipe was mechanical.
+- **`defineComponent` / `definePolymorphicComponent` carried the recipe shape end-to-end.** Going from the host library's hand-rolled `forwardRef` + `cva` + manual prop-merging to a soribashi recipe was largely a transcription exercise: the factory handles `ref` forwarding, the `getStyles` helper threads consumer overrides through `classNames`/`styles`/`vars`/`attributes`/`unstyled`, and the polymorphic variant gives a typed `as` prop without bespoke generics. Once the destructure-styles-API-props pattern was internalized (see § 4 Gap 2), authoring the recipe was mechanical.
 - **Intent × variant via CSS data-attribute rules over local CSS vars.** Tailwind-class-explosion for 5 variants × 6 intents (30 cells) was avoided by emitting one `Button.css` keyed on `[data-variant]` / `[data-intent]` selectors and routing all colorization through `--cr-button-bg` / `--cr-button-fg` / `--cr-button-border` local vars. Adding/changing an intent is a CSS edit, not a recipe-API edit. This pattern composes cleanly with the consolidated theme tokens — every selector pulls from `var(--color-{family}-{step})` directly.
 - **Parity-test pattern reuse.** Task 1.8's Playwright parity tests reused the matrix-snapshot pattern from Phase 0's ScreenReplica work (Task 0.10): drive a deterministic `ButtonMatrix` page, snapshot per-cell computed styles, assert against the consolidated theme expectations. No new harness needed — same Playwright project, same `webServer` block, same fixture style.
 - **TDD loop held.** Task 1.4 RED → Task 1.5 GREEN ran clean: the failing tests mapped 1:1 to recipe behaviors, and once the jest-dom gap (§ 4 Gap 3) was patched all 11 tests went green without rework.
-- **Polymorphism-as-`as`-prop replaced CVI's `asChild` cleanly.** The `definePolymorphicComponent` `as` API is more typesafe and sidesteps CVI's `asChild` footgun (silent ignore when combined with `isLoading`/`leftIcon`/`rightIcon`, see § 1.4) — `<Button as="a" loading leftIcon={...}>` correctly composes loading + icons + anchor element.
+- **Polymorphism-as-`as`-prop replaced the host library's `asChild` cleanly.** The `definePolymorphicComponent` `as` API is more typesafe and sidesteps the host library's `asChild` footgun (silent ignore when combined with `isLoading`/`leftIcon`/`rightIcon`, see § 1.4) — `<Button as="a" loading leftIcon={...}>` correctly composes loading + icons + anchor element.
 
 ### Hard
 
 - **`hsl(var(--color-...))` → `var(--color-...)` adaptation.** The codegen wrapped every var value in `hsl(...)` (logged in token-consolidation journal § 6), so consumer code that writes `hsl(var(--color-primary-500))` thinking the var is bare HSL components produces invalid `hsl(hsl(...))` and resolves transparent. Every Phase-1 recipe/test/snapshot file (Tasks 1.5 Button.css, 1.6 ButtonMatrix, 1.8 Playwright resolver) had to use the direct-var pattern. The plan-snippet templates for those tasks were patched mid-flight after Task 0.8 surfaced the issue. **Cost during Wave 1:** also blocked the Tailwind `<alpha-value>` pattern (`bg-primary-500/50`) — alpha utilities weren't expressible against the original emit format. **RESOLVED post-Wave-1** via the dual-emit codegen change — see § 4 Gap 1 below for the resolution; alpha utilities now work via the `--__hsl-color-*` companion vars.
 - **`definePolymorphicComponent`'s `render` ctx doesn't pre-strip styles-API props.** The `props` handed to `render({ Element, props, getStyles })` still contains `classNames`, `styles`, `vars`, `attributes`, `unstyled`, `className`, `style`. Spreading `...rest` onto a DOM element without first destructuring those seven keys throws React unknown-prop warnings (and at runtime sends non-DOM attrs through to the element). The Button recipe explicitly destructures all seven; the existing factory test (`packages/factory/test/define-polymorphic-component.test.tsx:18`) does the same with an `...rest as any` cast. Discoverable only by reading the test or by hitting the warning — no docs.
-- **jest-dom setup gap in the pilot vitest config template.** Task 1.3's snippet for `apps/core-radix-pilot/vitest.config.ts` did not include `setupFiles`. Task 1.4's behavior tests use `expect(...).toBeDisabled()` (jest-dom matcher), so when Task 1.5 implementer ran the suite, 10/11 tests passed and the disabled-on-loading test failed with `Invalid Chai property: toBeDisabled`. Resolution: Task 1.5 added `apps/core-radix-pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and wired it via `setupFiles: ['./test/setup.ts']`. Mirrors the existing convention at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` — the template just didn't carry it forward.
+- **jest-dom setup gap in the pilot vitest config template.** Task 1.3's snippet for `apps/pilot/vitest.config.ts` did not include `setupFiles`. Task 1.4's behavior tests use `expect(...).toBeDisabled()` (jest-dom matcher), so when Task 1.5 implementer ran the suite, 10/11 tests passed and the disabled-on-loading test failed with `Invalid Chai property: toBeDisabled`. Resolution: Task 1.5 added `apps/pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and wired it via `setupFiles: ['./test/setup.ts']`. Mirrors the existing convention at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` — the template just didn't carry it forward.
 - **Focus indicator (`outline: 2px solid var(--cr-button-bg)`) is invisible on transparent variants.** Surfaced in Task 1.5 review: ghost / link / outline variants set `--cr-button-bg` to `transparent`, so the focus outline that derives from it disappears. Workaround for Wave 1: deferred (these variants still receive the browser's default `:focus-visible` ring; the recipe just doesn't draw an additional intent-tinted one for them). A proper fix routes the outline color through a separate `--cr-button-focus-ring` var that falls back to the intent border or text color on transparent variants. Documented as a recipe-authoring footgun in § 4 Gap 4.
 - **`definePolymorphicComponent` type-param order is `<TOwnProps, TDefaultAs>`, not `<TDefaultAs, TOwnProps>`.** The plan's example originally had the order reversed. Caught and corrected mid-spec, but worth flagging for the playbook: the plan-snippet templates need a verifier pass against the actual factory signature before being copy-pasted into recipe authoring. The mistake compiles (both type params are flexible enough that swapping them yields confusing-but-not-erroring types) so it would have escaped TypeScript.
 
 ### Surprises
 
 - **Pleasant: catching the codegen `hsl()`-wrapper bug in Task 0.8 paid recurring dividends.** Tasks 0.9 (ScreenReplica), 1.5 (Button.css), 1.6 (ButtonMatrix), and 1.8 (Playwright resolver) all hit the same mismatch in their plan-snippet templates. Because Task 0.8's review patched the upstream understanding (and the plan was edited in-place), every downstream task implementer started from the direct-`var()` pattern instead of rediscovering the bug five times. Single-source-of-truth journal § 6 worked as intended.
-- **Pleasant: the data-attribute selector pattern collapsed the variant×intent matrix without `cva`.** CVI uses `class-variance-authority` to express the matrix as a class generator. The Wave 1 recipe writes `data-variant`/`data-intent` once on the rendered element and lets a static `Button.css` resolve the cell — fewer runtime concatenations, easier to inspect in DevTools, and the matrix lives in CSS where designers can edit it.
+- **Pleasant: the data-attribute selector pattern collapsed the variant×intent matrix without `cva`.** the host library uses `class-variance-authority` to express the matrix as a class generator. The Wave 1 recipe writes `data-variant`/`data-intent` once on the rendered element and lets a static `Button.css` resolve the cell — fewer runtime concatenations, easier to inspect in DevTools, and the matrix lives in CSS where designers can edit it.
 - **Unpleasant: the styles-API destructure list (7 keys) is implicit knowledge.** A first-time recipe author has no signal — types, jsdoc, runtime warning — that the `props` they receive in `render` still has framework-level keys. The seven-key destructure block in the Button recipe reads as an arbitrary incantation; a future author copying it forward will keep all seven even if they don't apply, and a future author *not* copying it forward will ship broken DOM attrs.
 - **Unpleasant: the focus-indicator regression on transparent variants didn't surface in unit tests or in Playwright parity** — both kinds of test snapshot the resolved styles but neither asserts the focus outline is visible against the rendered backdrop. Visual review caught it. Reinforces that pixel-level visual review is non-optional even when a behavior + parity suite is green.
-- **Unpleasant: spec § 7.1 step 3 (side-by-side rendering of the vendored CVI Button in `ButtonMatrix.tsx`) was deviated from.** The spec called for rendering the vendored CVI Button alongside the consolidated recipe so reviewers could eyeball the visual deltas per cell. Implementation skipped this: the vendored Button at `apps/core-radix-pilot/src/reference/core-radix-button/Button.tsx` imports `@assured/design-system`, `class-variance-authority`, `../lib/utils` (CVI's `cn` helper), and references shad-* tokens / hex colors / CVI's icon system — none of which the pilot installs. Making it run would require either shimming all four dependency surfaces (a non-trivial side-quest with no test value beyond the visual diff) or rendering a visually-broken element in pilot chrome (which would mislead reviewers more than it informs). Instead, `ButtonMatrix.tsx` ships an inline "Consolidation notes" callout (`pages/ButtonMatrix.tsx:71`) that enumerates the per-cell semantic deltas in prose. This is a documented spec deviation; future waves should weigh whether to ship the shim layer (one-time cost, recurring visual-diff payoff) or take the same prose-callout shortcut. The choice should be made wave-by-wave based on how many siblings reuse the same vendored dependency surface.
+- **Unpleasant: spec § 7.1 step 3 (side-by-side rendering of the vendored the host library Button in `ButtonMatrix.tsx`) was deviated from.** The spec called for rendering the vendored the host library Button alongside the consolidated recipe so reviewers could eyeball the visual deltas per cell. Implementation skipped this: the vendored Button at `apps/pilot/src/reference/original-button/Button.tsx` imports `@host/design-system`, `class-variance-authority`, `../lib/utils` (the host library's `cn` helper), and references shad-* tokens / hex colors / the host library's icon system — none of which the pilot installs. Making it run would require either shimming all four dependency surfaces (a non-trivial side-quest with no test value beyond the visual diff) or rendering a visually-broken element in pilot chrome (which would mislead reviewers more than it informs). Instead, `ButtonMatrix.tsx` ships an inline "Consolidation notes" callout (`pages/ButtonMatrix.tsx:71`) that enumerates the per-cell semantic deltas in prose. This is a documented spec deviation; future waves should weigh whether to ship the shim layer (one-time cost, recurring visual-diff payoff) or take the same prose-callout shortcut. The choice should be made wave-by-wave based on how many siblings reuse the same vendored dependency surface.
 
 ## 4. Soribashi gaps surfaced (Task 1.9)
 
-The four entries below aggregate gaps surfaced during Phase 1 (Tasks 1.2 – 1.8). The codegen `hsl(...)` wrapper gap is the Button-recipe-side mirror of token-consolidation journal § 6's third bullet — cross-referenced rather than duplicated. CVI's `asChild` footgun (Task 1.2) is **not** a soribashi-framework gap and stays in § 1.4 above as a CVI finding.
+The four entries below aggregate gaps surfaced during Phase 1 (Tasks 1.2 – 1.8). The codegen `hsl(...)` wrapper gap is the Button-recipe-side mirror of token-consolidation journal § 6's third bullet — cross-referenced rather than duplicated. the host library's `asChild` footgun (Task 1.2) is **not** a soribashi-framework gap and stays in § 1.4 above as a the host library finding.
 
 ### Gap 1: Codegen emits `hsl(...)`-wrapped var values — RESOLVED (post-Wave-1)
 
@@ -124,7 +124,7 @@ The pattern is now documented in **playbook § 2.1 "Render body destructure"** w
 **Where surfaced:** Phase 1 Task 1.5 (10/11 tests green; `disabled-on-loading` failed with `Invalid Chai property: toBeDisabled`)
 **What we needed:** The pilot-app vitest config template (Task 1.3 step) should include a `setupFiles` entry that imports `@testing-library/jest-dom/vitest`, so any test using jest-dom matchers (`toBeDisabled`, `toBeInTheDocument`, `toHaveAttribute`, etc.) works out of the box.
 **What soribashi has today:** The convention is implemented at `packages/factory/test/setup.ts` and `packages/blocks/test/setup.ts` — every published-package vitest config wires it. The pilot-app template Task 1.3 carried did not propagate the wiring, so the pattern was dropped at the boundary between `packages/*` and `apps/*`.
-**Worked around by (during Wave 1):** Task 1.5 added `apps/core-radix-pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and `setupFiles: ['./test/setup.ts']` in the pilot's `vitest.config.ts`.
+**Worked around by (during Wave 1):** Task 1.5 added `apps/pilot/test/setup.ts` (one line: `import '@testing-library/jest-dom/vitest';`) and `setupFiles: ['./test/setup.ts']` in the pilot's `vitest.config.ts`.
 
 **Resolution shipped (post-Wave-1):** Documented as a transferable scaffolding template in **playbook § 2.0 "Pilot app test scaffolding (transferable across waves)"** — three canonical files (vitest config, test setup, workspace registration) plus the dev-deps list. Future Wave 2-4 plan templates should copy from playbook § 2.0 rather than re-deriving from `packages/*` configs.
 
@@ -150,7 +150,7 @@ No tooling change was made. Considered options:
 
 **Resolution shipped:** Dropped the redundant `& RefAttributes<PolymorphicRef<TAs>>` intersection — `PolymorphicComponentProps` is now identical to `PolymorphicProps`. `ComponentPropsWithRef<TAs>` already gives consumers a `ref?: Ref<HTMLButtonElement>` for `<Button>`, `Ref<HTMLAnchorElement>` for `<Button as="a">`, etc. The `refProp(ref)` cast helper in `Button.test.tsx` was deleted; the three ref-forwarding tests now pass `ref={createRef<HTMLButtonElement>()}` directly.
 
-**Implementation:** `packages/factory/src/types/polymorphic.ts` (drop the `& RefAttributes<...>` intersection; remove unused `RefAttributes` import); `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` (delete `refProp` helper; pass refs directly).
+**Implementation:** `packages/factory/src/types/polymorphic.ts` (drop the `& RefAttributes<...>` intersection; remove unused `RefAttributes` import); `apps/pilot/src/recipes/Button/Button.test.tsx` (delete `refProp` helper; pass refs directly).
 
 **Authoring guidance** (still applies): the must-thread-`ref`-through requirement is documented in playbook § 2.1 "Token consumption" so future Wave 2-4 recipes don't rediscover the original runtime no-op. A dev-mode runtime warning (factory checks if consumer passed `ref` but render output didn't surface one) was considered and deferred — the playbook reminder + ref-forwarding tests are sufficient guard for now.
 
@@ -175,25 +175,25 @@ The base rule (`outline: 2px solid var(--cr-button-bg)`) still drives filled and
 
 ## 5. IconButton + ButtonDropdown extension sketch (Task 1.10)
 
-These are sketches, not implementations. The point is to confirm — before Phase 2's playbook synthesis — that the recipe shape arrived at in §§ 1 – 4 generalises to the next two CVI button siblings. If either sketch had required a new soribashi primitive or an awkward shape-twist, that would be a finding worth blocking on. Neither does.
+These are sketches, not implementations. The point is to confirm — before Phase 2's playbook synthesis — that the recipe shape arrived at in §§ 1 – 4 generalises to the next two the host library button siblings. If either sketch had required a new soribashi primitive or an awkward shape-twist, that would be a finding worth blocking on. Neither does.
 
 ### 5.1 IconButton
 
-**Reference (vendored CVI):** `apps/core-radix-pilot/src/reference/core-radix-button/IconButton.tsx`
+**Reference (vendored the host library):** `apps/pilot/src/reference/original-button/IconButton.tsx`
 
-CVI's IconButton is a square Button with one mandatory icon and one mandatory `aria-label`. CVI's distinctive shape:
+the host library's IconButton is a square Button with one mandatory icon and one mandatory `aria-label`. the host library's distinctive shape:
 - Shares the focus-ring / disabled / transition base styles with Button but ships its own `cva` rather than composing the Button recipe.
 - Adds an **XL size** (`h-12 w-12`) that the parent Button doesn't have.
 - Adds a **dot indicator** (`dot` + `dotClassName` props) — an absolute-positioned slot in the top-right for unread/notification badges; only honored when `asChild` is false.
 - Drops the `secondary` / `danger` / `success` variants — only `primary` / `outline` / `ghost`.
-- Uses CVI's icon system (`IconKey` + `IconFlatRenderer`) so the consumer passes a key, not a node.
+- Uses the host library's icon system (`IconKey` + `IconFlatRenderer`) so the consumer passes a key, not a node.
 
 **Recipe shape (Wave 1 vocabulary):**
 - **Reuses:** the entire intent × variant system from § 2's Button recipe; the `[data-variant][data-intent]` CSS rules over local `--cr-iconbutton-*` vars; the `disabled` / `loading` state handling; the polymorphic `as` prop story.
 - **Constrains:** no `children`. One `icon: ReactNode` prop. `aria-label: string` is required at the type level. No `leftIcon` / `rightIcon` / `fullWidth` props (square; one icon only).
-- **Adds:** square sizing (h = w; sm/md/lg/xl — picks up CVI's xl). An optional `dot?: ReactNode` slot rendered absolute-positioned in the root via a fourth selector. Aspect-ratio + padding routed through size-keyed CSS like Button's height tokens.
+- **Adds:** square sizing (h = w; sm/md/lg/xl — picks up the host library's xl). An optional `dot?: ReactNode` slot rendered absolute-positioned in the root via a fourth selector. Aspect-ratio + padding routed through size-keyed CSS like Button's height tokens.
 - **Slots / selectors:** `['root', 'icon', 'dot']`. (Button's `label` and `spinner` selectors don't apply — no label, and the spinner replaces the icon in-place rather than rendering alongside it.)
-- **Defaults:** `intent: 'neutral', variant: 'outline', size: 'md', loading: false`. (CVI's `defaultVariants` are `outline` + `md` — keep that vibe; intent defaults to neutral because the dominant icon-button use is "secondary action in a toolbar".)
+- **Defaults:** `intent: 'neutral', variant: 'outline', size: 'md', loading: false`. (the host library's `defaultVariants` are `outline` + `md` — keep that vibe; intent defaults to neutral because the dominant icon-button use is "secondary action in a toolbar".)
 
 **Sketch:**
 
@@ -260,9 +260,9 @@ The same four soribashi gaps from § 4 will apply to this recipe (codegen `hsl(.
 
 ### 5.2 ButtonDropdown
 
-**Reference (vendored CVI):** `apps/core-radix-pilot/src/reference/core-radix-button/ButtonDropdown.tsx`
+**Reference (vendored the host library):** `apps/pilot/src/reference/original-button/ButtonDropdown.tsx`
 
-CVI's ButtonDropdown is a Button with a chevron + a Radix DropdownMenu attached. Distinctive shape:
+the host library's ButtonDropdown is a Button with a chevron + a Radix DropdownMenu attached. Distinctive shape:
 - Trigger is a `<button>` styled with the same `buttonVariants` `cva` as Button — composition by class-name reuse, not component reuse.
 - Wraps `@radix-ui/react-dropdown-menu` (Root / Trigger / Portal / Content) with its own `dropdownContentVariants` for width (`sm`/`md`/`lg`/`auto`) and border color.
 - Manages local `open` state to drive a `rotate-180` chevron animation.
@@ -275,7 +275,7 @@ The Button half: composes the existing Button recipe directly (`<Button rightIco
 
 The Dropdown half: this is **the** Wave-2-or-later overlay-compound work. It needs:
 - An overlay-compound authoring primitive for the soribashi factory (Trigger / Portal / Content / Item parts wired through `getStyles` and shared context).
-- A converted `core-radix/DropdownMenu` recipe — Wave 1 doesn't have one, and authoring it inline inside ButtonDropdown would prejudge the overlay-compound playbook entry that Wave 2 is meant to write.
+- A converted `DropdownMenu` recipe — Wave 1 doesn't have one, and authoring it inline inside ButtonDropdown would prejudge the overlay-compound playbook entry that Wave 2 is meant to write.
 - A pattern for content-positioning props (`align`, `side`, `sideOffset`, `width`) that maps to Radix Popper without leaking Radix-specific types into the soribashi API.
 
 **Sketch (Phase 2 / Wave 2 — illustrative only):**
@@ -317,9 +317,9 @@ export const ButtonDropdown = (props: ButtonDropdownOwnProps) => {
 
 These feed Phase 2 Task 2.3 (the playbook's § 2.1 — Pure styled primitive authoring pattern). Each entry below is grounded in a specific Wave 1 finding cited inline.
 
-1. **API split: `variant` × `intent`. Always.** Visual style and semantic role are orthogonal axes; conflating them on a single prop produces the variant-explosion + meaning-collision that § 1.1 caught in CVI (`primary` / `secondary` are role; `outline` / `ghost` are style; `danger` / `success` are role). Wave 1's split: `variant` ∈ {filled, outline, subtle, ghost, link}; `intent` ∈ {primary, neutral, success, warning, danger, info}. One component expresses all 30 cells without a one-off variant per combination.
+1. **API split: `variant` × `intent`. Always.** Visual style and semantic role are orthogonal axes; conflating them on a single prop produces the variant-explosion + meaning-collision that § 1.1 caught in the host library (`primary` / `secondary` are role; `outline` / `ghost` are style; `danger` / `success` are role). Wave 1's split: `variant` ∈ {filled, outline, subtle, ghost, link}; `intent` ∈ {primary, neutral, success, warning, danger, info}. One component expresses all 30 cells without a one-off variant per combination.
 
-2. **Authoring primitive: `definePolymorphicComponent` whenever `as=` is plausible.** Buttons-as-links (`as="a"`) is the canonical case. Use `defineComponent` only for components that genuinely have one element (Skeleton, Dot). The polymorphic primitive is more typesafe than CVI's `asChild` + `Slot` and avoids CVI's silent-ignore footgun (§ 1.4) where `asChild` is dropped when combined with `isLoading` / `leftIcon` / `rightIcon`. **Type-param order is `<TOwnProps, TDefaultAs>`** — the reverse compiles but produces confusing-but-not-erroring types (§ 3 Hard).
+2. **Authoring primitive: `definePolymorphicComponent` whenever `as=` is plausible.** Buttons-as-links (`as="a"`) is the canonical case. Use `defineComponent` only for components that genuinely have one element (Skeleton, Dot). The polymorphic primitive is more typesafe than the host library's `asChild` + `Slot` and avoids the host library's silent-ignore footgun (§ 1.4) where `asChild` is dropped when combined with `isLoading` / `leftIcon` / `rightIcon`. **Type-param order is `<TOwnProps, TDefaultAs>`** — the reverse compiles but produces confusing-but-not-erroring types (§ 3 Hard).
 
 3. **Style approach: CSS data-attribute rules over local CSS vars.** For each (variant, intent) pair, write one selector that sets 4-5 local `--cr-{component}-*` vars (bg, fg, border, hover-bg, active-bg). The root rule pulls from those vars. Avoid Tailwind class concatenation across the matrix — 30 cells of `cva` produces a class-name explosion that's hard to inspect in DevTools and impossible for designers to edit. Wave 1's Button.css collapses 30 cells to one root rule + 30 four-line override blocks (§ 3 Easy + § 3 Surprises).
 
@@ -344,8 +344,8 @@ These feed Phase 2 Task 2.3 (the playbook's § 2.1 — Pure styled primitive aut
     Filled and subtle keep the bg-coherent ring. Reuse this pattern in IconButton, ButtonDropdown, and any future recipe with a transparent variant set.
 
 **Test scope for the category:**
-- **Vitest behavior** (Wave 1 reference: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` — 11 tests): default props, click handling in both directions (disabled / loading suppress; default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Requires `@testing-library/jest-dom/vitest` wired via `setupFiles` (Gap 3) — copy the wiring from `packages/factory/test/setup.ts`.
-- **Playwright parity** (Wave 1 reference: `apps/core-radix-pilot/tests/Button.parity.spec.ts`): smoke the high-frequency cells, not all 30. For Button: filled × all six intents (background-color), three sizes (height), disabled (opacity), loading (spinner present + disabled set). Reuses the matrix-snapshot pattern from Phase 0 Task 0.10 ScreenReplica — same `webServer`, same fixture style.
+- **Vitest behavior** (Wave 1 reference: `apps/pilot/src/recipes/Button/Button.test.tsx` — 11 tests): default props, click handling in both directions (disabled / loading suppress; default fires), icon ordering, polymorphic `as="a"`, fullWidth, spinner present + disabled set on loading. Requires `@testing-library/jest-dom/vitest` wired via `setupFiles` (Gap 3) — copy the wiring from `packages/factory/test/setup.ts`.
+- **Playwright parity** (Wave 1 reference: `apps/pilot/tests/Button.parity.spec.ts`): smoke the high-frequency cells, not all 30. For Button: filled × all six intents (background-color), three sizes (height), disabled (opacity), loading (spinner present + disabled set). Reuses the matrix-snapshot pattern from Phase 0 Task 0.10 ScreenReplica — same `webServer`, same fixture style.
 - Don't aim for 30-cell exhaustiveness in Playwright; the parity tests are smoke for the pattern, not exhaustive proof. **Visual review remains non-optional** — the focus-ring regression (§ 3 Surprises) didn't surface in either test layer.
 
-The playbook (Phase 2 Task 2.3) will expand each of these with rationale and the corresponding code excerpts from `apps/core-radix-pilot/src/recipes/Button/`.
+The playbook (Phase 2 Task 2.3) will expand each of these with rationale and the corresponding code excerpts from `apps/pilot/src/recipes/Button/`.

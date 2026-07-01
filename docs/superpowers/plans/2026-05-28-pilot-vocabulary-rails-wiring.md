@@ -4,7 +4,7 @@
 
 **Goal:** Wire the three pilot recipes (Button, Tooltip, Tabs) to the vocabulary rails shipped in PR #10 — local builders, runtime Zod validation, and per-recipe variant vocabularies — without changing any rendered output.
 
-**Architecture:** PR #11 touches only `apps/core-radix-pilot` (plus one spec addendum). The factory already ships `createSoribashiBuilders`, `vocabularyAxes`, and `validateVocabularyProps`. We add `src/builders.ts` (registers the theme's vocab and re-exports the builders), declare a `size` axis + per-recipe `variant` vocabularies in the theme, switch each recipe to import from `../../builders`, opt each into `vocabularyAxes`, and prove runtime validation fires with one test per recipe.
+**Architecture:** PR #11 touches only `apps/pilot` (plus one spec addendum). The factory already ships `createSoribashiBuilders`, `vocabularyAxes`, and `validateVocabularyProps`. We add `src/builders.ts` (registers the theme's vocab and re-exports the builders), declare a `size` axis + per-recipe `variant` vocabularies in the theme, switch each recipe to import from `../../builders`, opt each into `vocabularyAxes`, and prove runtime validation fires with one test per recipe.
 
 **Tech Stack:** TypeScript, React 18, Vitest + Testing Library, Bun, Zod (dev-only validation), Radix UI.
 
@@ -44,14 +44,14 @@ This is a deviation from spec §12 steps 8-9 (which prescribe `.extend()`) and i
 
 | File | Change | Responsibility |
 |------|--------|----------------|
-| `apps/core-radix-pilot/src/builders.ts` | **Create** | Calls `createSoribashiBuilders(theme)`; re-exports the four builders. Importing it (transitively, via any recipe) populates the vocab registry. |
-| `apps/core-radix-pilot/src/theme/index.ts` | Modify | Add `size` axis; remove the global `variant` declaration; add `components` Record with per-recipe variant vocabularies. |
-| `apps/core-radix-pilot/src/recipes/Button/Button.tsx` | Modify | Import builder from `../../builders`; drop local `Intent`/`Variant`/`Size`; drop `intent`/`variant`/`size` from `ButtonOwnProps`; add `vocabularyAxes`; widen render ctx annotation. |
-| `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx` | Modify | Import builder from `../../builders`; hoist `variants` const; derive local `Variant` from it; add `vocabularyAxes: ['variant']`. |
-| `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx` | Modify | Same shape as Tooltip. |
-| `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` | Modify | Add one vocabulary-validation test. |
-| `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx` | Modify | Add one vocabulary-validation test (+ import `vi`). |
-| `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx` | Modify | Add one vocabulary-validation test (+ import `vi` if missing). |
+| `apps/pilot/src/builders.ts` | **Create** | Calls `createSoribashiBuilders(theme)`; re-exports the four builders. Importing it (transitively, via any recipe) populates the vocab registry. |
+| `apps/pilot/src/theme/index.ts` | Modify | Add `size` axis; remove the global `variant` declaration; add `components` Record with per-recipe variant vocabularies. |
+| `apps/pilot/src/recipes/Button/Button.tsx` | Modify | Import builder from `../../builders`; drop local `Intent`/`Variant`/`Size`; drop `intent`/`variant`/`size` from `ButtonOwnProps`; add `vocabularyAxes`; widen render ctx annotation. |
+| `apps/pilot/src/recipes/Tooltip/Tooltip.tsx` | Modify | Import builder from `../../builders`; hoist `variants` const; derive local `Variant` from it; add `vocabularyAxes: ['variant']`. |
+| `apps/pilot/src/recipes/Tabs/Tabs.tsx` | Modify | Same shape as Tooltip. |
+| `apps/pilot/src/recipes/Button/Button.test.tsx` | Modify | Add one vocabulary-validation test. |
+| `apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx` | Modify | Add one vocabulary-validation test (+ import `vi`). |
+| `apps/pilot/src/recipes/Tabs/Tabs.test.tsx` | Modify | Add one vocabulary-validation test (+ import `vi` if missing). |
 | `docs/superpowers/specs/2026-05-12-vocabulary-rails-design.md` | Modify | Append §17 recording PR #11's settled decisions + the cycle finding. |
 
 **Builder vs. type imports:** `builders.ts` re-exports only the four builder *functions*. Recipes import the builder function from `../../builders` and the render-context *types* (`PolymorphicRenderCtx`, `PartRenderCtx`, `PolymorphicPartRenderCtx`) from `@soribashi/core`. Type-only imports are erased and create no runtime cycle.
@@ -67,7 +67,7 @@ Run:
 bun install
 bun run typecheck
 bun run --filter '@soribashi/*' test
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd apps/pilot && bunx vitest run --reporter=basic
 ```
 Expected: typecheck clean; theme 82, codegen 137, factory 472, blocks 244; pilot 47. (The Tabs test prints a `<TabsList> must be inside <Tabs>` stack trace — that is an asserted error path, not a failure.)
 
@@ -76,15 +76,15 @@ Expected: typecheck clean; theme 82, codegen 137, factory 472, blocks 244; pilot
 ## Task 1: Builders + theme foundation
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/builders.ts`
-- Modify: `apps/core-radix-pilot/src/theme/index.ts`
+- Create: `apps/pilot/src/builders.ts`
+- Modify: `apps/pilot/src/theme/index.ts`
 
 No new test in this task — it is enabling infrastructure that is unused until a recipe imports it. The gate is typecheck + the full unchanged suite.
 
 - [ ] **Step 1: Create `builders.ts`**
 
 ```ts
-// apps/core-radix-pilot/src/builders.ts
+// apps/pilot/src/builders.ts
 /**
  * Local builder entry point for the pilot.
  *
@@ -108,7 +108,7 @@ export const {
 
 - [ ] **Step 2: Edit the theme `vocabulary` block**
 
-In `apps/core-radix-pilot/src/theme/index.ts`, replace the current `vocabulary` block (around lines 329-332):
+In `apps/pilot/src/theme/index.ts`, replace the current `vocabulary` block (around lines 329-332):
 
 ```ts
   vocabulary: {
@@ -151,7 +151,7 @@ The recipes still import from `@soribashi/core` at this point, so `builders.ts` 
 Run:
 ```bash
 bun run typecheck
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd apps/pilot && bunx vitest run --reporter=basic
 ```
 Expected: typecheck clean; pilot still 47 passed.
 
@@ -159,14 +159,14 @@ Expected: typecheck clean; pilot still 47 passed.
 
 Run:
 ```bash
-grep -rn "vocabulary\.variant" apps/core-radix-pilot/src packages --include="*.ts" --include="*.tsx" | grep -v "create-builders\|node_modules"
+grep -rn "vocabulary\.variant" apps/pilot/src packages --include="*.ts" --include="*.tsx" | grep -v "create-builders\|node_modules"
 ```
 Expected: no pilot/app code reads `theme.vocabulary.variant.values` for rendering (codegen does not emit from vocabulary — spec §11). If a hit appears in app code, stop and reassess; the global `variant` now resolves to the soribashi default rather than Button's explicit set.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/builders.ts apps/core-radix-pilot/src/theme/index.ts
+git add apps/pilot/src/builders.ts apps/pilot/src/theme/index.ts
 git commit -m "$(cat <<'EOF'
 feat(pilot): add builders.ts + theme size axis and per-recipe variant vocab
 
@@ -183,12 +183,12 @@ EOF
 ## Task 2: Migrate Button + validation test
 
 **Files:**
-- Test: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx`
-- Modify: `apps/core-radix-pilot/src/recipes/Button/Button.tsx`
+- Test: `apps/pilot/src/recipes/Button/Button.test.tsx`
+- Modify: `apps/pilot/src/recipes/Button/Button.tsx`
 
 - [ ] **Step 1: Write the failing validation test**
 
-Append to `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx` (the file already imports `vi`, `wrap`, `Button`):
+Append to `apps/pilot/src/recipes/Button/Button.test.tsx` (the file already imports `vi`, `wrap`, `Button`):
 
 ```ts
 describe('Button — vocabulary validation (dev)', () => {
@@ -206,7 +206,7 @@ describe('Button — vocabulary validation (dev)', () => {
 
 - [ ] **Step 2: Run it and watch it fail**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Button/Button.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Button/Button.test.tsx`
 Expected: the new test FAILS (Button still imports `@soribashi/core` and has no `vocabularyAxes`, so no validation runs and `console.error` is never called).
 
 - [ ] **Step 3: Migrate `Button.tsx`**
@@ -264,7 +264,7 @@ Leave everything else (the `variants` config field, `selectors`, `classes`, `def
 
 - [ ] **Step 4: Run the validation test — now passes**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Button/Button.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Button/Button.test.tsx`
 Expected: PASS. Button now imports `builders.ts` (registry populated) and opts into `vocabularyAxes`, so `size="enormous"` (not in the global size vocab `xs..xl`) triggers `console.error`. All pre-existing Button tests still pass.
 
 - [ ] **Step 5: Typecheck**
@@ -275,7 +275,7 @@ Expected: clean. (If `props.size`/`props.intent` report errors, the render annot
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Button/Button.tsx apps/core-radix-pilot/src/recipes/Button/Button.test.tsx
+git add apps/pilot/src/recipes/Button/Button.tsx apps/pilot/src/recipes/Button/Button.test.tsx
 git commit -m "$(cat <<'EOF'
 refactor(button): consume local builders + vocabularyAxes; drop local Intent/Variant/Size
 
@@ -292,12 +292,12 @@ EOF
 ## Task 3: Migrate Tooltip + validation test
 
 **Files:**
-- Test: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`
-- Modify: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx`
+- Test: `apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tooltip/Tooltip.tsx`
 
 - [ ] **Step 1: Write the failing validation test**
 
-In `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`, add `vi` to the vitest import (currently `import { describe, expect, it } from 'vitest';`):
+In `apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx`, add `vi` to the vitest import (currently `import { describe, expect, it } from 'vitest';`):
 ```ts
 import { describe, expect, it, vi } from 'vitest';
 ```
@@ -327,7 +327,7 @@ describe('Tooltip — vocabulary validation (dev)', () => {
 
 - [ ] **Step 2: Run it and watch it fail**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Tooltip/Tooltip.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Tooltip/Tooltip.test.tsx`
 Expected: the new test FAILS (Tooltip still imports `@soribashi/core`, has no `vocabularyAxes`, registry empty → no warning).
 
 - [ ] **Step 3: Migrate `Tooltip.tsx`**
@@ -358,7 +358,7 @@ Leave `TooltipRootProps.variant?: Variant` (now derived from the const), `defaul
 
 - [ ] **Step 4: Run the validation test — now passes**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Tooltip/Tooltip.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Tooltip/Tooltip.test.tsx`
 Expected: PASS. Tooltip's registered variant vocab is `default|subtle`; `variant="flashy"` triggers the warning. Pre-existing Tooltip tests still pass.
 
 - [ ] **Step 5: Typecheck**
@@ -369,7 +369,7 @@ Expected: clean.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx
+git add apps/pilot/src/recipes/Tooltip/Tooltip.tsx apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx
 git commit -m "$(cat <<'EOF'
 refactor(tooltip): consume local builders + vocabularyAxes variant
 
@@ -386,14 +386,14 @@ EOF
 ## Task 4: Migrate Tabs + validation test
 
 **Files:**
-- Test: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx`
+- Test: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.tsx`
 
 - [ ] **Step 1: Write the failing validation test**
 
 First confirm the test file's imports include `vi`, `render`, `SoribashiProvider`, and `theme`:
 ```bash
-sed -n '1,20p' apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx
+sed -n '1,20p' apps/pilot/src/recipes/Tabs/Tabs.test.tsx
 ```
 Add any missing symbol to the existing imports (add `vi` to the `vitest` import; ensure `render` from `@testing-library/react`, `SoribashiProvider` from `@soribashi/core`, and `theme` from `../../theme/index.ts` are imported). Then append:
 ```ts
@@ -420,7 +420,7 @@ describe('Tabs — vocabulary validation (dev)', () => {
 
 - [ ] **Step 2: Run it and watch it fail**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx`
 Expected: the new test FAILS (no `vocabularyAxes`, registry empty).
 
 - [ ] **Step 3: Migrate `Tabs.tsx`**
@@ -450,7 +450,7 @@ Leave `TabsRootProps.variant?: Variant`, `defaults`, `vars`, `context`, and all 
 
 - [ ] **Step 4: Run the validation test — now passes**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx`
 Expected: PASS. Tabs' registered variant vocab is `default|outline|pills`; `variant="zigzag"` triggers the warning. Pre-existing Tabs tests still pass (including the asserted `<TabsList> must be inside <Tabs>` error path).
 
 - [ ] **Step 5: Typecheck**
@@ -461,7 +461,7 @@ Expected: clean.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx
+git add apps/pilot/src/recipes/Tabs/Tabs.tsx apps/pilot/src/recipes/Tabs/Tabs.test.tsx
 git commit -m "$(cat <<'EOF'
 refactor(tabs): consume local builders + vocabularyAxes variant
 
@@ -486,7 +486,7 @@ Run:
 ```bash
 bun run typecheck
 bun run --filter '@soribashi/*' test
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd apps/pilot && bunx vitest run --reporter=basic
 ```
 Expected: typecheck clean; theme 82, codegen 137, factory 472, blocks 244 (all unchanged — no package source touched); pilot **50** (47 + 3 validation tests). No pre-existing test broken.
 
@@ -494,7 +494,7 @@ Expected: typecheck clean; theme 82, codegen 137, factory 472, blocks 244 (all u
 
 Run the dev server and confirm Button, Tooltip, and Tabs render identically to before — this is a wiring change, not a visual one:
 ```bash
-cd apps/core-radix-pilot && bun run dev
+cd apps/pilot && bun run dev
 ```
 Visit the Button matrix, Tooltip matrix, and Tabs matrix pages; toggle dark mode. Each variant/size/intent should look exactly as it did on `main`. If anything renders differently, a vocab value or the `variants` field was changed by mistake — stop and reconcile. If the environment cannot run a browser, state that explicitly rather than claiming visual parity.
 

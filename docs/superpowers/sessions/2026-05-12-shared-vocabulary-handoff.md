@@ -132,15 +132,15 @@ Path root: `/Users/matt/Documents/GitHub/mantine/packages/@mantine/core/src/`
 
 soribashi side:
 
-- `apps/core-radix-pilot/src/recipes/Button/Button.tsx` (lines 15-17 local unions; line 13 plain-CSS import) — the only existing vocabulary offender, and the recipe with the most CSS-module surface to migrate.
-- `apps/core-radix-pilot/src/recipes/Button/Button.css` — the `[data-attribute]` selector matrix. ~30 cells.
-- `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.{tsx,css,test.tsx}` — confirm Tooltip's variant stays local; second target for CSS module migration.
-- `apps/core-radix-pilot/src/recipes/Tabs/Tabs.{tsx,css,test.tsx}` — confirm Tabs' variant stays local; third target.
+- `apps/pilot/src/recipes/Button/Button.tsx` (lines 15-17 local unions; line 13 plain-CSS import) — the only existing vocabulary offender, and the recipe with the most CSS-module surface to migrate.
+- `apps/pilot/src/recipes/Button/Button.css` — the `[data-attribute]` selector matrix. ~30 cells.
+- `apps/pilot/src/recipes/Tooltip/Tooltip.{tsx,css,test.tsx}` — confirm Tooltip's variant stays local; second target for CSS module migration.
+- `apps/pilot/src/recipes/Tabs/Tabs.{tsx,css,test.tsx}` — confirm Tabs' variant stays local; third target.
 - `packages/blocks/src/Title/get-title-size.ts` — the existing in-repo eject pattern (`TitleSize = h${1-6} | string | number`). Reuse the shape.
-- `apps/core-radix-pilot/src/generated/theme.css` — confirm the `xs/sm/md/lg/xl` value scale exists for font-size, radius, spacing. (It does — `--font-size-xs/sm/md/lg/xl`, `--radius-xs/...xl`, `--spacing-xs/...xl`.)
+- `apps/pilot/src/generated/theme.css` — confirm the `xs/sm/md/lg/xl` value scale exists for font-size, radius, spacing. (It does — `--font-size-xs/sm/md/lg/xl`, `--radius-xs/...xl`, `--spacing-xs/...xl`.)
 - `packages/factory/src/index.ts` — current public surface; the new shared types belong here (probably in a new `packages/factory/src/types/vocabulary.ts` re-exported).
 - `packages/factory/src/define-component.tsx`, `define-polymorphic-component.tsx`, `define-compound.tsx` — find the `classes` field's type in each config. Confirm they accept `Record<string, string>` so a CSS-module default export slots in without adapters.
-- `apps/core-radix-pilot/vite.config.ts` — sanity-check CSS modules work out of the box (Vite supports them natively; should require no config).
+- `apps/pilot/vite.config.ts` — sanity-check CSS modules work out of the box (Vite supports them natively; should require no config).
 
 Mantine side (READ-ONLY, permitted via existing `additionalDirectories`):
 
@@ -183,7 +183,7 @@ Mantine side (READ-ONLY, permitted via existing `additionalDirectories`):
 
 8. **Consumer override pattern (forward-looking).** With modules in place, consumers can write their own `.module.css` and pass `classNames={{ root: myStyles.root, content: myStyles.content }}`. The factory's existing `useStyles` already merges instance `classNames` (Wave 2 verified this). No factory change needed; just document the pattern in the playbook.
 
-9. **Playbook update.** `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` § 2.1 currently shows Button with string-literal `classes` and a plain CSS file. Update § 2.1 / § 2.2 / § 2.3 to show the `.module.css` pattern. Document the rule: **all recipes use CSS modules; class names inside the module are plain (`.root`, `.trigger`), not prefixed.**
+9. **Playbook update.** `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` § 2.1 currently shows Button with string-literal `classes` and a plain CSS file. Update § 2.1 / § 2.2 / § 2.3 to show the `.module.css` pattern. Document the rule: **all recipes use CSS modules; class names inside the module are plain (`.root`, `.trigger`), not prefixed.**
 
 10. **What if Vite/Vitest CSS-modules support isn't drop-in?** Sanity-check first. Run the tests after migrating ONE file (e.g., Tooltip) and see if everything works. If there's a config gap, it'll surface here and the next agent can patch the Vite/Vitest config in this same PR.
 
@@ -219,7 +219,7 @@ Before writing any new code:
 ```bash
 bun run typecheck
 bun run --filter '@soribashi/*' test
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected after Wave 3 merges: clean typecheck, 461 factory + 244 blocks + 47 pilot. If red, fix before brainstorming.
@@ -230,7 +230,7 @@ After the migration, the same commands should pass with the SAME test counts (th
 
 - soribashi: `/Users/matt/Documents/GitHub/soribashi/` (this working directory)
 - Mantine (READ-ONLY per existing `additionalDirectories` allow): `/Users/matt/Documents/GitHub/mantine/`
-- CVI host (READ-ONLY): `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/`
+- the host library host (READ-ONLY): `<host-library-path>/`
 
 ## Auto-memory
 

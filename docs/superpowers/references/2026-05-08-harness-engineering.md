@@ -61,7 +61,7 @@ Their concrete moves:
 
 Result: prompts like *"ensure service startup completes in under 800ms"* or *"no span in these four critical user journeys exceeds two seconds"* become tractable. Single agent runs work for **upwards of six hours** while humans sleep.
 
-**For Soribashi:** we have Playwright + vitest + a per-app dev server, and the `apps/core-radix-pilot/` already runs on its own port. The applicable upgrades:
+**For Soribashi:** we have Playwright + vitest + a per-app dev server, and the `apps/pilot/` already runs on its own port. The applicable upgrades:
 
 - **Per-worktree dev server / port allocation** so parallel agent sessions don't collide.
 - A **screenshot/DOM-snapshot skill** wired into the agent loop for pilot apps — not just `playwright test` but a "show me the rendered Button matrix and tell me what looks off" loop.
@@ -77,7 +77,7 @@ OpenAI's architecture: **fixed layers per business domain** (Types → Config �
 
 Killer detail: **custom lints inject remediation instructions into the error message** so the agent gets the fix path inline. *"In a human-first workflow, these rules might feel pedantic or constraining. With agents, they become multipliers."*
 
-**For Soribashi:** we already have a strong layer model — `packages/core` (primitives) → `packages/factory` (CVI engine, polymorphic helpers) → `packages/codegen` → consumer apps. The applicable moves:
+**For Soribashi:** we already have a strong layer model — `packages/core` (primitives) → `packages/factory` (the host library engine, polymorphic helpers) → `packages/codegen` → consumer apps. The applicable moves:
 
 - Encode **dependency-direction invariants** as biome / custom lints (e.g., `factory` must not import from `apps/*`; `core` must not import from `factory`).
 - Add **taste invariants** as lints: structured logging, file-size limits, naming conventions for recipes / variants / tokens.
@@ -144,7 +144,7 @@ Their stated end state — the bar agents can hit *given the right harness*:
 
 *"This behavior depends heavily on the specific structure and tooling of this repository and should not be assumed to generalize without similar investment — at least, not yet."*
 
-**For Soribashi:** this is a useful north-star for the harness around `apps/core-radix-pilot/`. Not a Q3 deliverable, but the right shape to bias *every* harness investment toward. Each new skill (`/ce-test-browser`, `/ce-demo-reel`, `/ce-resolve-pr-feedback`) should be evaluated on whether it moves the needle toward "single prompt → merged PR with video evidence."
+**For Soribashi:** this is a useful north-star for the harness around `apps/pilot/`. Not a Q3 deliverable, but the right shape to bias *every* harness investment toward. Each new skill (`/ce-test-browser`, `/ce-demo-reel`, `/ce-resolve-pr-feedback`) should be evaluated on whether it moves the needle toward "single prompt → merged PR with video evidence."
 
 ---
 
@@ -180,6 +180,6 @@ These are scoped as separate, doc-only or small-PR pieces — pick one per sessi
 2. **Write `docs/superpowers/golden-principles.md`** capturing the invariants we already enforce informally (lesson 8). Doc-only.
 3. **Spec a `docs/superpowers/tech-debt-tracker.md`** schema, port known debt from existing audits (lesson 3). Doc-only.
 4. **Plan: layer-enforcement lints** — what biome rules + custom lints would catch the dependency-direction violations? Plan-doc, then a wave-scoped PR (lesson 5).
-5. **Plan: per-worktree pilot-app port allocation + screenshot skill** for `core-radix-pilot/` (lesson 4). Plan-doc, then a wave-scoped PR.
+5. **Plan: per-worktree pilot-app port allocation + screenshot skill** for `pilot/` (lesson 4). Plan-doc, then a wave-scoped PR.
 
 Each of these is 1–2 sessions of work and compounds. None of them require touching `packages/` source.

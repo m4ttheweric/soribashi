@@ -403,14 +403,14 @@ The eventual design (deferred to a future codegen pass):
 
 ## 12. Migration plan for the pilot app
 
-The pilot (`apps/core-radix-pilot`) is the only consumer. Migration:
+The pilot (`apps/pilot`) is the only consumer. Migration:
 
 1. Add `defineVocabulary` to `@soribashi/theme`.
 2. Split `semantic` → `vocabulary` + `semanticTokens` in theme types + `createTheme`.
 3. Replace `withDefaults` with `extend()` on all four builders (factory, polymorphic, generic, compound).
 4. Add `createSoribashiBuilders(theme)` to `@soribashi/factory` / `@soribashi/core`.
 5. Update pilot's `theme.ts` to use `vocabulary` (with the default values for now — `xs/sm/md/lg/xl`, the six intents, the five variants) and `semanticTokens` for text/surface/border.
-6. Create `apps/core-radix-pilot/src/builders.ts` calling `createSoribashiBuilders(theme)`.
+6. Create `apps/pilot/src/builders.ts` calling `createSoribashiBuilders(theme)`.
 7. Migrate Button: switch imports to `'../builders'`, drop local `Intent`/`Variant`/`Size` declarations, add `vocabularyAxes: ['size', 'intent', 'variant']`.
 8. Migrate Tooltip: imports → `'../builders'`, drop local `Variant`, add `vocabularyAxes: ['variant']`. Add `Tooltip.extend({ vocabulary: { variant: defineVocabulary(['default', 'subtle']) } })` to the theme's `components` array.
 9. Migrate Tabs: same shape — `vocabularyAxes: ['variant']`, `Tabs.extend({ vocabulary: { variant: defineVocabulary(['default', 'outline', 'pills']) } })`.
@@ -471,7 +471,7 @@ The cleanest order to land is PR #9 narrow first (hygiene, no architectural chan
 
 ## 17. PR #11 implementation decisions (2026-05-28)
 
-The pilot migration (PR #11) wired all three recipes to the rails. It settled two open forks and surfaced one architectural finding. The recipe-wiring portion changed only `apps/core-radix-pilot`; the type-threading folded in afterward (§18) also touched `@soribashi/theme` and `@soribashi/factory`. Package test counts held throughout at 82 / 137 / 472 / 244; the pilot grew 47 → 51 (one runtime-validation test per recipe, plus one compile-time narrowing test for Button).
+The pilot migration (PR #11) wired all three recipes to the rails. It settled two open forks and surfaced one architectural finding. The recipe-wiring portion changed only `apps/pilot`; the type-threading folded in afterward (§18) also touched `@soribashi/theme` and `@soribashi/factory`. Package test counts held throughout at 82 / 137 / 472 / 244; the pilot grew 47 → 51 (one runtime-validation test per recipe, plus one compile-time narrowing test for Button).
 
 1. **Variant is per-recipe (option B).** The global theme vocabulary holds only `size` + `intent`. Button, Tooltip, and Tabs each declare their own `variant` vocabulary. This is the honest expression of the "variant stays local" principle (§3); the earlier §12 framing of `variant` as a global axis that Button "owns" is superseded. Each recipe also types its `variant` prop locally from a hoisted `const variants = [...] as const` (`type Variant = (typeof variants)[number]`), which doubles as the `variants` config field — one source of truth per recipe.
 

@@ -119,8 +119,8 @@ describe('token roundtrip integration', () => {
       dark: {
         colors: { primary: { '500': 'hsl(217 91% 80%)' } },
       },
-      scope: '.claim-view-islands',
-      darkMode: { selector: '.dark .claim-view-islands' },
+      scope: '.app-scope',
+      darkMode: { selector: '.dark .app-scope' },
     });
 
     const cssPath = join(tempDir, 'theme.css');
@@ -130,8 +130,8 @@ describe('token roundtrip integration', () => {
     });
 
     const css = readFileSync(cssPath, 'utf-8');
-    expect(css).toContain('.claim-view-islands {');
-    expect(css).toContain('.dark .claim-view-islands {');
+    expect(css).toContain('.app-scope {');
+    expect(css).toContain('.dark .app-scope {');
     expect(css).not.toContain(':root {');
   });
 

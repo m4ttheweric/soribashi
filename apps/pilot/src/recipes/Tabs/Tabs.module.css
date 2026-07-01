@@ -1,0 +1,82 @@
+/* base — applies to all variants */
+.list {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.trigger {
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+.trigger[data-state='active'] {
+  color: var(--text-default);
+}
+.trigger:disabled,
+.trigger[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* default — underline-on-active. Matches the host library's existing host style. */
+.list[data-variant='default'] {
+  border-bottom: 1px solid var(--border-default);
+}
+.trigger[data-variant='default'] {
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.trigger[data-variant='default'][data-state='active'] {
+  border-bottom-color: var(--text-default);
+}
+
+/* outline — bordered tabs sharing a list border-bottom */
+.list[data-variant='outline'] {
+  border-bottom: 1px solid var(--border-default);
+}
+.trigger[data-variant='outline'] {
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  margin-bottom: -1px;
+}
+.trigger[data-variant='outline'][data-state='active'] {
+  border-color: var(--border-default);
+  background: var(--surface-default);
+}
+
+/* pills — rounded button-shaped active. Reads --sb-tabs-active-bg/color from vars. */
+.trigger[data-variant='pills'] {
+  border-radius: var(--radius-full);
+}
+.trigger[data-variant='pills'][data-state='active'] {
+  background: var(--sb-tabs-active-bg);
+  color: var(--sb-tabs-active-color);
+}
+
+/* Variant-scoped focus override: pills' filled active state collides with
+ * the default outline color (primary-500 on a primary-500 background).
+ * Re-route to a contrast-coherent outline. */
+.trigger[data-variant='pills'][data-state='active']:focus-visible {
+  outline-color: var(--color-neutral-0);
+  outline-offset: -2px;
+}
+
+/* Content — minimal styling; consumer composes inside. */
+.content {
+  margin-top: 1rem;
+}
+.content:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}

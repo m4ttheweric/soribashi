@@ -2,19 +2,19 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Consolidate CVI's fragmented token system into one focused soribashi theme, prove it by authoring Button against the consolidated theme, and write the Wave 1 partial playbook synthesizing methodology + gaps + future-wave outline.
+**Goal:** Consolidate the host library's fragmented token system into one focused soribashi theme, prove it by authoring Button against the consolidated theme, and write the Wave 1 partial playbook synthesizing methodology + gaps + future-wave outline.
 
-**Architecture:** New standalone Vite app `apps/core-radix-pilot/` alongside `apps/playground`. The pilot owns its own consolidated `theme/index.ts` (Wave 1 deliverable), drives soribashi codegen via a per-app `soribashi.config.ts`, composes the generated Tailwind config via the host wrapper pattern (Option C from the spec — north star is Option A), and exposes one Button recipe authored with `defineComponent`. Two new docs (`docs/superpowers/pilots/{token-consolidation, button-conversion}.md`) capture findings; one playbook (`docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md`) synthesizes them.
+**Architecture:** New standalone Vite app `apps/pilot/` alongside `apps/playground`. The pilot owns its own consolidated `theme/index.ts` (Wave 1 deliverable), drives soribashi codegen via a per-app `soribashi.config.ts`, composes the generated Tailwind config via the host wrapper pattern (Option C from the spec — north star is Option A), and exposes one Button recipe authored with `defineComponent`. Two new docs (`docs/superpowers/pilots/{token-consolidation, button-conversion}.md`) capture findings; one playbook (`docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`) synthesizes them.
 
 **Tech Stack:** Vite 6, React 18, TypeScript 5.7, Tailwind CSS 3.4, `@soribashi/core` (workspace), Vitest 2, Playwright 1.59, bun (package manager + script runner).
 
 **Spec reference:** `docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md` (commit `6989d65`).
 
 **External references this plan reads from (READ-ONLY — do not modify):**
-- `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/tailwind.config.js`
-- `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/claimview-islands.css`
-- `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/core-radix/Buttons/Button.tsx`
-- `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/CLAIMVIEW_ISLANDS_ARCHITECTURE.md`
+- `<host-library-path>/tailwind.config.js`
+- `<host-library-path>/host-styles.css`
+- `<host-library-path>/Buttons/Button.tsx`
+- `<host-library-path>/HOST_ARCHITECTURE.md`
 
 ---
 
@@ -23,7 +23,7 @@
 ### Created files
 
 ```
-apps/core-radix-pilot/
+apps/pilot/
 ├── index.html
 ├── package.json
 ├── postcss.config.js
@@ -42,7 +42,7 @@ apps/core-radix-pilot/
 │   │   ├── theme.css                    # codegen output
 │   │   └── tailwind.config.generated.js # codegen output
 │   ├── reference/
-│   │   └── core-radix-button/           # vendored snapshot of CVI's Button (read-only)
+│   │   └── original-button/           # vendored snapshot of the host library's Button (read-only)
 │   ├── recipes/
 │   │   └── Button/
 │   │       ├── Button.tsx               # the recipe
@@ -50,7 +50,7 @@ apps/core-radix-pilot/
 │   │       └── Button.test.tsx          # vitest behavior tests
 │   └── pages/
 │       ├── TokenReview.tsx              # token swatch grid, light + dark
-│       ├── ScreenReplica.tsx            # static CVI-screen replica
+│       ├── ScreenReplica.tsx            # static host-screen replica
 │       └── ButtonMatrix.tsx             # variant × intent × size × state matrix
 └── tests/
     └── button-computed-styles.spec.ts   # Playwright parity tests
@@ -60,7 +60,7 @@ docs/superpowers/pilots/                  # new directory
 └── 2026-04-26-button-conversion.md
 
 docs/superpowers/specs/
-└── 2026-04-26-core-radix-conversion-playbook.md
+└── 2026-04-26-recipe-conversion-playbook.md
 ```
 
 ### Modified files
@@ -71,7 +71,7 @@ docs/superpowers/specs/
 
 ### Untouched (explicit exclusion)
 
-- Anything in `/Users/matt/Documents/GitHub/assured/assured-primary/`. Wave 1 never writes there.
+- Anything in `<host-monorepo-path>/`. Wave 1 never writes there.
 - `apps/playground/` and any of its files. The pilot is standalone.
 - `packages/*/` source. If a soribashi gap surfaces that requires a packages change, log it in the appropriate journal — do NOT modify packages in this plan unless explicitly authorized.
 
@@ -79,29 +79,29 @@ docs/superpowers/specs/
 
 # Phase 0 — Token Consolidation Pass
 
-The bulk of Wave 1. Phase 0 builds the pilot host app, inventories CVI's tokens, classifies them, expresses the kept set as a soribashi theme, runs codegen, wires it into Tailwind, and validates with a TokenReview swatch page + a static ScreenReplica. Phase 0 ends with the consolidation journal committed.
+The bulk of Wave 1. Phase 0 builds the pilot host app, inventories the host library's tokens, classifies them, expresses the kept set as a soribashi theme, runs codegen, wires it into Tailwind, and validates with a TokenReview swatch page + a static ScreenReplica. Phase 0 ends with the consolidation journal committed.
 
 ---
 
 ## Task 0.1: Scaffold the pilot app skeleton (no theme yet)
 
-**Goal:** Get a buildable, runnable empty Vite app at `apps/core-radix-pilot/` with a "Hello, pilot" page, before any soribashi wiring.
+**Goal:** Get a buildable, runnable empty Vite app at `apps/pilot/` with a "Hello, pilot" page, before any soribashi wiring.
 
 **Files:**
-- Create: `apps/core-radix-pilot/package.json`
-- Create: `apps/core-radix-pilot/tsconfig.json`
-- Create: `apps/core-radix-pilot/vite.config.ts`
-- Create: `apps/core-radix-pilot/index.html`
-- Create: `apps/core-radix-pilot/postcss.config.js`
-- Create: `apps/core-radix-pilot/src/main.tsx`
-- Create: `apps/core-radix-pilot/src/App.tsx`
-- Create: `apps/core-radix-pilot/src/styles.css`
+- Create: `apps/pilot/package.json`
+- Create: `apps/pilot/tsconfig.json`
+- Create: `apps/pilot/vite.config.ts`
+- Create: `apps/pilot/index.html`
+- Create: `apps/pilot/postcss.config.js`
+- Create: `apps/pilot/src/main.tsx`
+- Create: `apps/pilot/src/App.tsx`
+- Create: `apps/pilot/src/styles.css`
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/package.json`**
+- [ ] **Step 1: Create `apps/pilot/package.json`**
 
 ```json
 {
-  "name": "@soribashi/core-radix-pilot",
+  "name": "@soribashi/pilot",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -130,9 +130,9 @@ The bulk of Wave 1. Phase 0 builds the pilot host app, inventories CVI's tokens,
 }
 ```
 
-Note: `tailwindcss-animate` is a new dep — it's the one CVI uses, included so the pilot mirrors that surface.
+Note: `tailwindcss-animate` is a new dep — it's the one the host library uses, included so the pilot mirrors that surface.
 
-- [ ] **Step 2: Create `apps/core-radix-pilot/tsconfig.json`**
+- [ ] **Step 2: Create `apps/pilot/tsconfig.json`**
 
 ```json
 {
@@ -146,7 +146,7 @@ Note: `tailwindcss-animate` is a new dep — it's the one CVI uses, included so 
 }
 ```
 
-- [ ] **Step 3: Create `apps/core-radix-pilot/vite.config.ts`**
+- [ ] **Step 3: Create `apps/pilot/vite.config.ts`**
 
 ```ts
 import { defineConfig } from 'vite';
@@ -160,7 +160,7 @@ export default defineConfig({
 
 Port 5174 is intentional — playground holds 5173.
 
-- [ ] **Step 4: Create `apps/core-radix-pilot/postcss.config.js`**
+- [ ] **Step 4: Create `apps/pilot/postcss.config.js`**
 
 ```js
 export default {
@@ -171,7 +171,7 @@ export default {
 };
 ```
 
-- [ ] **Step 5: Create `apps/core-radix-pilot/index.html`**
+- [ ] **Step 5: Create `apps/pilot/index.html`**
 
 ```html
 <!doctype html>
@@ -179,7 +179,7 @@ export default {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Soribashi · Core-Radix Pilot</title>
+    <title>Soribashi · Recipe Pilot</title>
   </head>
   <body>
     <div id="root"></div>
@@ -188,7 +188,7 @@ export default {
 </html>
 ```
 
-- [ ] **Step 6: Create `apps/core-radix-pilot/src/main.tsx`**
+- [ ] **Step 6: Create `apps/pilot/src/main.tsx`**
 
 ```tsx
 import React from 'react';
@@ -203,20 +203,20 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 ```
 
-- [ ] **Step 7: Create `apps/core-radix-pilot/src/App.tsx` (placeholder for now)**
+- [ ] **Step 7: Create `apps/pilot/src/App.tsx` (placeholder for now)**
 
 ```tsx
 export function App() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
-      <h1>Core-Radix Pilot</h1>
+      <h1>Recipe Pilot</h1>
       <p>Phase 0 scaffolding. Theme + pages added in subsequent tasks.</p>
     </div>
   );
 }
 ```
 
-- [ ] **Step 8: Create `apps/core-radix-pilot/src/styles.css` (minimal — Tailwind directives added in Task 0.7)**
+- [ ] **Step 8: Create `apps/pilot/src/styles.css` (minimal — Tailwind directives added in Task 0.7)**
 
 ```css
 body {
@@ -235,16 +235,16 @@ Expected: pulls `tailwindcss-animate` and links `@soribashi/{codegen,core}` to t
 
 - [ ] **Step 10: Boot the dev server and verify**
 
-Run: `bun run --filter @soribashi/core-radix-pilot dev`
-Expected: Vite logs "Local: http://localhost:5174/". In a browser the page shows "Core-Radix Pilot · Phase 0 scaffolding...".
+Run: `bun run --filter @soribashi/pilot dev`
+Expected: Vite logs "Local: http://localhost:5174/". In a browser the page shows "Recipe Pilot · Phase 0 scaffolding...".
 Stop the server (Ctrl+C) before continuing.
 
 - [ ] **Step 11: Commit**
 
 ```bash
-git add apps/core-radix-pilot/
+git add apps/pilot/
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): scaffold empty Vite app at port 5174
+feat(pilot): scaffold empty Vite app at port 5174
 
 Wave 1 Phase 0 task 0.1. Empty React/Vite/TS scaffolding for the
 pilot host app. No theme, no Tailwind, no soribashi wiring yet —
@@ -257,9 +257,9 @@ EOF
 
 ---
 
-## Task 0.2: Inventory CVI's tokens
+## Task 0.2: Inventory the host library's tokens
 
-**Goal:** Produce the complete inventory table — every token defined in CVI's Tailwind + CSS — as the data input for classification.
+**Goal:** Produce the complete inventory table — every token defined in the host library's Tailwind + CSS — as the data input for classification.
 
 **Files:**
 - Create directory: `docs/superpowers/pilots/`
@@ -310,8 +310,8 @@ _Populated below._
 - [ ] **Step 2: Read the source files**
 
 Read:
-- `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/tailwind.config.js`
-- `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/claimview-islands.css`
+- `<host-library-path>/tailwind.config.js`
+- `<host-library-path>/host-styles.css`
 
 - [ ] **Step 3: Write the inventory table into § 1 of the journal**
 
@@ -320,14 +320,14 @@ Replace the `_Populated below._` placeholder under § 1 with a markdown table wi
 ```markdown
 | Token name | Light value | Dark value | Where defined | Flavor |
 |---|---|---|---|---|
-| `--background` | `0 0% 100%` | (look up under `.dark` block) | `claimview-islands.css` | shad-* |
-| `--color-primary-500` | `221.2 83.2% 53.3%` | (lookup) | `claimview-islands.css` | Figma scale |
+| `--background` | `0 0% 100%` | (look up under `.dark` block) | `host-styles.css` | shad-* |
+| `--color-primary-500` | `221.2 83.2% 53.3%` | (lookup) | `host-styles.css` | Figma scale |
 ... (continue for every token)
 ```
 
 **Flavor values:** `shad-*` | `Figma scale` | `direct semantic` | `chart` | `other`.
 
-For "Where defined": if the token is _only_ in `tailwind.config.js` (not in CSS), write `tailwind.config.js`. If _only_ in CSS, write `claimview-islands.css`. If in both, write `both`.
+For "Where defined": if the token is _only_ in `tailwind.config.js` (not in CSS), write `tailwind.config.js`. If _only_ in CSS, write `host-styles.css`. If in both, write `both`.
 
 If a dark value isn't present (the token only has a light value), write `—`.
 
@@ -337,17 +337,17 @@ Aim for completeness over brevity. The whole file can be 200+ rows. This is the 
 
 - [ ] **Step 4: Get a usage-count for each top-level CSS var**
 
-For each unique CSS var referenced (e.g., `--color-primary-500`, `--background`, `--color-text-primary`), get a usage count across CVI:
+For each unique CSS var referenced (e.g., `--color-primary-500`, `--background`, `--color-text-primary`), get a usage count across the host library:
 
 Run, replacing `<VAR>` with each var name:
 ```bash
-grep -r "var(--<VAR>)" /Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands --include="*.tsx" --include="*.ts" --include="*.css" -l 2>/dev/null | wc -l
+grep -r "var(--<VAR>)" <host-library-path> --include="*.tsx" --include="*.ts" --include="*.css" -l 2>/dev/null | wc -l
 ```
 
 For Tailwind class usages of generated utility names (e.g., `bg-primary-500`, `text-shad-foreground`), use a similar grep for class fragments. Example for the Figma-scale colors:
 
 ```bash
-grep -rh -oE "(bg|text|border)-(primary|neutral|success|warning|error|info)-(50|100|200|300|400|500|600|700|800|900|950)" /Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands 2>/dev/null | sort | uniq -c | sort -rn | head -100
+grep -rh -oE "(bg|text|border)-(primary|neutral|success|warning|error|info)-(50|100|200|300|400|500|600|700|800|900|950)" <host-library-path> 2>/dev/null | sort | uniq -c | sort -rn | head -100
 ```
 
 Add a "Usage" column to the table with the count, OR add a short summary table at the end of § 1 with counts per family — whichever is cleaner. Don't burn time getting an exact count for every cell; rough order-of-magnitude is sufficient (`<10`, `10-100`, `100+`).
@@ -357,10 +357,10 @@ Add a "Usage" column to the table with the count, OR add a short summary table a
 ```bash
 git add docs/superpowers/pilots/2026-04-26-token-consolidation.md
 git commit -m "$(cat <<'EOF'
-docs(pilot): inventory CVI tokens (Wave 1 Phase 0 task 0.2)
+docs(pilot): inventory the host library tokens (Wave 1 Phase 0 task 0.2)
 
-Full inventory table of every token in CVI's tailwind.config.js
-and claimview-islands.css, with usage counts. Input for the
+Full inventory table of every token in the host library's tailwind.config.js
+and host-styles.css, with usage counts. Input for the
 classification pass in task 0.3.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
@@ -414,7 +414,7 @@ Start with the questions enumerated in spec § 6.3 (surfaces, primary ramp, fore
 ```bash
 git add docs/superpowers/pilots/2026-04-26-token-consolidation.md
 git commit -m "$(cat <<'EOF'
-docs(pilot): classify CVI tokens + surface open questions (Wave 1 task 0.3)
+docs(pilot): classify the host library tokens + surface open questions (Wave 1 task 0.3)
 
 Every inventoried token tagged signal/hack/duplication/deferred.
 Open design questions for human design review captured per spec § 6.3.
@@ -431,22 +431,22 @@ EOF
 **Goal:** Express every `signal`-classified token as a soribashi `createTheme()` call. The result is the Wave 1 design artifact.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/theme/index.ts`
+- Create: `apps/pilot/src/theme/index.ts`
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/src/theme/index.ts`**
+- [ ] **Step 1: Create `apps/pilot/src/theme/index.ts`**
 
-Use this skeleton, then fill in values from the inventoried `signal` tokens. The shape mirrors `apps/playground/src/theme/index.ts` but with CVI-specific values.
+Use this skeleton, then fill in values from the inventoried `signal` tokens. The shape mirrors `apps/playground/src/theme/index.ts` but with host-specific values.
 
 ```ts
 import { createTheme } from '@soribashi/core';
 
 /**
- * Wave 1 consolidated theme for the core-radix pilot.
+ * Wave 1 consolidated theme for the recipe pilot.
  *
  * Source of truth: docs/superpowers/pilots/2026-04-26-token-consolidation.md
  * Spec: docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md
  *
- * Consolidation choices vs CVI's current tokens:
+ * Consolidation choices vs the host library's current tokens:
  * - shad-* layer DROPPED in full. The Figma scale + semantic surface tokens
  *   are sufficient.
  * - Color scales regenerated coherently from each `-500` anchor where the
@@ -458,24 +458,24 @@ import { createTheme } from '@soribashi/core';
  * Open design questions live in the journal § 5.
  */
 export const theme = createTheme({
-  name: 'core-radix-pilot',
+  name: 'pilot',
   tokens: {
     colors: {
       primary: {
         '50': 'hsl(...)',
         '100': 'hsl(...)',
         // ... 200..950
-        '500': 'hsl(221 83% 53%)',  // anchor preserved from CVI
+        '500': 'hsl(221 83% 53%)',  // anchor preserved from the host library
         // 50..400 REGENERATED from the 500 anchor (note in journal — Q2)
       },
       neutral: { /* ... */ },
       success: { /* ... */ },
       warning: { /* ... */ },
-      danger: { /* ... */ },   // formerly "error" in CVI; renamed for soribashi convention
+      danger: { /* ... */ },   // formerly "error" in the host library; renamed for soribashi convention
       info: { /* ... */ },
     },
     radius: {
-      // From CVI's borderRadius; collapse if the shad --radius duplicated a scale value
+      // From the host library's borderRadius; collapse if the shad --radius duplicated a scale value
       sm: '0.25rem',
       DEFAULT: '0.375rem',
       md: '0.5rem',
@@ -484,7 +484,7 @@ export const theme = createTheme({
       '2xl': '1.5rem',
     },
     spacing: {
-      // CVI's extras: 18, 88, 100, 112, 128 (rems already converted in their config)
+      // the host library's extras: 18, 88, 100, 112, 128 (rems already converted in their config)
       '18': '4.5rem',
       '88': '22rem',
       '100': '25rem',
@@ -492,7 +492,7 @@ export const theme = createTheme({
       '128': '32rem',
     },
     fontSize: {
-      // From CVI; line-heights folded in via the soribashi token model
+      // From the host library; line-heights folded in via the soribashi token model
       xs: '0.75rem',
       sm: '0.875rem',
       base: '1rem',
@@ -523,7 +523,7 @@ export const theme = createTheme({
   },
   dark: {
     // Dark overrides for any token whose dark value differs from light.
-    // Pull from claimview-islands.css's `.dark` block.
+    // Pull from host-styles.css's `.dark` block.
     colors: {
       // ...
     },
@@ -533,7 +533,7 @@ export const theme = createTheme({
     variant: ['filled', 'outline', 'subtle', 'ghost', 'link'],
     text: {
       // Wave 1 default per spec § 6.3 Q3: prefer `foreground` + shades, NOT
-      // `text.primary/secondary/tertiary/disabled` from CVI. The shade lookup
+      // `text.primary/secondary/tertiary/disabled` from the host library. The shade lookup
       // is via the intent resolver — these reference scale anchors, not raw
       // hand-set colors.
       default: 'colors.neutral.900',
@@ -561,8 +561,8 @@ export const theme = createTheme({
 
 **Important:**
 - Replace every `'hsl(...)'` placeholder with the actual value from the inventory.
-- For scales where the current CVI values drift hue (especially `--color-primary-50..400`), regenerate to a coherent ramp from the `-500` anchor. The accepted method: shift lightness while holding hue ± a few degrees. Document the regenerated scale in the journal § 3.
-- Use `defaultTokens` / `defaultDarkTokens` as a *reference* for shape only — do NOT spread them. Wave 1's job is to consolidate CVI's tokens, not adopt soribashi defaults.
+- For scales where the current the host library values drift hue (especially `--color-primary-50..400`), regenerate to a coherent ramp from the `-500` anchor. The accepted method: shift lightness while holding hue ± a few degrees. Document the regenerated scale in the journal § 3.
+- Use `defaultTokens` / `defaultDarkTokens` as a *reference* for shape only — do NOT spread them. Wave 1's job is to consolidate the host library's tokens, not adopt soribashi defaults.
 
 - [ ] **Step 2: Append § 3 of the journal with the consolidated decisions**
 
@@ -583,11 +583,11 @@ If errors surface (e.g., a token field not understood), this is a soribashi gap 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/theme/index.ts docs/superpowers/pilots/2026-04-26-token-consolidation.md
+git add apps/pilot/src/theme/index.ts docs/superpowers/pilots/2026-04-26-token-consolidation.md
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): author consolidated theme (Wave 1 task 0.4)
+feat(pilot): author consolidated theme (Wave 1 task 0.4)
 
-The Wave 1 design artifact: every signal-classified CVI token
+The Wave 1 design artifact: every signal-classified the host library token
 expressed as a single soribashi createTheme() call. shad-* layer
 dropped in full. Color scales regenerated coherently from each
 -500 anchor. Duplicates collapsed. Decisions documented in the
@@ -602,7 +602,7 @@ EOF
 
 ## Task 0.5: Add the deprecation list to the journal
 
-**Goal:** Every dropped or collapsed token is documented with one-line rationale, so the future integration project has a complete map of "what CVI usage needs to migrate to what."
+**Goal:** Every dropped or collapsed token is documented with one-line rationale, so the future integration project has a complete map of "what the host library usage needs to migrate to what."
 
 **Files:**
 - Modify: `docs/superpowers/pilots/2026-04-26-token-consolidation.md` (§ 4)
@@ -612,7 +612,7 @@ EOF
 Use this format:
 
 ```markdown
-| Dropped / collapsed token | Reason | Migrate CVI usages to |
+| Dropped / collapsed token | Reason | Migrate the host library usages to |
 |---|---|---|
 | `--background` (shad) | shad-* layer deprecated | `--color-background` |
 | `--foreground` (shad) | shad-* layer deprecated | `--color-text-default` (newly named) |
@@ -634,7 +634,7 @@ Walk § 1 inventory rows; for each row whose Class is `hack`, `duplication`, or 
 ```bash
 git add docs/superpowers/pilots/2026-04-26-token-consolidation.md
 git commit -m "$(cat <<'EOF'
-docs(pilot): deprecation list for dropped/collapsed CVI tokens (Wave 1 task 0.5)
+docs(pilot): deprecation list for dropped/collapsed the host library tokens (Wave 1 task 0.5)
 
 Every dropped or collapsed token mapped to its consolidated target
 (or marked deferred). Coverage check confirmed against inventory.
@@ -651,11 +651,11 @@ EOF
 **Goal:** Run soribashi codegen against the consolidated theme; produce `theme.css` and `tailwind.config.generated.js` in the pilot's `src/generated/`.
 
 **Files:**
-- Create: `apps/core-radix-pilot/soribashi.config.ts`
+- Create: `apps/pilot/soribashi.config.ts`
 - Modify: `package.json` (root) — add `codegen:pilot` script
-- Generated by codegen (commit them): `apps/core-radix-pilot/src/generated/theme.css` and `apps/core-radix-pilot/src/generated/tailwind.config.generated.js`
+- Generated by codegen (commit them): `apps/pilot/src/generated/theme.css` and `apps/pilot/src/generated/tailwind.config.generated.js`
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/soribashi.config.ts`**
+- [ ] **Step 1: Create `apps/pilot/soribashi.config.ts`**
 
 ```ts
 import { theme } from './src/theme/index.ts';
@@ -663,13 +663,13 @@ import { theme } from './src/theme/index.ts';
 export default {
   theme,
   output: {
-    css: './apps/core-radix-pilot/src/generated/theme.css',
+    css: './apps/pilot/src/generated/theme.css',
     tailwind: {
       mode: 'v3' as const,
-      configPath: './apps/core-radix-pilot/src/generated/tailwind.config.generated.js',
+      configPath: './apps/pilot/src/generated/tailwind.config.generated.js',
     },
   },
-  watch: ['./apps/core-radix-pilot/src/theme/**/*'],
+  watch: ['./apps/pilot/src/theme/**/*'],
 };
 ```
 
@@ -680,9 +680,9 @@ Paths are relative to the **repo root** (where the codegen CLI is invoked from),
 Open `package.json`. In the `scripts` block, add:
 
 ```json
-"codegen:pilot": "bun run packages/codegen/bin/soribashi.ts build --config apps/core-radix-pilot/soribashi.config.ts",
-"dev:pilot": "bun run --filter @soribashi/core-radix-pilot dev",
-"build:pilot": "bun run --filter @soribashi/core-radix-pilot build"
+"codegen:pilot": "bun run packages/codegen/bin/soribashi.ts build --config apps/pilot/soribashi.config.ts",
+"dev:pilot": "bun run --filter @soribashi/pilot dev",
+"build:pilot": "bun run --filter @soribashi/pilot build"
 ```
 
 Place them adjacent to the existing `codegen`, `dev:playground`, `build:playground` scripts. Comma placement matters — keep valid JSON.
@@ -693,8 +693,8 @@ Run: `bun run codegen:pilot`
 Expected output:
 ```
 [soribashi] wrote 2 file(s):
-  ./apps/core-radix-pilot/src/generated/theme.css
-  ./apps/core-radix-pilot/src/generated/tailwind.config.generated.js
+  ./apps/pilot/src/generated/theme.css
+  ./apps/pilot/src/generated/tailwind.config.generated.js
 ```
 
 If it fails:
@@ -704,12 +704,12 @@ If it fails:
 
 - [ ] **Step 4: Inspect the generated files**
 
-Read `apps/core-radix-pilot/src/generated/theme.css` and confirm:
+Read `apps/pilot/src/generated/theme.css` and confirm:
 - `:root { ... }` block contains `--color-primary-500: hsl(...);` etc. for every consolidated token.
 - `.dark { ... }` block contains dark overrides if any were defined.
 - No leftover shad-* names.
 
-Read `apps/core-radix-pilot/src/generated/tailwind.config.generated.js` and confirm:
+Read `apps/pilot/src/generated/tailwind.config.generated.js` and confirm:
 - `module.exports = { theme: { colors: {...}, borderRadius: {...}, ... } }`.
 - Color scales emitted with `<alpha-value>` pattern (e.g., `'500': 'hsl(var(--color-primary-500) / <alpha-value>)'`).
 
@@ -718,9 +718,9 @@ If the emit shape doesn't match expectations, this is a codegen gap — log in j
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/core-radix-pilot/soribashi.config.ts apps/core-radix-pilot/src/generated/ package.json
+git add apps/pilot/soribashi.config.ts apps/pilot/src/generated/ package.json
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): wire codegen for consolidated theme (Wave 1 task 0.6)
+feat(pilot): wire codegen for consolidated theme (Wave 1 task 0.6)
 
 Per-app soribashi.config.ts pointing codegen at the pilot's
 consolidated theme. Root package.json gains codegen:pilot, dev:pilot,
@@ -739,10 +739,10 @@ EOF
 **Goal:** Connect the generated CSS vars + Tailwind config into the pilot's `styles.css` and `tailwind.config.js`. Get a working Tailwind utility (e.g., `bg-primary-500`) that paints from the consolidated theme.
 
 **Files:**
-- Create: `apps/core-radix-pilot/tailwind.config.js`
-- Modify: `apps/core-radix-pilot/src/styles.css`
+- Create: `apps/pilot/tailwind.config.js`
+- Modify: `apps/pilot/src/styles.css`
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/tailwind.config.js`**
+- [ ] **Step 1: Create `apps/pilot/tailwind.config.js`**
 
 ```js
 const generated = require('./src/generated/tailwind.config.generated.js');
@@ -754,9 +754,9 @@ module.exports = {
     './index.html',
     './src/**/*.{ts,tsx}',
   ],
-  darkMode: 'class', // Wave 1 default; CVI's `.dark .claim-view-islands` deferred to north-star A
+  darkMode: 'class', // Wave 1 default; the host library's `.dark .app-scope` deferred to north-star A
   corePlugins: {
-    preflight: false, // mirror CVI: no global reset
+    preflight: false, // mirror host: no global reset
   },
   plugins: [
     ...(generated.plugins ?? []),
@@ -767,9 +767,9 @@ module.exports = {
 
 The spread `...generated` copies generated `theme` (with the full color/spacing/radius/etc. scales) at top-level. We do NOT use Tailwind's `theme.extend.colors` shape — we want the consolidated theme to *replace* Tailwind's defaults, not merge with them. (Same pattern as `apps/playground/tailwind.config.js`.)
 
-- [ ] **Step 2: Update `apps/core-radix-pilot/src/styles.css` with Tailwind directives + generated import**
+- [ ] **Step 2: Update `apps/pilot/src/styles.css` with Tailwind directives + generated import**
 
-Replace the entire contents of `apps/core-radix-pilot/src/styles.css`:
+Replace the entire contents of `apps/pilot/src/styles.css`:
 
 ```css
 @import './generated/theme.css';
@@ -804,12 +804,12 @@ Stop the server before continuing.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/tailwind.config.js apps/core-radix-pilot/src/styles.css
+git add apps/pilot/tailwind.config.js apps/pilot/src/styles.css
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): compose generated Tailwind + import theme.css (Wave 1 task 0.7)
+feat(pilot): compose generated Tailwind + import theme.css (Wave 1 task 0.7)
 
 Pilot tailwind.config.js spreads the soribashi-generated config and
-layers preflight: false + tailwindcss-animate, mirroring CVI's
+layers preflight: false + tailwindcss-animate, mirroring the host library's
 config-level concerns. styles.css imports generated CSS vars so body
 text, font, and surface tokens render from the consolidated theme.
 
@@ -825,10 +825,10 @@ EOF
 **Goal:** Render every consolidated token as a labeled swatch, in both light and dark, so we can visually verify codegen → DOM end-to-end.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/pages/TokenReview.tsx`
-- Modify: `apps/core-radix-pilot/src/App.tsx` to route to it
+- Create: `apps/pilot/src/pages/TokenReview.tsx`
+- Modify: `apps/pilot/src/App.tsx` to route to it
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/src/pages/TokenReview.tsx`**
+- [ ] **Step 1: Create `apps/pilot/src/pages/TokenReview.tsx`**
 
 ```tsx
 /**
@@ -908,7 +908,7 @@ export function TokenReview() {
 
 If your consolidated theme has a different set of semantic tokens (e.g., you kept `text.{primary,secondary,...}` instead of `text.{default,muted,...}`), match the table rows to the actual tokens.
 
-- [ ] **Step 2: Update `apps/core-radix-pilot/src/App.tsx` to render TokenReview behind a dark/light toggle**
+- [ ] **Step 2: Update `apps/pilot/src/App.tsx` to render TokenReview behind a dark/light toggle**
 
 ```tsx
 import { useState } from 'react';
@@ -935,7 +935,7 @@ export function App() {
             alignItems: 'center',
           }}
         >
-          <strong style={{ fontFamily: 'var(--font-family-sans)' }}>core-radix pilot</strong>
+          <strong style={{ fontFamily: 'var(--font-family-sans)' }}>recipe pilot</strong>
           <button onClick={() => setPage('tokens')} aria-current={page === 'tokens' ? 'page' : undefined}>
             Tokens
           </button>
@@ -974,9 +974,9 @@ Stop the server.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/pages/TokenReview.tsx apps/core-radix-pilot/src/App.tsx
+git add apps/pilot/src/pages/TokenReview.tsx apps/pilot/src/App.tsx
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): TokenReview swatch page (Wave 1 task 0.8)
+feat(pilot): TokenReview swatch page (Wave 1 task 0.8)
 
 Renders every consolidated color scale + semantic surface/text/border
 token as a labeled swatch in both light and dark. Visual confirmation
@@ -992,27 +992,27 @@ EOF
 
 ## Task 0.9: Build the ScreenReplica page
 
-**Goal:** Render a representative CVI screen as static markup using consolidated tokens, so we can visually compare against a screenshot of CVI's current implementation. **No live components yet** — pure markup + Tailwind classes.
+**Goal:** Render a representative the host library screen as static markup using consolidated tokens, so we can visually compare against a screenshot of the host library's current implementation. **No live components yet** — pure markup + Tailwind classes.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/pages/ScreenReplica.tsx`
-- Modify: `apps/core-radix-pilot/src/App.tsx` (route)
+- Create: `apps/pilot/src/pages/ScreenReplica.tsx`
+- Modify: `apps/pilot/src/App.tsx` (route)
 
-- [ ] **Step 1: Pick a CVI screen to replicate**
+- [ ] **Step 1: Pick a the host library screen to replicate**
 
 Suggested: an Auto Statements Overview section with cards, headings, body text, badges-ish chips, and divider lines. Per the spec § 6.1 step 6.
 
 The actual element you reproduce can be sketched — this is a static replica, not a pixel-perfect copy. The goal is to exercise the consolidated token surface in a representative composition.
 
-- [ ] **Step 2: Create `apps/core-radix-pilot/src/pages/ScreenReplica.tsx`**
+- [ ] **Step 2: Create `apps/pilot/src/pages/ScreenReplica.tsx`**
 
 ```tsx
 /**
- * ScreenReplica — static markup of a representative CVI screen using only
+ * ScreenReplica — static markup of a representative the host library screen using only
  * consolidated tokens via Tailwind utilities.
  *
  * Purpose: validate that the consolidated tokens reach the DOM correctly
- * in a realistic composition. NOT a pixel-perfect copy of CVI — intent
+ * in a realistic composition. NOT a pixel-perfect copy of the host library — intent
  * parity, not pixel parity. Drift from the original is expected wherever
  * consolidation deliberately changed something (see journal § 4 deprecation
  * list and § 5 open design questions).
@@ -1102,7 +1102,7 @@ The Tailwind classes `bg-canvas`, `text-default`, `text-muted` reference utility
 
 - [ ] **Step 3: Wire into App.tsx**
 
-In `apps/core-radix-pilot/src/App.tsx`, replace the `'screen'` page placeholder with `<ScreenReplica />`. Add the import.
+In `apps/pilot/src/App.tsx`, replace the `'screen'` page placeholder with `<ScreenReplica />`. Add the import.
 
 - [ ] **Step 4: Boot dev server and visually verify**
 
@@ -1116,11 +1116,11 @@ Stop the server.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/pages/ScreenReplica.tsx apps/core-radix-pilot/src/App.tsx
+git add apps/pilot/src/pages/ScreenReplica.tsx apps/pilot/src/App.tsx
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): ScreenReplica static page (Wave 1 task 0.9)
+feat(pilot): ScreenReplica static page (Wave 1 task 0.9)
 
-Static markup-only replica of a representative CVI screen using
+Static markup-only replica of a representative the host library screen using
 consolidated tokens. Validates token reach into a realistic composition
 (cards, lists, badge-style chips, divider lines). Not pixel-perfect —
 intent parity for visual review only.
@@ -1132,18 +1132,18 @@ EOF
 
 ---
 
-## Task 0.10: Visual review against the original CVI screen + journal findings
+## Task 0.10: Visual review against the original the host library screen + journal findings
 
-**Goal:** Capture a screenshot of the corresponding CVI section, place it side-by-side with the pilot's ScreenReplica, document drift and findings in the journal.
+**Goal:** Capture a screenshot of the corresponding the host library section, place it side-by-side with the pilot's ScreenReplica, document drift and findings in the journal.
 
 **Files:**
 - Modify: `docs/superpowers/pilots/2026-04-26-token-consolidation.md` (§ 7)
 
-- [ ] **Step 1: Capture a screenshot of CVI's actual screen**
+- [ ] **Step 1: Capture a screenshot of the host library's actual screen**
 
-Open the assured-dev app in a browser at the matching screen (Auto Statements Overview, or whichever you replicated). Take a screenshot. Save under `docs/superpowers/pilots/screenshots/2026-04-26-cvi-statements-overview.png` (create the directory if it doesn't exist).
+Open the the host monorepo app in a browser at the matching screen (Auto Statements Overview, or whichever you replicated). Take a screenshot. Save under `docs/superpowers/pilots/screenshots/2026-04-26-host-statements-overview.png` (create the directory if it doesn't exist).
 
-If you can't access a running CVI instance, capture a screenshot from CVI's storybook / fixtures, or from documentation. Document the source in the journal so the comparison is honest.
+If you can't access a running the host library instance, capture a screenshot from the host library's storybook / fixtures, or from documentation. Document the source in the journal so the comparison is honest.
 
 - [ ] **Step 2: Capture a screenshot of the pilot's ScreenReplica**
 
@@ -1156,12 +1156,12 @@ Use this template:
 ```markdown
 ## 7. Visual review findings
 
-**CVI screen:** [link to screenshots/2026-04-26-cvi-statements-overview.png]
+**Host screen:** [link to screenshots/2026-04-26-host-statements-overview.png]
 **Pilot replica (light):** [link to screenshots/2026-04-26-pilot-statements-replica-light.png]
 **Pilot replica (dark):** [link to screenshots/2026-04-26-pilot-statements-replica-dark.png]
 
 ### Intent parity
-[1-2 paragraphs on whether the consolidated theme delivers the same overall design intent as CVI — surface hierarchy, color tone, typographic rhythm, etc.]
+[1-2 paragraphs on whether the consolidated theme delivers the same overall design intent as the host library — surface hierarchy, color tone, typographic rhythm, etc.]
 
 ### Expected drift (consolidation-driven)
 - [bullet per piece of drift that's a deliberate consolidation choice — link back to the rename map in § 4 or the open question in § 5 that explains it]
@@ -1180,7 +1180,7 @@ git add docs/superpowers/pilots/screenshots/ docs/superpowers/pilots/2026-04-26-
 git commit -m "$(cat <<'EOF'
 docs(pilot): visual review findings + screenshots (Wave 1 task 0.10)
 
-Side-by-side: CVI Statements Overview vs pilot ScreenReplica.
+Side-by-side: the host library Statements Overview vs pilot ScreenReplica.
 Expected drift documented (consolidation-driven). Unexpected drift
 captured as findings or promoted to gaps.
 
@@ -1210,71 +1210,71 @@ Phase 1 builds one Button recipe authored with `defineComponent`, consuming the 
 
 ---
 
-## Task 1.1: Vendor-snapshot CVI's Button into the pilot
+## Task 1.1: Vendor-snapshot the host library's Button into the pilot
 
-**Goal:** Copy CVI's current `core-radix/Buttons/` source into `apps/core-radix-pilot/src/reference/core-radix-button/` for side-by-side reference. Read-only. Never imported by recipe code.
+**Goal:** Copy the host library's current `Buttons/` source into `apps/pilot/src/reference/original-button/` for side-by-side reference. Read-only. Never imported by recipe code.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/reference/core-radix-button/` (copied from assured-dev)
-- Create: `apps/core-radix-pilot/src/reference/core-radix-button/README.md` — attribution + restrictions
+- Create: `apps/pilot/src/reference/original-button/` (copied from the host monorepo)
+- Create: `apps/pilot/src/reference/original-button/README.md` — attribution + restrictions
 
 - [ ] **Step 1: Make the directory**
 
-Run: `mkdir -p apps/core-radix-pilot/src/reference/core-radix-button`
+Run: `mkdir -p apps/pilot/src/reference/original-button`
 
-- [ ] **Step 2: Copy CVI's Button source**
+- [ ] **Step 2: Copy the host library's Button source**
 
 Run:
 ```bash
-cp -R /Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/core-radix/Buttons/* apps/core-radix-pilot/src/reference/core-radix-button/
+cp -R <host-library-path>/Buttons/* apps/pilot/src/reference/original-button/
 ```
 
 Verify:
 ```bash
-ls apps/core-radix-pilot/src/reference/core-radix-button/
+ls apps/pilot/src/reference/original-button/
 ```
-Expected: a list of files including `Button.tsx`, `IconButton.tsx`, `ButtonDropdown.tsx`, etc. Exact file list depends on what's in CVI today.
+Expected: a list of files including `Button.tsx`, `IconButton.tsx`, `ButtonDropdown.tsx`, etc. Exact file list depends on what's in the host library today.
 
 - [ ] **Step 3: Add an attribution README**
 
-Create `apps/core-radix-pilot/src/reference/core-radix-button/README.md`:
+Create `apps/pilot/src/reference/original-button/README.md`:
 
 ```markdown
-# core-radix Button — vendored snapshot
+# host Button — vendored snapshot
 
-**Source:** `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/core-radix/Buttons/`
+**Source:** `<host-library-path>/Buttons/`
 **Snapshot date:** 2026-04-26
 **Purpose:** read-only reference for Wave 1 side-by-side visual review.
 
 ## Rules
 
 - This directory is read-only reference material. Do NOT edit any file inside it.
-- The recipe code at `apps/core-radix-pilot/src/recipes/Button/` MUST NOT import from this directory at any point.
+- The recipe code at `apps/pilot/src/recipes/Button/` MUST NOT import from this directory at any point.
 - The pilot's demo page (`pages/ButtonMatrix.tsx`) imports from here ONLY to render side-by-side reference output.
 - The vendored copy is never shipped beyond this pilot app.
-- If the upstream CVI Button changes meaningfully and you want to refresh the snapshot, run the same `cp -R` command and update the snapshot date above.
+- If the upstream the host library Button changes meaningfully and you want to refresh the snapshot, run the same `cp -R` command and update the snapshot date above.
 
 ## Why vendor instead of installing?
 
-CVI is in a separate monorepo (assured-dev). Wave 1's spec scope explicitly forbids touching assured-dev. Vendoring is the simplest way to render CVI's current Button alongside the recipe in one running app for visual diff.
+The host library is in a separate monorepo (the host monorepo). Wave 1's spec scope explicitly forbids touching the host monorepo. Vendoring is the simplest way to render the host library's current Button alongside the recipe in one running app for visual diff.
 ```
 
 - [ ] **Step 4: Verify the recipe directory has nothing in it yet**
 
-Run: `ls apps/core-radix-pilot/src/recipes/ 2>/dev/null`
+Run: `ls apps/pilot/src/recipes/ 2>/dev/null`
 Expected: empty or no such file (we create it in Task 1.3). If it has content, that's fine — just confirm Button isn't there yet.
 
 - [ ] **Step 5: Confirm imports**
 
-Read the vendored `Button.tsx` head and note its imports — they reference `@assured/design-system`, `@radix-ui/react-slot`, `class-variance-authority`, `../lib/utils`, etc. Several of these aren't installed in the pilot. The vendored code WILL NOT compile as-is — that's expected. We are NOT trying to make the vendored code run in the pilot. It exists as a literal text reference and as a renderable subtree if and only if you make it run by:
+Read the vendored `Button.tsx` head and note its imports — they reference `@host/design-system`, `@radix-ui/react-slot`, `class-variance-authority`, `../lib/utils`, etc. Several of these aren't installed in the pilot. The vendored code WILL NOT compile as-is — that's expected. We are NOT trying to make the vendored code run in the pilot. It exists as a literal text reference and as a renderable subtree if and only if you make it run by:
 - (a) Stubbing the missing imports with hand-written shims, OR
 - (b) Rendering only a screenshot of the legacy Button (not the live component) in the matrix page.
 
 Default: option (b) — screenshot only, simpler. If the visual review wants live interaction with the legacy Button, escalate as an extra task.
 
-For now, exclude the reference directory from the pilot's TypeScript compile by adding it to `apps/core-radix-pilot/tsconfig.json`'s `exclude` array:
+For now, exclude the reference directory from the pilot's TypeScript compile by adding it to `apps/pilot/tsconfig.json`'s `exclude` array:
 
-Edit `apps/core-radix-pilot/tsconfig.json`:
+Edit `apps/pilot/tsconfig.json`:
 
 ```json
 {
@@ -1288,7 +1288,7 @@ Edit `apps/core-radix-pilot/tsconfig.json`:
 }
 ```
 
-Also exclude from Vite's processing by ensuring Tailwind's content glob doesn't pull from `src/reference/**`. Check `apps/core-radix-pilot/tailwind.config.js`:
+Also exclude from Vite's processing by ensuring Tailwind's content glob doesn't pull from `src/reference/**`. Check `apps/pilot/tailwind.config.js`:
 
 ```js
 content: [
@@ -1307,14 +1307,14 @@ Stop the server.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/reference/ apps/core-radix-pilot/tsconfig.json apps/core-radix-pilot/tailwind.config.js
+git add apps/pilot/src/reference/ apps/pilot/tsconfig.json apps/pilot/tailwind.config.js
 git commit -m "$(cat <<'EOF'
-chore(core-radix-pilot): vendor CVI Button as read-only reference (Wave 1 task 1.1)
+chore(pilot): vendor the host library Button as read-only reference (Wave 1 task 1.1)
 
-Snapshot of CVI's current core-radix/Buttons/ for side-by-side
+Snapshot of the host library's current Buttons/ for side-by-side
 visual review. Excluded from typecheck and Tailwind processing —
 read-only reference material, never imported by recipe code.
-Attribution + rules in src/reference/core-radix-button/README.md.
+Attribution + rules in src/reference/original-button/README.md.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
@@ -1325,7 +1325,7 @@ EOF
 
 ## Task 1.2: Inventory the legacy Button surface + open the conversion journal
 
-**Goal:** Document CVI's current Button shape — variants, intents, sizes, states, polymorphism — and use that to lock the consolidated Button shape.
+**Goal:** Document the host library's current Button shape — variants, intents, sizes, states, polymorphism — and use that to lock the consolidated Button shape.
 
 **Files:**
 - Create: `docs/superpowers/pilots/2026-04-26-button-conversion.md`
@@ -1366,12 +1366,12 @@ _Populated below._
 _Populated below._
 ```
 
-- [ ] **Step 2: Read CVI's Button source**
+- [ ] **Step 2: Read the host library's Button source**
 
 Read:
-- `apps/core-radix-pilot/src/reference/core-radix-button/Button.tsx`
-- `apps/core-radix-pilot/src/reference/core-radix-button/IconButton.tsx` (context only)
-- `apps/core-radix-pilot/src/reference/core-radix-button/ButtonDropdown.tsx` (context only)
+- `apps/pilot/src/reference/original-button/Button.tsx`
+- `apps/pilot/src/reference/original-button/IconButton.tsx` (context only)
+- `apps/pilot/src/reference/original-button/ButtonDropdown.tsx` (context only)
 
 Identify:
 - The full prop API.
@@ -1388,9 +1388,9 @@ Under § 1, document:
 ```markdown
 ### 1.1 Variants (visual style)
 
-CVI's variant set: `primary`, `secondary`, `outline`, `ghost`, `danger`, `success`.
+the host library's variant set: `primary`, `secondary`, `outline`, `ghost`, `danger`, `success`.
 
-**Inconsistency:** The variant prop in CVI's Button mixes visual style (`outline`, `ghost`) with semantic role (`primary`, `secondary`, `danger`, `success`) — three are visual, three are intent-shaped. This conflates two orthogonal axes.
+**Inconsistency:** The variant prop in the host library's Button mixes visual style (`outline`, `ghost`) with semantic role (`primary`, `secondary`, `danger`, `success`) — three are visual, three are intent-shaped. This conflates two orthogonal axes.
 
 **Wave 1 consolidation:** Split into:
 - `variant` (visual): `filled`, `outline`, `subtle`, `ghost`, `link`
@@ -1398,7 +1398,7 @@ CVI's variant set: `primary`, `secondary`, `outline`, `ghost`, `danger`, `succes
 
 Rationale: matches the existing soribashi convention (see `apps/playground/src/components/Button/Button.tsx` and the playground theme). Lets one component express ALL the (variant × intent) cells without an explosion of one-off variants.
 
-**Migration map for CVI's existing usages** (informational — actual migration is the integration project's work):
+**Migration map for the host library's existing usages** (informational — actual migration is the integration project's work):
 - `<Button variant="primary">` → `<Button intent="primary" variant="filled">`
 - `<Button variant="secondary">` → `<Button intent="neutral" variant="filled">` (or `subtle` — see § 4)
 - `<Button variant="outline">` → `<Button intent="neutral" variant="outline">`
@@ -1408,11 +1408,11 @@ Rationale: matches the existing soribashi convention (see `apps/playground/src/c
 
 ### 1.2 Sizes
 
-CVI: `sm`, `md`, `lg`. Wave 1: same.
+Host: `sm`, `md`, `lg`. Wave 1: same.
 
 ### 1.3 States
 
-| CVI prop | CVI behavior | Wave 1 prop |
+| the host library prop | the host library behavior | Wave 1 prop |
 |---|---|---|
 | `isLoading` | Shows spinner, suppresses click | `loading` (renamed) |
 | `disabled` | HTMLButton disabled | `disabled` (passthrough) |
@@ -1423,7 +1423,7 @@ CVI: `sm`, `md`, `lg`. Wave 1: same.
 
 ### 1.4 Polymorphism
 
-CVI uses Radix Slot (`asChild` prop). Wave 1 uses soribashi's `definePolymorphicComponent` with an `as` prop. Why the change: `as` is more typesafe, the soribashi convention, and removes the `Slot` runtime dependency from the recipe. Migration map:
+The host library uses Radix Slot (`asChild` prop). Wave 1 uses soribashi's `definePolymorphicComponent` with an `as` prop. Why the change: `as` is more typesafe, the soribashi convention, and removes the `Slot` runtime dependency from the recipe. Migration map:
 - `<Button asChild><a href="/x">Link</a></Button>` → `<Button as="a" href="/x">Link</Button>`
 
 This is a meaningful API divergence — flag in the journal as a finding for design review.
@@ -1436,7 +1436,7 @@ git add docs/superpowers/pilots/2026-04-26-button-conversion.md
 git commit -m "$(cat <<'EOF'
 docs(pilot): inventory legacy Button surface (Wave 1 task 1.2)
 
-Documents CVI's current Button prop API, variant taxonomy
+Documents the host library's current Button prop API, variant taxonomy
 (conflates visual + semantic), state machinery, and polymorphism
 via Radix Slot. Captures the consolidation choices: split variant
 into variant × intent, rename isLoading → loading, asChild → as.
@@ -1451,13 +1451,13 @@ EOF
 
 ## Task 1.3: Add vitest config + workspace entry for the pilot
 
-**Goal:** Make `bun test` discover tests in `apps/core-radix-pilot/`.
+**Goal:** Make `bun test` discover tests in `apps/pilot/`.
 
 **Files:**
-- Create: `apps/core-radix-pilot/vitest.config.ts`
+- Create: `apps/pilot/vitest.config.ts`
 - Modify: `vitest.workspace.ts`
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/vitest.config.ts`**
+- [ ] **Step 1: Create `apps/pilot/vitest.config.ts`**
 
 Look at an existing pilot config for the pattern. Read: `packages/blocks/vitest.config.ts` (or another existing one in `packages/*`).
 
@@ -1480,10 +1480,10 @@ export default defineConfig({
 If `jsdom` is not yet in the pilot's devDependencies, add it:
 
 ```bash
-bun add -D --filter @soribashi/core-radix-pilot jsdom @testing-library/react @testing-library/jest-dom
+bun add -D --filter @soribashi/pilot jsdom @testing-library/react @testing-library/jest-dom
 ```
 
-(Adjust the `bun add` command if your bun version uses different syntax — alternatively, edit `apps/core-radix-pilot/package.json` directly to add the deps and re-run `bun install`.)
+(Adjust the `bun add` command if your bun version uses different syntax — alternatively, edit `apps/pilot/package.json` directly to add the deps and re-run `bun install`.)
 
 - [ ] **Step 2: Add the pilot to `vitest.workspace.ts`**
 
@@ -1495,7 +1495,7 @@ export default [
   './packages/codegen/vitest.config.ts',
   './packages/factory/vitest.config.ts',
   './packages/blocks/vitest.config.ts',
-  './apps/core-radix-pilot/vitest.config.ts',
+  './apps/pilot/vitest.config.ts',
 ];
 ```
 
@@ -1507,9 +1507,9 @@ Expected: vitest lists the pilot project among its workspaces. No tests yet — 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/vitest.config.ts apps/core-radix-pilot/package.json vitest.workspace.ts
+git add apps/pilot/vitest.config.ts apps/pilot/package.json vitest.workspace.ts
 git commit -m "$(cat <<'EOF'
-test(core-radix-pilot): vitest config + workspace entry (Wave 1 task 1.3)
+test(pilot): vitest config + workspace entry (Wave 1 task 1.3)
 
 Pilot vitest config (jsdom env, @testing-library/react). Added to
 vitest.workspace.ts so `bun test` discovers Button.test.tsx in the
@@ -1527,7 +1527,7 @@ EOF
 **Goal:** TDD — write the unit tests first. They will fail (Button doesn't exist yet). Implementation happens in Task 1.5.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Button/Button.test.tsx`
+- Create: `apps/pilot/src/recipes/Button/Button.test.tsx`
 
 - [ ] **Step 1: Create the test file with all behavior tests**
 
@@ -1639,15 +1639,15 @@ describe('Button — polymorphism', () => {
 
 - [ ] **Step 2: Run the tests, confirm they fail**
 
-Run: `bun test apps/core-radix-pilot 2>&1 | tail -30`
+Run: `bun test apps/pilot 2>&1 | tail -30`
 Expected: fails with "Cannot find module '../recipes/Button/Button.tsx'" or similar — Button.tsx doesn't exist yet. This is correct: red phase of TDD.
 
 - [ ] **Step 3: Commit (RED)**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Button/Button.test.tsx
+git add apps/pilot/src/recipes/Button/Button.test.tsx
 git commit -m "$(cat <<'EOF'
-test(core-radix-pilot): failing Button recipe tests (Wave 1 task 1.4 RED)
+test(pilot): failing Button recipe tests (Wave 1 task 1.4 RED)
 
 TDD red phase. Tests cover rendering, default intent/variant,
 icon ordering, click handling, disabled + loading suppression,
@@ -1666,12 +1666,12 @@ EOF
 **Goal:** Make all the Task 1.4 tests pass. Author the recipe with `defineComponent` (or `definePolymorphicComponent` for the `as` prop), consuming the consolidated theme.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Button/Button.tsx`
-- Create: `apps/core-radix-pilot/src/recipes/Button/Button.css`
+- Create: `apps/pilot/src/recipes/Button/Button.tsx`
+- Create: `apps/pilot/src/recipes/Button/Button.css`
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/src/recipes/Button/Button.css`**
+- [ ] **Step 1: Create `apps/pilot/src/recipes/Button/Button.css`**
 
-Recipe styles using ONLY consolidated tokens (no shad-* vars, no hand-set hex). The `cr-` prefix is the recipe's class namespace — short for "core-radix recipe."
+Recipe styles using ONLY consolidated tokens (no shad-* vars, no hand-set hex). The `cr-` prefix is the recipe's class namespace — short for "recipe."
 
 ```css
 .cr-Button-root {
@@ -1806,14 +1806,14 @@ Recipe styles using ONLY consolidated tokens (no shad-* vars, no hand-set hex). 
 
 **Important:** The "Repeat the 5 variants for each of: neutral, success, warning, danger, info" comment is a planning shortcut. In the actual file, write out all 30 rules explicitly. DRY-via-CSS-vars handles repetition cleanly: if the recipe shape is right, every (variant, intent) just sets a small set of `--cr-button-*` vars. If you find yourself writing complex per-cell CSS beyond setting those 4-5 vars, that's a smell — re-evaluate the cell.
 
-- [ ] **Step 2: Create `apps/core-radix-pilot/src/recipes/Button/Button.tsx`**
+- [ ] **Step 2: Create `apps/pilot/src/recipes/Button/Button.tsx`**
 
 ```tsx
 /**
  * Button recipe — Wave 1 pilot for the pure-styled-primitive category.
  *
  * Authored with `definePolymorphicComponent` from @soribashi/factory.
- * Consumes only the consolidated theme tokens — no shad-*, no legacy CVI vars.
+ * Consumes only the consolidated theme tokens — no shad-*, no legacy the host library vars.
  *
  * Spec: docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md § 7
  * Journal: docs/superpowers/pilots/2026-04-26-button-conversion.md
@@ -1927,7 +1927,7 @@ If `definePolymorphicComponent` is not the right primitive (e.g., it doesn't yet
 
 - [ ] **Step 3: Run the tests, confirm they pass**
 
-Run: `bun test apps/core-radix-pilot 2>&1 | tail -30`
+Run: `bun test apps/pilot 2>&1 | tail -30`
 Expected: all 11 tests pass.
 
 If any fail:
@@ -1943,12 +1943,12 @@ Expected: clean.
 - [ ] **Step 5: Commit (GREEN)**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Button/
+git add apps/pilot/src/recipes/Button/
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): Button recipe authored with soribashi (Wave 1 task 1.5 GREEN)
+feat(pilot): Button recipe authored with soribashi (Wave 1 task 1.5 GREEN)
 
 Recipe defined via definePolymorphicComponent. Consumes consolidated
-theme only — no shad-* vars, no legacy CVI tokens. Variant × intent
+theme only — no shad-* vars, no legacy the host library tokens. Variant × intent
 matrix expressed via CSS data-attribute rules over local --cr-button-*
 vars (5 variants × 6 intents = 30 cells, one var-set per cell).
 All 11 behavior tests passing. Polymorphic as=a supported with
@@ -1963,13 +1963,13 @@ EOF
 
 ## Task 1.6: Build the ButtonMatrix demo page
 
-**Goal:** Render the full variant × intent × size × state matrix in the pilot, with the vendored CVI Button shown side-by-side via screenshot or a simplified static replica.
+**Goal:** Render the full variant × intent × size × state matrix in the pilot, with the vendored the host library Button shown side-by-side via screenshot or a simplified static replica.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/pages/ButtonMatrix.tsx`
-- Modify: `apps/core-radix-pilot/src/App.tsx` (route)
+- Create: `apps/pilot/src/pages/ButtonMatrix.tsx`
+- Modify: `apps/pilot/src/App.tsx` (route)
 
-- [ ] **Step 1: Create `apps/core-radix-pilot/src/pages/ButtonMatrix.tsx`**
+- [ ] **Step 1: Create `apps/pilot/src/pages/ButtonMatrix.tsx`**
 
 ```tsx
 /**
@@ -2044,7 +2044,7 @@ export function ButtonMatrix() {
 
       <h2 style={{ fontFamily: 'var(--font-family-sans)', marginTop: '2rem' }}>Consolidation notes</h2>
       <ul style={{ fontFamily: 'var(--font-family-sans)', fontSize: 'var(--font-size-sm)', maxWidth: '60ch' }}>
-        <li><strong>Variant axis split.</strong> CVI's mixed `primary | secondary | outline | ghost | danger | success` is now `variant × intent`: 5 visual styles × 6 semantic roles = 30 cells.</li>
+        <li><strong>Variant axis split.</strong> the host library's mixed `primary | secondary | outline | ghost | danger | success` is now `variant × intent`: 5 visual styles × 6 semantic roles = 30 cells.</li>
         <li><strong>`isLoading` → `loading`.</strong> Renamed for soribashi convention.</li>
         <li><strong>`asChild` → `as`.</strong> Polymorphism via `as` prop. Disabled `&lt;a&gt;` uses `aria-disabled` since the HTML disabled attribute is button-only.</li>
         <li><strong>Icons.</strong> ReactNode only — IconKey / icon-component wrapping is the integration project's concern.</li>
@@ -2056,7 +2056,7 @@ export function ButtonMatrix() {
 
 - [ ] **Step 2: Wire into App.tsx**
 
-In `apps/core-radix-pilot/src/App.tsx`, replace the `'buttons'` page placeholder:
+In `apps/pilot/src/App.tsx`, replace the `'buttons'` page placeholder:
 
 ```tsx
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
@@ -2078,9 +2078,9 @@ Stop the server.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/pages/ButtonMatrix.tsx apps/core-radix-pilot/src/App.tsx
+git add apps/pilot/src/pages/ButtonMatrix.tsx apps/pilot/src/App.tsx
 git commit -m "$(cat <<'EOF'
-feat(core-radix-pilot): ButtonMatrix demo page (Wave 1 task 1.6)
+feat(pilot): ButtonMatrix demo page (Wave 1 task 1.6)
 
 Full variant × intent (5 × 6 = 30 cells) plus sizes plus states
 matrix, light + dark. data-testid per cell for the Playwright
@@ -2113,8 +2113,8 @@ projects: [
     use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5173' },
   },
   {
-    name: 'core-radix-pilot',
-    testDir: './apps/core-radix-pilot/tests',
+    name: 'pilot',
+    testDir: './apps/pilot/tests',
     testMatch: '**/*.spec.ts',
     use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5174' },
   },
@@ -2129,7 +2129,7 @@ webServer: [
     timeout: 60_000,
   },
   {
-    command: 'bun run --filter @soribashi/core-radix-pilot dev',
+    command: 'bun run --filter @soribashi/pilot dev',
     url: 'http://localhost:5174',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
@@ -2153,10 +2153,10 @@ If they fail because of the project reorganization, fix the config before contin
 ```bash
 git add playwright.config.ts
 git commit -m "$(cat <<'EOF'
-test(core-radix-pilot): add pilot project to playwright config (Wave 1 task 1.7)
+test(pilot): add pilot project to playwright config (Wave 1 task 1.7)
 
 Two playwright projects now: 'blocks' (existing) at port 5173,
-'core-radix-pilot' (new) at port 5174. webServer boots both apps
+'pilot' (new) at port 5174. webServer boots both apps
 in parallel. Existing block parity suite verified intact.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
@@ -2171,7 +2171,7 @@ EOF
 **Goal:** Computed-style assertions per matrix cell — confirms the Button recipe paints from the consolidated tokens correctly.
 
 **Files:**
-- Create: `apps/core-radix-pilot/tests/button-computed-styles.spec.ts`
+- Create: `apps/pilot/tests/button-computed-styles.spec.ts`
 
 - [ ] **Step 1: Write the spec file**
 
@@ -2289,20 +2289,20 @@ This is a meaningful subset — full 30-cell parity isn't required for Wave 1's 
 
 - [ ] **Step 2: Run the tests**
 
-Run: `bun run test:browser --project=core-radix-pilot 2>&1 | tail -40`
+Run: `bun run test:browser --project=pilot 2>&1 | tail -40`
 Expected: all tests pass. The webServer config boots both playground and pilot in parallel, then runs the spec against port 5174.
 
 If a test fails:
 - Computed-color failure: the recipe's CSS for that cell isn't producing the expected token — check Button.css and the consolidated theme.
 - "Element not found": data-testid mismatch between matrix page and spec.
-- Timeout waiting for selector: matrix page didn't load, or the nav-click in `beforeEach` didn't work — inspect locally with `bunx playwright test --project=core-radix-pilot --debug`.
+- Timeout waiting for selector: matrix page didn't load, or the nav-click in `beforeEach` didn't work — inspect locally with `bunx playwright test --project=pilot --debug`.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add apps/core-radix-pilot/tests/button-computed-styles.spec.ts
+git add apps/pilot/tests/button-computed-styles.spec.ts
 git commit -m "$(cat <<'EOF'
-test(core-radix-pilot): Playwright Button parity tests (Wave 1 task 1.8)
+test(pilot): Playwright Button parity tests (Wave 1 task 1.8)
 
 Computed-style assertions per (variant, intent, size, state) cell.
 Filled variant × all 6 intents × bg-color = scale 500 confirms the
@@ -2434,7 +2434,7 @@ Recipe shape:
 
 ### ButtonDropdown
 
-Recipe shape: a Button + a Radix DropdownMenu (or wraps `core-radix/DropdownMenu` once that's converted). The Button half reuses the existing recipe; the Dropdown half is the Wave-2-or-later overlay-compound work.
+Recipe shape: a Button + a Radix DropdownMenu (or wraps `DropdownMenu` once that's converted). The Button half reuses the existing recipe; the Dropdown half is the Wave-2-or-later overlay-compound work.
 
 **Conclusion:** the recipe shape composes — but ButtonDropdown depends on a converted DropdownMenu. Defer until Wave 2's overlay-compound pattern lands.
 ```
@@ -2481,8 +2481,8 @@ EOF
 ## Phase 1 Exit Check
 
 Before moving to Phase 2:
-- [ ] `bun test apps/core-radix-pilot` — all 11 Button behavior tests pass.
-- [ ] `bun run test:browser --project=core-radix-pilot` — all Playwright parity tests pass.
+- [ ] `bun test apps/pilot` — all 11 Button behavior tests pass.
+- [ ] `bun run test:browser --project=pilot` — all Playwright parity tests pass.
 - [ ] `bun run test:browser --project=blocks` — existing block tests still pass (regression check).
 - [ ] `bun run typecheck` — clean.
 - [ ] `bun run dev:pilot` — boots, ButtonMatrix renders all cells in light + dark.
@@ -2503,12 +2503,12 @@ Phase 2 synthesizes Phases 0 and 1 into a single forward-looking playbook. The p
 **Goal:** Create the playbook file with the full section structure from spec § 8.2 — populated headings + brief context, content filled in subsequent tasks.
 
 **Files:**
-- Create: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md`
+- Create: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`
 
 - [ ] **Step 1: Create the file with structure**
 
 ```markdown
-# core-radix Conversion Playbook (Wave 1 partial)
+# Recipe Conversion Playbook (Wave 1 partial)
 
 **Status:** Wave 1 complete — pure-styled-primitive category covered. Future waves extend.
 **Date:** 2026-04-26
@@ -2561,7 +2561,7 @@ _Populated in Task 2.5._
 - [ ] **Step 2: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md
+git add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md
 git commit -m "$(cat <<'EOF'
 docs(playbook): scaffold Wave 1 playbook structure (Wave 1 task 2.1)
 
@@ -2577,10 +2577,10 @@ EOF
 
 ## Task 2.2: Write § 1 — Token consolidation methodology
 
-**Goal:** Generalize the inventory → classify → express → codegen → review → decide loop into a transferable methodology, not specific to CVI.
+**Goal:** Generalize the inventory → classify → express → codegen → review → decide loop into a transferable methodology, not specific to the host library.
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` (§ 1)
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (§ 1)
 
 - [ ] **Step 1: Read the consolidation journal**
 
@@ -2593,7 +2593,7 @@ Replace the `_Populated in Task 2.2._` placeholder with the methodology, structu
 ```markdown
 ## 1. Token consolidation methodology
 
-The methodology is a 6-step loop that takes a fragmented design system and outputs a single focused soribashi theme. Wave 1 ran it against CVI; the same loop applies to any other library.
+The methodology is a 6-step loop that takes a fragmented design system and outputs a single focused soribashi theme. Wave 1 ran it against the host library; the same loop applies to any other library.
 
 ### Step 1: Inventory
 
@@ -2671,12 +2671,12 @@ If any of these don't hold, the methodology is still valuable but produces less 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md
+git add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md
 git commit -m "$(cat <<'EOF'
 docs(playbook): § 1 token consolidation methodology (Wave 1 task 2.2)
 
 Generalized 6-step loop (inventory → classify → express → codegen →
-review → decide) abstracted from the CVI pilot. Transferable to any
+review → decide) abstracted from the host library pilot. Transferable to any
 fragmented design system.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
@@ -2691,7 +2691,7 @@ EOF
 **Goal:** Codify the Button category recipe pattern for future authors of pure styled primitives (Badge, Chip, Dot, Card, etc.).
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` (§ 2.1)
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (§ 2.1)
 
 - [ ] **Step 1: Read the conversion journal**
 
@@ -2706,7 +2706,7 @@ Replace the placeholder with:
 
 Pattern for components with no Radix anatomy, no portal, no controlled state — just styled markup that responds to props.
 
-**Examples in core-radix:** Button, Badge, Chip, Dot, Skeleton, Card.
+**Examples in host:** Button, Badge, Chip, Dot, Skeleton, Card.
 
 #### Recipe shape
 
@@ -2771,13 +2771,13 @@ export const Button = definePolymorphicComponent<'button', ButtonOwnProps>({
 });
 ```
 
-See `apps/core-radix-pilot/src/recipes/Button/Button.tsx` for the full implementation.
+See `apps/pilot/src/recipes/Button/Button.tsx` for the full implementation.
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md
+git add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md
 git commit -m "$(cat <<'EOF'
 docs(playbook): § 2.1 pure styled primitive authoring pattern (Wave 1 task 2.3)
 
@@ -2795,10 +2795,10 @@ EOF
 
 ## Task 2.4: Write § 3 — Soribashi gaps surfaced (with severity)
 
-**Goal:** Aggregate every gap from both pilot journals into a single severity-tagged list. This is the C → A bridge — what soribashi has to add before it can own the full Tailwind config and author every core-radix category cleanly.
+**Goal:** Aggregate every gap from both pilot journals into a single severity-tagged list. This is the C → A bridge — what soribashi has to add before it can own the full Tailwind config and author every host category cleanly.
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` (§ 3)
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (§ 3)
 
 - [ ] **Step 1: Compile the gap list**
 
@@ -2844,7 +2844,7 @@ and the soribashi theme owns dark-mode selector, preflight setting, plugin pass-
 - [ ] **Step 3: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md
+git add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md
 git commit -m "$(cat <<'EOF'
 docs(playbook): § 3 soribashi gaps surfaced + C→A bridge (Wave 1 task 2.4)
 
@@ -2864,14 +2864,14 @@ EOF
 **Goal:** Size the integration project's scope; outline future waves so they extend rather than rewrite.
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` (§ 4, § 5)
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (§ 4, § 5)
 
 - [ ] **Step 1: Write § 4 — Legacy-token migration strategy stub**
 
 ```markdown
 ## 4. Legacy-token migration strategy stub
 
-**Scope:** the integration project's job — migrate CVI's existing 115 importers from fragmented tokens to the consolidated vocabulary. Sized here, not designed.
+**Scope:** the integration project's job — migrate the host library's existing 115 importers from fragmented tokens to the consolidated vocabulary. Sized here, not designed.
 
 ### Migration surface
 
@@ -2882,8 +2882,8 @@ Pull from `docs/superpowers/pilots/2026-04-26-token-consolidation.md` § 4 (depr
 - **Phase A — `shad-*` rip-out (S/M).** Find every reference to `--background`, `--foreground`, `--primary` (shad), etc. Replace with the consolidated equivalents from the deprecation list. Mostly mechanical. ~50 file touches estimated.
 - **Phase B — Scale renames (S).** `--color-error-*` → `--color-danger-*`, etc. Mechanical.
 - **Phase C — Variant taxonomy migration on Button usages (M).** Every `<Button variant="primary">` becomes `<Button intent="primary" variant="filled">`. Codemod-friendly. ~80-100 call sites.
-- **Phase D — Visual review per page (M/L).** After A-C, render each CVI page in the consolidated theme; capture findings; iterate.
-- **Phase E — Deprecation of the legacy `claimview-islands.css` var declarations (S).** Once nothing references the legacy vars, delete them.
+- **Phase D — Visual review per page (M/L).** After A-C, render each the host library page in the consolidated theme; capture findings; iterate.
+- **Phase E — Deprecation of the legacy `host-styles.css` var declarations (S).** Once nothing references the legacy vars, delete them.
 
 The integration project gets its own brainstorm + spec + plan. This stub is the input.
 ```
@@ -2913,7 +2913,7 @@ Each wave reuses the consolidated theme from Wave 1. None redoes the token work.
 
 ### Wave 4 — Select (form control)
 
-**Why:** the heaviest anatomy in core-radix. Field composition (label/help/error slots), controlled state, keyboard a11y, trigger-vs-content surface tokens, option rendering.
+**Why:** the heaviest anatomy in host. Field composition (label/help/error slots), controlled state, keyboard a11y, trigger-vs-content surface tokens, option rendering.
 
 **Pre-work:** Waves 2 and 3 lock the compound + slot patterns. Wave 4 also exercises field composition (label/help/error slots).
 
@@ -2921,13 +2921,13 @@ Each wave reuses the consolidated theme from Wave 1. None redoes the token work.
 
 ### After Wave 4
 
-The playbook covers all four authoring categories. The remaining ~20 core-radix component groups can be sequenced as a sweep, leaning on the pattern most appropriate per category. Bundling vs one-by-one is a sequencing question for that project.
+The playbook covers all four authoring categories. The remaining ~20 host component groups can be sequenced as a sweep, leaning on the pattern most appropriate per category. Bundling vs one-by-one is a sequencing question for that project.
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md
+git add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md
 git commit -m "$(cat <<'EOF'
 docs(playbook): § 4 migration stub + § 5 future waves (Wave 1 task 2.5)
 
@@ -2947,7 +2947,7 @@ EOF
 **Goal:** Final pass before declaring Wave 1 done.
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` (any inline fixes found during review)
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (any inline fixes found during review)
 
 - [ ] **Step 1: Placeholder scan**
 
@@ -2987,7 +2987,7 @@ Confirm all five exist and are populated. If any is thin, fix.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md
+git add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md
 git commit -m "$(cat <<'EOF'
 docs(playbook): self-review pass (Wave 1 task 2.6)
 
@@ -3021,7 +3021,7 @@ Before declaring Wave 1 complete:
 # Wave 1 Done
 
 The engagement output:
-- A consolidated soribashi theme expressing CVI's design intent (the token methodology proven against a real fragmented system).
+- A consolidated soribashi theme expressing the host library's design intent (the token methodology proven against a real fragmented system).
 - A working Button recipe authored with `defineComponent` against the consolidated theme — the pure-styled-primitive authoring pattern proven.
 - Two pilot journals capturing the evidence (decisions, gaps, design questions).
 - The Wave 1 partial playbook synthesizing methodology + Button category pattern + gaps + future-wave outline.

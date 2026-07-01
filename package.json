@@ -16,12 +16,12 @@
     "codegen": "bun run packages/codegen/bin/soribashi.ts build",
     "codegen:watch": "bun run packages/codegen/bin/soribashi.ts watch",
     "codegen:tenants": "bun run --filter @soribashi/playground codegen:tenants",
-    "codegen:pilot": "bun run packages/codegen/bin/soribashi.ts build --config apps/core-radix-pilot/soribashi.config.ts",
+    "codegen:pilot": "bun run packages/codegen/bin/soribashi.ts build --config apps/pilot/soribashi.config.ts",
     "dev:playground": "bun run --filter @soribashi/playground dev",
-    "dev:pilot": "bun run --filter @soribashi/core-radix-pilot dev",
+    "dev:pilot": "bun run --filter @soribashi/pilot dev",
     "dev": "bun run codegen && bun run codegen:tenants && bun run dev:playground",
     "build:playground": "bun run --filter @soribashi/playground build",
-    "build:pilot": "bun run --filter @soribashi/core-radix-pilot build"
+    "build:pilot": "bun run --filter @soribashi/pilot build"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

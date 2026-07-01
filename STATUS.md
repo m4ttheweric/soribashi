@@ -1,12 +1,12 @@
 # Soribashi — Implementation Status
 
-> **Current as of 2026-05-28.** The v1 Mantine-adaptation foundation (2026-04-25, recorded below) is complete and stable. Since then the project has been building the **core-radix pilot** — adapting real component recipes (Button, Tooltip, Tabs) on top of the foundation — and hardening the recipe-authoring conventions. This top section tracks that post-v1 work; the v1 record follows unchanged below.
+> **Current as of 2026-05-28.** The v1 Mantine-adaptation foundation (2026-04-25, recorded below) is complete and stable. Since then the project has been building the **recipe pilot** — adapting real component recipes (Button, Tooltip, Tabs) on top of the foundation — and hardening the recipe-authoring conventions. This top section tracks that post-v1 work; the v1 record follows unchanged below.
 
-## Post-v1: core-radix pilot + library authoring hygiene
+## Post-v1: recipe pilot + library authoring hygiene
 
 ### Recipe pilots (Waves 1-3) — SHIPPED
 
-The `apps/core-radix-pilot` app ports real components from the CVI codebase onto soribashi, one category at a time:
+The `apps/pilot` app ports real components from the host codebase onto soribashi, one category at a time:
 
 - **Wave 1 — Button** (`#1`): pure-styled-primitive category via `definePolymorphicComponent`. Token consolidation (dropped shad-* layer, renamed error→danger, collapsed surfaces). Journal: `docs/superpowers/pilots/2026-04-26-button-conversion.md`.
 - **Wave 2 — Tooltip** (`#7`): transient-overlay compound via the new `defineCompound` primitive. Wraps Radix, adds the `surface.floating` formalized foreground pairing. Journal: `docs/superpowers/pilots/2026-05-04-tooltip-pilot.md`.
@@ -37,7 +37,7 @@ PR #10 built the rails but did **not** wire the pilot recipes to them. PR #11 ma
 | `@soribashi/codegen` | 137 |
 | `@soribashi/factory` | 472 |
 | `@soribashi/blocks` | 244 |
-| `apps/core-radix-pilot` | 47 |
+| `apps/pilot` | 47 |
 
 Typecheck clean. (The 785-total figure in the v1 record below predates the pilot + hygiene work and the per-package growth since.)
 
@@ -179,7 +179,7 @@ bun run dev            # codegen + playground in sequence
 ## Not yet done (deferred from the spec)
 
 - Playwright visual tests (post-v1, can be added once playground is stable)
-- ClaimViewIslands integration in the assured codebase (separate effort)
+- Host library integration in the consuming codebase (separate effort)
 - Per-tenant scope codegen for multi-tenant apps (works in `createTheme({ scope: ... })` but the playground doesn't demo it)
 - Tailwind v4 mode tested end-to-end (codegen supports it; playground uses v3)
 - The `tailwindPassthrough` escape hatch for libraries like Tremor (open question #3 in the spec)

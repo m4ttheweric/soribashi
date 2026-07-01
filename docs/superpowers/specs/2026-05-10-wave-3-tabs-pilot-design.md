@@ -3,7 +3,7 @@
 **Status:** Draft
 **Date:** 2026-05-10
 **Audience:** Implementation engineers
-**Target host (read-only reference):** `apps/adjuster/src/components/ClaimViewIslands` ("CVI") — the path within the consuming `assured` repo
+**Target host (read-only reference):** `apps/adjuster/src/components/the host component library` (the host library) — the path within the consuming repo
 **Wave:** 3 of N. Sequenced after Wave 2 (`docs/superpowers/specs/2026-05-04-wave-2-tooltip-pilot-design.md`).
 
 ---
@@ -18,9 +18,9 @@ Wave 2 shipped `defineCompound` and proved the compound-authoring API on a 4-par
 
 Additionally, Wave 3 stresses **variant-driven structural CSS**: three Mantine-parity variants (`default | outline | pills`) push past Wave 2's token-only variants into structural style differences (border, padding, pill-shape). The `data-attribute selector + `vars` resolver` hybrid pattern from Wave 1 carries through.
 
-soribashi is the authoring framework, not a component library. The pilot library (`apps/core-radix-pilot/`) plays the role of a hypothetical downstream consumer of soribashi — analogous to CVI's `core-radix/` directory. It chooses to wrap `@radix-ui/react-tabs` for its headless substrate. soribashi itself ships zero new runtime dependencies; the Radix dep lives only in the pilot app.
+soribashi is the authoring framework, not a component library. The pilot library (`apps/pilot/`) plays the role of a hypothetical downstream consumer of soribashi — analogous to the host library's `host/` directory. It chooses to wrap `@radix-ui/react-tabs` for its headless substrate. soribashi itself ships zero new runtime dependencies; the Radix dep lives only in the pilot app.
 
-**CVI's actual core-radix Tabs** (`/Users/matt/Documents/GitHub/assured/.../core-radix/Tab/Tab.tsx`) wraps `@radix-ui/react-tabs` with one variant (`default`, underline-on-active) and horizontal-only orientation. The pilot's `default` variant matches CVI's existing styling intentionally; `outline` and `pills` are the soribashi-design exemplars exercising additional variants.
+**the host library's actual host Tabs** (`<host-library-path>/Tab/Tab.tsx`) wraps `@radix-ui/react-tabs` with one variant (`default`, underline-on-active) and horizontal-only orientation. The pilot's `default` variant matches the host library's existing styling intentionally; `outline` and `pills` are the soribashi-design exemplars exercising additional variants.
 
 ---
 
@@ -30,22 +30,22 @@ soribashi is the authoring framework, not a component library. The pilot library
 
 | Layer | Surface |
 |---|---|
-| `apps/core-radix-pilot/` | `@radix-ui/react-tabs` added as a dependency |
-| `apps/core-radix-pilot/src/recipes/Tabs/` | `Tabs` recipe — `defineCompound` with 4 parts, polymorphic Trigger, 3 variants |
-| `apps/core-radix-pilot/src/pages/TabsMatrix.tsx` | new — variant matrix + edge-case cells |
-| `apps/core-radix-pilot/src/pages/ScreenReplica.tsx` | modified — Tabs region at a CVI-realistic location |
-| `apps/core-radix-pilot/src/App.tsx` | modified — `/tabs-matrix` route registered |
-| `docs/superpowers/specs/.../core-radix-conversion-playbook.md` | § 2.3 populated with the persistent-navigational-compound pattern |
+| `apps/pilot/` | `@radix-ui/react-tabs` added as a dependency |
+| `apps/pilot/src/recipes/Tabs/` | `Tabs` recipe — `defineCompound` with 4 parts, polymorphic Trigger, 3 variants |
+| `apps/pilot/src/pages/TabsMatrix.tsx` | new — variant matrix + edge-case cells |
+| `apps/pilot/src/pages/ScreenReplica.tsx` | modified — Tabs region at a realistic location |
+| `apps/pilot/src/App.tsx` | modified — `/tabs-matrix` route registered |
+| `docs/superpowers/specs/.../recipe-conversion-playbook.md` | § 2.3 populated with the persistent-navigational-compound pattern |
 
 **Out of scope (deferred to later waves or other projects):**
 
-- **Vertical orientation.** CVI uses only horizontal. Vertical is a backward-compat add later via a new `orientation` prop on Root. Re-examine in CVI integration project.
-- **Sub-slots inside Trigger** (`triggerLabel`, `triggerSection` for icons, à la Mantine's `tab` / `tabSection` / `tabLabel`). Radix and CVI don't have these; Trigger renders children verbatim.
-- **`allowTabDeactivation`.** Radix doesn't support natively; not in CVI.
+- **Vertical orientation.** the host library uses only horizontal. Vertical is a backward-compat add later via a new `orientation` prop on Root. Re-examine in the host library integration project.
+- **Sub-slots inside Trigger** (`triggerLabel`, `triggerSection` for icons, à la Mantine's `tab` / `tabSection` / `tabLabel`). Radix and the host library don't have these; Trigger renders children verbatim.
+- **`allowTabDeactivation`.** Radix doesn't support natively; not in the host library.
 - **Per-item context** (Mantine Accordion-style secondary context per Item). Tabs is item-flat — Triggers compare own `value` to ctx (Radix does it under the hood); no second context needed. `createSafeContext` stays internal-only.
 - **Polymorphic root.** Root must own context creation; conflating with element-polymorphism opens unsolved questions. Re-examined and re-deferred.
 - **Eject-per-part (OQ-7).** `Tabs.Trigger`'s polymorphic config fits the standard `PartConfig` shape cleanly. No ejection needed in Wave 3. Wave 4 (Select) is the next candidate if its trigger requires behavior we can't accommodate.
-- **CVI integration / migration** (separate project; Wave 3 produces the recipe, integration project rewires CVI's `core-radix/Tab/Tab.tsx` to use it).
+- **Host integration / migration** (separate project; Wave 3 produces the recipe, integration project rewires the host library's `Tab/Tab.tsx` to use it).
 - **Wave 4 (Select)** and beyond.
 
 ---
@@ -200,7 +200,7 @@ export const Tabs = defineCompound({
    <Tabs.Trigger value="docs">Docs</Tabs.Trigger>  {/* defaults to <button> */}
    ```
 2. **Why drop public `asChild`.** Wave 2's Tooltip exposed both `asChild` (Radix passthrough) and no `as`. Wave 3 inverts: `as` only. Reason — Tabs.Trigger's job is to render a *trigger element*, and `as` expresses "which element type" more directly. `asChild` is more useful when the consumer wants to wrap an arbitrary already-styled component, which is rarer for tab triggers. If a consumer wants the asChild pattern they can use `as={CustomComponent}` and Radix's Slot handles the merge. This is a deliberate API divergence from Wave 2 — the playbook entry will document the asymmetry and when to choose each.
-3. **Polymorphic + disabled.** When `as="a"`, the rendered `<a>` doesn't natively support `disabled` (anchors ignore the attribute). Radix forwards `disabled` via Slot anyway. Pilot accepts this as a known edge case (CVI uses `<button>` only). Documented in playbook § 2.3 as "polymorphic Trigger with non-button elements requires consumer-side aria-disabled handling for full a11y parity."
+3. **Polymorphic + disabled.** When `as="a"`, the rendered `<a>` doesn't natively support `disabled` (anchors ignore the attribute). Radix forwards `disabled` via Slot anyway. Pilot accepts this as a known edge case (the host library uses `<button>` only). Documented in playbook § 2.3 as "polymorphic Trigger with non-button elements requires consumer-side aria-disabled handling for full a11y parity."
 
 ### 4.3 What's wired through the safe-context
 
@@ -213,7 +213,7 @@ Active `value` does **not** flow through the safe-context. Radix's `RadixTabs.Ro
 ### 4.4 Theme-set defaults
 
 ```ts
-import { Tabs } from 'core-radix-pilot';
+import { Tabs } from 'pilot';
 
 export const theme = createTheme({
   tokens, semantic,
@@ -261,7 +261,7 @@ Each part's render emits `data-variant={ctx.variant}` (Root emits its own `data-
   outline-offset: 2px;
 }
 
-/* default — underline-on-active. Matches CVI's existing core-radix style. */
+/* default — underline-on-active. Matches the host library's existing host style. */
 .cr-Tabs-list[data-variant='default']    { border-bottom: 1px solid var(--border-default); }
 .cr-Tabs-trigger[data-variant='default'] {
   border-bottom: 2px solid transparent;
@@ -323,15 +323,15 @@ Each part's render emits `data-variant={ctx.variant}` (Root emits its own `data-
 ### 6.1 Files
 
 ```text
-apps/core-radix-pilot/src/recipes/Tabs/
+apps/pilot/src/recipes/Tabs/
   Tabs.tsx
   Tabs.css
   Tabs.test.tsx
-apps/core-radix-pilot/src/pages/
+apps/pilot/src/pages/
   TabsMatrix.tsx                  (new)
   ScreenReplica.tsx               (modified — Tabs region)
-apps/core-radix-pilot/src/App.tsx (modified — /tabs-matrix route)
-apps/core-radix-pilot/package.json (add @radix-ui/react-tabs)
+apps/pilot/src/App.tsx (modified — /tabs-matrix route)
+apps/pilot/package.json (add @radix-ui/react-tabs)
 ```
 
 ### 6.2 Recipe sketch
@@ -376,11 +376,11 @@ Mirrors Wave 1's `ButtonMatrix.tsx` and Wave 2's `TooltipMatrix.tsx` in structur
 
 ### 6.5 `ScreenReplica.tsx` integration
 
-Add a Tabs region at a CVI-realistic location. Two reasonable choices:
-- a sidebar-panel region mirroring `PanelTabs.tsx` (CVI's RightToolbar tabs)
-- a content-region tab-set mirroring CVI's contact-detail panel
+Add a Tabs region at a realistic location. Two reasonable choices:
+- a sidebar-panel region mirroring `PanelTabs.tsx` (the host library's RightToolbar tabs)
+- a content-region tab-set mirroring the host library's contact-detail panel
 
-Pick whichever sits naturally in the existing ScreenReplica structure. Use the `default` variant (matches CVI). Goal: visual review fixture for the design owner.
+Pick whichever sits naturally in the existing ScreenReplica structure. Use the `default` variant (matches the host library). Goal: visual review fixture for the design owner.
 
 ---
 
@@ -405,7 +405,7 @@ Pick whichever sits naturally in the existing ScreenReplica structure. Use the `
 
 ### 8.1 Pilot Tabs tests (new)
 
-`apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`:
+`apps/pilot/src/recipes/Tabs/Tabs.test.tsx`:
 
 **Render lifecycle:**
 - Renders Root + List + N Triggers + N Contents
@@ -446,7 +446,7 @@ Pick whichever sits naturally in the existing ScreenReplica structure. Use the `
 
 ### 8.2 Browser parity (new)
 
-`apps/core-radix-pilot/tests/tabs-computed-styles.spec.ts` (or wherever Wave 2's parity tests live):
+`apps/pilot/tests/tabs-computed-styles.spec.ts` (or wherever Wave 2's parity tests live):
 - Loads `TabsMatrix.tsx` in Chromium
 - Per cell of the 3-variant matrix: clicks each Trigger, asserts computed styles match `vars()` output and the right `data-variant` rules apply
 - Captures screenshot per variant for visual-review baseline
@@ -469,14 +469,14 @@ Pick whichever sits naturally in the existing ScreenReplica structure. Use the `
 
 The implementation plan (separate document, produced via `superpowers:writing-plans`) sequences this. Dependency graph at the design-doc level:
 
-1. `apps/core-radix-pilot/package.json` — add `@radix-ui/react-tabs` dep, run `bun install`. Trivially small.
-2. `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx` + `Tabs.css` — recipe + styling. Recipe code is mostly the § 4.1 sketch; CSS is the § 5.1 block.
-3. `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx` — coverage per § 8.1.
-4. `apps/core-radix-pilot/src/pages/TabsMatrix.tsx` — matrix page per § 6.4.
-5. `apps/core-radix-pilot/src/App.tsx` — register `/tabs-matrix` route.
-6. `apps/core-radix-pilot/src/pages/ScreenReplica.tsx` — Tabs region per § 6.5.
-7. `apps/core-radix-pilot/tests/tabs-computed-styles.spec.ts` — browser-parity (deferable to a follow-up if browser-test infra is heavy; vitest covers most of the surface).
-8. `docs/superpowers/specs/.../core-radix-conversion-playbook.md` § 2.3 — populate the persistent-navigational-compound entry.
+1. `apps/pilot/package.json` — add `@radix-ui/react-tabs` dep, run `bun install`. Trivially small.
+2. `apps/pilot/src/recipes/Tabs/Tabs.tsx` + `Tabs.css` — recipe + styling. Recipe code is mostly the § 4.1 sketch; CSS is the § 5.1 block.
+3. `apps/pilot/src/recipes/Tabs/Tabs.test.tsx` — coverage per § 8.1.
+4. `apps/pilot/src/pages/TabsMatrix.tsx` — matrix page per § 6.4.
+5. `apps/pilot/src/App.tsx` — register `/tabs-matrix` route.
+6. `apps/pilot/src/pages/ScreenReplica.tsx` — Tabs region per § 6.5.
+7. `apps/pilot/tests/tabs-computed-styles.spec.ts` — browser-parity (deferable to a follow-up if browser-test infra is heavy; vitest covers most of the surface).
+8. `docs/superpowers/specs/.../recipe-conversion-playbook.md` § 2.3 — populate the persistent-navigational-compound entry.
 
 No `packages/factory/`, `packages/theme/`, or `packages/codegen/` changes are anticipated. If a factory-level limitation surfaces during pilot work, it gets its own sub-task.
 
@@ -487,7 +487,7 @@ Estimated sizing: M, per playbook § 5.
 ## 10. Cross-references
 
 - **Wave 2 spec:** `docs/superpowers/specs/2026-05-04-wave-2-tooltip-pilot-design.md`
-- **Wave 2 playbook entry:** `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` § 2.2
+- **Wave 2 playbook entry:** `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` § 2.2
 - **Wave 1 spec:** `docs/superpowers/specs/2026-04-26-token-consolidation-and-button-pilot-design.md`
 - **Wave 3 handoff:** `docs/superpowers/sessions/2026-05-09-wave-3-handoff.md`
 - **Mantine source references** (for design justification, not runtime dep):
@@ -496,9 +496,9 @@ Estimated sizing: M, per playbook § 5.
   - `packages/@mantine/core/src/components/Tabs/TabsTab/TabsTab.tsx` — polymorphic-button class-2; uses `createScopedKeydownHandler` (we delegate to Radix instead)
   - `packages/@mantine/core/src/components/Tabs/TabsPanel/TabsPanel.tsx` — class-2 panel, `keepMounted` modes (we delegate to Radix's `forceMount`)
   - `packages/@mantine/core/src/components/Tabs/Tabs.context.ts` — context value shape (Mantine flows active value through ctx; we don't, since Radix owns it)
-- **CVI core-radix Tab references:**
-  - `apps/adjuster/src/components/ClaimViewIslands/core-radix/Tab/Tab.tsx` — CVI's existing wrapper (single variant, horizontal, controlled state via Radix props verbatim)
-  - `apps/adjuster/src/components/ClaimViewIslands/islands/auto/RightToolbar/components/PanelTabs.tsx` — example consumer of CVI's Tab
+- **Host Tab references:**
+  - `apps/adjuster/src/components/the host component library/Tab/Tab.tsx` — the host library's existing wrapper (single variant, horizontal, controlled state via Radix props verbatim)
+  - `apps/adjuster/src/components/the host component library/islands/auto/RightToolbar/components/PanelTabs.tsx` — example consumer of the host library's Tab
 
 ---
 
@@ -506,9 +506,9 @@ Estimated sizing: M, per playbook § 5.
 
 - **OQ-1.** `Tabs.css` `:focus-visible` ring per variant. The pills variant's filled active state collides with the default `--color-primary-500` outline; the spec routes that case to `--color-neutral-0` (white outline inside the pill). Default and outline variants reuse the global focus ring. Confirm during CSS authoring; revise per visual review if needed.
 - **OQ-2.** Whether to smoke-test polymorphic Trigger with a real router-link component (e.g., a stub `RouterLink` that accepts `to=`) in the matrix page, or only with a plain `<a href>`. Spec default: `<a href>` smoke-test only; deeper router integration is consumer's responsibility.
-- **OQ-3.** Vertical orientation deferral. Re-examine in CVI integration project if a consumer surfaces the need; would be a backward-compatible Wave-3.5 add via `orientation: 'vertical'` Root prop + new CSS for column layout + side-by-side panel + arrow-up/down keyboard handling (Radix handles the keyboard side automatically).
-- **OQ-4.** Whether to ship a `disabled` data-attribute / `aria-disabled` polyfill in the recipe's polymorphic Trigger when `as` is non-button. Spec default: no — rely on Radix's pass-through, document the edge case in playbook. CVI uses button-only.
-- **OQ-5.** Whether the pilot's `default` variant should track CVI's exact tokens (`text-neutral-600` / `text-neutral-900` / `border-neutral-300`) or use the consolidated `text-muted` / `text-default` / `border-default` semantic tokens (which is what soribashi-design intent dictates). Spec picks consolidated semantic tokens — the integration project will then either (a) accept the slight visual drift, (b) override via `Tabs.withDefaults({ ... })` if a per-cell value can express it, or (c) override at CSS-var level in the host theme. The pilot is the soribashi-design exemplar, not a 1:1 visual replica.
+- **OQ-3.** Vertical orientation deferral. Re-examine in the host library integration project if a consumer surfaces the need; would be a backward-compatible Wave-3.5 add via `orientation: 'vertical'` Root prop + new CSS for column layout + side-by-side panel + arrow-up/down keyboard handling (Radix handles the keyboard side automatically).
+- **OQ-4.** Whether to ship a `disabled` data-attribute / `aria-disabled` polyfill in the recipe's polymorphic Trigger when `as` is non-button. Spec default: no — rely on Radix's pass-through, document the edge case in playbook. the host library uses button-only.
+- **OQ-5.** Whether the pilot's `default` variant should track the host library's exact tokens (`text-neutral-600` / `text-neutral-900` / `border-neutral-300`) or use the consolidated `text-muted` / `text-default` / `border-default` semantic tokens (which is what soribashi-design intent dictates). Spec picks consolidated semantic tokens — the integration project will then either (a) accept the slight visual drift, (b) override via `Tabs.withDefaults({ ... })` if a per-cell value can express it, or (c) override at CSS-var level in the host theme. The pilot is the soribashi-design exemplar, not a 1:1 visual replica.
 - **OQ-6.** Whether to expose `RadixTabs.Trigger`'s `tabIndex` prop publicly. Spec default: no — Radix handles roving-tabindex internally; consumer overrides should be rare and can drop down via `as` + spread.
 - **OQ-7.** Inference-erosion trade-off from in-wave factory fix. Wave 3 fixed `PolymorphicPartConfig.render` to take `PolymorphicPartRenderCtx<...>` directly (no `as unknown as` cast in recipes). The fix required changing `PartsRecord`'s bound from a `Standard | Polymorphic` union to a minimal `AnyPartConfig` with `render: (ctx: any) => ReactNode` because the union killed TS contextual inference for ~150 cases. **Trade-off:** un-annotated inline render functions no longer get `TVariants` / `TCtxExtra` inference — they get `any`. Real recipes always annotate (e.g., `PartRenderCtx<TabsListProps, TabsCtxExtras>`), so this is bounded — but it's a Wave-2-OQ-9 erosion. Cycle 7.11 in `define-compound.test.tsx` was renamed in-place to document the new shape, and a regression canary test was added so if/when inference is restored, the canary fires. Future work: restore the union bound without re-introducing the ~150 inference errors (likely requires deeper TS variance work). Tracked here so the Wave 4 (Select) plan can decide whether to fix or work around.
 

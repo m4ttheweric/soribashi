@@ -6,7 +6,7 @@
 
 Wave 2 (Tooltip pilot, transient overlay compound) shipped via PR #7, merged on 2026-05-09 after a long review process. The `defineCompound` factory, supporting types, and the playbook entry for transient overlays are in `main`. Wave 3's job is the next category: **persistent navigational compound**, with Tabs as the vehicle.
 
-The playbook's framing for Wave 3 (`docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` § 5):
+The playbook's framing for Wave 3 (`docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` § 5):
 
 > Wave 3 — Tabs (persistent navigational compound). Tests slot story at higher part-count (Root / List / Trigger / Content) and with controlled state passthrough. Pre-work: Wave 2 lands the compound primitive; Wave 3 stresses it. Sizing: M.
 
@@ -19,8 +19,8 @@ Read these to understand the surface area before brainstorming:
 - `packages/factory/src/slot.tsx` — substrate-agnostic asChild merge. `Slot` rejects Fragment children explicitly.
 - `packages/factory/src/{merge-props,merge-refs,create-safe-context}.ts` — internal substrates. `mergeRefs` propagates R19 cleanup callbacks.
 - `packages/theme/src/types.ts` — `SemanticSurfaceValue` supports the `{ value, foreground? }` object form. `surface.floating` is the Wave 2 example.
-- `apps/core-radix-pilot/src/recipes/Tooltip/` — the canonical compound recipe to model Tabs after.
-- `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` § 2.2 — the transient-overlay playbook entry. § 2.3 is the Wave 3 placeholder waiting for content.
+- `apps/pilot/src/recipes/Tooltip/` — the canonical compound recipe to model Tabs after.
+- `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` § 2.2 — the transient-overlay playbook entry. § 2.3 is the Wave 3 placeholder waiting for content.
 - `docs/superpowers/specs/2026-05-04-wave-2-tooltip-pilot-design.md` — Wave 2 spec, including all 10 OQs and their resolutions/deferrals.
 
 ## Architectural patterns to apply (don't re-derive these)
@@ -54,7 +54,7 @@ These were deferred to "the wave that exercises them" — Tabs may force decisio
 ## Reference paths (READ-ONLY)
 
 - Mantine: `/Users/matt/Documents/GitHub/mantine/`
-- CVI host (target consumer): `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/`
+- the host library host (target consumer): `<host-library-path>/`
 
 ## Sanity check the inheritance
 
@@ -63,7 +63,7 @@ Before writing any new code, run:
 ```bash
 bun run typecheck
 bun run --filter '@soribashi/*' test
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected: clean typecheck, all package tests pass, 24/24 pilot pass. If anything's red, you're starting from a broken state — fix that before brainstorming.

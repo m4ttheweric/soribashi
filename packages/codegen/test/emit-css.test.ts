@@ -128,13 +128,13 @@ describe('emitCss', () => {
       dark: {
         colors: { primary: { '500': 'hsl(0 0% 80%)' } },
       },
-      scope: '.claim-view-islands',
-      darkMode: { selector: '.dark .claim-view-islands' },
+      scope: '.app-scope',
+      darkMode: { selector: '.dark .app-scope' },
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('.claim-view-islands {');
-    expect(css).toContain('.dark .claim-view-islands {');
+    expect(css).toContain('.app-scope {');
+    expect(css).toContain('.dark .app-scope {');
     expect(css).not.toContain(':root {');
   });
 

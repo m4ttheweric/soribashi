@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - soribashi copies Mantine's building blocks; do not invent novel API. Data model and parsing mirror Mantine `Combobox.types.ts` + `get-parsed-combobox-data`.
-- The recipe is authored against the pilot's local builders (`apps/core-radix-pilot/src/builders.ts`), NOT `@soribashi/core` directly (Wave 4A/PR #11 convention).
+- The recipe is authored against the pilot's local builders (`apps/pilot/src/builders.ts`), NOT `@soribashi/core` directly (Wave 4A/PR #11 convention).
 - No em dashes or en dashes in any prose or code comment authored here (user house style); use colons, commas, or rephrase.
 - `Value extends Primitive` where `Primitive = string | number | boolean`. The generic recipe types `size` locally (theme-vocab threading for the generic builder is out of scope, per spec section 2).
 - Out of scope (do not build): async/remote data, virtualization, creatable/tags, typeahead-to-focus, grouped option rendering beyond a flat group label.
@@ -28,20 +28,20 @@
 
 | File | Responsibility |
 |---|---|
-| `apps/core-radix-pilot/package.json` | add `@floating-ui/react` dependency |
-| `apps/core-radix-pilot/src/recipes/Select/parse-data.ts` | `parseSelectData` + the `Value`/`ComboboxItem`/`SelectData` types (ported from Mantine) |
-| `apps/core-radix-pilot/src/recipes/Select/parse-data.test.ts` | parsing unit tests |
-| `apps/core-radix-pilot/src/recipes/Field/Field.tsx` | reusable field wrapper (`defineComponent`) |
-| `apps/core-radix-pilot/src/recipes/Field/Field.module.css` | field layout |
-| `apps/core-radix-pilot/src/recipes/Field/Field.test.tsx` | field render + aria tests |
-| `apps/core-radix-pilot/src/recipes/Select/use-combobox.ts` | minimal combobox state + keyboard hook |
-| `apps/core-radix-pilot/src/recipes/Select/use-combobox.test.ts` | hook reducer/keyboard tests |
-| `apps/core-radix-pilot/src/recipes/Select/Select.tsx` | the Select recipe (`defineGenericComponent<SelectSignature>`) |
-| `apps/core-radix-pilot/src/recipes/Select/Select.module.css` | trigger/dropdown/option/pill styling |
-| `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx` | behavior + compile-time narrowing tests |
-| `apps/core-radix-pilot/src/pages/SelectMatrix.tsx` | demo page |
-| `apps/core-radix-pilot/src/App.tsx` | register the SelectMatrix page |
-| `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` | populate section 2.5 |
+| `apps/pilot/package.json` | add `@floating-ui/react` dependency |
+| `apps/pilot/src/recipes/Select/parse-data.ts` | `parseSelectData` + the `Value`/`ComboboxItem`/`SelectData` types (ported from Mantine) |
+| `apps/pilot/src/recipes/Select/parse-data.test.ts` | parsing unit tests |
+| `apps/pilot/src/recipes/Field/Field.tsx` | reusable field wrapper (`defineComponent`) |
+| `apps/pilot/src/recipes/Field/Field.module.css` | field layout |
+| `apps/pilot/src/recipes/Field/Field.test.tsx` | field render + aria tests |
+| `apps/pilot/src/recipes/Select/use-combobox.ts` | minimal combobox state + keyboard hook |
+| `apps/pilot/src/recipes/Select/use-combobox.test.ts` | hook reducer/keyboard tests |
+| `apps/pilot/src/recipes/Select/Select.tsx` | the Select recipe (`defineGenericComponent<SelectSignature>`) |
+| `apps/pilot/src/recipes/Select/Select.module.css` | trigger/dropdown/option/pill styling |
+| `apps/pilot/src/recipes/Select/Select.test.tsx` | behavior + compile-time narrowing tests |
+| `apps/pilot/src/pages/SelectMatrix.tsx` | demo page |
+| `apps/pilot/src/App.tsx` | register the SelectMatrix page |
+| `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` | populate section 2.5 |
 | `docs/superpowers/pilots/2026-06-23-select-pilot.md` | pilot journal |
 
 ## Baseline (run once before Task 1)
@@ -52,7 +52,7 @@ Run:
 ```bash
 bun install
 bun run typecheck
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd apps/pilot && bunx vitest run --reporter=basic
 ```
 Expected: typecheck clean; pilot 52 passed. Confirm `defineGenericComponent` carries a signature (Wave 4A): `grep -q "TSignature & GenericComponentStatics" packages/factory/src/define-generic-component.tsx && echo OK`.
 
@@ -61,9 +61,9 @@ Expected: typecheck clean; pilot 52 passed. Confirm `defineGenericComponent` car
 ## Task 1: Data model + `parseSelectData`
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Select/parse-data.ts`
-- Test: `apps/core-radix-pilot/src/recipes/Select/parse-data.test.ts`
-- Modify: `apps/core-radix-pilot/package.json` (add `@floating-ui/react`)
+- Create: `apps/pilot/src/recipes/Select/parse-data.ts`
+- Test: `apps/pilot/src/recipes/Select/parse-data.test.ts`
+- Modify: `apps/pilot/package.json` (add `@floating-ui/react`)
 
 **Interfaces:**
 - Produces: `type Primitive`, `interface ComboboxItem<V>`, `interface ComboboxGroup<V>`, `type SelectData<V>`, `type ParsedItem<V> = ComboboxItem<V> | { group: string; items: ComboboxItem<V>[] }`, `function parseSelectData<V extends Primitive>(data: SelectData<V> | undefined): ParsedItem<V>[]`, `function flattenOptions<V extends Primitive>(parsed: ParsedItem<V>[]): ComboboxItem<V>[]`.
@@ -72,13 +72,13 @@ Expected: typecheck clean; pilot 52 passed. Confirm `defineGenericComponent` car
 
 Run:
 ```bash
-cd apps/core-radix-pilot && bun add @floating-ui/react && cd ../..
+cd apps/pilot && bun add @floating-ui/react && cd ../..
 ```
-Expected: `@floating-ui/react` appears in `apps/core-radix-pilot/package.json` dependencies.
+Expected: `@floating-ui/react` appears in `apps/pilot/package.json` dependencies.
 
 - [ ] **Step 2: Write the failing parsing test**
 
-Create `apps/core-radix-pilot/src/recipes/Select/parse-data.test.ts`:
+Create `apps/pilot/src/recipes/Select/parse-data.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -123,12 +123,12 @@ describe('flattenOptions', () => {
 
 - [ ] **Step 3: Run it and watch it FAIL**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/parse-data.test.ts`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/parse-data.test.ts`
 Expected: FAIL (module `./parse-data.ts` does not exist).
 
 - [ ] **Step 4: Implement `parse-data.ts`**
 
-Create `apps/core-radix-pilot/src/recipes/Select/parse-data.ts` (ported from Mantine `get-parsed-combobox-data`):
+Create `apps/pilot/src/recipes/Select/parse-data.ts` (ported from Mantine `get-parsed-combobox-data`):
 
 ```ts
 /**
@@ -192,13 +192,13 @@ export function flattenOptions<V extends Primitive>(parsed: ParsedItem<V>[]): Co
 
 - [ ] **Step 5: Run the test, watch it PASS**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/parse-data.test.ts`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/parse-data.test.ts`
 Expected: PASS (6 tests).
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Select/parse-data.ts apps/core-radix-pilot/src/recipes/Select/parse-data.test.ts apps/core-radix-pilot/package.json apps/core-radix-pilot/bun.lock
+git add apps/pilot/src/recipes/Select/parse-data.ts apps/pilot/src/recipes/Select/parse-data.test.ts apps/pilot/package.json apps/pilot/bun.lock
 git commit -m "$(cat <<'EOF'
 feat(select): data model + parseSelectData (ported from Mantine); add floating-ui
 
@@ -212,8 +212,8 @@ EOF
 ## Task 2: `Field` wrapper
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Field/Field.tsx`, `Field.module.css`
-- Test: `apps/core-radix-pilot/src/recipes/Field/Field.test.tsx`
+- Create: `apps/pilot/src/recipes/Field/Field.tsx`, `Field.module.css`
+- Test: `apps/pilot/src/recipes/Field/Field.test.tsx`
 
 **Interfaces:**
 - Consumes: `defineComponent` from `../../builders.ts`.
@@ -221,7 +221,7 @@ EOF
 
 - [ ] **Step 1: Write the failing test**
 
-Create `apps/core-radix-pilot/src/recipes/Field/Field.test.tsx`:
+Create `apps/pilot/src/recipes/Field/Field.test.tsx`:
 
 ```tsx
 import { describe, expect, it } from 'vitest';
@@ -266,12 +266,12 @@ describe('Field', () => {
 
 - [ ] **Step 2: Run it and watch it FAIL**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Field/Field.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Field/Field.test.tsx`
 Expected: FAIL (`./Field.tsx` missing).
 
 - [ ] **Step 3: Implement `Field.module.css`**
 
-Create `apps/core-radix-pilot/src/recipes/Field/Field.module.css`:
+Create `apps/pilot/src/recipes/Field/Field.module.css`:
 
 ```css
 .root { display: flex; flex-direction: column; gap: 0.25rem; }
@@ -283,7 +283,7 @@ Create `apps/core-radix-pilot/src/recipes/Field/Field.module.css`:
 
 - [ ] **Step 4: Implement `Field.tsx`**
 
-Create `apps/core-radix-pilot/src/recipes/Field/Field.tsx`:
+Create `apps/pilot/src/recipes/Field/Field.tsx`:
 
 ```tsx
 /**
@@ -337,13 +337,13 @@ export const Field = defineComponent<FieldProps, readonly ['root', 'label', 'req
 
 - [ ] **Step 5: Run the test, watch it PASS**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Field/Field.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Field/Field.test.tsx`
 Expected: PASS (4 tests).
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Field/
+git add apps/pilot/src/recipes/Field/
 git commit -m "$(cat <<'EOF'
 feat(field): reusable form-control wrapper (label/description/error/required)
 
@@ -359,8 +359,8 @@ EOF
 A minimal, DOM-independent state machine. Positioning (floating-ui) is wired in the Select component (Task 4), not here, so this hook is unit-testable without a DOM.
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Select/use-combobox.ts`
-- Test: `apps/core-radix-pilot/src/recipes/Select/use-combobox.test.ts`
+- Create: `apps/pilot/src/recipes/Select/use-combobox.ts`
+- Test: `apps/pilot/src/recipes/Select/use-combobox.test.ts`
 
 **Interfaces:**
 - Consumes: `ComboboxItem`, `Primitive` from `./parse-data.ts`.
@@ -368,7 +368,7 @@ A minimal, DOM-independent state machine. Positioning (floating-ui) is wired in 
 
 - [ ] **Step 1: Write the failing test (pure helper + hook keyboard intents)**
 
-Create `apps/core-radix-pilot/src/recipes/Select/use-combobox.test.ts`:
+Create `apps/pilot/src/recipes/Select/use-combobox.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -414,12 +414,12 @@ describe('useCombobox keyboard intents', () => {
 
 - [ ] **Step 2: Run it and watch it FAIL**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/use-combobox.test.ts`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/use-combobox.test.ts`
 Expected: FAIL (`./use-combobox.ts` missing).
 
 - [ ] **Step 3: Implement `use-combobox.ts`**
 
-Create `apps/core-radix-pilot/src/recipes/Select/use-combobox.ts`:
+Create `apps/pilot/src/recipes/Select/use-combobox.ts`:
 
 ```ts
 /**
@@ -491,13 +491,13 @@ export function useCombobox<V extends Primitive>(opts: { options: ComboboxItem<V
 
 - [ ] **Step 4: Run the test, watch it PASS**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/use-combobox.test.ts`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/use-combobox.test.ts`
 Expected: PASS (7 tests).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Select/use-combobox.ts apps/core-radix-pilot/src/recipes/Select/use-combobox.test.ts
+git add apps/pilot/src/recipes/Select/use-combobox.ts apps/pilot/src/recipes/Select/use-combobox.test.ts
 git commit -m "$(cat <<'EOF'
 feat(select): minimal useCombobox state + keyboard hook (Mantine-grounded)
 
@@ -511,8 +511,8 @@ EOF
 ## Task 4: `Select` recipe, single-select core
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Select/Select.tsx`, `Select.module.css`
-- Test: `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx`
+- Create: `apps/pilot/src/recipes/Select/Select.tsx`, `Select.module.css`
+- Test: `apps/pilot/src/recipes/Select/Select.test.tsx`
 
 **Interfaces:**
 - Consumes: `defineGenericComponent` from `../../builders.ts`; `parseSelectData`, `flattenOptions`, `ComboboxItem`, `SelectData`, `Primitive` from `./parse-data.ts`; `useCombobox`, `nextEnabledIndex` from `./use-combobox.ts`; `Field` from `../Field/Field.tsx`; `useFloating`, `flip`, `shift`, `size`, `autoUpdate` from `@floating-ui/react`.
@@ -520,7 +520,7 @@ EOF
 
 - [ ] **Step 1: Write the failing single-select behavior test**
 
-Create `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx`:
+Create `apps/pilot/src/recipes/Select/Select.test.tsx`:
 
 ```tsx
 import { describe, expect, it, vi } from 'vitest';
@@ -580,12 +580,12 @@ describe('Select single', () => {
 
 - [ ] **Step 2: Run it and watch it FAIL**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
 Expected: FAIL (`./Select.tsx` missing).
 
 - [ ] **Step 3: Implement `Select.module.css`**
 
-Create `apps/core-radix-pilot/src/recipes/Select/Select.module.css`:
+Create `apps/pilot/src/recipes/Select/Select.module.css`:
 
 ```css
 .trigger {
@@ -623,7 +623,7 @@ Create `apps/core-radix-pilot/src/recipes/Select/Select.module.css`:
 
 - [ ] **Step 4: Implement `Select.tsx` (single-select core)**
 
-Create `apps/core-radix-pilot/src/recipes/Select/Select.tsx`. This task implements single-select; `multiple`/`searchable`/`clearable` props are declared in the signature but their bodies arrive in Task 5 (the single path must work first):
+Create `apps/pilot/src/recipes/Select/Select.tsx`. This task implements single-select; `multiple`/`searchable`/`clearable` props are declared in the signature but their bodies arrive in Task 5 (the single path must work first):
 
 ```tsx
 /**
@@ -780,14 +780,14 @@ export const Select = defineGenericComponent<SelectSignature>({
 
 - [ ] **Step 5: Run the single-select test, watch it PASS**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
 Expected: PASS (6 tests). If the floating-ui dropdown does not appear in jsdom, confirm the `opened &&` branch renders the `ul` unconditionally of positioning (it does; `floatingStyles` is applied but the element mounts regardless).
 
 - [ ] **Step 6: Typecheck + commit**
 
 Run: `bun run typecheck` (expect clean).
 ```bash
-git add apps/core-radix-pilot/src/recipes/Select/Select.tsx apps/core-radix-pilot/src/recipes/Select/Select.module.css apps/core-radix-pilot/src/recipes/Select/Select.test.tsx
+git add apps/pilot/src/recipes/Select/Select.tsx apps/pilot/src/recipes/Select/Select.module.css apps/pilot/src/recipes/Select/Select.test.tsx
 git commit -m "$(cat <<'EOF'
 feat(select): single-select recipe (defineGenericComponent + floating-ui + Field)
 
@@ -801,8 +801,8 @@ EOF
 ## Task 5: `multiple` + `searchable` + `clearable`
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Select/Select.tsx`
-- Modify: `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx`
+- Modify: `apps/pilot/src/recipes/Select/Select.tsx`
+- Modify: `apps/pilot/src/recipes/Select/Select.test.tsx`
 
 **Interfaces:**
 - Consumes: everything from Task 4. Multi: `value?: V[]; onChange?: (value: V[], options: ComboboxItem<V>[]) => void`.
@@ -810,7 +810,7 @@ EOF
 
 - [ ] **Step 1: Write failing tests for multiple, searchable, clearable**
 
-Append to `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx`:
+Append to `apps/pilot/src/recipes/Select/Select.test.tsx`:
 
 ```tsx
 describe('Select multiple', () => {
@@ -852,7 +852,7 @@ describe('Select clearable', () => {
 
 - [ ] **Step 2: Run them and watch them FAIL**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
 Expected: the three new describe blocks FAIL (multi/search/clear not implemented).
 
 - [ ] **Step 3: Implement multi/search/clear in `Select.tsx`**
@@ -991,14 +991,14 @@ Note: a clicked search input inside the open `<ul>` keeps focus; the trigger's `
 
 - [ ] **Step 4: Run all Select tests, watch them PASS**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/Select.test.tsx`
 Expected: all PASS (6 single + 2 multi + 1 search + 1 clear = 10).
 
 - [ ] **Step 5: Typecheck + commit**
 
 Run: `bun run typecheck` (expect clean).
 ```bash
-git add apps/core-radix-pilot/src/recipes/Select/Select.tsx apps/core-radix-pilot/src/recipes/Select/Select.test.tsx
+git add apps/pilot/src/recipes/Select/Select.tsx apps/pilot/src/recipes/Select/Select.test.tsx
 git commit -m "$(cat <<'EOF'
 feat(select): multiple, searchable, and clearable
 
@@ -1012,13 +1012,13 @@ EOF
 ## Task 6: Compile-time inference tests
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx`
+- Modify: `apps/pilot/src/recipes/Select/Select.test.tsx`
 
 **Interfaces:** consumes `Select`.
 
 - [ ] **Step 1: Add the compile-time narrowing block**
 
-Append to `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx`:
+Append to `apps/pilot/src/recipes/Select/Select.test.tsx`:
 
 ```tsx
 describe('Select type narrowing (compile-time)', () => {
@@ -1044,9 +1044,9 @@ Sanity-check teeth: temporarily change `value={'lg'}` to `value={'sm'}`; rerun `
 
 - [ ] **Step 3: Run the suite + commit**
 
-Run: `cd apps/core-radix-pilot && bunx vitest run src/recipes/Select/Select.test.tsx` (expect 11 passing: prior 10 + this 1).
+Run: `cd apps/pilot && bunx vitest run src/recipes/Select/Select.test.tsx` (expect 11 passing: prior 10 + this 1).
 ```bash
-git add apps/core-radix-pilot/src/recipes/Select/Select.test.tsx
+git add apps/pilot/src/recipes/Select/Select.test.tsx
 git commit -m "$(cat <<'EOF'
 test(select): compile-time Value-narrowing and multiple-flip assertions
 
@@ -1060,16 +1060,16 @@ EOF
 ## Task 7: Demo page + playbook section 2.5 + journal
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/pages/SelectMatrix.tsx`
-- Modify: `apps/core-radix-pilot/src/App.tsx`
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md` (section 2.5)
+- Create: `apps/pilot/src/pages/SelectMatrix.tsx`
+- Modify: `apps/pilot/src/App.tsx`
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (section 2.5)
 - Create: `docs/superpowers/pilots/2026-06-23-select-pilot.md`
 
 **Interfaces:** consumes `Select`.
 
 - [ ] **Step 1: Create `SelectMatrix.tsx`**
 
-Create `apps/core-radix-pilot/src/pages/SelectMatrix.tsx`:
+Create `apps/pilot/src/pages/SelectMatrix.tsx`:
 
 ```tsx
 import { useState } from 'react';
@@ -1096,16 +1096,16 @@ export function SelectMatrix() {
 
 - [ ] **Step 2: Register the page in `App.tsx`**
 
-In `apps/core-radix-pilot/src/App.tsx`: add `import { SelectMatrix } from './pages/SelectMatrix.tsx';`; extend the `Page` union with `'selects'`; add a nav button `<button onClick={() => setPage('selects')} aria-current={page === 'selects' ? 'page' : undefined}>Select matrix</button>` alongside the existing nav buttons; and add `{page === 'selects' && <SelectMatrix />}` in the `<main>` block next to the other pages. (Match the exact pattern already present for `tabs`.)
+In `apps/pilot/src/App.tsx`: add `import { SelectMatrix } from './pages/SelectMatrix.tsx';`; extend the `Page` union with `'selects'`; add a nav button `<button onClick={() => setPage('selects')} aria-current={page === 'selects' ? 'page' : undefined}>Select matrix</button>` alongside the existing nav buttons; and add `{page === 'selects' && <SelectMatrix />}` in the `<main>` block next to the other pages. (Match the exact pattern already present for `tabs`.)
 
 - [ ] **Step 3: Verify it builds and renders**
 
-Run: `cd apps/core-radix-pilot && bun run build 2>&1 | tail -3`
+Run: `cd apps/pilot && bun run build 2>&1 | tail -3`
 Expected: build succeeds, no circular-dependency warning.
 
 - [ ] **Step 4: Populate playbook section 2.5**
 
-In `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md`, replace the `### 2.5 Form control (Wave 4 - Select)` stub line `_To be populated by Wave 4._` with a section (no em dashes) covering: the data-driven authoring shape (`defineGenericComponent<SelectSignature>`), the Mantine data model + `parseSelectData`, the single-vs-`multiple` inference via the discriminated union, the reusable `Field` composition, and the minimal `useCombobox` + floating-ui engine. Reference the recipe files. Mirror the depth of sections 2.1 to 2.4.
+In `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`, replace the `### 2.5 Form control (Wave 4 - Select)` stub line `_To be populated by Wave 4._` with a section (no em dashes) covering: the data-driven authoring shape (`defineGenericComponent<SelectSignature>`), the Mantine data model + `parseSelectData`, the single-vs-`multiple` inference via the discriminated union, the reusable `Field` composition, and the minimal `useCombobox` + floating-ui engine. Reference the recipe files. Mirror the depth of sections 2.1 to 2.4.
 
 - [ ] **Step 5: Write the pilot journal**
 
@@ -1114,7 +1114,7 @@ Create `docs/superpowers/pilots/2026-06-23-select-pilot.md` recording: the subst
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/pages/SelectMatrix.tsx apps/core-radix-pilot/src/App.tsx docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md docs/superpowers/pilots/2026-06-23-select-pilot.md
+git add apps/pilot/src/pages/SelectMatrix.tsx apps/pilot/src/App.tsx docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md docs/superpowers/pilots/2026-06-23-select-pilot.md
 git commit -m "$(cat <<'EOF'
 feat(pilot): SelectMatrix page; playbook 2.5 + select pilot journal
 
@@ -1135,13 +1135,13 @@ Run:
 ```bash
 bun run typecheck && echo "typecheck PASS"
 bun run --filter '@soribashi/*' test 2>&1 | grep -E "Tests |Exited with code"
-(cd apps/core-radix-pilot && bunx vitest run --reporter=basic 2>&1 | grep -E "Test Files|Tests " && bun run build 2>&1 | tail -2)
+(cd apps/pilot && bunx vitest run --reporter=basic 2>&1 | grep -E "Test Files|Tests " && bun run build 2>&1 | tail -2)
 ```
 Expected: typecheck PASS; packages 82 / 137 / 473 / 244 (unchanged, PR B is pilot-only); pilot 52 + 21 new (parse 6 + field 4 + combobox 7 + select 11 = 28; pilot becomes 80) ... confirm the new count equals 52 prior + 28 = 80; production build clean, no circular-dependency warning.
 
 - [ ] **Step 2: Manual visual check (state if unavailable)**
 
-Run `cd apps/core-radix-pilot && bun run dev`, open the Select matrix page, and confirm: single select opens/positions/selects; searchable filters; multiple shows pills and toggles; clear resets; disabled is inert; error renders. If a browser is not available in this environment, state that explicitly rather than claiming visual parity.
+Run `cd apps/pilot && bun run dev`, open the Select matrix page, and confirm: single select opens/positions/selects; searchable filters; multiple shows pills and toggles; clear resets; disabled is inert; error renders. If a browser is not available in this environment, state that explicitly rather than claiming visual parity.
 
 ---
 
@@ -1155,4 +1155,4 @@ Run `cd apps/core-radix-pilot && bun run dev`, open the Select matrix page, and 
 
 ## Done =
 
-Typecheck clean; packages 82/137/473/244 unchanged; pilot 80; production build clean; compile-time tests prove `Value` narrows from `data` and `multiple` flips `onChange`; SelectMatrix renders all variants. Then: `superpowers:finishing-a-development-branch` -> push -> PR B. With PR B merged, the playbook's four authoring categories are complete and the remaining core-radix components become a sequencing sweep.
+Typecheck clean; packages 82/137/473/244 unchanged; pilot 80; production build clean; compile-time tests prove `Value` narrows from `data` and `multiple` flips `onChange`; SelectMatrix renders all variants. Then: `superpowers:finishing-a-development-branch` -> push -> PR B. With PR B merged, the playbook's four authoring categories are complete and the remaining host components become a sequencing sweep.

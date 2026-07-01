@@ -4,7 +4,7 @@
 
 **Goal:** Ship the Wave 3 Tabs pilot — a 4-part `defineCompound` recipe wrapping `@radix-ui/react-tabs` with three variants (`default | outline | pills`), horizontal orientation only, and a polymorphic `Tabs.Trigger` exercising `PolymorphicPartConfig`.
 
-**Architecture:** Recipe lives in `apps/core-radix-pilot/src/recipes/Tabs/`. Inherits `defineCompound` + `PolymorphicPartConfig` from Wave 2 (already shipped in `packages/factory/`). No factory changes anticipated. Substrate is Radix Tabs — recipe is mostly styling, slot wiring, and the polymorphic Trigger seam. Variant styling uses Wave 1's data-attribute + `vars`-resolver hybrid.
+**Architecture:** Recipe lives in `apps/pilot/src/recipes/Tabs/`. Inherits `defineCompound` + `PolymorphicPartConfig` from Wave 2 (already shipped in `packages/factory/`). No factory changes anticipated. Substrate is Radix Tabs — recipe is mostly styling, slot wiring, and the polymorphic Trigger seam. Variant styling uses Wave 1's data-attribute + `vars`-resolver hybrid.
 
 **Tech Stack:** React 18, `@soribashi/core` (workspace), `@radix-ui/react-tabs` (new dep), vitest + @testing-library/react for tests, Vite for the pilot app dev server.
 
@@ -31,7 +31,7 @@ The highest-risk surface in Wave 3 is `Tabs.Trigger`'s polymorphic config — `P
 ## Task 1: Branch + dependency + baseline-green check
 
 **Files:**
-- Modify: `apps/core-radix-pilot/package.json` (add `@radix-ui/react-tabs`)
+- Modify: `apps/pilot/package.json` (add `@radix-ui/react-tabs`)
 
 - [ ] **Step 1: Create the feature branch**
 
@@ -56,7 +56,7 @@ cd /Users/matt/Documents/GitHub/soribashi && bun run --filter '@soribashi/*' tes
 Expected: 460 factory + 244 blocks tests pass.
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected: 24/24 pilot tests pass.
@@ -66,7 +66,7 @@ If any of these are red, stop and fix before continuing — the spec's "Sanity c
 - [ ] **Step 3: Install `@radix-ui/react-tabs`**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bun add @radix-ui/react-tabs
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bun add @radix-ui/react-tabs
 ```
 
 Expected: package added to `dependencies`. Verify version is `^1.x` (current major). The exact patch version is whatever bun resolves.
@@ -80,7 +80,7 @@ cd /Users/matt/Documents/GitHub/soribashi && bun run typecheck
 Expected: clean exit.
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected: still 24/24 pass.
@@ -88,25 +88,25 @@ Expected: still 24/24 pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi && git add apps/core-radix-pilot/package.json bun.lock && git commit -m "chore(wave-3): add @radix-ui/react-tabs dep for Tabs pilot"
+cd /Users/matt/Documents/GitHub/soribashi && git add apps/pilot/package.json bun.lock && git commit -m "chore(wave-3): add @radix-ui/react-tabs dep for Tabs pilot"
 ```
 
-Note: if `bun.lock` is `bun.lockb`, use that path instead. Check `ls apps/core-radix-pilot/../../*.lock*` if uncertain.
+Note: if `bun.lock` is `bun.lockb`, use that path instead. Check `ls apps/pilot/../../*.lock*` if uncertain.
 
 ---
 
 ## Task 2: Recipe scaffold — Root + List + minimal smoke test
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx`
-- Create: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.css`
-- Create: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`
+- Create: `apps/pilot/src/recipes/Tabs/Tabs.tsx`
+- Create: `apps/pilot/src/recipes/Tabs/Tabs.css`
+- Create: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`
 
 This task lands the minimum compileable recipe: Root + List parts only, no Trigger/Content yet. The point is to validate the `defineCompound` config shape compiles and the safe-context works before adding more parts.
 
 - [ ] **Step 1: Write the smoke test (failing)**
 
-Create `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`:
+Create `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`:
 
 ```tsx
 /**
@@ -143,14 +143,14 @@ describe('Tabs recipe', () => {
 - [ ] **Step 2: Run the test to verify it fails**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: FAIL — `Cannot find module './Tabs.tsx'` or equivalent module-not-found error.
 
 - [ ] **Step 3: Create minimal CSS**
 
-Create `apps/core-radix-pilot/src/recipes/Tabs/Tabs.css`:
+Create `apps/pilot/src/recipes/Tabs/Tabs.css`:
 
 ```css
 /* base — applies to all variants */
@@ -162,7 +162,7 @@ Create `apps/core-radix-pilot/src/recipes/Tabs/Tabs.css`:
 
 - [ ] **Step 4: Create the minimal recipe (Root + List only)**
 
-Create `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx`:
+Create `apps/pilot/src/recipes/Tabs/Tabs.tsx`:
 
 ```tsx
 /**
@@ -242,7 +242,7 @@ export const Tabs = defineCompound({
 - [ ] **Step 5: Run the test to verify it passes**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: PASS (1 test).
@@ -258,7 +258,7 @@ Expected: clean.
 - [ ] **Step 7: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): scaffold Tabs recipe with Root + List parts"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): scaffold Tabs recipe with Root + List parts"
 ```
 
 ---
@@ -266,14 +266,14 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/reci
 ## Task 3: Add Trigger (polymorphic) + Content parts
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx`
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.tsx`
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`
 
 This task lands `Tabs.Trigger` as a polymorphic part (`defaultElement: 'button'`) and `Tabs.Content` as a standard part. Tests cover the render-lifecycle path: clicking a trigger switches the active panel.
 
 - [ ] **Step 1: Write the failing tests**
 
-Append to `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx` after the existing `describe` block's first `it`, but inside the same `describe`:
+Append to `apps/pilot/src/recipes/Tabs/Tabs.test.tsx` after the existing `describe` block's first `it`, but inside the same `describe`:
 
 ```tsx
   it('renders full Tabs with Trigger + Content; defaultValue panel is visible', () => {
@@ -328,14 +328,14 @@ import userEvent from '@testing-library/user-event';
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: FAIL — `Tabs.Trigger is not a function` or similar (Trigger and Content are not yet defined as parts of the compound).
 
 - [ ] **Step 3: Add Trigger and Content parts to the recipe**
 
-Modify `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx`. First, add the type imports and new prop interfaces near the existing ones:
+Modify `apps/pilot/src/recipes/Tabs/Tabs.tsx`. First, add the type imports and new prop interfaces near the existing ones:
 
 Replace the imports block:
 
@@ -415,7 +415,7 @@ If TypeScript complains that `PolymorphicPartRenderCtx` doesn't accept the type-
 - [ ] **Step 4: Run the tests to verify they pass**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: PASS (3 tests).
@@ -431,7 +431,7 @@ Expected: clean.
 - [ ] **Step 6: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): add Tabs.Trigger (polymorphic) + Tabs.Content parts"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): add Tabs.Trigger (polymorphic) + Tabs.Content parts"
 ```
 
 ---
@@ -439,7 +439,7 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/reci
 ## Task 4: Controlled mode + keyboard navigation smoke tests
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`
 
 No recipe changes — Radix handles controlled state + keyboard. Just verify the wrapper doesn't break either.
 
@@ -530,7 +530,7 @@ import { describe, expect, it, vi } from 'vitest';
 - [ ] **Step 2: Run the tests**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: PASS (5 tests). Radix Tabs ships with arrow-key nav + auto-activation on focus (the `activationMode='automatic'` default).
@@ -538,7 +538,7 @@ Expected: PASS (5 tests). Radix Tabs ships with arrow-key nav + auto-activation 
 - [ ] **Step 3: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): cover controlled mode + keyboard nav for Tabs"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/recipes/Tabs/Tabs.test.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): cover controlled mode + keyboard nav for Tabs"
 ```
 
 ---
@@ -546,9 +546,9 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/reci
 ## Task 5: Variant CSS + vars resolver
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx` (fill in `vars` resolver)
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.css` (add per-variant blocks)
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx` (variant assertions)
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.tsx` (fill in `vars` resolver)
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.css` (add per-variant blocks)
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx` (variant assertions)
 
 - [ ] **Step 1: Write the failing variant tests**
 
@@ -631,14 +631,14 @@ Append inside the `describe`:
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: data-variant tests PASS (the recipe already emits the attribute); the var-tests FAIL because the `vars` resolver currently returns `{}`.
 
 - [ ] **Step 3: Implement the vars resolver**
 
-In `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx`, replace the empty `vars` block:
+In `apps/pilot/src/recipes/Tabs/Tabs.tsx`, replace the empty `vars` block:
 
 ```tsx
   vars: (_theme, props) => ({}),
@@ -665,7 +665,7 @@ With:
 
 - [ ] **Step 4: Expand the CSS with variant blocks**
 
-Replace the contents of `apps/core-radix-pilot/src/recipes/Tabs/Tabs.css` with:
+Replace the contents of `apps/pilot/src/recipes/Tabs/Tabs.css` with:
 
 ```css
 /* base — applies to all variants */
@@ -697,7 +697,7 @@ Replace the contents of `apps/core-radix-pilot/src/recipes/Tabs/Tabs.css` with:
   outline-offset: 2px;
 }
 
-/* default — underline-on-active. Matches CVI's existing core-radix style. */
+/* default — underline-on-active. Matches the host library's existing host style. */
 .cr-Tabs-list[data-variant='default'] {
   border-bottom: 1px solid var(--border-default);
 }
@@ -755,7 +755,7 @@ Replace the contents of `apps/core-radix-pilot/src/recipes/Tabs/Tabs.css` with:
 - [ ] **Step 5: Run the tests to verify they pass**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: PASS (9 tests).
@@ -767,7 +767,7 @@ Some of the CSS references CSS vars that must exist in the pilot's emitted token
 Quick grep to confirm:
 
 ```bash
-grep -E '^\s*--(text-(muted|default)|border-default|surface-default|color-primary-500|color-neutral-0|radius-(md|full)|font-size-sm):' /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot/src/generated/theme.css 2>&1 | head -20
+grep -E '^\s*--(text-(muted|default)|border-default|surface-default|color-primary-500|color-neutral-0|radius-(md|full)|font-size-sm):' /Users/matt/Documents/GitHub/soribashi/apps/pilot/src/generated/theme.css 2>&1 | head -20
 ```
 
 Expected: each var has at least one match. If any are missing, stop — the pilot's theme is incomplete for this recipe; do not paper over with hardcoded values.
@@ -777,7 +777,7 @@ If `--surface-default-foreground` is missing (referenced via the fallback `var(-
 - [ ] **Step 7: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): variant CSS + vars resolver for Tabs (default/outline/pills)"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): variant CSS + vars resolver for Tabs (default/outline/pills)"
 ```
 
 ---
@@ -787,7 +787,7 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/reci
 **This is the highest-risk surface in Wave 3.** `PolymorphicPartConfig` has factory-level tests but no recipe has exercised it before. If this task goes green, the polymorphic-part API is proven end-to-end.
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`
 
 No recipe changes — Trigger is already polymorphic per Task 3.
 
@@ -875,7 +875,7 @@ import { createRef } from 'react';
 - [ ] **Step 2: Run the tests**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: PASS (13 tests).
@@ -891,7 +891,7 @@ If broken, DO NOT add a workaround in the recipe. Investigate the factory or Slo
 - [ ] **Step 3: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): polymorphic Trigger — as=\"a\" + ref forwarding"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/recipes/Tabs/Tabs.test.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): polymorphic Trigger — as=\"a\" + ref forwarding"
 ```
 
 ---
@@ -899,7 +899,7 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/reci
 ## Task 7: Edge cases — disabled, forceMount, safe-context throws
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1005,7 +1005,7 @@ Append inside the `describe`:
 - [ ] **Step 2: Run the tests**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: PASS (19 tests).
@@ -1018,7 +1018,7 @@ Expected: PASS (19 tests).
 - [ ] **Step 3: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): edge cases — disabled, forceMount, safe-context throws"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/recipes/Tabs/Tabs.test.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): edge cases — disabled, forceMount, safe-context throws"
 ```
 
 ---
@@ -1026,7 +1026,7 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/reci
 ## Task 8: Styles-API plumbing — className + withDefaults round-trip
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`
 
 These are the same tests Wave 2's Tooltip used (last two `it` blocks in `Tooltip.test.tsx`). Verifies the framework-level plumbing works through the recipe's slot wiring.
 
@@ -1129,7 +1129,7 @@ import { Tabs, type TabsRootProps, type TabsContentProps } from './Tabs.tsx';
 - [ ] **Step 2: Run the tests**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run src/recipes/Tabs/Tabs.test.tsx --reporter=basic
 ```
 
 Expected: PASS (23 tests).
@@ -1139,7 +1139,7 @@ If the `withDefaults` tests fail with a type error, the recipe needs to export t
 - [ ] **Step 3: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): styles-API plumbing — className + withDefaults round-trip"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/recipes/Tabs/ && git -C /Users/matt/Documents/GitHub/soribashi commit -m "test(wave-3): styles-API plumbing — className + withDefaults round-trip"
 ```
 
 ---
@@ -1147,12 +1147,12 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/reci
 ## Task 9: `TabsMatrix.tsx` page + `/tabs-matrix` route
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/pages/TabsMatrix.tsx`
-- Modify: `apps/core-radix-pilot/src/App.tsx`
+- Create: `apps/pilot/src/pages/TabsMatrix.tsx`
+- Modify: `apps/pilot/src/App.tsx`
 
 - [ ] **Step 1: Create the matrix page**
 
-Create `apps/core-radix-pilot/src/pages/TabsMatrix.tsx`:
+Create `apps/pilot/src/pages/TabsMatrix.tsx`:
 
 ```tsx
 /**
@@ -1299,7 +1299,7 @@ export function TabsMatrix() {
 
 - [ ] **Step 2: Register the route in `App.tsx`**
 
-In `apps/core-radix-pilot/src/App.tsx`, make four edits:
+In `apps/pilot/src/App.tsx`, make four edits:
 
 (1) Add the import after the `TooltipMatrix` import:
 
@@ -1330,7 +1330,7 @@ type Page = 'tokens' | 'screen' | 'buttons' | 'tooltips' | 'tabs';
 - [ ] **Step 3: Run the dev server and visually verify**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bun run dev
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bun run dev
 ```
 
 Open the URL it prints (typically `http://localhost:5173/`), click **Tabs matrix** in the header. Visually verify:
@@ -1357,7 +1357,7 @@ Expected: clean.
 - [ ] **Step 5: Run all pilot tests one more time**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected: previous Tooltip tests (24) + new Tabs tests (23) = **47 tests pass**.
@@ -1365,7 +1365,7 @@ Expected: previous Tooltip tests (24) + new Tabs tests (23) = **47 tests pass**.
 - [ ] **Step 6: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/pages/TabsMatrix.tsx apps/core-radix-pilot/src/App.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): TabsMatrix page + /tabs-matrix route"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/pages/TabsMatrix.tsx apps/pilot/src/App.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): TabsMatrix page + /tabs-matrix route"
 ```
 
 ---
@@ -1373,14 +1373,14 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/page
 ## Task 10: `ScreenReplica.tsx` Tabs region
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/pages/ScreenReplica.tsx`
+- Modify: `apps/pilot/src/pages/ScreenReplica.tsx`
 
-The Tabs region in ScreenReplica is the "would this work at a CVI-realistic location?" smoke. Pick a spot that mirrors `apps/adjuster/src/components/ClaimViewIslands/islands/auto/RightToolbar/components/PanelTabs.tsx` — a side-panel tab strip with 2-3 tabs.
+The Tabs region in ScreenReplica is the "would this work at a realistic location?" smoke. Pick a spot that mirrors `apps/adjuster/src/components/the host component library/islands/auto/RightToolbar/components/PanelTabs.tsx` — a side-panel tab strip with 2-3 tabs.
 
 - [ ] **Step 1: Read the current ScreenReplica to find an integration point**
 
 ```bash
-wc -l /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot/src/pages/ScreenReplica.tsx
+wc -l /Users/matt/Documents/GitHub/soribashi/apps/pilot/src/pages/ScreenReplica.tsx
 ```
 
 Then read the file (or open in IDE). Find an existing region that looks like a "panel" or "card with sections" — ideally a content area where switching between 2-3 views fits the page's existing visual rhythm.
@@ -1415,12 +1415,12 @@ Add the import at the top of `ScreenReplica.tsx`:
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 ```
 
-Use the `default` variant (don't pass `variant`) — it matches CVI's existing styling.
+Use the `default` variant (don't pass `variant`) — it matches the host library's existing styling.
 
 - [ ] **Step 3: Visually verify in the dev server**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bun run dev
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bun run dev
 ```
 
 Click **Screen replica** in the header. The new Tabs region should render and tabs should switch. Toggle dark mode. Screenshot for the journal.
@@ -1430,7 +1430,7 @@ Kill the dev server with Ctrl-C.
 - [ ] **Step 4: Re-run typecheck and tests**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi && bun run typecheck && cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi && bun run typecheck && cd apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected: clean typecheck, 47/47 tests pass.
@@ -1438,7 +1438,7 @@ Expected: clean typecheck, 47/47 tests pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/pages/ScreenReplica.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): integrate Tabs into ScreenReplica"
+git -C /Users/matt/Documents/GitHub/soribashi add apps/pilot/src/pages/ScreenReplica.tsx && git -C /Users/matt/Documents/GitHub/soribashi commit -m "feat(wave-3): integrate Tabs into ScreenReplica"
 ```
 
 ---
@@ -1446,7 +1446,7 @@ git -C /Users/matt/Documents/GitHub/soribashi add apps/core-radix-pilot/src/page
 ## Task 11: Playbook § 2.3 entry
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md`
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`
 
 Populate the placeholder `### 2.3 Persistent navigational compound (Wave 3 — Tabs)` section. Mirror Wave 2's § 2.2 structure (recipe shape, style approach, state handling, three-classes-of-part recap, render-body destructure, tests, recipe code snippet).
 
@@ -1471,7 +1471,7 @@ Replace the placeholder with:
 
 Pattern for components with Radix anatomy, sibling parts in the same DOM tree (no portal), persistent active-state, and controlled-value passthrough — tabs, segmented controls, breadcrumb-like patterns.
 
-**Examples in core-radix:** Tabs, SegmentedControl.
+**Examples in host:** Tabs, SegmentedControl.
 
 #### Recipe shape
 
@@ -1490,7 +1490,7 @@ Use `defineCompound` (from `@soribashi/core`). The config shape parallels Wave 2
 
 **Why polymorphic AND wrap-Radix interact via Slot.** `RadixTabs.Trigger` needs to be the element receiving Radix's state-machine props (`data-state`, `aria-selected`, click handler, keyboard handlers). When the consumer's `<Element>` is custom (e.g., `as="a"`), the recipe always wraps the `<Element>` inside `<RadixTabs.Trigger asChild>{<Element>}</RadixTabs.Trigger>` — Radix's own Slot merges Radix's props onto `<Element>`. This means `asChild` is a **recipe-internal detail**, not a public prop. Public polymorphism is via `as`; passing the consumer a custom component is also expressible via `as={CustomComponent}`. This is a deliberate API divergence from Wave 2's Tooltip (which kept public `asChild`): Tabs.Trigger's job is to render a trigger element, and `as` expresses that more directly than `asChild`.
 
-**Polymorphic Trigger with non-button elements.** When `as="a"` (or any non-button), Radix forwards `disabled` onto the element. `<a disabled>` is non-spec — anchors ignore the attribute. Consumers using polymorphic Trigger with non-button elements should add `aria-disabled` manually if they need disabled semantics. The recipe doesn't poly-fill this — CVI uses button-only.
+**Polymorphic Trigger with non-button elements.** When `as="a"` (or any non-button), Radix forwards `disabled` onto the element. `<a disabled>` is non-spec — anchors ignore the attribute. Consumers using polymorphic Trigger with non-button elements should add `aria-disabled` manually if they need disabled semantics. The recipe doesn't poly-fill this — the host library uses button-only.
 
 #### Style approach
 
@@ -1528,7 +1528,7 @@ This is the defining characteristic of the persistent-navigational category as w
 
 #### Token consumption
 
-The Tabs recipe consumes Wave-1 / Wave-2 semantic tokens unchanged — no new surface needed. `surface.default` (pills active), `text.default` / `text.muted` (trigger fg states), `border.default` (list bottom-border, outline variant), `color.primary.500` (focus ring + pills active bg), `radius.md` / `radius.full`. The pilot's `default` variant deliberately tracks CVI's existing styling so integration is a near-drop-in.
+The Tabs recipe consumes Wave-1 / Wave-2 semantic tokens unchanged — no new surface needed. `surface.default` (pills active), `text.default` / `text.muted` (trigger fg states), `border.default` (list bottom-border, outline variant), `color.primary.500` (focus ring + pills active bg), `radius.md` / `radius.full`. The pilot's `default` variant deliberately tracks the host library's existing styling so integration is a near-drop-in.
 
 #### Three classes of part — recap
 
@@ -1562,7 +1562,7 @@ trigger: {
 
 #### Tests
 
-- **Vitest behavior** (Wave 3 reference: `apps/core-radix-pilot/src/recipes/Tabs/Tabs.test.tsx`): render lifecycle (defaultValue / data-state); controlled mode round-trip; keyboard arrow-nav + skip-disabled; three variants apply `data-variant`; pills vars resolve; polymorphic Trigger renders `<button>` by default and `<a>` with `as="a"`; ref forwarding to both default and polymorphic elements; disabled Trigger skipped by nav + clicks; forceMount keeps inactive Content in DOM; safe-context throws for each part rendered outside Root; className from instance props lands; `Tabs.withDefaults` + `Tabs.Content.withDefaults` round-trip through `createTheme`. ~23 tests.
+- **Vitest behavior** (Wave 3 reference: `apps/pilot/src/recipes/Tabs/Tabs.test.tsx`): render lifecycle (defaultValue / data-state); controlled mode round-trip; keyboard arrow-nav + skip-disabled; three variants apply `data-variant`; pills vars resolve; polymorphic Trigger renders `<button>` by default and `<a>` with `as="a"`; ref forwarding to both default and polymorphic elements; disabled Trigger skipped by nav + clicks; forceMount keeps inactive Content in DOM; safe-context throws for each part rendered outside Root; className from instance props lands; `Tabs.withDefaults` + `Tabs.Content.withDefaults` round-trip through `createTheme`. ~23 tests.
 - **Playwright parity** (Wave 3 reference: deferable; vitest covers ~95% of the surface). If wired, per-variant computed-style assertions across the matrix + keyboard nav + dark-mode toggle.
 - **Manual visual** — non-optional. Variant matrix in light + dark; focus-ring visibility per variant (especially the pills active-state contrast-coherent override); polymorphic anchor Trigger in DevTools (verifies real `<a>` element); dark-mode toggle redraws all cells correctly.
 
@@ -1664,13 +1664,13 @@ export const Tabs = defineCompound({
 });
 ```
 
-See `apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx` for the live source (snippet verbatim as of Wave 3).
+See `apps/pilot/src/recipes/Tabs/Tabs.tsx` for the live source (snippet verbatim as of Wave 3).
 ````
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git -C /Users/matt/Documents/GitHub/soribashi add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md && git -C /Users/matt/Documents/GitHub/soribashi commit -m "docs(playbook): populate § 2.3 — persistent navigational compound (Tabs)"
+git -C /Users/matt/Documents/GitHub/soribashi add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md && git -C /Users/matt/Documents/GitHub/soribashi commit -m "docs(playbook): populate § 2.3 — persistent navigational compound (Tabs)"
 ```
 
 ---
@@ -1694,7 +1694,7 @@ cd /Users/matt/Documents/GitHub/soribashi && bun run --filter '@soribashi/*' tes
 Expected: 460 factory + 244 blocks = 704 tests pass.
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected: **47 tests pass** (24 prior + 23 new Tabs).
@@ -1702,7 +1702,7 @@ Expected: **47 tests pass** (24 prior + 23 new Tabs).
 - [ ] **Step 2: Last visual review pass**
 
 ```bash
-cd /Users/matt/Documents/GitHub/soribashi/apps/core-radix-pilot && bun run dev
+cd /Users/matt/Documents/GitHub/soribashi/apps/pilot && bun run dev
 ```
 
 Hit `http://localhost:5173/`. Click through every page (Tokens, Screen replica, Button matrix, Tooltip matrix, Tabs matrix) in light + dark. The Tabs matrix should look clean; the new Tabs region in Screen replica should fit.
@@ -1721,8 +1721,8 @@ Then open the PR via `gh pr create`:
 cd /Users/matt/Documents/GitHub/soribashi && gh pr create --title "feat: Wave 3 — Tabs pilot (persistent navigational compound)" --body "$(cat <<'EOF'
 ## Summary
 
-- Ships the Wave 3 pilot recipe `Tabs` at `apps/core-radix-pilot/src/recipes/Tabs/` — a 4-part `defineCompound` wrapping `@radix-ui/react-tabs`.
-- Three Mantine-parity variants (`default | outline | pills`), horizontal orientation only (matches CVI).
+- Ships the Wave 3 pilot recipe `Tabs` at `apps/pilot/src/recipes/Tabs/` — a 4-part `defineCompound` wrapping `@radix-ui/react-tabs`.
+- Three Mantine-parity variants (`default | outline | pills`), horizontal orientation only (matches the host library).
 - `Tabs.Trigger` is **polymorphic** (`defaultElement: 'button'`) — the first recipe to exercise `PolymorphicPartConfig`. Public polymorphism via `as` prop; recipe internally uses Radix's `asChild` so Radix's state-machine props merge onto the consumer's `<Element>`. No public `asChild` (deliberate divergence from Wave 2's Tooltip).
 - Adds a `TabsMatrix` page (variants + 4 edge-case cells: disabled, forceMount, polymorphic-anchor, controlled) and integrates a Tabs region into `ScreenReplica`.
 - Populates playbook § 2.3 with the persistent-navigational-compound authoring pattern.
@@ -1733,7 +1733,7 @@ Spec: `docs/superpowers/specs/2026-05-10-wave-3-tabs-pilot-design.md` (commit 47
 
 - [ ] `bun run typecheck` clean
 - [ ] `bun run --filter '@soribashi/*' test` — 704 tests pass (no regressions)
-- [ ] `cd apps/core-radix-pilot && bunx vitest run` — 47 tests pass (24 prior + 23 new Tabs)
+- [ ] `cd apps/pilot && bunx vitest run` — 47 tests pass (24 prior + 23 new Tabs)
 - [ ] Manual: Tabs matrix renders all 3 variants + 4 edge-case cells in light + dark
 - [ ] Manual: ScreenReplica Tabs region renders + switches
 - [ ] Manual: polymorphic anchor Trigger DevTools-verified as real `<a>` element
@@ -1772,7 +1772,7 @@ Standard squash-and-merge (per repo convention — match how Wave 2's PR #7 land
 
 ## Post-merge
 
-The Wave 3 spec § 11 OQs are deferred to either visual review during implementation (OQ-1 focus ring) or future waves (OQ-3 vertical orientation, OQ-4 aria-disabled polyfill, OQ-5 token mapping for CVI integration, OQ-6 tabIndex exposure). None of them block merge.
+The Wave 3 spec § 11 OQs are deferred to either visual review during implementation (OQ-1 focus ring) or future waves (OQ-3 vertical orientation, OQ-4 aria-disabled polyfill, OQ-5 token mapping for the host library integration, OQ-6 tabIndex exposure). None of them block merge.
 
 After merge, write a Wave 3 handoff journal at `docs/superpowers/sessions/YYYY-MM-DD-wave-3-handoff-followup.md` if there are unresolved learnings to capture for Wave 4 (Select). The pattern is the existing `docs/superpowers/sessions/2026-04-28-handoff.md` and `docs/superpowers/sessions/2026-05-09-wave-3-handoff.md`.
 

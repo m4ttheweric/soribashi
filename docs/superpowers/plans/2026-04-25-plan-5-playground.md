@@ -981,6 +981,6 @@ Plan 5 is complete when:
 ## What's NOT in this plan (deferred)
 
 - Playwright visual tests — can be added post-v1 once the playground is stable
-- ClaimViewIslands integration in the assured codebase — separate effort, separate repo
+- the host component library integration in the consuming codebase — separate effort, separate repo
 - Full coverage of all 14 blocks in BlocksDemo — focus on representative subset for now
 - Mantine-style notifications/modals/toasts — those are application components, not in soribashi's scope

@@ -1,6 +1,6 @@
 # Wave 4: Select Pilot (Data-Driven Form Control) Design Spec
 
-> **Status:** Design (2026-06-08). **Sizing:** L (a `@soribashi/factory` substrate upgrade plus a multi-part pilot recipe). **Category:** the fourth and final authoring category in the conversion playbook (data-driven form control). Completing it closes the playbook's category taxonomy; the remaining core-radix groups become a sequencing sweep.
+> **Status:** Design (2026-06-08). **Sizing:** L (a `@soribashi/factory` substrate upgrade plus a multi-part pilot recipe). **Category:** the fourth and final authoring category in the conversion playbook (data-driven form control). Completing it closes the playbook's category taxonomy; the remaining host groups become a sequencing sweep.
 
 ## 1. Why this exists
 
@@ -197,4 +197,4 @@ This is L. Split it the way the vocabulary-rails core (PR #10) and pilot migrati
 - Mantine field composition: `.../components/Input/` (`Input.Wrapper`), `.../components/InputBase/`.
 - soribashi generic builder (to upgrade): `packages/factory/src/define-generic-component.tsx`.
 - Prior wave specs: `2026-05-10-wave-3-tabs-pilot-design.md`, `2026-05-12-vocabulary-rails-design.md` (the core-then-pilot PR split precedent, and the prototype-before-implementing discipline).
-- Playbook: `2026-04-26-core-radix-conversion-playbook.md` section 2.5 (Wave 4 stub) and section 5 (future waves outline).
+- Playbook: `2026-04-26-recipe-conversion-playbook.md` section 2.5 (Wave 4 stub) and section 5 (future waves outline).

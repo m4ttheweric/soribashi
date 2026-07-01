@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a `defineCompound` factory primitive (plus supporting `Slot`, `withDefaults`, surface-foreground formalization) to soribashi, and prove the API by authoring a Tooltip compound in the `core-radix-pilot` library on top of `@radix-ui/react-tooltip`.
+**Goal:** Add a `defineCompound` factory primitive (plus supporting `Slot`, `withDefaults`, surface-foreground formalization) to soribashi, and prove the API by authoring a Tooltip compound in the `pilot` library on top of `@radix-ui/react-tooltip`.
 
 **Architecture:** Three layers land in order. (1) `packages/theme/` extends `SemanticSurfaceValue` to support an optional formalized `foreground` and accepts an array form for `components`. (2) `packages/codegen/` emits paired `--surface-{name}-foreground` CSS vars when the object form is used. (3) `packages/factory/` ships `Slot` (substrate-agnostic asChild merge), `Component.withDefaults` (reference-keyed theme registration), and `defineCompound` (multi-part component factory generating a safe-context Provider). The pilot library then authors `Tooltip` against `@radix-ui/react-tooltip` using all of the above, mounted via a single `<Tooltip.Provider>` at the pilot's app root.
 
@@ -15,7 +15,7 @@
 - `/Users/matt/Documents/GitHub/mantine/packages/@mantine/core/src/components/Popover/` — canonical compound exemplar
 - `/Users/matt/Documents/GitHub/mantine/packages/@mantine/core/src/components/Tabs/` — simpler 4-part compound
 - `/Users/matt/Documents/GitHub/mantine/packages/@mantine/core/src/core/MantineProvider/use-props/use-props.ts` — `useProps` reference
-- `/Users/matt/Documents/GitHub/assured/assured-primary/apps/adjuster/src/components/ClaimViewIslands/` ("CVI") — for ScreenReplica integration only
+- `<host-library-path>/` (the host library) — for ScreenReplica integration only
 
 ---
 
@@ -32,12 +32,12 @@ packages/factory/src/
 ├── define-compound.test.tsx
 └── theme-component-entry.ts                   # withDefaults return-type interface
 
-apps/core-radix-pilot/src/recipes/Tooltip/
+apps/pilot/src/recipes/Tooltip/
 ├── Tooltip.tsx                                # the recipe
 ├── Tooltip.css
 └── Tooltip.test.tsx
 
-apps/core-radix-pilot/src/pages/
+apps/pilot/src/pages/
 └── TooltipMatrix.tsx                          # variant × side matrix
 
 tests/browser-parity/
@@ -63,17 +63,17 @@ packages/codegen/src/emit-css.ts               # emit paired foreground vars
 packages/factory/src/index.ts                  # export new public API
 packages/factory/src/define-component.tsx      # add withDefaults method
 packages/factory/src/define-polymorphic-component.tsx  # add withDefaults method
-apps/core-radix-pilot/package.json             # add @radix-ui/react-tooltip dep
-apps/core-radix-pilot/src/theme/index.ts       # add surface.floating
-apps/core-radix-pilot/src/App.tsx              # mount <Tooltip.Provider> at root
-apps/core-radix-pilot/src/main.tsx             # register TooltipMatrix route
-apps/core-radix-pilot/src/pages/ScreenReplica.tsx  # add Tooltip integrations
-docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md  # § 2.2 transient overlay compound
+apps/pilot/package.json             # add @radix-ui/react-tooltip dep
+apps/pilot/src/theme/index.ts       # add surface.floating
+apps/pilot/src/App.tsx              # mount <Tooltip.Provider> at root
+apps/pilot/src/main.tsx             # register TooltipMatrix route
+apps/pilot/src/pages/ScreenReplica.tsx  # add Tooltip integrations
+docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md  # § 2.2 transient overlay compound
 ```
 
 ### Untouched (explicit exclusion)
 
-- Anything in `/Users/matt/Documents/GitHub/assured/assured-primary/`. Read-only reference for ScreenReplica fidelity. Wave 2 never writes there.
+- Anything in `<host-monorepo-path>/`. Read-only reference for ScreenReplica fidelity. Wave 2 never writes there.
 - `apps/playground/`. The pilot is standalone.
 - `packages/blocks/`. No compound primitives needed; blocks stay pure-styled.
 - Wave-1 surface tokens (`canvas`/`default`/`raised`/`sunken`/`scrim`). Stay as string-form `SemanticReference`.
@@ -104,22 +104,22 @@ Expected: top commit is `72e69e4 docs(spec): Wave 2 — record OQ-8 (auto-mount 
 ### Task 0.2: Install Radix Tooltip in pilot package
 
 **Files:**
-- Modify: `apps/core-radix-pilot/package.json`
+- Modify: `apps/pilot/package.json`
 
 - [ ] **Step 1: Add `@radix-ui/react-tooltip` to pilot dependencies**
 
-Run: `bun add @radix-ui/react-tooltip --cwd apps/core-radix-pilot`
+Run: `bun add @radix-ui/react-tooltip --cwd apps/pilot`
 Expected: `package.json` has `"@radix-ui/react-tooltip": "^1.1.0"` (or latest 1.x) in `dependencies`. `bun.lock` updated.
 
 - [ ] **Step 2: Verify pilot still builds**
 
-Run: `bun run --filter @soribashi/core-radix-pilot build`
+Run: `bun run --filter @soribashi/pilot build`
 Expected: build succeeds (Tooltip not used yet, just the new dep installed).
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add apps/core-radix-pilot/package.json bun.lock
+git add apps/pilot/package.json bun.lock
 git commit -m "chore(pilot): add @radix-ui/react-tooltip dependency"
 ```
 
@@ -2505,11 +2505,11 @@ Expected: clean.
 ### Task 8.1: Add `surface.floating` to pilot theme
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/theme/index.ts`
+- Modify: `apps/pilot/src/theme/index.ts`
 
 - [ ] **Step 1: Locate `semantic.surface` in the pilot theme**
 
-Open `apps/core-radix-pilot/src/theme/index.ts`. Find the `semantic.surface` block (search for `surface:`).
+Open `apps/pilot/src/theme/index.ts`. Find the `semantic.surface` block (search for `surface:`).
 
 - [ ] **Step 2: Add `floating` slot**
 
@@ -2534,7 +2534,7 @@ semantic: {
 - [ ] **Step 3: Run codegen for the pilot**
 
 Run: `bun run codegen:pilot`
-Expected: `apps/core-radix-pilot/src/generated/theme.css` updated. Inspect to confirm both `--surface-floating` and `--surface-floating-foreground` are emitted (search for them in the file).
+Expected: `apps/pilot/src/generated/theme.css` updated. Inspect to confirm both `--surface-floating` and `--surface-floating-foreground` are emitted (search for them in the file).
 
 - [ ] **Step 4: Verify in browser**
 
@@ -2546,25 +2546,25 @@ Stop the dev server.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/theme/index.ts apps/core-radix-pilot/src/generated/theme.css
+git add apps/pilot/src/theme/index.ts apps/pilot/src/generated/theme.css
 git commit -m "feat(pilot): add surface.floating with formalized foreground pairing
 
 Object form { value: 'neutral.900', foreground: 'neutral.0' }
 exercises Wave 2's gradual formalization. Codegen emits both
---surface-floating and --surface-floating-foreground; CVI's
+--surface-floating and --surface-floating-foreground; the host library's
 integration project may later override to a non-inverted value."
 ```
 
 ### Task 8.2: Tooltip recipe — initial structure (red)
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx`
-- Create: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.css`
-- Create: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`
+- Create: `apps/pilot/src/recipes/Tooltip/Tooltip.tsx`
+- Create: `apps/pilot/src/recipes/Tooltip/Tooltip.css`
+- Create: `apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx`
 
 - [ ] **Step 1: Write a failing test for basic render**
 
-Create `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`:
+Create `apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx`:
 
 ```tsx
 import { describe, expect, it } from 'vitest';
@@ -2604,12 +2604,12 @@ describe('Tooltip recipe', () => {
 
 - [ ] **Step 2: Run test to verify failure**
 
-Run: `bun run --filter @soribashi/core-radix-pilot test -- Tooltip`
+Run: `bun run --filter @soribashi/pilot test -- Tooltip`
 Expected: module not found for `Tooltip.tsx`.
 
 - [ ] **Step 3: Implement Tooltip recipe**
 
-Create `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx`:
+Create `apps/pilot/src/recipes/Tooltip/Tooltip.tsx`:
 
 ```tsx
 import * as RadixTooltip from '@radix-ui/react-tooltip';
@@ -2729,7 +2729,7 @@ export const Tooltip = defineCompound<
 });
 ```
 
-Create `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.css`:
+Create `apps/pilot/src/recipes/Tooltip/Tooltip.css`:
 
 ```css
 .cr-Tooltip-content {
@@ -2763,13 +2763,13 @@ Create `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.css`:
 
 - [ ] **Step 4: Run test to verify pass**
 
-Run: `bun run --filter @soribashi/core-radix-pilot test -- Tooltip`
+Run: `bun run --filter @soribashi/pilot test -- Tooltip`
 Expected: test passes.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Tooltip/
+git add apps/pilot/src/recipes/Tooltip/
 git commit -m "feat(pilot): Tooltip recipe wraps @radix-ui/react-tooltip via defineCompound
 
 Four parts: Provider (passthrough), Root (creates safe-context),
@@ -2781,7 +2781,7 @@ formalized foreground for guaranteed contrast."
 ### Task 8.3: Tooltip — open lifecycle test
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx`
 
 - [ ] **Step 1: Add hover-open + escape-close test**
 
@@ -2829,20 +2829,20 @@ Use `withProvidersFastDelay` in the new test.
 
 - [ ] **Step 2: Run test**
 
-Run: `bun run --filter @soribashi/core-radix-pilot test -- Tooltip`
+Run: `bun run --filter @soribashi/pilot test -- Tooltip`
 Expected: tests pass.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx
+git add apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx
 git commit -m "test(pilot): Tooltip open-on-hover + escape-close lifecycle"
 ```
 
 ### Task 8.4: Tooltip — variant + asChild + portal tests
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx`
+- Modify: `apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx`
 
 - [ ] **Step 1: Add tests**
 
@@ -2925,24 +2925,24 @@ it('throws when Tooltip.Trigger is rendered outside Tooltip', () => {
 
 - [ ] **Step 2: Run tests**
 
-Run: `bun run --filter @soribashi/core-radix-pilot test -- Tooltip`
+Run: `bun run --filter @soribashi/pilot test -- Tooltip`
 Expected: tests pass.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.test.tsx
+git add apps/pilot/src/recipes/Tooltip/Tooltip.test.tsx
 git commit -m "test(pilot): Tooltip asChild + portal + inverted-variant + safe-context throw"
 ```
 
 ### Task 8.5: Mount `<Tooltip.Provider>` in `App.tsx`
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/App.tsx`
+- Modify: `apps/pilot/src/App.tsx`
 
 - [ ] **Step 1: Locate the App's existing root**
 
-Read `apps/core-radix-pilot/src/App.tsx` to see the current structure. Find where the routes/pages render.
+Read `apps/pilot/src/App.tsx` to see the current structure. Find where the routes/pages render.
 
 - [ ] **Step 2: Wrap the existing tree in `<Tooltip.Provider>`**
 
@@ -2964,7 +2964,7 @@ return (
 
 - [ ] **Step 3: Verify pilot still builds + dev server runs**
 
-Run: `bun run --filter @soribashi/core-radix-pilot build`
+Run: `bun run --filter @soribashi/pilot build`
 Expected: clean build.
 
 Run: `bun run dev:pilot` (background); open `http://localhost:5174`. Confirm existing pages still render.
@@ -2974,7 +2974,7 @@ Stop the server.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/App.tsx
+git add apps/pilot/src/App.tsx
 git commit -m "feat(pilot): mount <Tooltip.Provider> at app root
 
 Single Provider wraps the entire app shell so multiple <Tooltip>
@@ -2990,13 +2990,13 @@ in the theme."
 ### Task 9.1: TooltipMatrix page
 
 **Files:**
-- Create: `apps/core-radix-pilot/src/pages/TooltipMatrix.tsx`
-- Modify: `apps/core-radix-pilot/src/main.tsx` (or wherever routes are registered) — register the page
+- Create: `apps/pilot/src/pages/TooltipMatrix.tsx`
+- Modify: `apps/pilot/src/main.tsx` (or wherever routes are registered) — register the page
 
 - [ ] **Step 1: Create the page**
 
 ```tsx
-// apps/core-radix-pilot/src/pages/TooltipMatrix.tsx
+// apps/pilot/src/pages/TooltipMatrix.tsx
 import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 
 const VARIANTS = ['default', 'inverted'] as const;
@@ -3066,7 +3066,7 @@ function ControlledTooltip() {
 
 - [ ] **Step 2: Register the route**
 
-In `apps/core-radix-pilot/src/App.tsx` (or wherever pages are routed), add a link/route entry for `/tooltip-matrix` pointing at `<TooltipMatrix />`.
+In `apps/pilot/src/App.tsx` (or wherever pages are routed), add a link/route entry for `/tooltip-matrix` pointing at `<TooltipMatrix />`.
 
 (Match the existing routing pattern used for `TokenReview`, `ScreenReplica`, `ButtonMatrix`.)
 
@@ -3085,18 +3085,18 @@ Stop the dev server.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/pages/TooltipMatrix.tsx apps/core-radix-pilot/src/App.tsx
+git add apps/pilot/src/pages/TooltipMatrix.tsx apps/pilot/src/App.tsx
 git commit -m "feat(pilot): TooltipMatrix page exercising variant × side + special cases"
 ```
 
 ### Task 9.2: ScreenReplica integration
 
 **Files:**
-- Modify: `apps/core-radix-pilot/src/pages/ScreenReplica.tsx`
+- Modify: `apps/pilot/src/pages/ScreenReplica.tsx`
 
 - [ ] **Step 1: Read existing ScreenReplica to find tooltip-applicable spots**
 
-Open `apps/core-radix-pilot/src/pages/ScreenReplica.tsx`. Identify:
+Open `apps/pilot/src/pages/ScreenReplica.tsx`. Identify:
 - Icon-only buttons (toolbar / filter row / action menu)
 - Truncated text with ellipses
 - Status indicators
@@ -3125,7 +3125,7 @@ Stop server.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/core-radix-pilot/src/pages/ScreenReplica.tsx
+git add apps/pilot/src/pages/ScreenReplica.tsx
 git commit -m "feat(pilot): integrate Tooltip into ScreenReplica at icon-only buttons + truncations"
 ```
 
@@ -3317,7 +3317,7 @@ git commit -m "docs(pilot): Wave 2 Tooltip pilot journal + visual-review screens
 ### Task 11.1: Populate playbook § 2.2 — transient overlay compound
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md`
+- Modify: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`
 
 - [ ] **Step 1: Locate the placeholder**
 
@@ -3334,7 +3334,7 @@ Mirror the structure of § 2.1 (pure styled primitive). Sections to include:
 - **Three classes of part** — root, context-consuming, passthrough Provider; explain when each is appropriate.
 - **Render body destructure** — same convention as § 2.1 (recipes destructure framework keys explicitly).
 - **Tests** — vitest at the recipe level (open lifecycle, asChild, portal, variant computed styles), browser parity at the page level, visual review at the integration level.
-- **Recipe code snippet** — full Tooltip recipe inlined (copy from `apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx`).
+- **Recipe code snippet** — full Tooltip recipe inlined (copy from `apps/pilot/src/recipes/Tooltip/Tooltip.tsx`).
 
 - [ ] **Step 3: Add a § 4 / § 5 entry for the gradual-formalization convention**
 
@@ -3361,7 +3361,7 @@ Future surfaces are formalized at introduction time.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md
+git add docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md
 git commit -m "docs(playbook): § 2.2 transient overlay compound + gradual formalization convention"
 ```
 
@@ -3388,7 +3388,7 @@ Expected: clean (or only previously-tolerated warnings).
 
 - [ ] **Step 4: Pilot build**
 
-Run: `bun run --filter @soribashi/core-radix-pilot build`
+Run: `bun run --filter @soribashi/pilot build`
 Expected: clean build, no errors.
 
 - [ ] **Step 5: Status snapshot**

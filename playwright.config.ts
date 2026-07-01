@@ -38,8 +38,8 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5173' },
     },
     {
-      name: 'core-radix-pilot',
-      testDir: './apps/core-radix-pilot/tests',
+      name: 'pilot',
+      testDir: './apps/pilot/tests',
       testMatch: '**/*.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5174' },
     },
@@ -54,7 +54,7 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
-      command: 'bun run --filter @soribashi/core-radix-pilot dev',
+      command: 'bun run --filter @soribashi/pilot dev',
       url: 'http://localhost:5174',
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,

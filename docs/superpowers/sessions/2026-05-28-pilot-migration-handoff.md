@@ -17,23 +17,23 @@ PR #10 built all the rails but **deliberately did not wire the pilot recipes to 
 bun install
 bun run typecheck                              # clean
 bun run --filter '@soribashi/*' test           # theme 82, codegen 137, factory 472, blocks 244
-cd apps/core-radix-pilot && bunx vitest run     # 47 pilot
+cd apps/pilot && bunx vitest run     # 47 pilot
 ```
 
 Current pilot state (post-merge):
 
-- **`apps/core-radix-pilot/src/theme/index.ts`** — already uses `createTheme({ vocabulary: { intent, variant }, semanticTokens: {...} })`. NOTE: it declares `intent` and `variant` but **NOT `size`**. The `variant` vocab is currently set to Button's five-value list (`filled|outline|subtle|ghost|link`) — see the "key decision" below, because that global value collides with Tooltip's and Tabs' variant sets.
-- **`apps/core-radix-pilot/src/recipes/Button/Button.tsx`** — imports `definePolymorphicComponent` from `@soribashi/core` directly. Declares local `type Intent`, `type Variant`, `type Size = 'xs'|'sm'|'md'|'lg'|'xl'`. No `vocabularyAxes`.
-- **`apps/core-radix-pilot/src/recipes/Tooltip/Tooltip.tsx`** — imports `defineCompound` from `@soribashi/core`. Local `type Variant = 'default' | 'subtle'`.
-- **`apps/core-radix-pilot/src/recipes/Tabs/Tabs.tsx`** — imports `defineCompound` from `@soribashi/core`. Local `type Variant` (`default | outline | pills`).
-- **No `apps/core-radix-pilot/src/builders.ts` exists yet.**
+- **`apps/pilot/src/theme/index.ts`** — already uses `createTheme({ vocabulary: { intent, variant }, semanticTokens: {...} })`. NOTE: it declares `intent` and `variant` but **NOT `size`**. The `variant` vocab is currently set to Button's five-value list (`filled|outline|subtle|ghost|link`) — see the "key decision" below, because that global value collides with Tooltip's and Tabs' variant sets.
+- **`apps/pilot/src/recipes/Button/Button.tsx`** — imports `definePolymorphicComponent` from `@soribashi/core` directly. Declares local `type Intent`, `type Variant`, `type Size = 'xs'|'sm'|'md'|'lg'|'xl'`. No `vocabularyAxes`.
+- **`apps/pilot/src/recipes/Tooltip/Tooltip.tsx`** — imports `defineCompound` from `@soribashi/core`. Local `type Variant = 'default' | 'subtle'`.
+- **`apps/pilot/src/recipes/Tabs/Tabs.tsx`** — imports `defineCompound` from `@soribashi/core`. Local `type Variant` (`default | outline | pills`).
+- **No `apps/pilot/src/builders.ts` exists yet.**
 - **No recipe references `createSoribashiBuilders`, `vocabularyAxes`, or `Recipe.extend()`.**
 
 ## What this PR ships
 
 The migration plan is spelled out in `docs/superpowers/specs/2026-05-12-vocabulary-rails-design.md` § 12 (steps 5-9). Concretely:
 
-1. **`apps/core-radix-pilot/src/builders.ts`** — new file:
+1. **`apps/pilot/src/builders.ts`** — new file:
    ```ts
    import { createSoribashiBuilders } from '@soribashi/core';
    import { theme } from './theme';
@@ -47,7 +47,7 @@ The migration plan is spelled out in `docs/superpowers/specs/2026-05-12-vocabula
    ```
    This registers the theme's vocab in the runtime registry (so Zod validation fires) and returns the builders.
 
-2. **Theme: add the `size` axis** to `theme.vocabulary` in `apps/core-radix-pilot/src/theme/index.ts`:
+2. **Theme: add the `size` axis** to `theme.vocabulary` in `apps/pilot/src/theme/index.ts`:
    ```ts
    vocabulary: {
      size: defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl']),
@@ -70,7 +70,7 @@ The migration plan is spelled out in `docs/superpowers/specs/2026-05-12-vocabula
 
 6. **Tests** — recipes import from `'../../builders'` now, so test imports may need updating. The Zod validation path (dev-only) is now live for these recipes; add at least one test per recipe proving an out-of-vocabulary value triggers the `console.error` (mirror `packages/factory/test/vocabulary-validation.test.tsx`).
 
-7. **Verify** — typecheck clean; test counts hold or grow (new validation tests add to the count; no existing test should break). Run the dev playground (`cd apps/core-radix-pilot && bun run dev`) and confirm Button/Tooltip/Tabs render identically — this is a wiring change, not a visual one.
+7. **Verify** — typecheck clean; test counts hold or grow (new validation tests add to the count; no existing test should break). Run the dev playground (`cd apps/pilot && bun run dev`) and confirm Button/Tooltip/Tabs render identically — this is a wiring change, not a visual one.
 
 ## Key decision to settle FIRST (before writing code)
 
@@ -98,8 +98,8 @@ Decide whether PR #11 also threads the theme's vocab *types* through `createSori
 
 ## Files to read first
 
-- `apps/core-radix-pilot/src/theme/index.ts` — the vocab block is at the bottom (`vocabulary:` ~line 329, `semanticTokens:` ~line 333).
-- `apps/core-radix-pilot/src/recipes/{Button,Tooltip,Tabs}/*.tsx` — the three recipes to migrate.
+- `apps/pilot/src/theme/index.ts` — the vocab block is at the bottom (`vocabulary:` ~line 329, `semanticTokens:` ~line 333).
+- `apps/pilot/src/recipes/{Button,Tooltip,Tabs}/*.tsx` — the three recipes to migrate.
 - `packages/factory/src/create-builders.ts` — what `createSoribashiBuilders` does (registers vocab, returns builders; idempotent).
 - `packages/factory/src/types/vocabulary-axes.ts` — the `InjectedVocabularyProps` type (currently `string`-typed; relevant to the second decision).
 - `packages/factory/src/validate-vocabulary-props.ts` — the dev-only Zod validator that fires for opted-in axes.
@@ -130,7 +130,7 @@ Before writing code:
 ```bash
 bun run typecheck
 bun run --filter '@soribashi/*' test
-cd apps/core-radix-pilot && bunx vitest run --reporter=basic
+cd apps/pilot && bunx vitest run --reporter=basic
 ```
 
 Expected: clean typecheck, 82 + 137 + 472 + 244 + 47. If red, fix before starting.

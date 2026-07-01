@@ -39,7 +39,7 @@ Soribashi is the framework you use to build your component library, where the th
 
 ### The pain Soribashi addresses
 
-In an existing component library built on CVA + Tailwind + Radix (the assured codebase's `core-radix`, for example), three problems appear and compound:
+In an existing component library built on CVA + Tailwind + Radix (the consuming codebase's `host`, for example), three problems appear and compound:
 
 1. **Inconsistent prop APIs** — `size` means different things in different components; `variant` is redeclared per component; `asChild` is reimplemented six times.
 2. **No semantic theming layer** — feature code picks specific shades and px values; humans and AI both drift.
@@ -49,7 +49,7 @@ Mantine solves all three through its authoring framework (factory + useProps + u
 
 ### Strategic positioning
 
-Validated internally first (the assured engineering team's `core-radix` library is rewritten using Soribashi), then released publicly. The internal validation is the v1 success criterion.
+Validated internally first (the engineering team's `host` library is rewritten using Soribashi), then released publicly. The internal validation is the v1 success criterion.
 
 ---
 
@@ -245,7 +245,7 @@ const theme = createTheme({
     }),
   },
 
-  darkMode: { selector: '.dark' },               // or custom: '.dark .claim-view-islands'
+  darkMode: { selector: '.dark' },               // or custom: '.dark .app-scope'
   scope:    ':root',                             // or custom scope selector
 });
 ```
@@ -804,13 +804,13 @@ With CSS:
 
 ## 10. Brownfield Integration
 
-For the assured codebase specifically — and for any existing project — the migration path:
+For the consuming codebase specifically — and for any existing project — the migration path:
 
 ### 10.1 What stays
 
-- Existing CSS variable definitions (e.g., `--color-primary-500` in `claimview-islands.css`) can remain. The soribashi theme references the same variable names.
+- Existing CSS variable definitions (e.g., `--color-primary-500` in `host-styles.css`) can remain. The soribashi theme references the same variable names.
 - Existing third-party dependencies (Tremor, etc.) keep working through a `tailwindPassthrough` config field that injects library-specific tokens into the generated Tailwind config without exposing them to soribashi components.
-- The legacy `tailwind.config.js` chains (the `@assured/tailwindcss-config` baseline, the per-app extensions) can stay for non-soribashi code during transition.
+- The legacy `tailwind.config.js` chains (the `@host/tailwindcss-config` baseline, the per-app extensions) can stay for non-soribashi code during transition.
 
 ### 10.2 What changes
 
@@ -819,14 +819,14 @@ For the assured codebase specifically — and for any existing project — the m
 - Components using soribashi import their Tailwind classes from a generated config that exposes only theme-blessed tokens.
 - Components are rewritten incrementally using `defineComponent`. Each rewrite locks that component into the theme contract.
 
-### 10.3 Integration with ClaimViewIslands specifically
+### 10.3 Integration with the host component library specifically
 
-The existing `claim-view-islands.css` defines tokens scoped to `.claim-view-islands` with dark mode at `.dark .claim-view-islands`. Soribashi supports custom scope:
+The existing `app-scope.css` defines tokens scoped to `.app-scope` with dark mode at `.dark .app-scope`. Soribashi supports custom scope:
 
 ```ts
 createTheme({
-  scope:    '.claim-view-islands',
-  darkMode: { selector: '.dark .claim-view-islands' },
+  scope:    '.app-scope',
+  darkMode: { selector: '.dark .app-scope' },
   /* ... */
 });
 ```
@@ -857,8 +857,8 @@ Codegen emits CSS variables under that scope. The existing variables continue to
 
 #### Integration
 - Playground app (`apps/playground`) demonstrating the framework end to end
-- One real component in the assured `core-radix` library rewritten using soribashi (recommended: `Button`)
-- Used in at least one feature inside ClaimViewIslands
+- One real component in the host library rewritten using soribashi (recommended: `Button`)
+- Used in at least one feature inside the host component library
 
 ### 11.2 First concrete milestone (the validation bar)
 
@@ -869,9 +869,9 @@ Soribashi v1 is "real" when:
 3. `defineComponent`, `defineGenericComponent`, `definePolymorphicComponent` all work end to end
 4. The default `intentResolver` produces correct CSS for `'filled' | 'outline' | 'subtle' | 'ghost' | 'link'` × all theme intents
 5. Four priority blocks (`Box`, `Stack`, `Group`, `Text`) render in the playground using soribashi
-6. One real adapted component in the assured codebase (e.g., `Button`) is rewritten using soribashi and used in production code
+6. One real adapted component in the consuming codebase (e.g., `Button`) is rewritten using soribashi and used in production code
 7. Token roundtrip integration test passes: add a CSS token to the theme → run codegen → use it in a component → verify rendered DOM has the right CSS variable
-8. A ClaimViewIslands feature uses the soribashi-built component without regression
+8. A the host component library feature uses the soribashi-built component without regression
 
 ### 11.3 Deferred to post-v1
 
@@ -945,8 +945,8 @@ Playwright on the playground "theme lab" route. Covers:
 
 - Light and dark mode for all blocks
 - The default intent resolver for all `(intent, variant)` combinations
-- Custom scope (`.claim-view-islands`) rendering
-- The adapted `Button` from the assured codebase
+- Custom scope (`.app-scope`) rendering
+- The adapted `Button` from the consuming codebase
 - Theme override via `Component.extend` produces the expected CSS
 
 ---
@@ -987,7 +987,7 @@ These are intentionally unresolved and to be decided during implementation.
 
 ## 15. Success Criteria
 
-The project is on track when the assured `core-radix` library can:
+The project is on track when the host library can:
 
 - Define its theme using `createTheme()` and have codegen produce its Tailwind config
 - Author components using `defineComponent` with the standard Mantine-style API ergonomics
