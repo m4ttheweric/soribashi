@@ -109,7 +109,7 @@ export const buttonTheme = Button.extend({
 | `@soribashi/factory` | `defineComponent`, `definePolymorphicComponent`, `defineCompound`, `defineGenericComponent`, `useProps`, `useStyles`, `makeBuilders` |
 | `@soribashi/theme` | `createTheme`, `defineVocabulary`, `composeTheme`, intent resolver, default tokens |
 | `@soribashi/codegen` | Theme to CSS variables + Tailwind v3/v4 config. CLI: `soribashi build` / `soribashi watch` |
-| `@soribashi/blocks` | 14 layout primitives: Box, Stack, Group, Flex, Grid, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title |
+| `@soribashi/blocks` | 14 layout primitives: Box, Stack, Group, Flex, Grid, Grid.Col, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title |
 | `@soribashi/core` | Public barrel re-exporting all of the above |
 
 ## Getting started
@@ -119,12 +119,14 @@ Requires [Bun](https://bun.sh).
 ```bash
 bun install
 bun run dev        # codegen + playground dev server
-bun test           # vitest across all packages
+bun run test       # vitest across all packages (plain `bun test` invokes Bun's own runner)
 bun run typecheck
 bun run lint       # biome
 ```
 
 `bun run dev` runs codegen first (theme to CSS custom properties + Tailwind config), then starts the playground. Change the theme and codegen regenerates those outputs.
+
+The flagship consumer is `apps/pilot`, which ports real component recipes (Button, Tooltip, Tabs, Select) onto soribashi; run it with `bun run dev:pilot`.
 
 ## Status
 

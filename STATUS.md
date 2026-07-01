@@ -1,16 +1,17 @@
 # Soribashi — Implementation Status
 
-> **Current as of 2026-05-28.** The v1 Mantine-adaptation foundation (2026-04-25, recorded below) is complete and stable. Since then the project has been building the **recipe pilot** — adapting real component recipes (Button, Tooltip, Tabs) on top of the foundation — and hardening the recipe-authoring conventions. This top section tracks that post-v1 work; the v1 record follows unchanged below.
+> **Current as of 2026-07-01.** The v1 Mantine-adaptation foundation (2026-04-25, recorded below) is complete and stable. Since then the project has been building the **recipe pilot** (adapting real component recipes: Button, Tooltip, Tabs, Select, on top of the foundation) and hardening the recipe-authoring conventions. This top section tracks that post-v1 work; the v1 record follows unchanged below.
 
 ## Post-v1: recipe pilot + library authoring hygiene
 
-### Recipe pilots (Waves 1-3) — SHIPPED
+### Recipe pilots (Waves 1-4): SHIPPED
 
 The `apps/pilot` app ports real components from the host codebase onto soribashi, one category at a time:
 
 - **Wave 1 — Button** (`#1`): pure-styled-primitive category via `definePolymorphicComponent`. Token consolidation (dropped shad-* layer, renamed error→danger, collapsed surfaces). Journal: `docs/superpowers/pilots/2026-04-26-button-conversion.md`.
 - **Wave 2 — Tooltip** (`#7`): transient-overlay compound via the new `defineCompound` primitive. Wraps Radix, adds the `surface.floating` formalized foreground pairing. Journal: `docs/superpowers/pilots/2026-05-04-tooltip-pilot.md`.
 - **Wave 3 — Tabs** (`#8`): persistent-navigational compound with a polymorphic Trigger part.
+- **Wave 4: Select** (4A `e5c0699` + 4B `#12` squash `5e4b2aa`, merged 2026-07-01): data-driven generic form control. Wave 4A landed the `defineGenericComponent` generic-signature builder substrate; Wave 4B shipped the Select pilot on top of it. Completes the playbook's four authoring categories. Plans: `docs/superpowers/plans/2026-06-22-wave-4a-generic-builder-substrate.md`, `docs/superpowers/plans/2026-06-23-wave-4b-select-pilot.md`.
 
 ### Library authoring hygiene (PR #9 + PR #10) — MERGED 2026-05-28
 
@@ -25,19 +26,23 @@ Two cross-cutting authoring conventions that should have been settled before Wav
   - `vocabularyAxes` recipe opt-in + dev-only Zod runtime validation with actionable error messages.
   - Spec: `docs/superpowers/specs/2026-05-12-vocabulary-rails-design.md`.
 
-### Next: PR #11 — pilot recipe migration (NOT YET STARTED)
+### PR #11: pilot vocab-rails wiring + type threading (MERGED 2026-06-06, squash `b2fc3cc`)
 
-PR #10 built the rails but did **not** wire the pilot recipes to them. PR #11 makes the pilot consume its own infrastructure: a `builders.ts` calling `createSoribashiBuilders(theme)`, recipes opting into `vocabularyAxes`, Tooltip/Tabs declaring their variant vocabularies via `Recipe.extend()`. Full briefing: `docs/superpowers/sessions/2026-05-28-pilot-migration-handoff.md`.
+PR #10 built the rails; PR #11 wired the pilot to them and threaded the types: a `builders.ts` entry point using the generic `createTheme` plus `makeBuilders`/`registerTheme`, recipes opting into `vocabularyAxes`, and variant vocabularies declared per-recipe via `Recipe.extend()`. Delivers compile-time size/intent narrowing and cycle-free in-theme `.extend()`. Original briefing: `docs/superpowers/sessions/2026-05-28-pilot-migration-handoff.md`.
 
-### Post-v1 test counts (on `main` @ `ef99d35`)
+### Next: component sweep
+
+All four authoring categories are proven; next is the ~20-component conversion sweep (playbook §5: `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`).
+
+### Post-v1 test counts (on `main` @ `5e4b2aa`)
 
 | Package | Tests |
 |---|---|
 | `@soribashi/theme` | 82 |
 | `@soribashi/codegen` | 137 |
-| `@soribashi/factory` | 472 |
+| `@soribashi/factory` | 473 |
 | `@soribashi/blocks` | 244 |
-| `apps/pilot` | 47 |
+| `apps/pilot` | 86 |
 
 Typecheck clean. (The 785-total figure in the v1 record below predates the pilot + hygiene work and the per-package growth since.)
 
