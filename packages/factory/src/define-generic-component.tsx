@@ -62,7 +62,7 @@ export function defineGenericComponent<TSignature = GenericComponentFn>(
   const Component = forwardRef<unknown, any>((rawProps, ref) => {
     const merged = useProps(config.name, (config.defaults ?? null) as any, rawProps as any);
 
-    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)

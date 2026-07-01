@@ -298,7 +298,7 @@ export function defineCompound<
       rawProps as TRootProps,
     );
 
-    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
 
     const getStyles = useStyles<FactoryPayload>({
       name: config.name,
@@ -389,7 +389,7 @@ export function defineCompound<
 
         // Parts validate against their own registered name so a part-level
         // vocabulary override (Part.extend({ vocabulary })) is consulted.
-        validateVocabularyProps(partName, config.vocabularyAxes ?? [], merged as Record<string, unknown>);
+        validateVocabularyProps(partName, config.vocabularyAxes ?? [], merged as Record<string, unknown>, config.variants);
 
         const { as: asProp, ...rest } = merged as { as?: keyof JSX.IntrinsicElements; [key: string]: unknown };
         const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
