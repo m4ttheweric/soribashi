@@ -976,7 +976,147 @@ Refactor-safe: renaming `.content` to `.bubble` in the module breaks the test at
 
 ### 2.5 Form control (Wave 4 — Select)
 
-_To be populated by Wave 4._
+Pattern for data-driven, generically-typed form controls that carry a floating dropdown, a reusable field wrapper, and a minimal state machine. Select is the pilot for this category. The same bottom-up composition (data model, engine hook, field wrapper, recipe) applies to future controls: Combobox, AutoComplete, MultiSelect as a standalone component.
+
+**Examples in core-radix:** Select (pilot).
+
+#### Three-unit composition
+
+Wave 4 decomposes the Select recipe into three pilot-local units authored bottom-up:
+
+| Unit | File | Responsibility |
+|---|---|---|
+| `parseSelectData` | `apps/core-radix-pilot/src/recipes/Select/parse-data.ts` | Data model and parser. Ported from Mantine's `get-parsed-combobox-data`. Accepts `SelectData<V>` (primitives, item objects, group objects) and normalises to `ParsedItem<V>[]`. `flattenOptions` collapses groups to a flat `ComboboxItem<V>[]` for iteration. |
+| `useCombobox` | `apps/core-radix-pilot/src/recipes/Select/use-combobox.ts` | Minimal state machine: active-option index + keyboard intents. Bounded port of Mantine's `use-combobox`. Returns `{ activeIndex, setActiveIndex, onKeyDown }`. `onKeyDown` translates keys into intent objects `{ submit?, close?, open? }` so the component owns the side effects (open/close state, option submission). Positioning is the component's job (floating-ui), not the hook's. |
+| `Field` | `apps/core-radix-pilot/src/recipes/Field/Field.tsx` | Reusable form-control wrapper authored with `defineComponent`. Renders label, description, error, and required marker. Mirrors Mantine's `Input.Wrapper` so multiple controls reuse the same shell without forking. Description id is `${id}-description`; error id is `${id}-error`. |
+
+The `Select` recipe then composes all three units inside a single `defineGenericComponent<SelectSignature>` call.
+
+#### Data model: Mantine-grounded `SelectData<V>`
+
+The data model is a direct port of Mantine's `Combobox.types.ts` + `get-parsed-combobox-data`. Authoring new controls in this category should start by importing from `parse-data.ts` rather than re-deriving.
+
+```ts
+// parse-data.ts (reference)
+export type Primitive = string | number | boolean;
+
+export interface ComboboxItem<V extends Primitive = string> {
+  value: V;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface ComboboxGroup<V extends Primitive = string> {
+  group: string;
+  items: (V | ComboboxItem<V>)[];
+}
+
+export type SelectData<V extends Primitive = string> = readonly (
+  | V
+  | ComboboxItem<V>
+  | ComboboxGroup<V>
+)[];
+```
+
+`parseSelectData` normalises all three item forms (bare primitive, item object with optional `label`, group with nested items) to `ParsedItem<V>[]`. The function accepts `undefined` and returns `[]`, so callers do not need a guard.
+
+#### Generic recipe: `defineGenericComponent<SelectSignature>`
+
+Select is authored with `defineGenericComponent` rather than `defineComponent` because the component needs to carry a generic type parameter (`V extends Primitive`) from the call site through the `onChange` callback and `value` prop. The signature type encodes the full generic shape:
+
+```ts
+export type SelectSignature = <const V extends Primitive = string>(
+  props: SingleProps<V> | MultiProps<V>,
+) => React.ReactElement | null;
+```
+
+`defineGenericComponent<SelectSignature>` (Wave 4A, `packages/factory/src/define-generic-component.tsx`) attaches the signature to the resulting component via a static intersection so call sites see the generic overload rather than the erased-to-`any` fallback. Recipe authors authoring future generic controls should use the same pattern: declare the signature type separately, then pass it as the type argument.
+
+#### Single-vs-multiple: discriminated union inference
+
+`SelectSignature` accepts a discriminated union of two prop shapes:
+
+```ts
+export interface SingleProps<V extends Primitive> extends BaseSelectProps<V> {
+  multiple?: false;
+  value?: V | null;
+  defaultValue?: V | null;
+  onChange?: (value: V | null, option: ComboboxItem<V> | null) => void;
+}
+
+export interface MultiProps<V extends Primitive> extends BaseSelectProps<V> {
+  multiple: true;
+  value?: V[];
+  defaultValue?: V[];
+  onChange?: (value: V[], options: ComboboxItem<V>[]) => void;
+}
+```
+
+The discriminant is `multiple`. When `multiple` is omitted or `false`, TypeScript selects `SingleProps` and narrows `onChange` to the scalar form. When `multiple: true`, it selects `MultiProps` and narrows `onChange` to the array form. Neither overload requires a cast at the call site.
+
+Additionally, `V` narrows from the `data` prop. Passing `data={[{ value: 'sm', label: 'S' }, { value: 'md', label: 'M' }]}` as `const` narrows `V` to `'sm' | 'md'`, so `onChange` receives `'sm' | 'md' | null` (single) or `('sm' | 'md')[]` (multiple), and passing `value={'lg'}` is a compile-time error. This inference is validated in `Select.test.tsx`'s compile-time narrowing describe block.
+
+#### `Field` composition
+
+`Select` renders a `Field` as its outer wrapper, passing `id`, `label`, `description`, `error`, and `required` through. The `<button role="combobox">` trigger is a child of `Field` alongside the floating `<ul role="listbox">`. This pattern applies to any future form control: author a `Field`-compatible wrapper, then plug the control's trigger into it as `children`. The description and error ids (`${id}-description`, `${id}-error`) are wired to `aria-describedby` on the trigger for screen-reader association.
+
+#### Minimal `useCombobox` + `@floating-ui/react` engine
+
+The hook (`use-combobox.ts`) owns only two concerns: active-option index and keyboard intent translation. The component (`Select.tsx`) owns the rest:
+
+- **Open/close state** (`useState<boolean>`).
+- **Floating positioning** via `useFloating` from `@floating-ui/react` with `flip`, `shift`, and `size` middleware (the `size` middleware sets `floating.style.width = reference.width` so the dropdown matches the trigger width).
+- **Uncontrolled fallback** (`useState` for single value, `useState<V[]>` for multi). When the consumer passes `value`, the component is controlled and the uncontrolled state is ignored.
+- **Search filtering** (`useState<string>` for query; options filtered by label substring when `searchable` is true).
+
+What was deferred (out of scope for Wave 4): typeahead-to-focus (keyboard char navigation), async / remote data loading, virtualization (large-list windowing), creatable / tags (free-form entry), grouped option rendering with visual group headers (the data model supports groups but the pilot renders them flat without a header row).
+
+#### Tests
+
+- **Vitest behavior** (reference: `apps/core-radix-pilot/src/recipes/Select/Select.test.tsx` -- 11 tests): closed trigger renders with placeholder; click opens listbox with all options; click on option calls `onChange(value, option)` and updates trigger label; disabled option not selectable; controlled `value` honored; Escape closes; multi-select toggles values and emits arrays; pills render per selected value; searchable filters by query; clearable shows Clear button that resets value.
+- **Compile-time narrowing** (same file, last describe block): `V` narrows from data union; `multiple` flips `onChange` signature; `@ts-expect-error` on an out-of-union value to confirm the negative has teeth.
+- **Parsing unit tests** (reference: `apps/core-radix-pilot/src/recipes/Select/parse-data.test.ts` -- 6 tests): bare primitives wrap; item objects pass through; value-only objects synthesise `label`; groups parse recursively; `undefined` returns `[]`; `flattenOptions` flattens.
+- **Hook unit tests** (reference: `apps/core-radix-pilot/src/recipes/Select/use-combobox.test.ts` -- 7 tests): `nextEnabledIndex` forward/wrap/backward/all-disabled cases; ArrowDown opens when closed; Enter submits active option; Escape closes.
+- **Field render tests** (reference: `apps/core-radix-pilot/src/recipes/Field/Field.test.tsx` -- 4 tests): label/description/error render; required asterisk; id wiring for aria; omitted nodes absent.
+
+#### Recipe code snippet (abridged)
+
+```tsx
+// Select.tsx (abridged; see apps/core-radix-pilot/src/recipes/Select/Select.tsx for full source)
+import { defineGenericComponent } from '../../builders.ts';
+import { Field } from '../Field/Field.tsx';
+import { parseSelectData, flattenOptions } from './parse-data.ts';
+import { useCombobox } from './use-combobox.ts';
+import { useFloating, flip, shift, size, autoUpdate } from '@floating-ui/react';
+
+export const Select = defineGenericComponent<SelectSignature>({
+  name: 'Select',
+  selectors: ['trigger', 'dropdown', 'option', 'group', 'placeholder', 'pills', 'pill', 'clear'] as const,
+  classes,
+  render: ({ props }: any) => {
+    const multiple = props.multiple === true;
+    const parsed = useMemo(() => parseSelectData(props.data), [props.data]);
+    const allOptions = useMemo(() => flattenOptions(parsed), [parsed]);
+    const options = useMemo(
+      () => props.searchable && query ? allOptions.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())) : allOptions,
+      [allOptions, props.searchable, query],
+    );
+    const { activeIndex, setActiveIndex, onKeyDown } = useCombobox({ options, opened });
+    const { refs, floatingStyles } = useFloating({
+      open: opened, onOpenChange: setOpened, whileElementsMounted: autoUpdate,
+      middleware: [flip(), shift({ padding: 8 }), size({ apply({ rects, elements }) { elements.floating.style.width = `${rects.reference.width}px`; } })],
+    });
+    return (
+      <Field id={id} label={props.label} description={props.description} error={props.error} required={props.required}>
+        <button ref={refs.setReference} role="combobox" aria-expanded={opened} ... />
+        {opened && <ul ref={refs.setFloating} role="listbox" style={floatingStyles}>...</ul>}
+      </Field>
+    );
+  },
+});
+```
+
+See `apps/core-radix-pilot/src/recipes/Select/Select.tsx` and `apps/core-radix-pilot/src/recipes/Field/Field.tsx` for the complete implementations.
 
 ## 3. Soribashi gaps surfaced
 

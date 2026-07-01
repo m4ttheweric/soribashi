@@ -6,9 +6,10 @@ import { ScreenReplica } from './pages/ScreenReplica.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { TooltipMatrix } from './pages/TooltipMatrix.tsx';
 import { TabsMatrix } from './pages/TabsMatrix.tsx';
+import { SelectMatrix } from './pages/SelectMatrix.tsx';
 import { Tooltip } from './recipes/Tooltip/Tooltip.tsx';
 
-type Page = 'tokens' | 'screen' | 'buttons' | 'tooltips' | 'tabs';
+type Page = 'tokens' | 'screen' | 'buttons' | 'tooltips' | 'tabs' | 'selects';
 
 export function App() {
   const [page, setPage] = useState<Page>('tokens');
@@ -56,6 +57,9 @@ export function App() {
             <button onClick={() => setPage('tabs')} aria-current={page === 'tabs' ? 'page' : undefined}>
               Tabs matrix
             </button>
+            <button onClick={() => setPage('selects')} aria-current={page === 'selects' ? 'page' : undefined}>
+              Select matrix
+            </button>
             <span style={{ marginLeft: 'auto' }}>
               <button onClick={() => setDark(!dark)}>{dark ? 'Light' : 'Dark'}</button>
             </span>
@@ -67,6 +71,7 @@ export function App() {
             {page === 'buttons' && <ButtonMatrix />}
             {page === 'tooltips' && <TooltipMatrix />}
             {page === 'tabs' && <TabsMatrix />}
+            {page === 'selects' && <SelectMatrix />}
           </main>
         </div>
       </Tooltip.Provider>
