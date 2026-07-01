@@ -162,7 +162,10 @@ function parseItem<V extends Primitive>(item: V | ComboboxItem<V> | ComboboxGrou
     return { group: item.group, items: item.items.map((i) => parseItem<V>(i) as ComboboxItem<V>) };
   }
   if (!('label' in item)) {
-    return { value: item.value, label: `${item.value}`, disabled: (item as ComboboxItem<V>).disabled };
+    // Defensive: a value-only object (no `label`). Not part of the typed
+    // SelectData surface, so `item` narrows to `never` here; cast to read it.
+    const valueOnly = item as { value: V; disabled?: boolean };
+    return { value: valueOnly.value, label: `${valueOnly.value}`, disabled: valueOnly.disabled };
   }
   return item;
 }
