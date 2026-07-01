@@ -12,7 +12,7 @@ import type { PolymorphicComponentProps } from './types/polymorphic.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
-import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
+import type { VocabularyAxis, InjectedVocabularyProps, VariantProp } from './types/vocabulary-axes.ts';
 
 /**
  * Render-context type for polymorphic recipes (e.g., Button). Authors type
@@ -143,25 +143,72 @@ export function definePolymorphicComponent<
 
   (Component as any).extend = makeExtendEntry<DefinePolymorphicProps>(config.name);
 
-  // The component itself is generic over the target element type.
-  // Callers can pass `as="span"` and TS instantiates TAs='span' so the
-  // resulting props correctly include span's HTML attributes.
-  type PolymorphicComponentLike = (<TAs extends ElementType = TDefaultAs>(
-    props: PolymorphicComponentProps<TAs, TOwnProps & StylesApiProps<any>>,
-  ) => React.ReactElement | null) & {
-    displayName?: string;
-  };
-
-  type WithPropsFn = <TAs extends ElementType = TDefaultAs>(
-    presets: Partial<TOwnProps & StylesApiProps<any>> & { as?: TAs },
-  ) => PolymorphicComponentLike;
-
-  return Component as unknown as PolymorphicComponentLike & {
-    withProps: WithPropsFn;
-    extend: (
-      config: ComponentExtendConfig<DefinePolymorphicProps>,
-    ) => ThemeComponentEntry<DefinePolymorphicProps>;
-    classes?: Partial<Record<TSelectors[number], string>>;
-    displayName?: string;
-  };
+  return Component as unknown as PolymorphicComponentResult<
+    TOwnProps,
+    TDefaultAs,
+    TSelectors,
+    TVariants,
+    TVocabAxes
+  >;
 }
+
+/**
+ * Public call-site props of a raw polymorphic recipe: own props, declared
+ * vocabulary axes (string-typed; theme-narrowed via makeBuilders), the
+ * recipe's variant tuple, and the selector-keyed styles API.
+ */
+type PolymorphicPublicProps<
+  TOwnProps,
+  TSelectors extends readonly string[],
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+> = TOwnProps &
+  InjectedVocabularyProps<TVocabAxes> &
+  VariantProp<TVariants> &
+  StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
+
+type PolymorphicExtendProps<
+  TOwnProps,
+  TDefaultAs extends ElementType,
+  TSelectors extends readonly string[],
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+> = PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> &
+  Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>> & {
+    variant?: TVariants[number];
+    intent?: string;
+  };
+
+/**
+ * The component value produced by a raw `definePolymorphicComponent` call.
+ * Generic over the target element at the call site (`as="span"` narrows props
+ * to span attributes); `withProps` returns the same shape so static chains
+ * (`.withProps().withProps()`, `.withProps().extend()`) keep type-checking.
+ */
+export type PolymorphicComponentResult<
+  TOwnProps,
+  TDefaultAs extends ElementType,
+  TSelectors extends readonly string[],
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+> = (<TAs extends ElementType = TDefaultAs>(
+  props: PolymorphicComponentProps<
+    TAs,
+    PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes>
+  >,
+) => React.ReactElement | null) & {
+  withProps: <TAs extends ElementType = TDefaultAs>(
+    presets: Partial<PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes>> & {
+      as?: TAs;
+    },
+  ) => PolymorphicComponentResult<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>;
+  extend: (
+    config: ComponentExtendConfig<
+      PolymorphicExtendProps<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>
+    >,
+  ) => ThemeComponentEntry<
+    PolymorphicExtendProps<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>
+  >;
+  classes?: Partial<Record<TSelectors[number], string>>;
+  displayName?: string;
+};
