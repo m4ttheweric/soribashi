@@ -3,8 +3,14 @@
  * Source: packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts
  * Upstream: https://github.com/mantinedev/mantine (master @ 63dafbbf, 2026-04-25)
  * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
+ *
+ * Soribashi changes:
+ *   - Themes may omit breakpoint tokens (Mantine themes always have them), so
+ *     media queries fall back to the default breakpoint map with a dev warning
+ *     instead of collapsing to an always-true `(min-width: 0)` bucket.
  */
-import type { ResolvedTheme } from '@soribashi/theme';
+import { defaultTokens, type ResolvedTheme } from '@soribashi/theme';
+import { isDev } from '../../utils/is-dev.ts';
 import type {
   ParsedStyleProps,
   StylePropDefinition,
@@ -36,10 +42,20 @@ function applyToProperty(
   }
 }
 
-function mediaQueryFor(theme: ResolvedTheme, key: BreakpointKey): string {
-  const value = theme.tokens.breakpoint?.[key];
-  if (!value) return `(min-width: 0)`;
-  return `(min-width: ${value})`;
+const warnedMissingBreakpoints = new Set<string>();
+
+function mediaQueryFor(theme: ResolvedTheme, key: BreakpointKey): string | undefined {
+  const themed = theme.tokens.breakpoint?.[key];
+  if (themed) return `(min-width: ${themed})`;
+  if (isDev() && !warnedMissingBreakpoints.has(key)) {
+    warnedMissingBreakpoints.add(key);
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[soribashi] theme.tokens.breakpoint has no "${key}" token; falling back to the default breakpoint map.`,
+    );
+  }
+  const fallback = defaultTokens.breakpoint?.[key];
+  return fallback ? `(min-width: ${fallback})` : undefined;
 }
 
 export interface ParseStylePropsInput {
@@ -95,6 +111,7 @@ export function parseStyleProps(input: ParseStylePropsInput): ParsedStyleProps {
         const resolved = def.resolver(responsive[bp]);
         if (resolved === undefined) continue;
         const query = mediaQueryFor(input.theme, bp);
+        if (query === undefined) continue;
         media[query] ??= {};
         applyToProperty(media[query]!, def.property, resolved);
       }
