@@ -163,8 +163,15 @@ describe('emitTailwindV3 — emitter logic parity', () => {
     });
 
     it('quotes numeric-like keys (e.g. "50", "500")', () => {
+      // Values must be HSL: non-HSL tokens now fall back to the canonical
+      // var() form, and this test asserts the <alpha-value> pattern.
       const theme = createTheme({
-        tokens: { colors: { primary: { '50': 'light', '500': 'mid' } }, radius: {}, spacing: {}, fontSize: {} },
+        tokens: {
+          colors: { primary: { '50': 'hsl(0 0% 95%)', '500': 'hsl(0 0% 50%)' } },
+          radius: {},
+          spacing: {},
+          fontSize: {},
+        },
       });
 
       const output = emitTailwindV3(theme);

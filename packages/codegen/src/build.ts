@@ -31,13 +31,19 @@ export async function build(config: CodegenConfig): Promise<BuildResult> {
   if (config.output.tailwind) {
     const tw = config.output.tailwind;
     if (tw.mode === 'v3') {
-      await writeFileEnsureDir(tw.configPath, emitTailwindV3(config.theme));
+      await writeFileEnsureDir(
+        tw.configPath,
+        emitTailwindV3(config.theme, { emitCompanionHsl: resolvedCompanion }),
+      );
       written.push(tw.configPath);
     } else if (tw.mode === 'v4') {
       await writeFileEnsureDir(tw.themeCssPath, emitTailwindV4(config.theme));
       written.push(tw.themeCssPath);
     } else if (tw.mode === 'both') {
-      await writeFileEnsureDir(tw.configPath, emitTailwindV3(config.theme));
+      await writeFileEnsureDir(
+        tw.configPath,
+        emitTailwindV3(config.theme, { emitCompanionHsl: resolvedCompanion }),
+      );
       written.push(tw.configPath);
       await writeFileEnsureDir(tw.themeCssPath, emitTailwindV4(config.theme));
       written.push(tw.themeCssPath);
