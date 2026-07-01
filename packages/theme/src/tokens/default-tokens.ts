@@ -19,6 +19,7 @@ export const defaultTokens: ThemeTokens = {
       '800': 'hsl(226 71% 40%)',
       '900': 'hsl(224 64% 33%)',
       '950': 'hsl(226 57% 21%)',
+      foreground: 'hsl(0 0% 100%)',
     },
     neutral: {
       '0': 'hsl(0 0% 100%)',
@@ -33,6 +34,7 @@ export const defaultTokens: ThemeTokens = {
       '800': 'hsl(217 33% 17%)',
       '900': 'hsl(222 47% 11%)',
       '950': 'hsl(229 84% 5%)',
+      foreground: 'hsl(0 0% 100%)',
     },
     success: {
       '50': 'hsl(138 76% 97%)',
@@ -46,6 +48,7 @@ export const defaultTokens: ThemeTokens = {
       '800': 'hsl(143 62% 20%)',
       '900': 'hsl(144 61% 20%)',
       '950': 'hsl(145 80% 10%)',
+      foreground: 'hsl(0 0% 100%)',
     },
     danger: {
       '50': 'hsl(0 93% 94%)',
@@ -59,6 +62,7 @@ export const defaultTokens: ThemeTokens = {
       '800': 'hsl(0 70% 35%)',
       '900': 'hsl(0 63% 31%)',
       '950': 'hsl(0 75% 15%)',
+      foreground: 'hsl(0 0% 100%)',
     },
     warning: {
       '50': 'hsl(48 96% 89%)',
@@ -72,6 +76,8 @@ export const defaultTokens: ThemeTokens = {
       '800': 'hsl(23 83% 31%)',
       '900': 'hsl(22 78% 26%)',
       '950': 'hsl(26 83% 14%)',
+      // White fails contrast on the amber 500 background; use the 950 value.
+      foreground: 'hsl(26 83% 14%)',
     },
     info: {
       '50': 'hsl(183 100% 96%)',
@@ -85,6 +91,7 @@ export const defaultTokens: ThemeTokens = {
       '800': 'hsl(201 90% 27%)',
       '900': 'hsl(202 80% 24%)',
       '950': 'hsl(204 80% 16%)',
+      foreground: 'hsl(0 0% 100%)',
     },
   },
   radius: {
@@ -160,8 +167,14 @@ export const defaultTokens: ThemeTokens = {
 };
 
 /**
- * Default dark-mode token overrides. Inverts the neutral scale and brightens
- * the primary scale for dark backgrounds.
+ * Default dark-mode token overrides. Fully inverts the neutral scale (dark
+ * shade k takes the light value of its mirror shade) and brightens the primary
+ * scale for dark backgrounds. The inversion must cover every shade the default
+ * semantics and intent resolver reference; a partial inversion leaves stray
+ * light values (e.g. a near-white border.default) in dark mode.
+ *
+ * The intent scales (success/warning/danger/info) deliberately have no dark
+ * story yet; their 500 anchors read acceptably on dark surfaces.
  */
 export const defaultDarkTokens: PartialThemeTokens = {
   colors: {
@@ -175,9 +188,17 @@ export const defaultDarkTokens: PartialThemeTokens = {
       '0': 'hsl(229 84% 5%)',
       '50': 'hsl(222 47% 11%)',
       '100': 'hsl(217 33% 17%)',
+      '200': 'hsl(215 25% 27%)',
+      '300': 'hsl(215 19% 35%)',
+      '400': 'hsl(215 16% 47%)',
       '500': 'hsl(215 20% 65%)',
+      '600': 'hsl(213 27% 84%)',
+      '700': 'hsl(214 32% 91%)',
+      '800': 'hsl(210 40% 96%)',
       '900': 'hsl(210 40% 98%)',
       '950': 'hsl(0 0% 100%)',
+      // The inverted 500 is light, so filled-neutral text flips dark.
+      foreground: 'hsl(222 47% 11%)',
     },
   },
 };

@@ -86,18 +86,22 @@ export type PartialThemeVocabulary = {
 /**
  * Resolves a (partial) declared vocabulary to a full `ThemeVocabulary` at the
  * TYPE level, mirroring what `createTheme()` does at runtime: each omitted axis
- * falls back to its default vocabulary. Crucially, declared axes keep their
+ * falls back to `Base` (the default vocabularies for fresh themes, the base
+ * theme's vocabulary when extending). Crucially, declared axes keep their
  * literal unions (e.g. `Vocabulary<'xs' | 'sm' | 'md' | 'lg' | 'xl'>`) instead
  * of widening to `Vocabulary<string>`, so `ResolvedTheme<ResolveVocab<V>>`
  * carries the consumer's exact vocab literals for downstream type threading.
  *
  * The `infer X extends Vocabulary` form handles both an absent key and an
- * explicit `undefined` cleanly, falling back to the default in either case.
+ * explicit `undefined` cleanly, falling back to `Base` in either case.
  */
-export type ResolveVocab<V extends PartialThemeVocabulary> = {
-  size: V extends { size: infer S extends Vocabulary } ? S : DefaultVocabularies['size'];
-  intent: V extends { intent: infer I extends Vocabulary } ? I : DefaultVocabularies['intent'];
-  variant: V extends { variant: infer Va extends Vocabulary } ? Va : DefaultVocabularies['variant'];
+export type ResolveVocab<
+  V extends PartialThemeVocabulary,
+  Base extends ThemeVocabulary = DefaultVocabularies,
+> = {
+  size: V extends { size: infer S extends Vocabulary } ? S : Base['size'];
+  intent: V extends { intent: infer I extends Vocabulary } ? I : Base['intent'];
+  variant: V extends { variant: infer Va extends Vocabulary } ? Va : Base['variant'];
 };
 
 // Semantic-level types
@@ -143,6 +147,12 @@ export type PartialSemanticTokensConfig = {
 export interface IntentResolverInput {
   intent: string;
   variant: string;
+  /**
+   * The fully-resolved theme, for resolvers that derive values from tokens or
+   * vocabulary. The default resolver does not consult it; it emits fixed
+   * `var(--color-{intent}-{shade})` references instead (see the scale
+   * contract on `IntentResolver`).
+   */
   theme: ResolvedTheme;
 }
 
@@ -155,6 +165,15 @@ export interface IntentResolverResult {
   hoverColor?: string;
 }
 
+/**
+ * Maps `(intent, variant)` to concrete CSS values.
+ *
+ * Scale contract when using the DEFAULT resolver: every scale named by the
+ * intent vocabulary must define shades `50`, `100`, `200`, `500`, `600`,
+ * `700`, `800`, and `foreground` (text paired with the `500` background).
+ * Themes whose scales cannot provide those shades must supply their own
+ * resolver here.
+ */
 export type IntentResolver = (input: IntentResolverInput) => IntentResolverResult;
 
 // Component theme override types
@@ -207,6 +226,48 @@ export interface ThemeDefinition<V extends PartialThemeVocabulary = PartialTheme
   /** Display name for debugging */
   name?: string;
 }
+
+/**
+ * A theme definition whose `tokens` may be partial or omitted, for use where a
+ * resolved base supplies the full set: the child side of `composeTheme` and
+ * definitions that carry `extends`. Fresh themes keep the strict
+ * `ThemeDefinition` contract so a standalone theme cannot silently lack
+ * required token families.
+ */
+export type ComposableThemeDefinition<
+  V extends PartialThemeVocabulary = PartialThemeVocabulary,
+> = Omit<ThemeDefinition<V>, 'tokens'> & { tokens?: Partial<ThemeTokens> };
+
+/**
+ * Definition form for themes that extend a base. `E` captures the base's exact
+ * type so `createTheme` can thread the base vocabulary into the resolved
+ * result (see `VocabOfExtends`).
+ */
+export type ExtendingThemeDefinition<
+  V extends PartialThemeVocabulary = PartialThemeVocabulary,
+  E extends ComposableThemeDefinition = ComposableThemeDefinition,
+> = Omit<ComposableThemeDefinition<V>, 'extends'> & { extends: E };
+
+/**
+ * The vocabulary a theme's `extends` value contributes at the TYPE level,
+ * mirroring the runtime inheritance chain (child axis ?? base axis ?? default):
+ *
+ * - a resolved base (`extends: someResolvedTheme`) carries its exact vocabulary;
+ *   a base typed as the wide `ResolvedTheme` yields honestly wide axes
+ * - an inline definition resolves recursively: its declared axes over whatever
+ *   its own `extends` contributes
+ * - no base (or an unrecognizable one) yields the default vocabularies
+ */
+export type VocabOfExtends<E> = E extends ResolvedTheme<infer BV>
+  ? BV
+  : E extends { vocabulary: infer BV extends PartialThemeVocabulary }
+    ? ResolveVocab<BV, ExtendsChainVocab<E>>
+    : E extends { extends: unknown }
+      ? ExtendsChainVocab<E>
+      : DefaultVocabularies;
+
+/** Recurses into whatever `E.extends` holds; absent means the defaults. */
+type ExtendsChainVocab<E> = VocabOfExtends<E extends { extends: infer X } ? X : undefined>;
 
 /**
  * The fully-resolved, normalized theme.

@@ -127,8 +127,11 @@ describe('emitTailwindV3 — emitter logic parity', () => {
       const theme = createTheme({
         tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
       });
+      // createTheme backfills default breakpoints; strip them so the emitter's
+      // absent-breakpoint branch is still exercised.
+      const { breakpoint: _backfilled, ...tokens } = theme.tokens;
 
-      const output = emitTailwindV3(theme);
+      const output = emitTailwindV3({ ...theme, tokens });
       expect(output).not.toContain('screens:');
     });
 

@@ -5,6 +5,14 @@ import type { IntentResolver, IntentResolverResult } from './types.ts';
  * the theme's CSS variables. Components consume this through the framework;
  * never directly.
  *
+ * Scale contract: this resolver hardcodes shade lookups rather than consulting
+ * `input.theme`, so every color scale named by the theme's intent vocabulary
+ * MUST define the shades `50`, `100`, `200`, `500`, `600`, `700`, `800`, and
+ * `foreground` (the text color paired with the `500` filled background).
+ * A scale missing one of these leaves components referencing an undefined
+ * `--color-{intent}-{shade}` variable. Custom scales that cannot satisfy the
+ * contract need a custom `IntentResolver` instead.
+ *
  * Reference: based on Mantine's `defaultVariantColorsResolver`. The variant
  * set is adapted to soribashi's `filled | outline | subtle | ghost | link`.
  */

@@ -47,8 +47,11 @@ describe('emitCss — BUG-E-1: breakpoint emission', () => {
     const theme = createTheme({
       tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
     });
+    // createTheme backfills default breakpoints; strip them so the emitter's
+    // absent-breakpoint branch is still exercised.
+    const { breakpoint: _backfilled, ...tokens } = theme.tokens;
 
-    const css = emitCss(theme);
+    const css = emitCss({ ...theme, tokens });
     expect(css).not.toContain('--breakpoint-');
   });
 

@@ -28,9 +28,30 @@ export type {
 } from '@soribashi/factory';
 
 // Theme
-export { createTheme, defaultIntentResolver, defaultTokens, defaultDarkTokens, defineVocabulary } from '@soribashi/theme';
+export {
+  createTheme,
+  composeTheme,
+  defaultIntentResolver,
+  defaultTokens,
+  defaultDarkTokens,
+  defineVocabulary,
+  isThemeComponentEntry,
+} from '@soribashi/theme';
 
-export type { ResolvedTheme, ThemeDefinition, IntentResolver, Vocabulary } from '@soribashi/theme';
+export type {
+  ResolvedTheme,
+  ThemeDefinition,
+  ThemeTokens,
+  PartialThemeTokens,
+  ColorScale,
+  SemanticTokensConfig,
+  ComponentThemeConfig,
+  IntentResolver,
+  IntentResolverInput,
+  IntentResolverResult,
+  ThemeComponentEntry,
+  Vocabulary,
+} from '@soribashi/theme';
 
 // Provider
 export { SoribashiProvider, useTheme } from '@soribashi/factory';
