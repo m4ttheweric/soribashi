@@ -28,13 +28,17 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   }
   lines.push('}');
 
-  // .dark block — emitted if there are dark token overrides OR consumer dark vars
-  const hasDarkTokens = Object.keys(effectiveTheme.dark).length > 0;
+  // .dark block — emitted if there are dark token overrides OR consumer dark vars.
+  // Emit into a scratch array first: composed themes materialize every dark
+  // section as an empty object, so a key-count check on theme.dark would emit
+  // an empty block.
+  const darkLines: string[] = [];
+  emitDarkTokenLines(darkLines, effectiveTheme.dark, emitCompanion);
   const hasDarkAdditions = !!additions?.dark && Object.keys(additions.dark).length > 0;
-  if (hasDarkTokens || hasDarkAdditions) {
+  if (darkLines.length > 0 || hasDarkAdditions) {
     lines.push('');
     lines.push(`${effectiveTheme.darkMode.selector} {`);
-    if (hasDarkTokens) emitDarkTokenLines(lines, effectiveTheme.dark, emitCompanion);
+    lines.push(...darkLines);
     if (additions?.dark) {
       for (const [key, value] of Object.entries(additions.dark)) {
         lines.push(`  ${key}: ${value};`);

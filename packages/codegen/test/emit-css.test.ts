@@ -117,6 +117,48 @@ describe('emitCss', () => {
     expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
   });
 
+  it('does not emit an empty .dark block for composed themes without dark overrides', () => {
+    // composeTheme materializes every token section in `dark` as an empty
+    // object, so a key-count check on theme.dark sees ~11 entries with
+    // nothing to emit.
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+    const extended = createTheme({
+      extends: base,
+      tokens: { colors: { brand: { '500': 'hsl(10 80% 50%)' } }, radius: {}, spacing: {}, fontSize: {} },
+    });
+
+    expect(Object.keys(extended.dark).length).toBeGreaterThan(0);
+    const css = emitCss(extended);
+    expect(css).not.toContain('.dark');
+  });
+
+  it('still emits the .dark block for composed themes with real dark overrides', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+    const extended = createTheme({
+      extends: base,
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      dark: { colors: { primary: { '500': 'hsl(0 0% 80%)' } } },
+    });
+
+    const css = emitCss(extended);
+    expect(css).toContain('.dark {');
+    expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
+  });
+
   it('respects custom scope and darkMode selector', () => {
     const theme = createTheme({
       tokens: {
