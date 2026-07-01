@@ -1,60 +1,139 @@
 # Soribashi
 
-A component-authoring framework for React, derived from Mantine's open-source patterns. Soribashi is the toolkit you use to build a component library, not the library itself: one way to define components, one place to make styling decisions (the theme), and codegen that keeps the two in sync.
+A component-authoring framework for React. Define components once, theme them centrally, and generate the styling substrate -- so your team owns every line of UI code and still gets Mantine-grade DX.
 
-See [`docs/superpowers/specs/2026-04-25-soribashi-design.md`](docs/superpowers/specs/2026-04-25-soribashi-design.md) and the [Deterministic UI Patterns RFC](./Deterministic%20UI%20Patterns%20RFC%20v2.md) for the full rationale.
+Soribashi is not a component library. It is the toolkit you use to **build** one.
 
-## The idea
+## The problem
 
-Feature code expresses intent through semantic props (`intent="primary"`, `variant="subtle"`, `size="md"`) instead of raw colors and pixel values. Those tokens are defined once in the theme. Codegen turns the theme into CSS variables and a Tailwind config, so a component can't reference a token that doesn't exist and styling decisions don't drift across the codebase. That's the deterministic part.
+Teams today choose between two poles:
 
-It adapts Mantine's factory patterns (`defineComponent`, `useProps`, `useStyles`, the intent/variant resolver) rather than forking its components, and stays substrate-agnostic (Tailwind v3/v4 or CSS Modules). Mantine-derived code is attributed in [`THIRD-PARTY-LICENSES.md`](./THIRD-PARTY-LICENSES.md).
+- **Own your components** (shadcn, hand-rolled CVA recipes) -- full control, but no governing layer. `size` means different things across components, color decisions scatter into feature code, and three developers spell "focus ring" three different ways.
+- **Adopt a framework** (Mantine, Chakra) -- world-class DX out of the box, but you're coupled to someone else's component set, styling conventions, and release cycle.
 
-## Packages
+Soribashi bridges the gap. You get the authoring primitives that make Mantine's DX possible -- `defineComponent`, `useProps`, `useStyles`, the intent resolver, `.extend()`, `.withProps()` -- without adopting Mantine's components. You own everything. The framework just makes ownership sustainable.
 
-- `@soribashi/factory`: `defineComponent`, `definePolymorphicComponent`, `defineCompound`, `useProps`, `useStyles`
-- `@soribashi/theme`: `createTheme`, `SoribashiProvider`, `useTheme`, `defineVocabulary`, the intent resolver
-- `@soribashi/codegen`: theme to CSS variables + Tailwind config (CLI: `soribashi build` / `soribashi watch`)
-- `@soribashi/blocks`: layout primitives (Box, Stack, Group, Flex, Grid, Container, Paper, Text, Title, and more)
-- `@soribashi/core`: public barrel re-exporting the above
+## Quick look
 
-Two apps consume them: `apps/playground` (a theme lab and blocks demo) and `apps/core-radix-pilot` (a pilot porting real components like Button, Tooltip, and Tabs onto soribashi).
+**Define a vocabulary** -- the shared language your components speak:
 
-## Authoring a component
+```ts
+import { defineVocabulary, createTheme } from '@soribashi/core';
 
-```tsx
-import { defineComponent } from '@soribashi/core';
+const size  = defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl']);
+const intent = defineVocabulary(['primary', 'neutral', 'success', 'warning', 'danger', 'info']);
 
-export const Button = defineComponent<ButtonOwnProps>({
-  name: 'Button',
-  element: 'button',
-  selectors: ['root', 'label', 'icon'] as const,
-  variants: ['filled', 'outline', 'subtle', 'ghost', 'link'] as const,
-  defaults: { intent: 'primary', variant: 'filled', size: 'md' },
-  render: ({ props, getStyles }) => (
-    <button {...getStyles('root')} data-size={props.size}>
-      <span {...getStyles('label')}>{props.children}</span>
-    </button>
-  ),
+export const theme = createTheme({
+  vocabulary: { size, intent },
+  tokens: {
+    colors: {
+      primary: { 500: 'hsl(221 83% 53%)', foreground: 'hsl(0 0% 100%)' /* ...scale */ },
+      neutral: { 500: 'hsl(215 16% 47%)', foreground: 'hsl(0 0% 100%)' /* ...scale */ },
+    },
+    radius: { sm: '0.25rem', md: '0.375rem', lg: '0.5rem' },
+    spacing: { xs: '0.25rem', sm: '0.5rem', md: '0.75rem', lg: '1rem', xl: '1.5rem' },
+  },
+  semanticTokens: {
+    text:    { default: 'colors.neutral.900', muted: 'colors.neutral.500' },
+    surface: { default: 'colors.neutral.0', raised: 'colors.neutral.100' },
+    border:  { default: 'colors.neutral.200' },
+  },
 });
 ```
 
-`getStyles(slot)` returns the class and inline vars for each slot; intent and variant resolve against the theme.
+**Author a component** -- one declarative call, types inferred:
 
-## Status
+```tsx
+import { definePolymorphicComponent, defineVocabulary } from '@soribashi/core';
+import classes from './Button.module.css';
 
-Pre-v1. The foundation is in place (factory, theme, codegen, and the Mantine blocks adaptation, with roughly 785 unit and Playwright parity tests). Active work is migrating real components onto the framework and building out per-recipe vocabulary rails. See [`STATUS.md`](./STATUS.md) for detail. Packages are versioned at 0.0.0 and not yet published.
+const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
 
-## Local development
+export const Button = definePolymorphicComponent({
+  name: 'Button',
+  defaultElement: 'button',
+  vocabularyAxes: ['size', 'intent', 'variant'] as const,
+  selectors: ['root', 'inner', 'label', 'icon'] as const,
+  variants,
+  classes,
+  defaults: { intent: 'primary', variant: 'filled', size: 'md' },
+  render: ({ Element, props, getStyles, ref }) => (
+    <Element ref={ref} {...getStyles('root')} data-intent={props.intent} data-variant={props.variant}>
+      <span {...getStyles('label')}>{props.children}</span>
+    </Element>
+  ),
+});
 
-Needs [Bun](https://bun.sh).
+// Register variant vocabulary with the theme
+export const buttonTheme = Button.extend({
+  vocabulary: { variant: defineVocabulary(variants) },
+});
+```
+
+`getStyles(slot)` returns the class name and inline CSS vars for each slot. Intent and variant resolve against the theme automatically. Consumers get autocomplete on `size`, `intent`, and `variant` narrowed to the theme's literal unions.
+
+**Use it** -- feature code expresses intent, never raw values:
+
+```tsx
+<Button intent="primary" variant="filled" size="lg">
+  Submit
+</Button>
+
+<Button intent="danger" variant="outline" size="sm" component="a" href="/cancel">
+  Cancel
+</Button>
+```
+
+## Key ideas
+
+- **Theme is the contract.** `createTheme()` is the single authority for tokens, semantics, and component defaults. Feature code says `intent="primary"` -- it never picks shades or pixel values.
+- **Vocabulary, not magic strings.** `defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'])` produces a typed tuple backed by Zod. Compile-time inference and runtime validation from a single declaration.
+- **One function, one component.** `defineComponent`, `definePolymorphicComponent`, `defineCompound`, or `defineGenericComponent` -- pick the builder that fits. Each replaces Mantine's five-type-alias ceremony with a single config object.
+- **Codegen closes the loop.** `soribashi build` generates CSS custom properties and a Tailwind config from your theme. You cannot reference a token that does not exist.
+- **Substrate-agnostic.** CSS Modules, Tailwind v3/v4, or plain class names. Mix and match across components.
+- **`.extend()` without forking.** Theme-level customization of any component -- override defaults, inject classes, add vocabulary -- without touching the component source.
+
+## Four builders for four shapes
+
+| Builder | Use case | Example |
+|---|---|---|
+| `defineComponent` | Standard component with style slots | Card, Badge, Alert |
+| `definePolymorphicComponent` | Renders as any element (`component="a"`) | Button, Text, Paper |
+| `defineCompound` | Multi-part with shared context | Tooltip, Tabs, Accordion |
+| `defineGenericComponent` | Data-driven with type inference | Select, Autocomplete, Table |
+
+## Packages
+
+| Package | Purpose |
+|---|---|
+| `@soribashi/factory` | `defineComponent`, `definePolymorphicComponent`, `defineCompound`, `defineGenericComponent`, `useProps`, `useStyles`, `makeBuilders` |
+| `@soribashi/theme` | `createTheme`, `defineVocabulary`, `composeTheme`, intent resolver, default tokens |
+| `@soribashi/codegen` | Theme to CSS variables + Tailwind v3/v4 config. CLI: `soribashi build` / `soribashi watch` |
+| `@soribashi/blocks` | 14 layout primitives: Box, Stack, Group, Flex, Grid, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title |
+| `@soribashi/core` | Public barrel re-exporting all of the above |
+
+## Getting started
+
+Requires [Bun](https://bun.sh).
 
 ```bash
 bun install
-bun run dev        # codegen, then the playground dev server
+bun run dev        # codegen + playground dev server
 bun test           # vitest across all packages
 bun run typecheck
 bun run lint       # biome
 ```
 
-`bun run dev` runs codegen first (theme to generated CSS + Tailwind config) and then starts the playground. Change the theme and codegen regenerates those outputs.
+`bun run dev` runs codegen first (theme to CSS custom properties + Tailwind config), then starts the playground. Change the theme and codegen regenerates those outputs.
+
+## Status
+
+Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-core-radix-conversion-playbook.md). 980+ tests across packages. Packages are versioned at `0.0.0` and not yet published.
+
+## Attribution
+
+Soribashi adapts patterns from [Mantine](https://mantine.dev) (MIT). Factory, blocks, and style-props machinery are derived from Mantine's open-source code. Every adapted source file carries a header comment pointing to the original. See [THIRD-PARTY-LICENSES.md](./THIRD-PARTY-LICENSES.md).
+
+## License
+
+MIT
