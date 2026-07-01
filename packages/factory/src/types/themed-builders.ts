@@ -6,7 +6,7 @@ import type { StylesApiProps } from './props.ts';
 import type { PolymorphicComponentProps } from './polymorphic.ts';
 import type { ComponentExtendConfig } from './component-extend.ts';
 import type { ThemeComponentEntry } from '../theme-component-entry.ts';
-import type { VocabularyAxis, ThemedVocabularyProps } from './vocabulary-axes.ts';
+import type { VocabularyAxis, ThemedVocabularyProps, VariantProp } from './vocabulary-axes.ts';
 
 /**
  * Theme-narrowed builder types returned by `createSoribashiBuilders(theme)`.
@@ -24,19 +24,8 @@ import type { VocabularyAxis, ThemedVocabularyProps } from './vocabulary-axes.ts
  * accepts these props verbatim (they flow through as data-attributes/props).
  */
 
-/**
- * Guarded `variant` prop. Yields `{ variant?: TVariants[number] }` ONLY when the
- * recipe declares a real variant tuple; yields `unknown` (an intersection no-op)
- * when `TVariants` is the default `readonly string[]`. This is what lets the
- * themed builder surface `variant` from the recipe's `variants` config (closing
- * the gap CodeRabbit flagged on `.extend()`) WITHOUT collapsing `variant` to a
- * bare `string` for recipes that declare no variants — `<Box variant="anything">`
- * stays rejected. `string extends TVariants[number]` is true exactly when the
- * union has widened to `string` (the no-variants / default case).
- */
-type VariantProp<TVariants extends readonly string[]> = string extends TVariants[number]
-  ? unknown
-  : { variant?: TVariants[number] };
+// VariantProp lives in vocabulary-axes.ts (shared by the raw builders since
+// phase 2); re-imported above.
 
 /**
  * The `.extend()` arg shape. Mirrors define-polymorphic-component's

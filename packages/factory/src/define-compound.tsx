@@ -22,7 +22,7 @@ import type { FactoryPayload } from './types/factory-payload.ts';
 import type { GetStylesFn, GetStylesOptions, GetStylesResult } from './types/render-context.ts';
 import type { StylesApiProps, CompoundStylesApiProps } from './types/props.ts';
 import type { PolymorphicComponentProps } from './types/polymorphic.ts';
-import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
+import type { VocabularyAxis, InjectedVocabularyProps, VariantProp } from './types/vocabulary-axes.ts';
 
 // ---------------------------------------------------------------------------
 // Part render context types
@@ -145,7 +145,9 @@ export interface DefineCompoundConfig<
   vocabularyAxes?: TVocabAxes;
   variants?: TVariants;
   classes?: Partial<Record<string, string>>;
-  defaults?: Partial<ExtractPartProps<TParts['root']> & InjectedVocabularyProps<TVocabAxes>>;
+  defaults?: Partial<
+    ExtractPartProps<TParts['root']> & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>
+  >;
   vars?: (
     theme: ResolvedTheme,
     props: ExtractPartProps<TParts['root']>,
@@ -223,15 +225,41 @@ type PartsNamespace<TParts extends Record<string, PartConfig<any, any, any>>> = 
         > & PartStaticMethods<TParts[K]>;
 };
 
-type CompoundComponent<TParts extends Record<string, PartConfig<any, any, any>>> =
+/**
+ * Union of slot keys statically known for a compound: the part keys plus the
+ * keys of `config.classes`. Degrades to `string` when classes come from an
+ * untyped source (e.g. a CSS module typed as Record<string, string>).
+ */
+type CompoundSlotKeys<TParts, TClasses> = (keyof TParts | keyof TClasses) & string;
+
+/**
+ * Root's public call-site props: root part props, declared vocabulary axes
+ * (string-typed raw; theme-narrowed via makeBuilders), the recipe's variant
+ * tuple, and the slot-keyed styles API.
+ */
+type CompoundRootPublicProps<
+  TParts extends Record<string, PartConfig<any, any, any>>,
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+  TSlotKeys extends string,
+> = ExtractPartProps<TParts['root']> &
+  InjectedVocabularyProps<TVocabAxes> &
+  VariantProp<TVariants> &
+  StylesApiProps<{ props: ExtractPartProps<TParts['root']>; stylesNames: TSlotKeys } & FactoryPayload>;
+
+type CompoundComponent<
+  TParts extends Record<string, PartConfig<any, any, any>>,
+  TVariants extends readonly string[] = readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+  TSlotKeys extends string = string,
+> =
   React.ForwardRefExoticComponent<
-    ExtractPartProps<TParts['root']>
-    & StylesApiProps<PartPayload<TParts['root']>>
+    CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>
     & React.RefAttributes<unknown>
   > & PartsNamespace<TParts> & {
     extend: (
-      config: ComponentExtendConfig<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>,
-    ) => ThemeComponentEntry<ExtractPartProps<TParts['root']> & StylesApiProps<PartPayload<TParts['root']>>>;
+      config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
+    ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>;
     displayName?: string;
   };
 
@@ -291,7 +319,9 @@ export function defineCompound<
   TCtxExtra extends object = object,
   TClasses extends Partial<Record<string, string>> = Partial<Record<string, string>>,
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
->(config: DefineCompoundConfig<TParts, TVariants, TCtxExtra, TVocabAxes> & { classes?: TClasses }): CompoundComponent<TParts> {
+>(
+  config: DefineCompoundConfig<TParts, TVariants, TCtxExtra, TVocabAxes> & { classes?: TClasses },
+): CompoundComponent<TParts, TVariants, TVocabAxes, CompoundSlotKeys<TParts, TClasses>> {
   if (!config.parts.root) {
     throw new Error(`defineCompound("${config.name}") requires parts.root`);
   }

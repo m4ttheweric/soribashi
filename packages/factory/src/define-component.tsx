@@ -11,7 +11,7 @@ import type { GetStylesFn } from './types/render-context.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
-import type { VocabularyAxis, InjectedVocabularyProps } from './types/vocabulary-axes.ts';
+import type { VocabularyAxis, InjectedVocabularyProps, VariantProp } from './types/vocabulary-axes.ts';
 
 export interface DefineComponentConfig<
   TOwnProps,
@@ -30,7 +30,7 @@ export interface DefineComponentConfig<
   selectors: TSelectors;
   variants?: TVariants;
   classes?: Partial<Record<TSelectors[number], string>>;
-  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes>>;
+  defaults?: Partial<TOwnProps & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>>;
   vars?: (
     theme: ResolvedTheme,
     props: TOwnProps & { variant?: TVariants[number]; intent?: string },
@@ -43,6 +43,51 @@ export interface DefineComponentConfig<
     ref: Ref<HTMLElement>;
   }) => React.ReactNode;
 }
+
+/**
+ * Public component type produced by `defineComponent`. Call-site props include
+ * the declared vocabulary axes (string-typed on the raw builder; theme-narrowed
+ * via makeBuilders), the recipe's variant tuple, and the selector-keyed styles
+ * API. `withProps` returns the same shape so static chains keep type-checking.
+ */
+export type DefineComponentResult<
+  TOwnProps,
+  TSelectors extends readonly string[],
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+> = React.ForwardRefExoticComponent<
+  DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> &
+    React.RefAttributes<HTMLElement>
+> & {
+  extend: (
+    config: ComponentExtendConfig<
+      DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> & {
+        variant?: TVariants[number];
+        intent?: string;
+      }
+    >,
+  ) => ThemeComponentEntry<
+    DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> & {
+      variant?: TVariants[number];
+      intent?: string;
+    }
+  >;
+  withProps: (
+    presets: Partial<DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes>>,
+  ) => DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes>;
+  classes?: Partial<Record<TSelectors[number], string>>;
+  displayName?: string;
+};
+
+export type DefineComponentPublicProps<
+  TOwnProps,
+  TSelectors extends readonly string[],
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+> = TOwnProps &
+  InjectedVocabularyProps<TVocabAxes> &
+  VariantProp<TVariants> &
+  StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
 
 /**
  * The daily-use component authoring API.
@@ -100,16 +145,5 @@ export function defineComponent<
 
   (Component as any).extend = makeExtendEntry<DefineComponentProps>(config.name);
 
-  return Component as unknown as React.ForwardRefExoticComponent<
-    TOwnProps & StylesApiProps<any> & React.RefAttributes<HTMLElement>
-  > & {
-    extend: (
-      config: ComponentExtendConfig<DefineComponentProps>,
-    ) => ThemeComponentEntry<DefineComponentProps>;
-    withProps: (
-      presets: Partial<TOwnProps & StylesApiProps<any>>,
-    ) => React.ComponentType<TOwnProps & StylesApiProps<any>>;
-    classes?: Partial<Record<TSelectors[number], string>>;
-    displayName?: string;
-  };
+  return Component as unknown as DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes>;
 }

@@ -37,3 +37,17 @@ export type ThemedVocabularyProps<
 > = {
   [K in TAxes[number] & GlobalVocabularyAxis]?: NonNullable<TVocab[K]['type']>;
 };
+
+/**
+ * Guarded `variant` prop. Yields `{ variant?: TVariants[number] }` ONLY when the
+ * recipe declares a real variant tuple; yields `unknown` (an intersection no-op)
+ * when `TVariants` is the default `readonly string[]`. This is what lets builders
+ * surface `variant` from the recipe's `variants` config WITHOUT collapsing
+ * `variant` to a bare `string` for recipes that declare no variants —
+ * `<Box variant="anything">` stays rejected. `string extends TVariants[number]`
+ * is true exactly when the union has widened to `string` (the no-variants /
+ * default case).
+ */
+export type VariantProp<TVariants extends readonly string[]> = string extends TVariants[number]
+  ? unknown
+  : { variant?: TVariants[number] };

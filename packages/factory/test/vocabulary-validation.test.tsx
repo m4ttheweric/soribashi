@@ -101,7 +101,7 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip variant="bogus">x</Chip></SoribashiProvider>);
+    render(<SoribashiProvider theme={theme}><Chip variant={"bogus" as never}>x</Chip></SoribashiProvider>);
     expect(errSpy).toHaveBeenCalled();
     const message = errSpy.mock.calls[0]![0] as string;
     expect(message).toContain('not in the declared vocabulary');
@@ -121,7 +121,7 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip variant="bogus">x</Chip></SoribashiProvider>);
+    render(<SoribashiProvider theme={theme}><Chip variant={"bogus" as never}>x</Chip></SoribashiProvider>);
     const message = errSpy.mock.calls[0]![0] as string;
     expect(message).toContain('.extend(');
     expect(message).toContain('createTheme');
@@ -148,7 +148,7 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <div data-variant={props.variant}>x</div>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Chip variant="special">x</Chip></SoribashiProvider>);
+    render(<SoribashiProvider theme={theme}><Chip variant={"special" as never}>x</Chip></SoribashiProvider>);
     expect(errSpy).not.toHaveBeenCalled();
     errSpy.mockClear();
     // 'dot' is recipe-local but the theme override replaced the vocabulary
