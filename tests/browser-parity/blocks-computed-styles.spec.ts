@@ -305,7 +305,7 @@ test('AspectRatio [default ratio=1] — child has aspect-ratio:1', async ({ page
   // Default --ar-ratio is 1 → aspect-ratio: 1
   // Chromium reports the computed value as "1 / 1" (normalised fraction form)
   const parsed = v.split('/').map((s) => parseFloat(s.trim()));
-  const ratio = parsed.length === 2 ? parsed[0] / parsed[1] : parseFloat(v);
+  const ratio = parsed.length === 2 ? parsed[0]! / parsed[1]! : parseFloat(v);
   expect(ratio).toBeCloseTo(1, 2);
 });
 
@@ -326,7 +326,7 @@ test('AspectRatio [ratio=4/3] — child div has correct aspect-ratio', async ({ 
   expect(v).not.toBe('auto');
   // Parse and verify close to 4/3
   const parts = v.split('/').map((s) => parseFloat(s.trim()));
-  const ratio = parts.length === 2 ? parts[0] / parts[1] : parseFloat(v);
+  const ratio = parts.length === 2 ? parts[0]! / parts[1]! : parseFloat(v);
   expect(ratio).toBeCloseTo(4 / 3, 2);
 });
 
