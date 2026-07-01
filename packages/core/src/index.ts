@@ -25,6 +25,8 @@ export type {
   PolymorphicRenderCtx,
   ComponentExtendConfig,
   VocabularyOverride,
+  VocabValue,
+  VocabularyOf,
 } from '@soribashi/factory';
 
 // Theme

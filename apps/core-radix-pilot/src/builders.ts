@@ -11,7 +11,7 @@
  * `registerTheme(theme)` call in `theme/index.ts`.
  */
 import type { BaseTheme } from './theme/index.ts';
-import { makeBuilders } from '@soribashi/core';
+import { makeBuilders, type VocabValue } from '@soribashi/core';
 
 export const {
   defineComponent,
@@ -19,3 +19,10 @@ export const {
   defineCompound,
   defineGenericComponent,
 } = makeBuilders<BaseTheme>();
+
+/**
+ * The theme's `size` vocabulary literal union (`'xs' | 'sm' | 'md' | 'lg' | 'xl'`).
+ * Generic recipes (defineGenericComponent) type their `size` prop with this to
+ * get the same theme-narrowed typing the polymorphic builder injects.
+ */
+export type SizeValue = VocabValue<BaseTheme, 'size'>;

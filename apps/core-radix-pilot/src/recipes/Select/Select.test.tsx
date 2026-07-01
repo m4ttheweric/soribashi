@@ -151,6 +151,10 @@ describe('Select type narrowing (compile-time)', () => {
     // `value` would participate in inference and widen V to include 'lg').
     // @ts-expect-error: 'lg' is not in the Value union 'sm' | 'md'
     void (<Select<'sm' | 'md'> data={[{ value: 'sm', label: 'S' }]} value={'lg'} />);
+    // `size` narrows to the theme's size vocabulary (VocabValue<BaseTheme, 'size'>)
+    void (<Select data={['a']} size="md" />);
+    // @ts-expect-error: 'huge' is not in the theme's size vocabulary
+    void (<Select data={['a']} size="huge" />);
     expect(true).toBe(true);
   });
 });
