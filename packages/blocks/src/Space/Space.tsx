@@ -28,10 +28,21 @@ export const Space = defineComponent<SpaceOwnProps>({
       vars: _v,
       attributes: _a,
       unstyled: _u,
-      className: _className,
-      style: _style,
+      className,
+      style,
       ...rest
     } = props as any;
-    return <Box ref={ref} w={w} h={h} miw={miw ?? w} mih={mih ?? h} {...rest} />;
+    return (
+      <Box
+        ref={ref}
+        w={w}
+        h={h}
+        miw={miw ?? w}
+        mih={mih ?? h}
+        className={className}
+        style={style}
+        {...rest}
+      />
+    );
   },
 });
