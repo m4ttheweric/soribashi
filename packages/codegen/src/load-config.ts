@@ -1,4 +1,5 @@
 import { pathToFileURL } from 'node:url';
+import type { ResolvedTheme } from '@soribashi/theme';
 import type { CodegenConfig } from './types.ts';
 
 /**
@@ -41,7 +42,7 @@ export async function loadConfig(absolutePath: string): Promise<CodegenConfig> {
   // the emitters with a bare TypeError; catch it here with a useful message.
   // vocabulary/semanticTokens/scope are always present on a ResolvedTheme and
   // absent from typical definitions.
-  const theme = config.theme as Record<string, unknown>;
+  const theme: Partial<ResolvedTheme> = config.theme;
   const looksResolved =
     typeof theme === 'object' &&
     theme !== null &&

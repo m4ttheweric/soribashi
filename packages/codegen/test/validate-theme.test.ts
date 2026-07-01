@@ -3,12 +3,13 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createTheme } from '@soribashi/theme';
+import type { ThemeDefinition } from '@soribashi/theme';
 import { validateTheme } from '../src/validate-theme.ts';
 import { build } from '../src/build.ts';
 
 const emptySemanticTokens = { text: {}, surface: {}, border: {} };
 
-function themeWith(overrides: Parameters<typeof createTheme>[0]) {
+function themeWith(overrides: Partial<ThemeDefinition>) {
   return createTheme({
     semanticTokens: emptySemanticTokens,
     ...overrides,

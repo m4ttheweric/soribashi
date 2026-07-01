@@ -99,3 +99,51 @@ describe('runCli flags', () => {
     expect(errored()).toMatch(/\n\s+at /);
   });
 });
+
+describe('runCli watch shutdown', () => {
+  it('installs a SIGINT handler that stops watchers and resolves with exit code 0', async () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'soribashi-cli-watch-'));
+    const onceSpy = vi.spyOn(process, 'once');
+    try {
+      const configPath = join(tempDir, 'soribashi.config.ts');
+      const outPath = join(tempDir, 'out', 'theme.css');
+      writeFileSync(
+        configPath,
+        `export default {
+          theme: {
+            tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+            dark: {},
+            vocabulary: {},
+            semanticTokens: { text: {}, surface: {}, border: {} },
+            scope: ':root',
+            darkMode: { selector: '.dark' },
+            name: 'sigint-test',
+            intentResolver: () => ({ background: '', color: '', border: '' }),
+            components: {},
+          },
+          output: { css: ${JSON.stringify(outPath)} },
+          watch: [],
+        };`,
+      );
+
+      const promise = runCli(['watch', '--config', configPath], {
+        cwd: tempDir,
+        silent: true,
+      });
+
+      await vi.waitFor(
+        () => expect(onceSpy.mock.calls.some((c) => c[0] === 'SIGINT')).toBe(true),
+        { timeout: 10000 },
+      );
+      const call = onceSpy.mock.calls.find((c) => c[0] === 'SIGINT')!;
+      const handler = call[1] as () => void;
+      handler();
+
+      await expect(promise).resolves.toBe(0);
+      process.removeListener('SIGINT', handler);
+    } finally {
+      onceSpy.mockRestore();
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  }, 20000);
+});

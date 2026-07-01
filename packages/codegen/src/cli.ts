@@ -92,12 +92,14 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
       return 0;
     }
 
-    const config = await loadConfig(configPath);
-    const handle = await watch(config, { silent: options.silent });
+    const handle = await watch(configPath, { silent: options.silent, cwd });
     log(`[soribashi] watching for changes... (Ctrl+C to stop)`);
-    await new Promise(() => {});
-    await handle.stop();
-    return 0;
+    return await new Promise<number>((resolveExit) => {
+      process.once('SIGINT', () => {
+        log('[soribashi] shutting down...');
+        void handle.stop().then(() => resolveExit(0));
+      });
+    });
   } catch (err) {
     error(`[soribashi] error: ${err instanceof Error ? err.message : String(err)}`);
     if ((args.verbose || process.env.DEBUG) && err instanceof Error && err.stack) {
