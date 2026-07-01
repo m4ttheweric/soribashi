@@ -1,6 +1,6 @@
-import { watch as fsWatch, existsSync, statSync } from 'node:fs';
 import { spawn } from 'node:child_process';
-import { resolve, dirname } from 'node:path';
+import { existsSync, watch as fsWatch, statSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './load-config.ts';
 
@@ -34,10 +34,7 @@ export interface WatchOptions {
  * Limitation: the watched paths come from the initial config load; edits to
  * the config's `watch` array take effect on the next `soribashi watch` start.
  */
-export async function watch(
-  configPath: string,
-  options: WatchOptions = {},
-): Promise<WatchHandle> {
+export async function watch(configPath: string, options: WatchOptions = {}): Promise<WatchHandle> {
   const cwd = options.cwd ?? process.cwd();
   const debounceMs = options.debounceMs ?? 75;
   const log = options.silent ? () => {} : console.log;

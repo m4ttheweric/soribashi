@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
-import { parseStyleProps } from '../../src/Box/style-props/parse-style-props.ts';
+import { describe, expect, it } from 'vitest';
 import { extractStyleProps } from '../../src/Box/style-props/extract-style-props.ts';
+import { parseStyleProps } from '../../src/Box/style-props/parse-style-props.ts';
 import { STYLE_PROPS_DATA } from '../../src/Box/style-props/style-props-data.ts';
 
 const theme = createTheme({
@@ -41,10 +41,7 @@ describe('media query emission order', () => {
       data: STYLE_PROPS_DATA,
       theme,
     });
-    expect(Object.keys(result.media)).toEqual([
-      '(min-width: 40rem)',
-      '(min-width: 48rem)',
-    ]);
+    expect(Object.keys(result.media)).toEqual(['(min-width: 40rem)', '(min-width: 48rem)']);
   });
 
   it('sorts across multiple props and breakpoints', () => {

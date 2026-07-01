@@ -1,11 +1,11 @@
-import { describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createTheme } from '@soribashi/theme';
 import type { ThemeDefinition } from '@soribashi/theme';
-import { validateTheme } from '../src/validate-theme.ts';
+import { describe, expect, it } from 'vitest';
 import { build } from '../src/build.ts';
+import { validateTheme } from '../src/validate-theme.ts';
 
 // createTheme's default semanticTokens merge per-key under any overrides, so
 // the fixture palette must cover every neutral shade those defaults reference.
@@ -197,7 +197,11 @@ describe('validateTheme — custom-property-unsafe token names', () => {
   it('accepts hyphenated and underscored names', () => {
     const theme = themeWith({
       tokens: {
-        colors: { neutral, 'blue-gray': { '500': 'hsl(215 16% 47%)' }, brand_alt: { '500': '#123' } },
+        colors: {
+          neutral,
+          'blue-gray': { '500': 'hsl(215 16% 47%)' },
+          brand_alt: { '500': '#123' },
+        },
         radius: {},
         spacing: {},
         fontSize: {},
@@ -218,9 +222,9 @@ describe('build — fails on invalid semantic token refs', () => {
         },
       });
 
-      await expect(
-        build({ theme, output: { css: join(tempDir, 'theme.css') } }),
-      ).rejects.toThrow(/no shade '999'/);
+      await expect(build({ theme, output: { css: join(tempDir, 'theme.css') } })).rejects.toThrow(
+        /no shade '999'/,
+      );
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }

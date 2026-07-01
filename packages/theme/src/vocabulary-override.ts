@@ -10,6 +10,4 @@ import type { Vocabulary } from './define-vocabulary.ts';
  * the resulting concrete Vocabulary is stored on the ThemeComponentEntry for
  * runtime lookup.
  */
-export type VocabularyOverride =
-  | Vocabulary
-  | ((current: Vocabulary) => Vocabulary);
+export type VocabularyOverride = Vocabulary | ((current: Vocabulary) => Vocabulary);

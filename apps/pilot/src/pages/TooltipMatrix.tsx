@@ -18,15 +18,23 @@
  * controlled-state architectural point cleanly.
  */
 import { useState } from 'react';
-import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
+import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 
 const VARIANTS = ['default', 'subtle'] as const;
 const SIDES = ['top', 'right', 'bottom', 'left'] as const;
 
 export function TooltipMatrix() {
   return (
-    <div style={{ padding: 32, display: 'flex', flexDirection: 'column', gap: 32, fontFamily: 'var(--font-family-sans)' }}>
+    <div
+      style={{
+        padding: 32,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 32,
+        fontFamily: 'var(--font-family-sans)',
+      }}
+    >
       <h2 style={{ color: 'var(--text-default)', margin: 0 }}>Tooltip — variant × side matrix</h2>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
@@ -76,7 +84,9 @@ export function TooltipMatrix() {
         <SpecialCase label="long content">
           <Tooltip>
             <Tooltip.Trigger asChild>
-              <Button intent="neutral" variant="outline" size="sm">long content</Button>
+              <Button intent="neutral" variant="outline" size="sm">
+                long content
+              </Button>
             </Tooltip.Trigger>
             <Tooltip.Content>
               A really long tooltip content that should wrap nicely within the max-width constraint
@@ -89,7 +99,9 @@ export function TooltipMatrix() {
         <SpecialCase label="withArrow={false}">
           <Tooltip>
             <Tooltip.Trigger asChild>
-              <Button intent="neutral" variant="outline" size="sm">no arrow</Button>
+              <Button intent="neutral" variant="outline" size="sm">
+                no arrow
+              </Button>
             </Tooltip.Trigger>
             <Tooltip.Content withArrow={false}>No arrow on this one.</Tooltip.Content>
           </Tooltip>
@@ -137,7 +149,9 @@ function DefaultOpenWithListener() {
     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
       <Tooltip defaultOpen onOpenChange={(open: boolean) => open && setOpenCount((c) => c + 1)}>
         <Tooltip.Trigger asChild>
-          <Button intent="neutral" variant="outline" size="sm">hover me</Button>
+          <Button intent="neutral" variant="outline" size="sm">
+            hover me
+          </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>opened {openCount}×</Tooltip.Content>
       </Tooltip>

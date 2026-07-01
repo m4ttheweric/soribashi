@@ -57,7 +57,13 @@ describe('createTheme', () => {
       'danger',
       'info',
     ]);
-    expect(theme.vocabulary.variant.values).toEqual(['filled', 'outline', 'subtle', 'ghost', 'link']);
+    expect(theme.vocabulary.variant.values).toEqual([
+      'filled',
+      'outline',
+      'subtle',
+      'ghost',
+      'link',
+    ]);
   });
 
   it('respects user-provided vocabulary intent and variant lists', () => {

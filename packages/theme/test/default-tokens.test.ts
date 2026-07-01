@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultTokens, defaultDarkTokens } from '../src/tokens/index.ts';
+import { defaultDarkTokens, defaultTokens } from '../src/tokens/index.ts';
 
 describe('defaultTokens', () => {
   it('includes a primary color scale with 50–900 shades', () => {

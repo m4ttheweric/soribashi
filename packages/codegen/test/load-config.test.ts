@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { loadConfig } from '../src/load-config.ts';
 
 describe('loadConfig', () => {
@@ -31,10 +31,7 @@ describe('loadConfig', () => {
 
   it('throws when output.css is missing', async () => {
     const configPath = join(tempDir, 'soribashi.config.ts');
-    writeFileSync(
-      configPath,
-      `export default { theme: { tokens: {} }, output: {} };`,
-    );
+    writeFileSync(configPath, `export default { theme: { tokens: {} }, output: {} };`);
 
     await expect(loadConfig(configPath)).rejects.toThrow(/output\.css/);
   });

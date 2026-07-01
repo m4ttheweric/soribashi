@@ -1,20 +1,20 @@
+import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '@soribashi/factory';
 import {
+  AspectRatio,
   Box,
-  Stack,
-  Group,
+  Center,
+  Container,
   Flex,
   Grid,
-  SimpleGrid,
-  Container,
-  Center,
-  AspectRatio,
-  Space,
+  Group,
   Paper,
+  SimpleGrid,
+  Space,
+  Stack,
   Text,
   Title,
 } from '../src/index.ts';
@@ -90,7 +90,11 @@ describe('ref forwarding', () => {
   });
 
   it('AspectRatio forwards ref', () => {
-    expectRefAttached((ref) => <AspectRatio ratio={16 / 9} ref={ref}>X</AspectRatio>);
+    expectRefAttached((ref) => (
+      <AspectRatio ratio={16 / 9} ref={ref}>
+        X
+      </AspectRatio>
+    ));
   });
 
   it('Space forwards ref', () => {
@@ -109,7 +113,11 @@ describe('ref forwarding', () => {
 
   it('Title forwards ref', () => {
     const ref = createRef<HTMLElement>();
-    wrap(<Title order={2} ref={ref}>X</Title>);
+    wrap(
+      <Title order={2} ref={ref}>
+        X
+      </Title>,
+    );
     expect(ref.current?.tagName).toBe('H2');
   });
 });

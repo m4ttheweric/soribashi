@@ -14,9 +14,9 @@
  *   - truncate accepts boolean | 'start' | 'end' (RTL truncation via 'start')
  */
 import { defineComponent } from '@soribashi/factory';
-import { getFontSize, getLineHeight } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getFontSize, getLineHeight } from '../utils/index.ts';
 
 export type TextTruncate = boolean | 'start' | 'end';
 
@@ -45,7 +45,9 @@ function getTextTruncate(truncate: TextTruncate | undefined): 'start' | 'end' | 
   return undefined;
 }
 
-function buildGradient(gradient: { from: string; to: string; deg?: number } | undefined): string | undefined {
+function buildGradient(
+  gradient: { from: string; to: string; deg?: number } | undefined,
+): string | undefined {
   if (!gradient) return undefined;
   const deg = gradient.deg ?? 45;
   return `linear-gradient(${deg}deg, ${gradient.from}, ${gradient.to})`;
@@ -95,15 +97,17 @@ export const Text = defineComponent<TextOwnProps>({
         {...getStyles('root')}
         as={tag}
         variant={variant}
-        mod={[
-          {
-            'data-truncate': getTextTruncate(truncate),
-            'data-line-clamp': typeof lineClamp === 'number',
-            'data-inline': !!inline,
-            'data-inherit': !!inherit,
-          },
-          mod,
-        ].filter(Boolean) as any}
+        mod={
+          [
+            {
+              'data-truncate': getTextTruncate(truncate),
+              'data-line-clamp': typeof lineClamp === 'number',
+              'data-inline': !!inline,
+              'data-inherit': !!inherit,
+            },
+            mod,
+          ].filter(Boolean) as any
+        }
         {...rest}
       >
         {children}

@@ -14,13 +14,9 @@
  *   2. Re-run the tests — this test should pass
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { runAudit } from '../scripts/css-parity-audit.ts';
-import {
-  ALLOWLIST,
-  buildAllowlistSet,
-  makeFindingKey,
-} from './css-parity-allowlist.ts';
+import { ALLOWLIST, buildAllowlistSet, makeFindingKey } from './css-parity-allowlist.ts';
 
 describe('CSS parity: soribashi blocks vs. Mantine', () => {
   // Run the audit once for all assertions
@@ -29,7 +25,7 @@ describe('CSS parity: soribashi blocks vs. Mantine', () => {
 
   it('produces audit results for all 14 blocks', () => {
     expect(summaries).toHaveLength(14);
-    const blockNames = summaries.map(s => s.block);
+    const blockNames = summaries.map((s) => s.block);
     expect(blockNames).toContain('Box');
     expect(blockNames).toContain('Stack');
     expect(blockNames).toContain('Group');
@@ -51,11 +47,7 @@ describe('CSS parity: soribashi blocks vs. Mantine', () => {
     for (const summary of summaries) {
       for (const finding of summary.findings) {
         if (finding.kind !== 'DECL_DIFF') continue;
-        const key = makeFindingKey(
-          finding.block,
-          finding.kind,
-          finding.mantineSelector,
-        );
+        const key = makeFindingKey(finding.block, finding.kind, finding.mantineSelector);
         if (!allowlistSet.has(key)) {
           unexpected.push(
             `[${finding.block}] DECL_DIFF on "${finding.mantineSelector}": ${finding.snippet.slice(0, 200)}`,
@@ -75,11 +67,7 @@ describe('CSS parity: soribashi blocks vs. Mantine', () => {
     for (const summary of summaries) {
       for (const finding of summary.findings) {
         if (finding.kind !== 'MISSING_IN_SORIBASHI') continue;
-        const key = makeFindingKey(
-          finding.block,
-          finding.kind,
-          finding.mantineSelector,
-        );
+        const key = makeFindingKey(finding.block, finding.kind, finding.mantineSelector);
         if (!allowlistSet.has(key)) {
           unexpected.push(
             `[${finding.block}] MISSING_IN_SORIBASHI: "${finding.mantineSelector}"\n  ${finding.snippet.slice(0, 200)}`,
@@ -98,29 +86,28 @@ describe('CSS parity: soribashi blocks vs. Mantine', () => {
     // These blocks should be perfectly clean (no DECL_DIFF or MISSING)
     const cleanBlocks = ['Stack', 'Group', 'Center', 'AspectRatio', 'GridCol'];
     for (const blockName of cleanBlocks) {
-      const summary = summaries.find(s => s.block === blockName);
+      const summary = summaries.find((s) => s.block === blockName);
       expect(summary, `should have summary for ${blockName}`).toBeDefined();
       if (!summary) continue;
       expect(summary.DECL_DIFF, `${blockName} should have no DECL_DIFF`).toBe(0);
-      expect(
-        summary.MISSING_IN_SORIBASHI,
-        `${blockName} should have no MISSING_IN_SORIBASHI`,
-      ).toBe(0);
+      expect(summary.MISSING_IN_SORIBASHI, `${blockName} should have no MISSING_IN_SORIBASHI`).toBe(
+        0,
+      );
     }
   });
 
   it('Stack has exactly one IDENTICAL rule', () => {
-    const stack = summaries.find(s => s.block === 'Stack');
+    const stack = summaries.find((s) => s.block === 'Stack');
     expect(stack?.IDENTICAL).toBe(1);
   });
 
   it('AspectRatio has exactly three IDENTICAL rules', () => {
-    const ar = summaries.find(s => s.block === 'AspectRatio');
+    const ar = summaries.find((s) => s.block === 'AspectRatio');
     expect(ar?.IDENTICAL).toBe(3);
   });
 
   it('Group has exactly two IDENTICAL rules (root + nested grow)', () => {
-    const group = summaries.find(s => s.block === 'Group');
+    const group = summaries.find((s) => s.block === 'Group');
     expect(group?.IDENTICAL).toBe(2);
   });
 
@@ -134,9 +121,7 @@ describe('CSS parity: soribashi blocks vs. Mantine', () => {
           finding.kind === 'EXTRA_IN_SORIBASHI' ||
           finding.kind === 'TOKEN_DIFF'
         ) {
-          realFindingKeys.add(
-            makeFindingKey(finding.block, finding.kind, finding.mantineSelector),
-          );
+          realFindingKeys.add(makeFindingKey(finding.block, finding.kind, finding.mantineSelector));
         }
       }
     }

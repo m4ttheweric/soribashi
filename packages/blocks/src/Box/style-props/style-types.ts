@@ -18,9 +18,7 @@ import type { ResolvedTheme } from '@soribashi/theme';
  */
 export type StyleProp<T> =
   | T
-  | Partial<
-      Record<'base' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | (string & {}), T>
-    >;
+  | Partial<Record<'base' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | (string & {}), T>>;
 
 /**
  * A function that resolves a token value (e.g., 'md' or 16) to a CSS string.

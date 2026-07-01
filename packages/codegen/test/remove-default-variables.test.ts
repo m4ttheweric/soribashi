@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
 import type { ThemeDefinition } from '@soribashi/theme';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { removeDefaultVariables } from '../src/remove-default-variables.ts';
 
 // Helper to avoid repeating the required-field boilerplate for minimal test themes.
@@ -67,7 +67,11 @@ describe('removeDefaultVariables', () => {
   });
 
   it('preserves scope (the dedup theme keeps its scope name)', () => {
-    const theme = createTheme({ tokens: minTokens, name: 'test', scope: '.test-theme' } as ThemeDefinition);
+    const theme = createTheme({
+      tokens: minTokens,
+      name: 'test',
+      scope: '.test-theme',
+    } as ThemeDefinition);
     const dedup = removeDefaultVariables(theme);
     expect(dedup.scope).toBe('.test-theme');
   });

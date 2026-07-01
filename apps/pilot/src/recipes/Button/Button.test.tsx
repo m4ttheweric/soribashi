@@ -1,3 +1,5 @@
+import { SoribashiProvider } from '@soribashi/core';
+import { fireEvent, render, screen } from '@testing-library/react';
 /**
  * Button recipe — behavior tests.
  *
@@ -5,8 +7,6 @@
  */
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { SoribashiProvider } from '@soribashi/core';
 import { theme } from '../../theme/index.ts';
 import { Button } from './Button.tsx';
 
@@ -34,7 +34,10 @@ describe('Button — rendering', () => {
 
   it('renders leftIcon before label and rightIcon after (inside the inner wrapper)', () => {
     wrap(
-      <Button leftIcon={<span data-testid="left">L</span>} rightIcon={<span data-testid="right">R</span>}>
+      <Button
+        leftIcon={<span data-testid="left">L</span>}
+        rightIcon={<span data-testid="right">R</span>}
+      >
         label
       </Button>,
     );
@@ -45,9 +48,13 @@ describe('Button — rendering', () => {
     const inner = btn.querySelector('[data-part="inner"]');
     expect(inner).not.toBeNull();
     const innerChildren = Array.from(inner!.children);
-    const leftIdx = innerChildren.findIndex((c) => c.querySelector('[data-testid="left"]') !== null);
+    const leftIdx = innerChildren.findIndex(
+      (c) => c.querySelector('[data-testid="left"]') !== null,
+    );
     const labelIdx = innerChildren.findIndex((c) => c.textContent === 'label');
-    const rightIdx = innerChildren.findIndex((c) => c.querySelector('[data-testid="right"]') !== null);
+    const rightIdx = innerChildren.findIndex(
+      (c) => c.querySelector('[data-testid="right"]') !== null,
+    );
     expect(leftIdx).toBeGreaterThanOrEqual(0);
     expect(labelIdx).toBeGreaterThan(leftIdx);
     expect(rightIdx).toBeGreaterThan(labelIdx);
@@ -64,14 +71,22 @@ describe('Button — interactivity', () => {
 
   it('does not call onClick when disabled', () => {
     const onClick = vi.fn();
-    wrap(<Button disabled onClick={onClick}>x</Button>);
+    wrap(
+      <Button disabled onClick={onClick}>
+        x
+      </Button>,
+    );
     fireEvent.click(screen.getByRole('button'));
     expect(onClick).not.toHaveBeenCalled();
   });
 
   it('does not call onClick when loading', () => {
     const onClick = vi.fn();
-    wrap(<Button loading onClick={onClick}>x</Button>);
+    wrap(
+      <Button loading onClick={onClick}>
+        x
+      </Button>,
+    );
     fireEvent.click(screen.getByRole('button'));
     expect(onClick).not.toHaveBeenCalled();
   });
@@ -158,7 +173,11 @@ describe('Button — vocabulary type narrowing (compile-time)', () => {
   // expect-error directives below fail the build if narrowing ever regresses.
   it('narrows size/intent to the theme vocabulary and variant to the recipe set', () => {
     // Valid values from the theme's global vocab + the recipe's local variant set.
-    void (<Button size="md" intent="danger" variant="filled">x</Button>);
+    void (
+      <Button size="md" intent="danger" variant="filled">
+        x
+      </Button>
+    );
     // @ts-expect-error — 'huge' is not in the theme's size vocabulary
     void (<Button size="huge">x</Button>);
     // @ts-expect-error — 'chartreuse' is not in the theme's intent vocabulary

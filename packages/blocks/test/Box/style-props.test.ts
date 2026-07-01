@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
-import { parseStyleProps } from '../../src/Box/style-props/parse-style-props.ts';
-import { extractStyleProps } from '../../src/Box/style-props/extract-style-props.ts';
-import { STYLE_PROPS_DATA } from '../../src/Box/style-props/style-props-data.ts';
+import { describe, expect, it } from 'vitest';
 import { getBoxMod } from '../../src/Box/get-box-mod.ts';
+import { extractStyleProps } from '../../src/Box/style-props/extract-style-props.ts';
+import { parseStyleProps } from '../../src/Box/style-props/parse-style-props.ts';
+import { STYLE_PROPS_DATA } from '../../src/Box/style-props/style-props-data.ts';
 
 const theme = createTheme({
   tokens: {
@@ -125,10 +125,12 @@ describe('getBoxMod', () => {
   it('handles record input — false/null/undefined/"" are omitted; numeric 0 is kept (Mantine parity)', () => {
     // Mantine getMod filters: undefined, '', false, null — but NOT numeric 0.
     // See: packages/@mantine/core/src/core/Box/get-box-mod/get-box-mod.ts (63dafbbf)
-    expect(getBoxMod({ active: true, loading: false, x: null, y: undefined, z: 0, q: '' })).toEqual({
-      'data-active': true,
-      'data-z': 0,
-    });
+    expect(getBoxMod({ active: true, loading: false, x: null, y: undefined, z: 0, q: '' })).toEqual(
+      {
+        'data-active': true,
+        'data-z': 0,
+      },
+    );
   });
 
   it('truthy non-boolean values become the data-attribute value', () => {
@@ -158,7 +160,11 @@ describe('ff resolver — fontFamily aliases', () => {
     expect(result.inlineStyles.fontFamily).toBe('var(--font-family-mono)');
   });
   it('ff="heading" → fontFamily: var(--font-family-heading)', () => {
-    const result = parseStyleProps({ styleProps: { ff: 'heading' }, data: STYLE_PROPS_DATA, theme });
+    const result = parseStyleProps({
+      styleProps: { ff: 'heading' },
+      data: STYLE_PROPS_DATA,
+      theme,
+    });
     expect(result.inlineStyles.fontFamily).toBe('var(--font-family-heading)');
   });
   it('ff="serif" passes through', () => {
@@ -173,11 +179,19 @@ describe('bd resolver — border parsing + token resolution', () => {
     expect(result.inlineStyles.border).toBe('0.0625rem');
   });
   it('bd="1px solid primary.500" resolves to themed CSS var', () => {
-    const result = parseStyleProps({ styleProps: { bd: '1px solid primary.500' }, data: STYLE_PROPS_DATA, theme });
+    const result = parseStyleProps({
+      styleProps: { bd: '1px solid primary.500' },
+      data: STYLE_PROPS_DATA,
+      theme,
+    });
     expect(result.inlineStyles.border).toBe('0.0625rem solid var(--color-primary-500)');
   });
   it('bd="2px dashed surface.raised" resolves semantic token', () => {
-    const result = parseStyleProps({ styleProps: { bd: '2px dashed surface.raised' }, data: STYLE_PROPS_DATA, theme });
+    const result = parseStyleProps({
+      styleProps: { bd: '2px dashed surface.raised' },
+      data: STYLE_PROPS_DATA,
+      theme,
+    });
     expect(result.inlineStyles.border).toBe('0.125rem dashed var(--surface-raised)');
   });
   it('bd="none" passes through', () => {

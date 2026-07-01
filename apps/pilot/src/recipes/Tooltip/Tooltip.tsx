@@ -14,9 +14,9 @@
  * Journal: docs/superpowers/pilots/2026-05-04-tooltip-pilot.md
  */
 import * as RadixTooltip from '@radix-ui/react-tooltip';
+import { type PartRenderCtx, defineVocabulary } from '@soribashi/core';
 import type { ReactNode } from 'react';
 import { defineCompound } from '../../builders.ts';
-import { defineVocabulary, type PartRenderCtx } from '@soribashi/core';
 import classes from './Tooltip.module.css';
 
 const variants = ['default', 'subtle'] as const;
@@ -70,13 +70,9 @@ export const Tooltip = defineCompound({
     // page bg. Consumer accepts responsibility for contrast at usage sites.
     content: {
       '--sb-tooltip-bg':
-        props.variant === 'subtle'
-          ? 'var(--surface-raised)'
-          : 'var(--surface-floating)',
+        props.variant === 'subtle' ? 'var(--surface-raised)' : 'var(--surface-floating)',
       '--sb-tooltip-color':
-        props.variant === 'subtle'
-          ? 'var(--text-default)'
-          : 'var(--surface-floating-foreground)',
+        props.variant === 'subtle' ? 'var(--text-default)' : 'var(--surface-floating-foreground)',
     },
   }),
   context: (rootProps) => ({
@@ -114,7 +110,11 @@ export const Tooltip = defineCompound({
     // Trigger — class-2 part. Reads ctx via getStyles (throws outside Root).
     // asChild merges trigger class onto the provided child element.
     trigger: {
-      render: ({ getStyles, props, children }: PartRenderCtx<TooltipTriggerProps, TooltipCtxExtras>) => {
+      render: ({
+        getStyles,
+        props,
+        children,
+      }: PartRenderCtx<TooltipTriggerProps, TooltipCtxExtras>) => {
         if (props.asChild) {
           // asChild: Radix Trigger renders as a Slot, merging its props
           // (including our className) onto the single child element.
@@ -124,18 +124,19 @@ export const Tooltip = defineCompound({
             </RadixTooltip.Trigger>
           );
         }
-        return (
-          <RadixTooltip.Trigger {...getStyles()}>
-            {children}
-          </RadixTooltip.Trigger>
-        );
+        return <RadixTooltip.Trigger {...getStyles()}>{children}</RadixTooltip.Trigger>;
       },
     },
     // Content — class-2 part. Reads ctx for side + sideOffset. Renders inside
     // a Portal so content appears in document.body. Optional Arrow uses
     // cross-slot getStyles({ part: 'arrow' }).
     content: {
-      render: ({ getStyles, props, ctx, children }: PartRenderCtx<TooltipContentProps, TooltipCtxExtras>) => {
+      render: ({
+        getStyles,
+        props,
+        ctx,
+        children,
+      }: PartRenderCtx<TooltipContentProps, TooltipCtxExtras>) => {
         const showArrow = props.withArrow !== false;
         return (
           <RadixTooltip.Portal>
@@ -145,9 +146,7 @@ export const Tooltip = defineCompound({
               {...getStyles()}
             >
               {children}
-              {showArrow && (
-                <RadixTooltip.Arrow {...getStyles({ part: 'arrow' })} />
-              )}
+              {showArrow && <RadixTooltip.Arrow {...getStyles({ part: 'arrow' })} />}
             </RadixTooltip.Content>
           </RadixTooltip.Portal>
         );

@@ -15,9 +15,9 @@
  *     theme color reference (e.g., bg="surface.raised")
  */
 import { defineComponent } from '@soribashi/factory';
-import { getRadius, getShadow } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getRadius, getShadow } from '../utils/index.ts';
 
 export interface PaperOwnProps extends BoxOwnProps {
   /** Theme shadow key or any valid CSS box-shadow value */
@@ -36,7 +36,7 @@ export const Paper = defineComponent<PaperOwnProps>({
     const p = props as PaperOwnProps;
     return {
       root: {
-        '--paper-radius': p.radius === undefined ? '' : getRadius(p.radius) ?? '',
+        '--paper-radius': p.radius === undefined ? '' : (getRadius(p.radius) ?? ''),
         '--paper-shadow': getShadow(p.shadow as string | undefined) ?? '',
       },
     };

@@ -38,7 +38,7 @@ describe('composeTheme via extends — vocabulary', () => {
       tokens,
       extends: base,
       semanticTokens: {
-        text: { default: 'colors.zinc.900' },  // overrides default; muted inherits
+        text: { default: 'colors.zinc.900' }, // overrides default; muted inherits
       },
     });
     expect(child.semanticTokens.text.default).toBe('colors.zinc.900');

@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
 import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { Box } from '../../src/Box/Box.tsx';
 
 const theme = createTheme({
@@ -49,7 +49,11 @@ describe('Box — visibility classes', () => {
   });
 
   it('visibility classes stack with base sb-Box-root class', () => {
-    const { container } = wrap(<Box hiddenFrom="md" lightHidden>X</Box>);
+    const { container } = wrap(
+      <Box hiddenFrom="md" lightHidden>
+        X
+      </Box>,
+    );
     const el = container.querySelector('div') as HTMLElement;
     expect(el.className).toContain('sb-Box-root');
     expect(el.className).toContain('sb-hidden-from-md');

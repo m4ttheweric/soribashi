@@ -12,8 +12,8 @@
  *   - Dedup baseline is the soribashi default tokens (defaultTokens / defaultDarkTokens),
  *     not the user's `extends` chain. Matches Mantine.
  */
-import type { ResolvedTheme, PartialThemeTokens, ThemeTokens } from '@soribashi/theme';
-import { defaultTokens, defaultDarkTokens } from '@soribashi/theme';
+import type { PartialThemeTokens, ResolvedTheme, ThemeTokens } from '@soribashi/theme';
+import { defaultDarkTokens, defaultTokens } from '@soribashi/theme';
 
 function dedupRecord(
   current: Record<string, string> | undefined,
@@ -67,10 +67,7 @@ function dedupHeading(
   return { sizes: sizes as NonNullable<ThemeTokens['heading']>['sizes'], textWrap };
 }
 
-function dedupTokens(
-  current: ThemeTokens | undefined,
-  base: ThemeTokens,
-): ThemeTokens {
+function dedupTokens(current: ThemeTokens | undefined, base: ThemeTokens): ThemeTokens {
   if (!current) {
     // Return an empty-ish ThemeTokens so callers can safely access sub-fields
     return {

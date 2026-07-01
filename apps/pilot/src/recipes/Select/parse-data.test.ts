@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSelectData, flattenOptions } from './parse-data.ts';
+import { flattenOptions, parseSelectData } from './parse-data.ts';
 
 describe('parseSelectData', () => {
   it('wraps bare primitives into { value, label }', () => {
@@ -16,12 +16,20 @@ describe('parseSelectData', () => {
   });
 
   it('labels a value-only object by stringifying its value', () => {
-    expect(parseSelectData([{ value: 1 } as any])).toEqual([{ value: 1, label: '1', disabled: undefined }]);
+    expect(parseSelectData([{ value: 1 } as any])).toEqual([
+      { value: 1, label: '1', disabled: undefined },
+    ]);
   });
 
   it('parses groups recursively', () => {
     expect(parseSelectData([{ group: 'G', items: ['a', { value: 'b', label: 'B' }] }])).toEqual([
-      { group: 'G', items: [{ value: 'a', label: 'a' }, { value: 'b', label: 'B' }] },
+      {
+        group: 'G',
+        items: [
+          { value: 'a', label: 'a' },
+          { value: 'b', label: 'B' },
+        ],
+      },
     ]);
   });
 
@@ -33,6 +41,9 @@ describe('parseSelectData', () => {
 describe('flattenOptions', () => {
   it('flattens groups into a single option list', () => {
     const parsed = parseSelectData([{ group: 'G', items: ['a'] }, 'b']);
-    expect(flattenOptions(parsed)).toEqual([{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }]);
+    expect(flattenOptions(parsed)).toEqual([
+      { value: 'a', label: 'a' },
+      { value: 'b', label: 'b' },
+    ]);
   });
 });

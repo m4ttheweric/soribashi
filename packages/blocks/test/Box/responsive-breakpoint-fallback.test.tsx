@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
 import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Box } from '../../src/Box/Box.tsx';
 
 const resolved = createTheme({
@@ -27,9 +27,7 @@ afterEach(() => {
 describe('responsive style props without theme breakpoint tokens', () => {
   it('falls back to the default breakpoint map with distinct min-widths', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const { container } = wrap(
-      <Box p={{ base: 'sm', sm: 'md', md: 'lg' }}>X</Box>,
-    );
+    const { container } = wrap(<Box p={{ base: 'sm', sm: 'md', md: 'lg' }}>X</Box>);
     const text = container.querySelector('style')?.textContent ?? '';
     expect(text).toContain('@media (min-width: 40rem)');
     expect(text).toContain('@media (min-width: 48rem)');
@@ -42,9 +40,7 @@ describe('responsive style props without theme breakpoint tokens', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     wrap(<Box p={{ base: 'sm', md: 'lg' }}>X</Box>);
     wrap(<Box m={{ base: 'sm', md: 'lg' }}>X</Box>);
-    const mdWarnings = warn.mock.calls.filter((call) =>
-      call.join(' ').includes('"md"'),
-    );
+    const mdWarnings = warn.mock.calls.filter((call) => call.join(' ').includes('"md"'));
     expect(mdWarnings.length).toBeLessThanOrEqual(1);
   });
 });

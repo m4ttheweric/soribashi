@@ -20,19 +20,19 @@
   white-space: nowrap;
 }
 
-.sb-Text-root:where([data-truncate='start']) {
+.sb-Text-root:where([data-truncate="start"]) {
   direction: rtl;
   text-align: right;
 }
 
 /* RTL page correction: when the document is already RTL, restore LTR direction
    for start-truncation so ellipsis still appears at the start visually */
-[dir='rtl'] .sb-Text-root:where([data-truncate='start']) {
+[dir="rtl"] .sb-Text-root:where([data-truncate="start"]) {
   direction: ltr;
   text-align: left;
 }
 
-.sb-Text-root:where([data-variant='gradient']) {
+.sb-Text-root:where([data-variant="gradient"]) {
   background-image: var(--text-gradient);
   background-clip: text;
   -webkit-background-clip: text;

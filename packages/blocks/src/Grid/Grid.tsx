@@ -18,13 +18,13 @@
  *     for migration compat and will be removed in a future release.
  */
 import { defineComponent } from '@soribashi/factory';
-import { getSpacing } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getSpacing } from '../utils/index.ts';
 import { GridProvider, useGridContext } from './Grid.context.ts';
 import { getColumnFlexBasis } from './get-column-flex-basis.ts';
-import { getColumnMaxWidth } from './get-column-max-width.ts';
 import { getColumnFlexGrow } from './get-column-flex-grow.ts';
+import { getColumnMaxWidth } from './get-column-max-width.ts';
 import { getColumnOffset } from './get-column-offset.ts';
 
 export interface GridOwnProps extends BoxOwnProps {

@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
 import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { Box } from '../src/Box/Box.tsx';
 
 const theme = createTheme({
@@ -87,7 +87,11 @@ describe('Box — style props', () => {
   });
 
   it('w and h support number → rem', () => {
-    const { container } = wrap(<Box w={200} h={100}>X</Box>);
+    const { container } = wrap(
+      <Box w={200} h={100}>
+        X
+      </Box>,
+    );
     const el = container.querySelector('div') as HTMLElement;
     expect(el.style.width).toBe('12.5rem');
     expect(el.style.height).toBe('6.25rem');
@@ -154,9 +158,7 @@ describe('Box — mod API', () => {
   });
 
   it('mod array merges entries', () => {
-    const { container } = wrap(
-      <Box mod={[{ active: true }, 'open', { size: 'lg' }]}>X</Box>,
-    );
+    const { container } = wrap(<Box mod={[{ active: true }, 'open', { size: 'lg' }]}>X</Box>);
     const el = container.querySelector('div') as HTMLElement;
     expect(el.dataset.active).toBe('true');
     expect(el.dataset.open).toBe('true');

@@ -15,8 +15,8 @@
  *   - semanticToVar: all four reference syntaxes
  */
 
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { emitCss } from '../src/emit-css.ts';
 
 // ---------------------------------------------------------------------------
@@ -178,13 +178,27 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
         fontSize: {},
         heading: {
           textWrap: 'wrap',
-          sizes: { h1: { fontSize: '2rem' }, h2: { fontSize: '1.5rem' }, h3: { fontSize: '1.25rem' }, h4: { fontSize: '1.125rem' }, h5: { fontSize: '1rem' }, h6: { fontSize: '0.875rem' } },
+          sizes: {
+            h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
         },
       },
       dark: {
         heading: {
           textWrap: 'balance',
-          sizes: { h1: { fontSize: '1.875rem' }, h2: { fontSize: '1.5rem' }, h3: { fontSize: '1.25rem' }, h4: { fontSize: '1.125rem' }, h5: { fontSize: '1rem' }, h6: { fontSize: '0.875rem' } },
+          sizes: {
+            h1: { fontSize: '1.875rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
         },
       },
     });
@@ -204,12 +218,26 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
         spacing: {},
         fontSize: {},
         heading: {
-          sizes: { h1: { fontSize: '2rem' }, h2: { fontSize: '1.5rem' }, h3: { fontSize: '1.25rem' }, h4: { fontSize: '1.125rem' }, h5: { fontSize: '1rem' }, h6: { fontSize: '0.875rem' } },
+          sizes: {
+            h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
         },
       },
       dark: {
         heading: {
-          sizes: { h1: { fontSize: '1.875rem' }, h2: { fontSize: '1.5rem' }, h3: { fontSize: '1.25rem' }, h4: { fontSize: '1.125rem' }, h5: { fontSize: '1rem' }, h6: { fontSize: '0.875rem' } },
+          sizes: {
+            h1: { fontSize: '1.875rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
         },
       },
     });

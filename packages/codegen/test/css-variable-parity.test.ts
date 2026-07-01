@@ -15,8 +15,8 @@
  * this test, alerting future drift.
  */
 
-import { describe, it, expect } from 'vitest';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { emitCss } from '../src/emit-css.ts';
 
 // ---------------------------------------------------------------------------
@@ -38,17 +38,34 @@ export interface ParityEntry {
 
 // Colors families in the Mantine default palette
 const MANTINE_COLOR_FAMILIES = [
-  'blue', 'cyan', 'dark', 'grape', 'gray', 'green',
-  'indigo', 'lime', 'orange', 'pink', 'red', 'teal',
-  'violet', 'yellow',
+  'blue',
+  'cyan',
+  'dark',
+  'grape',
+  'gray',
+  'green',
+  'indigo',
+  'lime',
+  'orange',
+  'pink',
+  'red',
+  'teal',
+  'violet',
+  'yellow',
 ] as const;
 
 const MANTINE_SIZE_KEYS = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 const HEADING_LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 const HEADING_PROPS = ['font-size', 'font-weight', 'line-height'] as const;
 const COLOR_VARIANT_SUFFIXES = [
-  'filled', 'filled-hover', 'light', 'light-hover', 'light-color',
-  'outline', 'outline-hover', 'text',
+  'filled',
+  'filled-hover',
+  'light',
+  'light-hover',
+  'light-color',
+  'outline',
+  'outline-hover',
+  'text',
 ] as const;
 
 function buildCanonicalList(): ParityEntry[] {
@@ -61,7 +78,11 @@ function buildCanonicalList(): ParityEntry[] {
   // --z-index-* vars (numbers coerced to strings). Previously an
   // INTENTIONAL_GAP because emit-css.ts skipped the accepted tokens.
   for (const [name] of [
-    ['app', '100'], ['modal', '200'], ['popover', '300'], ['overlay', '400'], ['max', '9999'],
+    ['app', '100'],
+    ['modal', '200'],
+    ['popover', '300'],
+    ['overlay', '400'],
+    ['max', '9999'],
   ] as const) {
     entries.push({
       mantineVar: `--mantine-z-index-${name}`,
@@ -76,7 +97,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-scale',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine multiplies all rem values by a runtime --mantine-scale. Soribashi emits raw token values and does not need a scale multiplier; sizing is fixed at build time.',
+    notes:
+      'Mantine multiplies all rem values by a runtime --mantine-scale. Soribashi emits raw token values and does not need a scale multiplier; sizing is fixed at build time.',
   });
 
   // cursor-type
@@ -84,7 +106,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-cursor-type',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine exposes cursor-type as a CSS var for its interactive components. Soribashi sets cursor via Tailwind utility classes in component styles, not via a CSS variable.',
+    notes:
+      'Mantine exposes cursor-type as a CSS var for its interactive components. Soribashi sets cursor via Tailwind utility classes in component styles, not via a CSS variable.',
   });
 
   // font smoothing
@@ -92,7 +115,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-webkit-font-smoothing',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Font smoothing is a global body concern, not a token. Soribashi leaves this to the consumer\'s CSS reset / Tailwind preflight.',
+    notes:
+      "Font smoothing is a global body concern, not a token. Soribashi leaves this to the consumer's CSS reset / Tailwind preflight.",
   });
   entries.push({
     mantineVar: '--mantine-moz-font-smoothing',
@@ -106,7 +130,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-white',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine reserves --mantine-color-white / -black as escape-hatch absolute values. Soribashi uses tokens.colors.neutral.0 / .950 for equivalent semantics and does not need a separate white/black var.',
+    notes:
+      'Mantine reserves --mantine-color-white / -black as escape-hatch absolute values. Soribashi uses tokens.colors.neutral.0 / .950 for equivalent semantics and does not need a separate white/black var.',
   });
   entries.push({
     mantineVar: '--mantine-color-black',
@@ -120,7 +145,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-line-height',
     soribashiVar: '--line-height-md',
     status: 'mapped',
-    notes: 'Mantine emits --mantine-line-height = lineHeights.md as a convenience alias. Soribashi emits --line-height-md from tokens.lineHeight.md. Components reference the keyed var directly.',
+    notes:
+      'Mantine emits --mantine-line-height = lineHeights.md as a convenience alias. Soribashi emits --line-height-md from tokens.lineHeight.md. Components reference the keyed var directly.',
   });
 
   // font-family vars
@@ -134,13 +160,15 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-font-family-monospace',
     soribashiVar: '--font-family-mono',
     status: 'mapped',
-    notes: 'Mantine --mantine-font-family-monospace → soribashi --font-family-mono (tokens.fontFamily.mono).',
+    notes:
+      'Mantine --mantine-font-family-monospace → soribashi --font-family-mono (tokens.fontFamily.mono).',
   });
   entries.push({
     mantineVar: '--mantine-font-family-headings',
     soribashiVar: '--font-family-heading',
     status: 'mapped',
-    notes: 'Mantine --mantine-font-family-headings → soribashi --font-family-heading (tokens.fontFamily.heading).',
+    notes:
+      'Mantine --mantine-font-family-headings → soribashi --font-family-heading (tokens.fontFamily.heading).',
   });
 
   // global heading font-weight
@@ -148,7 +176,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-heading-font-weight',
     soribashiVar: '--heading-h1-font-weight',
     status: 'mapped',
-    notes: 'Mantine emits one global --mantine-heading-font-weight. Soribashi emits per-heading font-weight vars (--heading-h1-font-weight through --heading-h6-font-weight). The h1 var serves the same role for test assertion; components reference the per-order var.',
+    notes:
+      'Mantine emits one global --mantine-heading-font-weight. Soribashi emits per-heading font-weight vars (--heading-h1-font-weight through --heading-h6-font-weight). The h1 var serves the same role for test assertion; components reference the per-order var.',
   });
 
   // heading text-wrap
@@ -164,7 +193,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-radius-default',
     soribashiVar: '--radius-md',
     status: 'mapped',
-    notes: 'Mantine resolves defaultRadius (defaults to "md") into --mantine-radius-default. Soribashi emits --radius-md directly; components that need a "default" radius reference --radius-md. No extra alias needed.',
+    notes:
+      'Mantine resolves defaultRadius (defaults to "md") into --mantine-radius-default. Soribashi emits --radius-md directly; components that need a "default" radius reference --radius-md. No extra alias needed.',
   });
 
   // primary color pointer vars
@@ -172,7 +202,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-primary-color-filled',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine emits --mantine-primary-color-filled as a pointer to --mantine-color-{primary}-filled. Soribashi\'s intent resolver computes filled/outline/etc. at render time; no CSS-layer intent pointer vars are emitted.',
+    notes:
+      "Mantine emits --mantine-primary-color-filled as a pointer to --mantine-color-{primary}-filled. Soribashi's intent resolver computes filled/outline/etc. at render time; no CSS-layer intent pointer vars are emitted.",
   });
   entries.push({
     mantineVar: '--mantine-primary-color-filled-hover',
@@ -261,7 +292,9 @@ function buildCanonicalList(): ParityEntry[] {
 
   // font-weight per key
   for (const [mantineKey, soribashiKey] of [
-    ['regular', 'regular'], ['medium', 'medium'], ['bold', 'bold'],
+    ['regular', 'regular'],
+    ['medium', 'medium'],
+    ['bold', 'bold'],
   ] as const) {
     entries.push({
       mantineVar: `--mantine-font-weight-${mantineKey}`,
@@ -277,7 +310,8 @@ function buildCanonicalList(): ParityEntry[] {
       mantineVar: `--mantine-primary-color-${i}`,
       soribashiVar: null,
       status: 'INTENTIONAL_GAP',
-      notes: 'Mantine emits --mantine-primary-color-{n} as pointers to the primary color family shades. Soribashi does not have a "primary color family" concept at the CSS-variable layer; components reference --color-{intent}-{shade} directly.',
+      notes:
+        'Mantine emits --mantine-primary-color-{n} as pointers to the primary color family shades. Soribashi does not have a "primary color family" concept at the CSS-variable layer; components reference --color-{intent}-{shade} directly.',
     });
   }
 
@@ -331,7 +365,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-scheme',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine injects --mantine-color-scheme: light/dark in both color-scheme scopes. Soribashi manages color scheme via the .dark class on <html>; no CSS variable is needed.',
+    notes:
+      'Mantine injects --mantine-color-scheme: light/dark in both color-scheme scopes. Soribashi manages color scheme via the .dark class on <html>; no CSS variable is needed.',
   });
 
   // primary-color-contrast
@@ -339,7 +374,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-primary-color-contrast',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine computes auto-contrast for the primary color. Soribashi\'s intent resolver handles contrast via intents/variants; no static CSS variable is emitted.',
+    notes:
+      "Mantine computes auto-contrast for the primary color. Soribashi's intent resolver handles contrast via intents/variants; no static CSS variable is emitted.",
   });
 
   // bright (absolute white/black per scheme)
@@ -347,7 +383,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-bright',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine --mantine-color-bright is black in light, white in dark. Soribashi uses tokens.colors.neutral.0/950 for the same purpose; no extra alias.',
+    notes:
+      'Mantine --mantine-color-bright is black in light, white in dark. Soribashi uses tokens.colors.neutral.0/950 for the same purpose; no extra alias.',
   });
 
   // color-text
@@ -355,7 +392,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-text',
     soribashiVar: '--text-default',
     status: 'mapped',
-    notes: 'Mantine --mantine-color-text (black in light, dark-0 in dark) → soribashi --text-default (semantic.text.default → colors.neutral.900/50). Emitted by emitSemanticLines().',
+    notes:
+      'Mantine --mantine-color-text (black in light, dark-0 in dark) → soribashi --text-default (semantic.text.default → colors.neutral.900/50). Emitted by emitSemanticLines().',
   });
 
   // color-body
@@ -363,7 +401,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-body',
     soribashiVar: '--surface-default',
     status: 'mapped',
-    notes: 'Mantine --mantine-color-body (white in light, dark-7 in dark) → soribashi --surface-default (semantic.surface.default → colors.neutral.0). Emitted by emitSemanticLines().',
+    notes:
+      'Mantine --mantine-color-body (white in light, dark-7 in dark) → soribashi --surface-default (semantic.surface.default → colors.neutral.0). Emitted by emitSemanticLines().',
   });
 
   // color-error
@@ -371,7 +410,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-error',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine emits --mantine-color-error pointing at red-6/8. Soribashi has a danger color family and an error state can be expressed via --color-danger-{shade}. No top-level --color-error alias is emitted; components reference the danger family directly.',
+    notes:
+      'Mantine emits --mantine-color-error pointing at red-6/8. Soribashi has a danger color family and an error state can be expressed via --color-danger-{shade}. No top-level --color-error alias is emitted; components reference the danger family directly.',
   });
 
   // color-placeholder
@@ -379,7 +419,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-placeholder',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine emits a placeholder color var. Soribashi components set placeholder color via a utility class; no CSS variable alias is emitted.',
+    notes:
+      'Mantine emits a placeholder color var. Soribashi components set placeholder color via a utility class; no CSS variable alias is emitted.',
   });
 
   // color-anchor
@@ -387,7 +428,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-anchor',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Mantine emits --mantine-color-anchor pointing at primary-{shade}. Soribashi anchor/link styling is handled at the component level via the intent resolver.',
+    notes:
+      'Mantine emits --mantine-color-anchor pointing at primary-{shade}. Soribashi anchor/link styling is handled at the component level via the intent resolver.',
   });
 
   // color-default (UI element background — distinct from body)
@@ -395,7 +437,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-default',
     soribashiVar: '--surface-default',
     status: 'mapped',
-    notes: 'Mantine --mantine-color-default is white/dark-6 (the "default" element surface). Soribashi --surface-default covers the same role. Note: --mantine-color-body and --mantine-color-default both map to --surface-default; the distinction is collapsed intentionally.',
+    notes:
+      'Mantine --mantine-color-default is white/dark-6 (the "default" element surface). Soribashi --surface-default covers the same role. Note: --mantine-color-body and --mantine-color-default both map to --surface-default; the distinction is collapsed intentionally.',
   });
 
   // color-default-hover
@@ -403,7 +446,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-default-hover',
     soribashiVar: null,
     status: 'INTENTIONAL_GAP',
-    notes: 'Hover surface variant. Soribashi hover states are handled by the intent resolver at render time, not via a static CSS variable.',
+    notes:
+      'Hover surface variant. Soribashi hover states are handled by the intent resolver at render time, not via a static CSS variable.',
   });
 
   // color-default-color
@@ -411,7 +455,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-default-color',
     soribashiVar: '--text-default',
     status: 'mapped',
-    notes: 'Mantine --mantine-color-default-color is the text color on default backgrounds (black/white). Maps to soribashi --text-default (semantic.text.default).',
+    notes:
+      'Mantine --mantine-color-default-color is the text color on default backgrounds (black/white). Maps to soribashi --text-default (semantic.text.default).',
   });
 
   // color-default-border
@@ -419,7 +464,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-default-border',
     soribashiVar: '--border-default',
     status: 'mapped',
-    notes: 'Mantine --mantine-color-default-border (gray-4/dark-4) → soribashi --border-default (semantic.border.default → colors.neutral.200). Emitted by emitSemanticLines().',
+    notes:
+      'Mantine --mantine-color-default-border (gray-4/dark-4) → soribashi --border-default (semantic.border.default → colors.neutral.200). Emitted by emitSemanticLines().',
   });
 
   // color-dimmed
@@ -427,7 +473,8 @@ function buildCanonicalList(): ParityEntry[] {
     mantineVar: '--mantine-color-dimmed',
     soribashiVar: '--text-muted',
     status: 'mapped',
-    notes: 'Mantine --mantine-color-dimmed (gray-6/dark-2) → soribashi --text-muted (semantic.text.muted → colors.neutral.500). Emitted by emitSemanticLines().',
+    notes:
+      'Mantine --mantine-color-dimmed (gray-6/dark-2) → soribashi --text-muted (semantic.text.muted → colors.neutral.500). Emitted by emitSemanticLines().',
   });
 
   // disabled states
@@ -436,7 +483,8 @@ function buildCanonicalList(): ParityEntry[] {
       mantineVar: `--mantine-color-disabled${suffix}`,
       soribashiVar: null,
       status: 'INTENTIONAL_GAP',
-      notes: 'Mantine emits 3 disabled-state color vars. Soribashi handles disabled styling via CSS attribute selectors ([data-disabled]) in component CSS; no disabled color vars are emitted.',
+      notes:
+        'Mantine emits 3 disabled-state color vars. Soribashi handles disabled styling via CSS attribute selectors ([data-disabled]) in component CSS; no disabled color vars are emitted.',
     });
   }
 
@@ -596,7 +644,7 @@ describe('CSS variable parity (Mantine → soribashi)', () => {
     if (accidentallyEmitted.length > 0) {
       console.warn(
         '[parity] These vars are listed as INTENTIONAL_GAP but are now emitted — consider updating the parity table:\n' +
-        accidentallyEmitted.map((s) => `  ${s}`).join('\n'),
+          accidentallyEmitted.map((s) => `  ${s}`).join('\n'),
       );
     }
   });
@@ -611,9 +659,9 @@ describe('CSS variable parity (Mantine → soribashi)', () => {
 
     console.log(
       `\n[CSS variable parity] emitted ${emittedMappedCount} of ${mappedCount} mapped vars` +
-      ` (${Math.round((emittedMappedCount / mappedCount) * 100)}%)` +
-      ` | ${gapCount} INTENTIONAL_GAP entries` +
-      ` | ${total} total canonical Mantine vars audited`,
+        ` (${Math.round((emittedMappedCount / mappedCount) * 100)}%)` +
+        ` | ${gapCount} INTENTIONAL_GAP entries` +
+        ` | ${total} total canonical Mantine vars audited`,
     );
 
     // Coverage must be 100% of the mapped set

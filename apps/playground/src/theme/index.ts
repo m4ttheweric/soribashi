@@ -1,4 +1,4 @@
-import { createTheme, defaultTokens, defaultDarkTokens, defineVocabulary } from '@soribashi/core';
+import { createTheme, defaultDarkTokens, defaultTokens, defineVocabulary } from '@soribashi/core';
 
 export const theme = createTheme({
   name: 'playground',

@@ -39,8 +39,8 @@ describe('getBoxMod — numeric-0 filter (GBM-Z1, Mantine parity)', () => {
   });
 
   it('GBM-Z1g: mixed record with 0 and falsy — only 0 survives, others are filtered', () => {
-    expect(
-      getBoxMod({ count: 0, active: false, label: '', x: null, y: undefined }),
-    ).toEqual({ 'data-count': 0 });
+    expect(getBoxMod({ count: 0, active: false, label: '', x: null, y: undefined })).toEqual({
+      'data-count': 0,
+    });
   });
 });

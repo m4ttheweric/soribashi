@@ -100,7 +100,9 @@ function validateRef(ref: string, slot: string, theme: ResolvedTheme, errors: st
     return;
   }
   if (parts.length !== namespace.arity) {
-    errors.push(`${slot} references "${ref}" but ${parts[0]} references need the form ${namespace.form}`);
+    errors.push(
+      `${slot} references "${ref}" but ${parts[0]} references need the form ${namespace.form}`,
+    );
     return;
   }
 
@@ -108,7 +110,9 @@ function validateRef(ref: string, slot: string, theme: ResolvedTheme, errors: st
     const [, family, shade] = parts as [string, string, string];
     const scale = theme.tokens.colors[family];
     if (!scale) {
-      errors.push(`${slot} references ${ref} but no color family '${family}' exists in tokens.colors`);
+      errors.push(
+        `${slot} references ${ref} but no color family '${family}' exists in tokens.colors`,
+      );
       return;
     }
     if (scale[shade] === undefined) {

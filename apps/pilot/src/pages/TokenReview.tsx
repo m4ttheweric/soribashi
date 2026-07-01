@@ -20,7 +20,19 @@ import { theme as _theme } from '../theme/index.ts';
 void _theme;
 
 const COLOR_FAMILIES = ['primary', 'neutral', 'success', 'warning', 'danger', 'info'] as const;
-const SHADES = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'] as const;
+const SHADES = [
+  '50',
+  '100',
+  '200',
+  '300',
+  '400',
+  '500',
+  '600',
+  '700',
+  '800',
+  '900',
+  '950',
+] as const;
 
 const SEMANTIC_TOKENS: ReadonlyArray<readonly [label: string, cssVar: string]> = [
   ['surface.canvas', '--surface-canvas'],
@@ -78,8 +90,12 @@ export function TokenReview() {
       <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--font-family-sans)' }}>
         <thead>
           <tr>
-            <th align="left" style={{ paddingRight: '1rem' }}>Token</th>
-            <th align="left" style={{ paddingRight: '1rem' }}>CSS var</th>
+            <th align="left" style={{ paddingRight: '1rem' }}>
+              Token
+            </th>
+            <th align="left" style={{ paddingRight: '1rem' }}>
+              CSS var
+            </th>
             <th align="left">Swatch</th>
           </tr>
         </thead>
@@ -87,7 +103,9 @@ export function TokenReview() {
           {SEMANTIC_TOKENS.map(([name, cssVar]) => (
             <tr key={name}>
               <td style={{ paddingRight: '1rem' }}>{name}</td>
-              <td style={{ paddingRight: '1rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>{cssVar}</td>
+              <td style={{ paddingRight: '1rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                {cssVar}
+              </td>
               <td>
                 <div
                   style={{

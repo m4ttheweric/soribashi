@@ -9,8 +9,8 @@
  *   bun run packages/blocks/scripts/css-parity-audit.ts
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 // ---------------------------------------------------------------------------
@@ -140,7 +140,7 @@ function normalizeRemHelper(value: string): string {
   // rem(Npx) → either raw Npx (soribashi uses 1px for borders) or N/16 rem
   // We convert rem(1px) to 1px (the soribashi form)
   return value.replace(/rem\((\d+(?:\.\d+)?)px\)/g, (_m, n) => {
-    const num = parseFloat(n);
+    const num = Number.parseFloat(n);
     if (num === 1) return '1px';
     return `${num / 16}rem`;
   });
@@ -240,7 +240,7 @@ function parseCssBlocks(css: string): ParsedBlock[] {
   let i = 0;
   let lineNum = 1;
   let pending = ''; // text accumulated since last ; { }
-  let pendingLine = 1; // line number when pending started
+  const pendingLine = 1; // line number when pending started
 
   function flushDeclaration(text: string, frame: StackFrame) {
     const t = text.trim();
@@ -341,10 +341,7 @@ function parseCssBlocks(css: string): ParsedBlock[] {
  * Expand @mixin light / @mixin dark into :root / .dark pseudo-selectors
  * so they can be compared against soribashi's :root / .dark forms.
  */
-function expandMixins(
-  blocks: ParsedBlock[],
-  parentSelector: string = '',
-): CssRule[] {
+function expandMixins(blocks: ParsedBlock[], parentSelector = ''): CssRule[] {
   const rules: CssRule[] = [];
 
   for (const block of blocks) {
@@ -359,9 +356,7 @@ function expandMixins(
           resolvedSel = rawSel.replace(/&\s*/g, '').trim();
         }
       } else {
-        resolvedSel = parentSelector
-          ? `${parentSelector} ${rawSel}`
-          : rawSel;
+        resolvedSel = parentSelector ? `${parentSelector} ${rawSel}` : rawSel;
       }
 
       // Add this rule itself if it has declarations
@@ -369,7 +364,7 @@ function expandMixins(
         rules.push({
           selector: resolvedSel,
           rawSelector: rawSel,
-          declarations: block.declarations.map(d => ({
+          declarations: block.declarations.map((d) => ({
             property: d.property,
             value: normalizeRemHelper(d.value),
           })),
@@ -393,14 +388,12 @@ function expandMixins(
           // In Mantine this means "in light mode, these custom properties apply"
           // Soribashi equivalent: :root .sb-X-root { --var: val }
           // For our comparison, we'll mark these as light-mode scoping
-          const lightSel = parentSelector
-            ? `:root ${parentSelector}`
-            : ':root';
+          const lightSel = parentSelector ? `:root ${parentSelector}` : ':root';
           if (block.declarations.length > 0) {
             rules.push({
               selector: lightSel,
               rawSelector: '@mixin light',
-              declarations: block.declarations.map(d => ({
+              declarations: block.declarations.map((d) => ({
                 property: d.property,
                 value: normalizeRemHelper(normalizeToken(d.value)),
               })),
@@ -409,14 +402,12 @@ function expandMixins(
           }
           rules.push(...expandMixins(block.children, parentSelector));
         } else if (condition === 'dark') {
-          const darkSel = parentSelector
-            ? `.dark ${parentSelector}`
-            : '.dark';
+          const darkSel = parentSelector ? `.dark ${parentSelector}` : '.dark';
           if (block.declarations.length > 0) {
             rules.push({
               selector: darkSel,
               rawSelector: '@mixin dark',
-              declarations: block.declarations.map(d => ({
+              declarations: block.declarations.map((d) => ({
                 property: d.property,
                 value: normalizeRemHelper(normalizeToken(d.value)),
               })),
@@ -428,14 +419,12 @@ function expandMixins(
           // @mixin where-rtl — RTL mode, skip for this comparison
           // (soribashi doesn't implement RTL variants in the same way)
           // Mark as a special form
-          const rtlSel = parentSelector
-            ? `[dir="rtl"] ${parentSelector}`
-            : '[dir="rtl"]';
+          const rtlSel = parentSelector ? `[dir="rtl"] ${parentSelector}` : '[dir="rtl"]';
           if (block.declarations.length > 0) {
             rules.push({
               selector: rtlSel,
               rawSelector: '@mixin where-rtl',
-              declarations: block.declarations.map(d => ({
+              declarations: block.declarations.map((d) => ({
                 property: d.property,
                 value: normalizeRemHelper(normalizeToken(d.value)),
               })),
@@ -446,7 +435,7 @@ function expandMixins(
           // @mixin smaller-than(N) → @media (max-width: ...)
           const match = condition.match(/smaller-than\((\d+)\)/);
           if (match) {
-            const px = parseInt(match[1] ?? '0', 10);
+            const px = Number.parseInt(match[1] ?? '0', 10);
             const mediaSel = `@media (max-width: ${px - 1}px)`;
             for (const child of block.children) {
               if (child.type === 'rule' && child.selector) {
@@ -457,7 +446,7 @@ function expandMixins(
                   rules.push({
                     selector: `${mediaSel} > ${resolved}`,
                     rawSelector: `${condition}`,
-                    declarations: child.declarations.map(d => ({
+                    declarations: child.declarations.map((d) => ({
                       property: d.property,
                       value: normalizeRemHelper(normalizeToken(d.value)),
                     })),
@@ -508,7 +497,7 @@ function normalizeMantineRules(rules: CssRule[], blockName: string): Map<string,
   const map = new Map<string, CssRule>();
   for (const rule of rules) {
     // Normalize tokens in declarations
-    const normalizedDecls = rule.declarations.map(d => ({
+    const normalizedDecls = rule.declarations.map((d) => ({
       property: d.property,
       value: normalizeToken(d.value),
     }));
@@ -548,7 +537,7 @@ function normalizeSoribashiRules(rules: CssRule[], blockName: string): Map<strin
 
 function declsEqual(a: Declaration[], b: Declaration[]): boolean {
   if (a.length !== b.length) return false;
-  const bMap = new Map(b.map(d => [d.property, d.value]));
+  const bMap = new Map(b.map((d) => [d.property, d.value]));
   for (const d of a) {
     const bVal = bMap.get(d.property);
     if (bVal === undefined || bVal !== d.value) return false;
@@ -562,7 +551,7 @@ function declsEqual(a: Declaration[], b: Declaration[]): boolean {
  */
 function isTokenDiff(mantineDecls: Declaration[], sbDecls: Declaration[]): boolean {
   if (mantineDecls.length !== sbDecls.length) return false;
-  const sbMap = new Map(sbDecls.map(d => [d.property, d.value]));
+  const sbMap = new Map(sbDecls.map((d) => [d.property, d.value]));
   for (const d of mantineDecls) {
     const normalized = normalizeToken(d.value);
     const sbVal = sbMap.get(d.property);
@@ -586,37 +575,27 @@ interface BlockConfig {
 const BLOCKS: BlockConfig[] = [
   {
     name: 'Box',
-    mantinePaths: [
-      'packages/@mantine/core/src/core/Box/Box.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/core/Box/Box.module.css'],
     soribashiPath: 'packages/blocks/src/Box/Box.css',
   },
   {
     name: 'Stack',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Stack/Stack.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Stack/Stack.module.css'],
     soribashiPath: 'packages/blocks/src/Stack/Stack.css',
   },
   {
     name: 'Group',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Group/Group.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Group/Group.module.css'],
     soribashiPath: 'packages/blocks/src/Group/Group.css',
   },
   {
     name: 'Flex',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Flex/Flex.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Flex/Flex.module.css'],
     soribashiPath: 'packages/blocks/src/Flex/Flex.css',
   },
   {
     name: 'Grid',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Grid/Grid.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Grid/Grid.module.css'],
     soribashiPath: 'packages/blocks/src/Grid/Grid.css',
   },
   {
@@ -629,30 +608,22 @@ const BLOCKS: BlockConfig[] = [
   },
   {
     name: 'SimpleGrid',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/SimpleGrid/SimpleGrid.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/SimpleGrid/SimpleGrid.module.css'],
     soribashiPath: 'packages/blocks/src/SimpleGrid/SimpleGrid.css',
   },
   {
     name: 'Container',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Container/Container.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Container/Container.module.css'],
     soribashiPath: 'packages/blocks/src/Container/Container.css',
   },
   {
     name: 'Center',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Center/Center.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Center/Center.module.css'],
     soribashiPath: 'packages/blocks/src/Center/Center.css',
   },
   {
     name: 'AspectRatio',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/AspectRatio/AspectRatio.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/AspectRatio/AspectRatio.module.css'],
     soribashiPath: 'packages/blocks/src/AspectRatio/AspectRatio.css',
   },
   {
@@ -662,23 +633,17 @@ const BLOCKS: BlockConfig[] = [
   },
   {
     name: 'Paper',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Paper/Paper.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Paper/Paper.module.css'],
     soribashiPath: 'packages/blocks/src/Paper/Paper.css',
   },
   {
     name: 'Text',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Text/Text.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Text/Text.module.css'],
     soribashiPath: 'packages/blocks/src/Text/Text.css',
   },
   {
     name: 'Title',
-    mantinePaths: [
-      'packages/@mantine/core/src/components/Title/Title.module.css',
-    ],
+    mantinePaths: ['packages/@mantine/core/src/components/Title/Title.module.css'],
     soribashiPath: 'packages/blocks/src/Title/Title.css',
   },
 ];
@@ -687,14 +652,10 @@ const BLOCKS: BlockConfig[] = [
 // Main comparison logic
 // ---------------------------------------------------------------------------
 
-function formatDeclDiff(
-  mantineDecls: Declaration[],
-  sbDecls: Declaration[],
-  maxLines = 6,
-): string {
+function formatDeclDiff(mantineDecls: Declaration[], sbDecls: Declaration[], maxLines = 6): string {
   const lines: string[] = [];
-  const sbMap = new Map(sbDecls.map(d => [d.property, d.value]));
-  const mantineMap = new Map(mantineDecls.map(d => [d.property, d.value]));
+  const sbMap = new Map(sbDecls.map((d) => [d.property, d.value]));
+  const mantineMap = new Map(mantineDecls.map((d) => [d.property, d.value]));
 
   for (const [prop, val] of mantineMap) {
     const sbVal = sbMap.get(prop);
@@ -751,10 +712,9 @@ export function auditBlock(config: BlockConfig): BlockSummary {
   }
 
   // Parse soribashi CSS
-  const soribashiRules: CssRule[] =
-    config.soribashiPath
-      ? parseCssFile(join(SORIBASHI_ROOT, config.soribashiPath))
-      : [];
+  const soribashiRules: CssRule[] = config.soribashiPath
+    ? parseCssFile(join(SORIBASHI_ROOT, config.soribashiPath))
+    : [];
 
   // Grid and GridCol share the same CSS file — for GridCol audit we only
   // care about the .col selector and ignore .root/.inner/.container
@@ -762,8 +722,8 @@ export function auditBlock(config: BlockConfig): BlockSummary {
   let filteredSoribashiRules = soribashiRules;
 
   if (name === 'GridCol') {
-    filteredMantineRules = mantineRules.filter(r => r.selector.includes('.col'));
-    filteredSoribashiRules = soribashiRules.filter(r => r.selector.includes('col'));
+    filteredMantineRules = mantineRules.filter((r) => r.selector.includes('.col'));
+    filteredSoribashiRules = soribashiRules.filter((r) => r.selector.includes('col'));
     // Use 'Grid' as the prefix for selector normalization since they share the file
   }
 
@@ -842,8 +802,8 @@ export function auditBlock(config: BlockConfig): BlockSummary {
         const rootRule = sbMap.get(innerSel);
         if (rootRule) {
           // Check if the declarations are a subset of the root rule's declarations
-          const allPresent = mantineRule.declarations.every(md => {
-            const sbVal = rootRule.declarations.find(sd => sd.property === md.property);
+          const allPresent = mantineRule.declarations.every((md) => {
+            const sbVal = rootRule.declarations.find((sd) => sd.property === md.property);
             return sbVal !== undefined;
           });
           if (allPresent) {
@@ -872,9 +832,7 @@ export function auditBlock(config: BlockConfig): BlockSummary {
           kind: 'MISSING_IN_SORIBASHI',
           mantineSelector: mantineSel,
           mantineDecls: mantineRule.declarations,
-          snippet: mantineRule.declarations
-            .map(d => `  ${d.property}: ${d.value}`)
-            .join('\n'),
+          snippet: mantineRule.declarations.map((d) => `  ${d.property}: ${d.value}`).join('\n'),
           soribashiLine: undefined,
         });
       }
@@ -891,9 +849,7 @@ export function auditBlock(config: BlockConfig): BlockSummary {
         mantineSelector: '(none)',
         soribashiSelector: sbSel,
         soribashiDecls: sbRule.declarations,
-        snippet: sbRule.declarations
-          .map(d => `  ${d.property}: ${d.value}`)
-          .join('\n'),
+        snippet: sbRule.declarations.map((d) => `  ${d.property}: ${d.value}`).join('\n'),
         soribashiLine: sbRule.lineStart,
       });
     }
@@ -976,12 +932,8 @@ export function generateReport(summaries: BlockSummary[]): string {
   lines.push(`**IDENTICAL:** ${totals.IDENTICAL}  `);
   lines.push(`**TOKEN_DIFF:** ${totals.TOKEN_DIFF}  `);
   lines.push(`**SELECTOR_DIFF:** ${totals.SELECTOR_DIFF}  `);
-  lines.push(
-    `**DECL_DIFF (action required):** ${totals.DECL_DIFF}  `,
-  );
-  lines.push(
-    `**MISSING_IN_SORIBASHI (action required):** ${totals.MISSING_IN_SORIBASHI}  `,
-  );
+  lines.push(`**DECL_DIFF (action required):** ${totals.DECL_DIFF}  `);
+  lines.push(`**MISSING_IN_SORIBASHI (action required):** ${totals.MISSING_IN_SORIBASHI}  `);
   lines.push(`**EXTRA_IN_SORIBASHI (additions):** ${totals.EXTRA_IN_SORIBASHI}  `);
   lines.push('');
   lines.push('---');
@@ -1004,7 +956,7 @@ export function generateReport(summaries: BlockSummary[]): string {
   // Per-block detail sections — only for non-IDENTICAL findings
   for (const s of summaries) {
     const actionableFindings = s.findings.filter(
-      f =>
+      (f) =>
         f.kind === 'DECL_DIFF' ||
         f.kind === 'MISSING_IN_SORIBASHI' ||
         f.kind === 'EXTRA_IN_SORIBASHI' ||
@@ -1023,7 +975,7 @@ export function generateReport(summaries: BlockSummary[]): string {
     }
 
     // DECL_DIFF first (most important)
-    const declDiffs = s.findings.filter(f => f.kind === 'DECL_DIFF');
+    const declDiffs = s.findings.filter((f) => f.kind === 'DECL_DIFF');
     if (declDiffs.length > 0) {
       lines.push('### DECL_DIFF — declaration mismatches');
       lines.push('');
@@ -1037,7 +989,7 @@ export function generateReport(summaries: BlockSummary[]): string {
     }
 
     // MISSING
-    const missing = s.findings.filter(f => f.kind === 'MISSING_IN_SORIBASHI');
+    const missing = s.findings.filter((f) => f.kind === 'MISSING_IN_SORIBASHI');
     if (missing.length > 0) {
       lines.push('### MISSING_IN_SORIBASHI');
       lines.push('');
@@ -1051,23 +1003,21 @@ export function generateReport(summaries: BlockSummary[]): string {
     }
 
     // TOKEN_DIFF (informational)
-    const tokenDiffs = s.findings.filter(f => f.kind === 'TOKEN_DIFF');
+    const tokenDiffs = s.findings.filter((f) => f.kind === 'TOKEN_DIFF');
     if (tokenDiffs.length > 0) {
       lines.push('### TOKEN_DIFF — expected token substitutions');
       lines.push('');
       lines.push('| Mantine selector | Soribashi selector | Notes |');
       lines.push('|-----------------|-------------------|-------|');
       for (const f of tokenDiffs) {
-        const notes = f.snippet.includes('\n')
-          ? f.snippet.replace(/\n/g, ' ↵ ')
-          : f.snippet;
+        const notes = f.snippet.includes('\n') ? f.snippet.replace(/\n/g, ' ↵ ') : f.snippet;
         lines.push(`| \`${f.mantineSelector}\` | \`${f.soribashiSelector ?? ''}\` | ${notes} |`);
       }
       lines.push('');
     }
 
     // EXTRA
-    const extras = s.findings.filter(f => f.kind === 'EXTRA_IN_SORIBASHI');
+    const extras = s.findings.filter((f) => f.kind === 'EXTRA_IN_SORIBASHI');
     if (extras.length > 0) {
       lines.push('### EXTRA_IN_SORIBASHI — soribashi additions');
       lines.push('');
@@ -1075,9 +1025,7 @@ export function generateReport(summaries: BlockSummary[]): string {
       lines.push('|-------------------|--------------|');
       for (const f of extras) {
         const snippetOneLine = f.snippet.replace(/\n/g, ' ↵ ');
-        lines.push(
-          `| \`${f.soribashiSelector ?? '(none)'}\` | ${snippetOneLine} |`,
-        );
+        lines.push(`| \`${f.soribashiSelector ?? '(none)'}\` | ${snippetOneLine} |`);
       }
       lines.push('');
     }
@@ -1090,10 +1038,7 @@ export function generateReport(summaries: BlockSummary[]): string {
 // Entry point
 // ---------------------------------------------------------------------------
 
-const REPORT_PATH = join(
-  SORIBASHI_ROOT,
-  'docs/superpowers/audits/2026-04-25-css-parity.md',
-);
+const REPORT_PATH = join(SORIBASHI_ROOT, 'docs/superpowers/audits/2026-04-25-css-parity.md');
 
 function main() {
   console.log('Running CSS parity audit...\n');

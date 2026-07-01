@@ -1,4 +1,4 @@
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { emitCss } from '@soribashi/codegen';
@@ -16,7 +16,8 @@ const outPath = resolve(here, '..', 'src', 'generated', 'tenants.css');
 async function main(): Promise<void> {
   const HEADER = `/* auto-generated tenant scopes — do not edit manually */`;
   const sections = tenantThemes.map(
-    (theme) => `/* tenant: ${theme.name ?? '(unnamed)'} — scope: ${theme.scope} */\n${emitCss(theme)}`,
+    (theme) =>
+      `/* tenant: ${theme.name ?? '(unnamed)'} — scope: ${theme.scope} */\n${emitCss(theme)}`,
   );
   const out = `${HEADER}\n\n${sections.join('\n')}`;
 

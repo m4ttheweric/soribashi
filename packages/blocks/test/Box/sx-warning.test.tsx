@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
 import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Box } from '../../src/Box/Box.tsx';
 
 const theme = createTheme({

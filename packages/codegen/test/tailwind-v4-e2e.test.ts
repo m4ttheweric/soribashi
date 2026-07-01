@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { compile } from 'tailwindcss';
 import { createTheme } from '@soribashi/theme';
+import { compile } from 'tailwindcss';
+import { describe, expect, it } from 'vitest';
 import { emitTailwindV4 } from '../src/emit-tailwind-v4.ts';
 
 /**
@@ -53,13 +53,7 @@ describe('emitTailwindV4 — Tailwind v4 compile', () => {
     });
 
     const result = await compile(wrap(emitTailwindV4(theme)));
-    const css = result.build([
-      'rounded-md',
-      'rounded-lg',
-      'p-md',
-      'm-lg',
-      'text-md',
-    ]);
+    const css = result.build(['rounded-md', 'rounded-lg', 'p-md', 'm-lg', 'text-md']);
 
     expect(css).toContain('.rounded-md');
     expect(css).toContain('.rounded-lg');

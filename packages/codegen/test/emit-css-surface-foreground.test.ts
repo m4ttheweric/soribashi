@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { emitCss } from '../src/emit-css.ts';
 
 const baseTokens = {
@@ -19,7 +19,7 @@ function makeFloatingTheme() {
     tokens: baseTokens as never,
     semanticTokens: {
       surface: {
-        default: 'colors.neutral.0',                                              // string form
+        default: 'colors.neutral.0', // string form
         floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' }, // object form
       },
     },

@@ -1,14 +1,14 @@
+import { SoribashiProvider, createTheme } from '@soribashi/core';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 /**
  * Tabs recipe tests — Wave 3 pilot
  */
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { SoribashiProvider, createTheme } from '@soribashi/core';
 import { theme } from '../../theme/index.ts';
-import { Tabs, type TabsRootProps, type TabsContentProps } from './Tabs.tsx';
 import classes from './Tabs.module.css';
+import { Tabs, type TabsContentProps, type TabsRootProps } from './Tabs.tsx';
 
 function withProviders(node: React.ReactNode) {
   return <SoribashiProvider theme={theme}>{node}</SoribashiProvider>;
@@ -193,9 +193,7 @@ describe('Tabs recipe', () => {
     );
 
     const list = screen.getByRole('tablist') as HTMLElement;
-    expect(list.style.getPropertyValue('--sb-tabs-active-bg')).toBe(
-      'var(--color-primary-500)',
-    );
+    expect(list.style.getPropertyValue('--sb-tabs-active-bg')).toBe('var(--color-primary-500)');
     expect(list.style.getPropertyValue('--sb-tabs-active-color')).toBe(
       'var(--surface-default-foreground, var(--color-neutral-0))',
     );
@@ -215,9 +213,7 @@ describe('Tabs recipe', () => {
 
     const list = screen.getByRole('tablist') as HTMLElement;
     expect(list.style.getPropertyValue('--sb-tabs-active-bg')).toBe('transparent');
-    expect(list.style.getPropertyValue('--sb-tabs-active-color')).toBe(
-      'var(--text-default)',
-    );
+    expect(list.style.getPropertyValue('--sb-tabs-active-color')).toBe('var(--text-default)');
   });
 
   it('Tabs.Trigger defaults to a <button> element', () => {
@@ -241,7 +237,9 @@ describe('Tabs recipe', () => {
       withProviders(
         <Tabs defaultValue="a">
           <Tabs.List>
-            <Tabs.Trigger value="a" as="a" href="/dashboard">A</Tabs.Trigger>
+            <Tabs.Trigger value="a" as="a" href="/dashboard">
+              A
+            </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="a">content-a</Tabs.Content>
         </Tabs>,
@@ -260,7 +258,9 @@ describe('Tabs recipe', () => {
       withProviders(
         <Tabs defaultValue="a">
           <Tabs.List>
-            <Tabs.Trigger value="a" ref={ref}>A</Tabs.Trigger>
+            <Tabs.Trigger value="a" ref={ref}>
+              A
+            </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="a">content-a</Tabs.Content>
         </Tabs>,
@@ -277,7 +277,9 @@ describe('Tabs recipe', () => {
       withProviders(
         <Tabs defaultValue="a">
           <Tabs.List>
-            <Tabs.Trigger value="a" as="a" href="/x" ref={ref}>A</Tabs.Trigger>
+            <Tabs.Trigger value="a" as="a" href="/x" ref={ref}>
+              A
+            </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="a">content-a</Tabs.Content>
         </Tabs>,
@@ -297,7 +299,9 @@ describe('Tabs recipe', () => {
         <Tabs defaultValue="a" onValueChange={onValueChange}>
           <Tabs.List>
             <Tabs.Trigger value="a">A</Tabs.Trigger>
-            <Tabs.Trigger value="b" disabled>B</Tabs.Trigger>
+            <Tabs.Trigger value="b" disabled>
+              B
+            </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="a">content-a</Tabs.Content>
           <Tabs.Content value="b">content-b</Tabs.Content>
@@ -317,7 +321,9 @@ describe('Tabs recipe', () => {
         <Tabs defaultValue="a">
           <Tabs.List>
             <Tabs.Trigger value="a">A</Tabs.Trigger>
-            <Tabs.Trigger value="b" disabled>B</Tabs.Trigger>
+            <Tabs.Trigger value="b" disabled>
+              B
+            </Tabs.Trigger>
             <Tabs.Trigger value="c">C</Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="a">content-a</Tabs.Content>
@@ -341,7 +347,9 @@ describe('Tabs recipe', () => {
             <Tabs.Trigger value="b">B</Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="a">content-a</Tabs.Content>
-          <Tabs.Content value="b" forceMount>content-b</Tabs.Content>
+          <Tabs.Content value="b" forceMount>
+            content-b
+          </Tabs.Content>
         </Tabs>,
       ),
     );
@@ -350,8 +358,10 @@ describe('Tabs recipe', () => {
     expect(screen.getByText('content-a')).toBeInTheDocument();
     // Inactive but forceMount'd content is still in DOM (hidden via Radix's `hidden` attr)
     expect(screen.getByText('content-b')).toBeInTheDocument();
-    expect(screen.getByText('content-b').closest('[role="tabpanel"]'))
-      .toHaveAttribute('data-state', 'inactive');
+    expect(screen.getByText('content-b').closest('[role="tabpanel"]')).toHaveAttribute(
+      'data-state',
+      'inactive',
+    );
   });
 
   it('throws when Tabs.Trigger is rendered outside <Tabs>', () => {
@@ -389,7 +399,9 @@ describe('Tabs recipe', () => {
       withProviders(
         <Tabs defaultValue="a">
           <Tabs.List>
-            <Tabs.Trigger value="a" className="custom-trigger-class">A</Tabs.Trigger>
+            <Tabs.Trigger value="a" className="custom-trigger-class">
+              A
+            </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="a">content-a</Tabs.Content>
         </Tabs>,
@@ -408,7 +420,9 @@ describe('Tabs recipe', () => {
           <Tabs.List>
             <Tabs.Trigger value="a">A</Tabs.Trigger>
           </Tabs.List>
-          <Tabs.Content value="a" className="custom-content-class">content-a</Tabs.Content>
+          <Tabs.Content value="a" className="custom-content-class">
+            content-a
+          </Tabs.Content>
         </Tabs>,
       ),
     );
@@ -422,9 +436,7 @@ describe('Tabs recipe', () => {
     const themeWithDefaults = createTheme({
       tokens: theme.tokens,
       semanticTokens: theme.semanticTokens,
-      components: [
-        Tabs.extend({ defaultProps: { variant: 'pills' } as Partial<TabsRootProps> }),
-      ],
+      components: [Tabs.extend({ defaultProps: { variant: 'pills' } as Partial<TabsRootProps> })],
     });
     render(
       <SoribashiProvider theme={themeWithDefaults}>

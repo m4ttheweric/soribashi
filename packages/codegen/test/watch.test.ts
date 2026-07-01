@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
-import { join, sep } from 'node:path';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { watch, patternToDir, createRebuildScheduler } from '../src/watch.ts';
+import { join, sep } from 'node:path';
+import { describe, expect, it, vi } from 'vitest';
+import { createRebuildScheduler, patternToDir, watch } from '../src/watch.ts';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -141,55 +141,63 @@ function configSource(color: string, outPath: string): string {
 }
 
 describe('watch — config reload integration', () => {
-  it('rebuild() picks up config edits (fresh subprocess per build)', { timeout: 20000 }, async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));
-    try {
-      mkdirSync(join(dir, 'src'));
-      const configPath = join(dir, 'src', 'soribashi.config.ts');
-      const outPath = join(dir, 'out', 'theme.css');
-      writeFileSync(configPath, configSource('hsl(0 0% 10%)', outPath));
-
-      const handle = await watch(configPath, { silent: true, cwd: dir, debounceMs: 20 });
+  it(
+    'rebuild() picks up config edits (fresh subprocess per build)',
+    { timeout: 20000 },
+    async () => {
+      const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));
       try {
-        expect(readFileSync(outPath, 'utf-8')).toContain('hsl(0 0% 10%)');
+        mkdirSync(join(dir, 'src'));
+        const configPath = join(dir, 'src', 'soribashi.config.ts');
+        const outPath = join(dir, 'out', 'theme.css');
+        writeFileSync(configPath, configSource('hsl(0 0% 10%)', outPath));
 
-        // Regression: the old watch() rebuilt the same in-memory ResolvedTheme
-        // forever, so config edits never changed the output.
-        writeFileSync(configPath, configSource('hsl(120 50% 50%)', outPath));
-        await handle.rebuild();
-        expect(readFileSync(outPath, 'utf-8')).toContain('hsl(120 50% 50%)');
+        const handle = await watch(configPath, { silent: true, cwd: dir, debounceMs: 20 });
+        try {
+          expect(readFileSync(outPath, 'utf-8')).toContain('hsl(0 0% 10%)');
+
+          // Regression: the old watch() rebuilt the same in-memory ResolvedTheme
+          // forever, so config edits never changed the output.
+          writeFileSync(configPath, configSource('hsl(120 50% 50%)', outPath));
+          await handle.rebuild();
+          expect(readFileSync(outPath, 'utf-8')).toContain('hsl(120 50% 50%)');
+        } finally {
+          await handle.stop();
+        }
       } finally {
-        await handle.stop();
+        rmSync(dir, { recursive: true, force: true });
       }
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
+    },
+  );
 
-  it('a file change event triggers a rebuild with the fresh config', { timeout: 20000 }, async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));
-    try {
-      mkdirSync(join(dir, 'src'));
-      const configPath = join(dir, 'src', 'soribashi.config.ts');
-      const outPath = join(dir, 'out', 'theme.css');
-      writeFileSync(configPath, configSource('hsl(0 0% 10%)', outPath));
-
-      const handle = await watch(configPath, { silent: true, cwd: dir, debounceMs: 20 });
+  it(
+    'a file change event triggers a rebuild with the fresh config',
+    { timeout: 20000 },
+    async () => {
+      const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));
       try {
-        expect(readFileSync(outPath, 'utf-8')).toContain('hsl(0 0% 10%)');
+        mkdirSync(join(dir, 'src'));
+        const configPath = join(dir, 'src', 'soribashi.config.ts');
+        const outPath = join(dir, 'out', 'theme.css');
+        writeFileSync(configPath, configSource('hsl(0 0% 10%)', outPath));
 
-        writeFileSync(configPath, configSource('hsl(240 80% 60%)', outPath));
-        await vi.waitFor(
-          () => expect(readFileSync(outPath, 'utf-8')).toContain('hsl(240 80% 60%)'),
-          { timeout: 10000, interval: 100 },
-        );
+        const handle = await watch(configPath, { silent: true, cwd: dir, debounceMs: 20 });
+        try {
+          expect(readFileSync(outPath, 'utf-8')).toContain('hsl(0 0% 10%)');
+
+          writeFileSync(configPath, configSource('hsl(240 80% 60%)', outPath));
+          await vi.waitFor(
+            () => expect(readFileSync(outPath, 'utf-8')).toContain('hsl(240 80% 60%)'),
+            { timeout: 10000, interval: 100 },
+          );
+        } finally {
+          await handle.stop();
+        }
       } finally {
-        await handle.stop();
+        rmSync(dir, { recursive: true, force: true });
       }
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
+    },
+  );
 
   it('throws at startup for a malformed config', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));

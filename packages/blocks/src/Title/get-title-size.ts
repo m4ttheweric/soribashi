@@ -1,3 +1,4 @@
+import { isRawCss } from '../utils/get-size.ts';
 /**
  * Adapted from @mantine/core
  * Source: packages/@mantine/core/src/components/Title/get-title-size.ts
@@ -15,7 +16,6 @@
  *     the raw-CSS heuristic since they are documented font-size tokens.
  */
 import { rem } from '../utils/rem.ts';
-import { isRawCss } from '../utils/get-size.ts';
 
 export type TitleOrder = 1 | 2 | 3 | 4 | 5 | 6;
 export type TitleSize = `h${TitleOrder}` | string | number;

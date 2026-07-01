@@ -29,7 +29,7 @@
  *
  * Run: bunx playwright test apps/pilot/tests/tooltip-computed-styles.spec.ts
  */
-import { test, expect, type Page } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -74,10 +74,11 @@ function parseRgb(css: string): [number, number, number] {
 // ─── tests ──────────────────────────────────────────────────────────────────
 
 test.describe('Tooltip — computed styles per variant', () => {
-
   // ── 1. Default variant: surface.floating + foreground (inverted) ─────────
 
-  test('default variant — content bg uses surface.floating (dark in light mode)', async ({ page }) => {
+  test('default variant — content bg uses surface.floating (dark in light mode)', async ({
+    page,
+  }) => {
     await gotoTooltipMatrix(page);
     const { content } = await hoverTrigger(page, 0); // default / top
 
@@ -90,7 +91,9 @@ test.describe('Tooltip — computed styles per variant', () => {
     expect(b).toBeLessThan(80);
   });
 
-  test('default variant — content color uses surface.floating-foreground (light)', async ({ page }) => {
+  test('default variant — content color uses surface.floating-foreground (light)', async ({
+    page,
+  }) => {
     await gotoTooltipMatrix(page);
     const { content } = await hoverTrigger(page, 0); // default / top
 
@@ -152,7 +155,9 @@ test.describe('Tooltip — computed styles per variant', () => {
 
   // ── 4. Dark mode flips the default variant's foreground pairing ──────────
 
-  test('dark mode — default variant bg flips to light (foreground pairing inverts)', async ({ page }) => {
+  test('dark mode — default variant bg flips to light (foreground pairing inverts)', async ({
+    page,
+  }) => {
     await gotoTooltipMatrix(page);
 
     // Add .dark to <html> so the portal content (rendered in document.body)
@@ -171,5 +176,4 @@ test.describe('Tooltip — computed styles per variant', () => {
     expect(g).toBeGreaterThan(200);
     expect(b).toBeGreaterThan(200);
   });
-
 });

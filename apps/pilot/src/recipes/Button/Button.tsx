@@ -1,3 +1,4 @@
+import { type PolymorphicRenderCtx, defineVocabulary } from '@soribashi/core';
 /**
  * Button recipe — Wave 1 pilot for the pure-styled-primitive category.
  *
@@ -10,7 +11,6 @@
  */
 import type { MouseEvent, ReactNode } from 'react';
 import { definePolymorphicComponent } from '../../builders.ts';
-import { defineVocabulary, type PolymorphicRenderCtx } from '@soribashi/core';
 import classes from './Button.module.css';
 
 const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
@@ -136,7 +136,11 @@ export const Button = definePolymorphicComponent<
               {leftIcon}
             </span>
           )}
-          <span {...getStyles('label')} data-part="label" data-loading={loading ? 'true' : undefined}>
+          <span
+            {...getStyles('label')}
+            data-part="label"
+            data-loading={loading ? 'true' : undefined}
+          >
             {children}
           </span>
           {rightIcon && (

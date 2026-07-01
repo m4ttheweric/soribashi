@@ -1,3 +1,4 @@
+import { getThemeColor } from '../../../utils/get-theme-color.ts';
 /**
  * Adapted from @mantine/core
  * Source: packages/@mantine/core/src/core/Box/style-props/resolvers/border-resolver/border-resolver.ts
@@ -11,7 +12,6 @@
  *     'primary.5' (0–9 shade scale). Inherited from getThemeColor.
  */
 import { rem } from '../../../utils/rem.ts';
-import { getThemeColor } from '../../../utils/get-theme-color.ts';
 import type { StylePropResolver } from '../style-types.ts';
 
 export const borderResolver: StylePropResolver = (value, theme) => {

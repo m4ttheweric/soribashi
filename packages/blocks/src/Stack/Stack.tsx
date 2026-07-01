@@ -12,9 +12,9 @@
  *     polymorphism without Stack itself being a polymorphic factory)
  */
 import { defineComponent } from '@soribashi/factory';
-import { getSpacing } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getSpacing } from '../utils/index.ts';
 
 export interface StackOwnProps extends BoxOwnProps {
   /** Key of theme spacing or any valid CSS gap value @default 'md' */

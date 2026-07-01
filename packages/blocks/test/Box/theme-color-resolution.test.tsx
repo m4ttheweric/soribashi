@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
 import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { Box } from '../../src/Box/Box.tsx';
 
 const theme = createTheme({
@@ -59,7 +59,11 @@ describe('theme-aware color resolution', () => {
   });
 
   it('still resolves semantic surface/text/border refs', () => {
-    const { container } = wrap(<Box bg="surface.raised" c="text.muted">X</Box>);
+    const { container } = wrap(
+      <Box bg="surface.raised" c="text.muted">
+        X
+      </Box>,
+    );
     const el = container.querySelector('div') as HTMLElement;
     expect(el.style.background).toBe('var(--surface-raised)');
     expect(el.style.color).toBe('var(--text-muted)');

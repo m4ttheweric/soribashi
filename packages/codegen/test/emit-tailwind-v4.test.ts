@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { emitTailwindV4 } from '../src/emit-tailwind-v4.ts';
 
 describe('emitTailwindV4', () => {

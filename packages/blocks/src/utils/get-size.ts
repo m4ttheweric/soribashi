@@ -81,10 +81,7 @@ export function isRawCss(value: string): boolean {
  *   getSize('calc(100% - 8px)', 'foo')    => 'calc(100% - 8px)'
  *   getSize(undefined, 'foo')             => undefined
  */
-export function getSize(
-  value: string | number | undefined,
-  prefix: string,
-): string | undefined {
+export function getSize(value: string | number | undefined, prefix: string): string | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value === 'number') return rem(value);
   if (isRawCss(value)) return value;

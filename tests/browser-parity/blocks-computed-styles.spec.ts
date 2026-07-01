@@ -21,7 +21,7 @@
  *
  * Run:  bunx playwright test
  */
-import { test, expect, type Page } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -38,11 +38,7 @@ function cs(page: Page, testId: string, prop: string): Promise<string> {
 }
 
 /** Read multiple computed properties at once */
-function csMany(
-  page: Page,
-  testId: string,
-  props: string[],
-): Promise<Record<string, string>> {
+function csMany(page: Page, testId: string, props: string[]): Promise<Record<string, string>> {
   return page.evaluate(
     ([id, ps]) => {
       const el = document.querySelector(`[data-testid="${id}"]`) as HTMLElement | null;
@@ -88,7 +84,10 @@ test('Box [hiddenFrom="md"] — display:none at 1280px viewport', async ({ page 
 // ─────────────────────────────────────────────────────────────────────────────
 
 test('Stack [default] — display:flex + flex-direction:column', async ({ page }) => {
-  const { display, 'flex-direction': fd } = await csMany(page, 'stack-0', ['display', 'flex-direction']);
+  const { display, 'flex-direction': fd } = await csMany(page, 'stack-0', [
+    'display',
+    'flex-direction',
+  ]);
   expect(display).toBe('flex');
   expect(fd).toBe('column');
 });
@@ -115,7 +114,10 @@ test('Stack [align="center"] — align-items:center', async ({ page }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test('Group [default] — display:flex + flex-direction:row', async ({ page }) => {
-  const { display, 'flex-direction': fd } = await csMany(page, 'group-0', ['display', 'flex-direction']);
+  const { display, 'flex-direction': fd } = await csMany(page, 'group-0', [
+    'display',
+    'flex-direction',
+  ]);
   expect(display).toBe('flex');
   expect(fd).toBe('row');
 });
@@ -141,7 +143,10 @@ test('Group [gap="xs"] — gap resolves --spacing-xs (4px)', async ({ page }) =>
 // ─────────────────────────────────────────────────────────────────────────────
 
 test('Flex [default] — display:flex + flex-direction:row', async ({ page }) => {
-  const { display, 'flex-direction': fd } = await csMany(page, 'flex-0', ['display', 'flex-direction']);
+  const { display, 'flex-direction': fd } = await csMany(page, 'flex-0', [
+    'display',
+    'flex-direction',
+  ]);
   expect(display).toBe('flex');
   expect(fd).toBe('row');
 });
@@ -168,7 +173,9 @@ test('Flex [align="flex-end"] — align-items:flex-end', async ({ page }) => {
 test('Grid [inner] — display:flex + flex-wrap:wrap', async ({ page }) => {
   // The inner wrapper div carries sb-Grid-inner
   const { display, 'flex-wrap': fw } = await page.evaluate(() => {
-    const inner = document.querySelector('[data-testid="grid-0"] .sb-Grid-inner') as HTMLElement | null;
+    const inner = document.querySelector(
+      '[data-testid="grid-0"] .sb-Grid-inner',
+    ) as HTMLElement | null;
     if (!inner) throw new Error('sb-Grid-inner not found inside grid-0');
     const s = window.getComputedStyle(inner);
     return { display: s.display.trim(), 'flex-wrap': s.flexWrap.trim() };
@@ -184,7 +191,9 @@ test('Grid.Col [span=6 columns=12] — flex-basis ≈ 50%', async ({ page }) => 
   // We verify the element's computed width is approximately half the parent
   const ratio = await page.evaluate(() => {
     const col = document.querySelector('[data-testid="grid-col-0"]') as HTMLElement | null;
-    const grid = document.querySelector('[data-testid="grid-0"] .sb-Grid-inner') as HTMLElement | null;
+    const grid = document.querySelector(
+      '[data-testid="grid-0"] .sb-Grid-inner',
+    ) as HTMLElement | null;
     if (!col || !grid) throw new Error('grid-col-0 or grid inner not found');
     return col.getBoundingClientRect().width / grid.getBoundingClientRect().width;
   });
@@ -197,7 +206,9 @@ test('Grid.Col [span=3 columns=6] — flex-basis corresponds to 50%', async ({ p
   // span=3 / columns=6 → same 50% ratio
   const ratio = await page.evaluate(() => {
     const col = document.querySelector('[data-testid="grid-col-1"]') as HTMLElement | null;
-    const grid = document.querySelector('[data-testid="grid-1"] .sb-Grid-inner') as HTMLElement | null;
+    const grid = document.querySelector(
+      '[data-testid="grid-1"] .sb-Grid-inner',
+    ) as HTMLElement | null;
     if (!col || !grid) throw new Error('grid-col-1 or grid-1 inner not found');
     return col.getBoundingClientRect().width / grid.getBoundingClientRect().width;
   });
@@ -217,11 +228,16 @@ test('SimpleGrid [default cols=1] — display:grid', async ({ page }) => {
 test('SimpleGrid [cols=3] — grid-template-columns has 3 equal tracks', async ({ page }) => {
   const gtc = await cs(page, 'sg-1', 'grid-template-columns');
   // Should resolve to 3 tracks — verify by counting the px values
-  const tracks = gtc.trim().split(/\s+(?=\d)/).filter(Boolean);
+  const tracks = gtc
+    .trim()
+    .split(/\s+(?=\d)/)
+    .filter(Boolean);
   expect(tracks).toHaveLength(3);
 });
 
-test('SimpleGrid [minColWidth="200px"] — grid-template-columns uses auto-fill', async ({ page }) => {
+test('SimpleGrid [minColWidth="200px"] — grid-template-columns uses auto-fill', async ({
+  page,
+}) => {
   // When minColWidth is set, the component adds data-auto-flow="auto-fill"
   // CSS: grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))
   const attrValue = await page.evaluate(() => {
@@ -268,12 +284,14 @@ test('Container [fluid] — max-width is 100%', async ({ page }) => {
 // 8. Center
 // ─────────────────────────────────────────────────────────────────────────────
 
-test('Center [default] — display:flex + justify-content:center + align-items:center', async ({ page }) => {
-  const { display, 'justify-content': jc, 'align-items': ai } = await csMany(page, 'center-0', [
-    'display',
-    'justify-content',
-    'align-items',
-  ]);
+test('Center [default] — display:flex + justify-content:center + align-items:center', async ({
+  page,
+}) => {
+  const {
+    display,
+    'justify-content': jc,
+    'align-items': ai,
+  } = await csMany(page, 'center-0', ['display', 'justify-content', 'align-items']);
   expect(display).toBe('flex');
   expect(jc).toBe('center');
   expect(ai).toBe('center');
@@ -304,8 +322,8 @@ test('AspectRatio [default ratio=1] — child has aspect-ratio:1', async ({ page
   });
   // Default --ar-ratio is 1 → aspect-ratio: 1
   // Chromium reports the computed value as "1 / 1" (normalised fraction form)
-  const parsed = v.split('/').map((s) => parseFloat(s.trim()));
-  const ratio = parsed.length === 2 ? parsed[0]! / parsed[1]! : parseFloat(v);
+  const parsed = v.split('/').map((s) => Number.parseFloat(s.trim()));
+  const ratio = parsed.length === 2 ? parsed[0]! / parsed[1]! : Number.parseFloat(v);
   expect(ratio).toBeCloseTo(1, 2);
 });
 
@@ -317,7 +335,12 @@ test('AspectRatio [ratio=16/9] — child has correct aspect-ratio', async ({ pag
   expect(v).not.toBe('1');
   expect(v).not.toBe('auto');
   // It should be approx 16/9
-  const num = parseFloat(v.replace('/', '/').split('/').reduce((a, b) => String(parseFloat(a) / parseFloat(b))));
+  const num = Number.parseFloat(
+    v
+      .replace('/', '/')
+      .split('/')
+      .reduce((a, b) => String(Number.parseFloat(a) / Number.parseFloat(b))),
+  );
   expect(num).toBeCloseTo(16 / 9, 2);
 });
 
@@ -325,8 +348,8 @@ test('AspectRatio [ratio=4/3] — child div has correct aspect-ratio', async ({ 
   const v = await cs(page, 'ar-2-child', 'aspect-ratio');
   expect(v).not.toBe('auto');
   // Parse and verify close to 4/3
-  const parts = v.split('/').map((s) => parseFloat(s.trim()));
-  const ratio = parts.length === 2 ? parts[0]! / parts[1]! : parseFloat(v);
+  const parts = v.split('/').map((s) => Number.parseFloat(s.trim()));
+  const ratio = parts.length === 2 ? parts[0]! / parts[1]! : Number.parseFloat(v);
   expect(ratio).toBeCloseTo(4 / 3, 2);
 });
 

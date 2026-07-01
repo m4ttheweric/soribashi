@@ -31,7 +31,7 @@ describe('defineVocabulary', () => {
     expect(v.schema.safeParse('tertiary').success).toBe(false);
   });
 
-  it('preserves literal types at compile time (typeof v[\"type\"])', () => {
+  it('preserves literal types at compile time (typeof v["type"])', () => {
     // The `type` phantom is reachable only via TypeScript; this assertion
     // would fail typecheck if the `const` modifier on the generic ever
     // broke and inference widened to `string`.

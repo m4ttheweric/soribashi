@@ -21,7 +21,12 @@ export const Button = defineComponent<ButtonOwnProps>({
   element: 'button',
   selectors: ['root', 'label', 'icon', 'spinner'] as const,
   variants: ['filled', 'outline', 'subtle', 'ghost', 'link'] as const,
-  classes: { root: 'pg-Button-root', label: 'pg-Button-label', icon: 'pg-Button-icon', spinner: 'pg-Button-spinner' },
+  classes: {
+    root: 'pg-Button-root',
+    label: 'pg-Button-label',
+    icon: 'pg-Button-icon',
+    spinner: 'pg-Button-spinner',
+  },
   defaults: {
     intent: 'primary',
     variant: 'filled',

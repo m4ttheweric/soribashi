@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../src/cli.ts';
 
 describe('runCli flags', () => {
@@ -42,9 +42,9 @@ describe('runCli flags', () => {
   });
 
   it('--version prints the @soribashi/codegen package version and exits 0', async () => {
-    const pkg = JSON.parse(
-      readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
-    ) as { version: string };
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
+      version: string;
+    };
 
     const code = await runCli(['--version'], { cwd: tempDir });
     expect(code).toBe(0);
@@ -131,10 +131,9 @@ describe('runCli watch shutdown', () => {
         silent: true,
       });
 
-      await vi.waitFor(
-        () => expect(onceSpy.mock.calls.some((c) => c[0] === 'SIGINT')).toBe(true),
-        { timeout: 10000 },
-      );
+      await vi.waitFor(() => expect(onceSpy.mock.calls.some((c) => c[0] === 'SIGINT')).toBe(true), {
+        timeout: 10000,
+      });
       const call = onceSpy.mock.calls.find((c) => c[0] === 'SIGINT')!;
       const handler = call[1] as () => void;
       handler();

@@ -1,4 +1,4 @@
-import type { ThemeTokens, PartialThemeTokens } from '../types.ts';
+import type { PartialThemeTokens, ThemeTokens } from '../types.ts';
 
 /**
  * Default light-mode tokens. A reasonable starting palette that teams will

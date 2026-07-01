@@ -1,12 +1,12 @@
+import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
 /**
  * Tests for Grid column math helpers and API parity with Mantine.
  * Covers: finding #1 (column math, parameterized columns, grow prop)
  *         finding #8 (alignSelf → align rename)
  */
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '@soribashi/factory';
 import { Grid } from '../src/index.ts';
 
 const theme = createTheme({
@@ -92,7 +92,9 @@ describe('Grid column math — offset', () => {
   it('offset=2 in 12-col grid includes gap factor in calc', () => {
     const { container } = wrap(
       <Grid columns={12}>
-        <Grid.Col span={6} offset={2}>X</Grid.Col>
+        <Grid.Col span={6} offset={2}>
+          X
+        </Grid.Col>
       </Grid>,
     );
     const col = container.querySelector('.sb-Grid-col') as HTMLElement;
@@ -108,7 +110,9 @@ describe('Grid column math — offset', () => {
   it('offset=0 → "0"', () => {
     const { container } = wrap(
       <Grid columns={12}>
-        <Grid.Col span={6} offset={0}>X</Grid.Col>
+        <Grid.Col span={6} offset={0}>
+          X
+        </Grid.Col>
       </Grid>,
     );
     const col = container.querySelector('.sb-Grid-col') as HTMLElement;
@@ -211,7 +215,9 @@ describe('Grid grow prop', () => {
 describe('Grid.Col align prop', () => {
   it('align prop maps to --col-align-self CSS var', () => {
     const { container } = wrap(
-      <Grid.Col span={6} align="center">X</Grid.Col>,
+      <Grid.Col span={6} align="center">
+        X
+      </Grid.Col>,
     );
     const col = container.querySelector('.sb-Grid-col') as HTMLElement;
     expect(col.style.getPropertyValue('--col-align-self')).toBe('center');
@@ -219,16 +225,16 @@ describe('Grid.Col align prop', () => {
 
   it('align="flex-start" maps correctly', () => {
     const { container } = wrap(
-      <Grid.Col span={6} align="flex-start">X</Grid.Col>,
+      <Grid.Col span={6} align="flex-start">
+        X
+      </Grid.Col>,
     );
     const col = container.querySelector('.sb-Grid-col') as HTMLElement;
     expect(col.style.getPropertyValue('--col-align-self')).toBe('flex-start');
   });
 
   it('align="end" on col renders correctly', () => {
-    const { container } = wrap(
-      <Grid.Col align="end">X</Grid.Col>,
-    );
+    const { container } = wrap(<Grid.Col align="end">X</Grid.Col>);
     const col = container.querySelector('.sb-Grid-col') as HTMLElement;
     expect(col.style.getPropertyValue('--col-align-self')).toBe('end');
   });

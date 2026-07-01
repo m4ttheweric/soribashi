@@ -16,10 +16,7 @@
  * - `undefined` → `undefined` (no override)
  * - numeric → `calc(${pct}% + ${gapFactor} * var(--grid-column-gap))`
  */
-export function getColumnOffset(
-  offset: number | undefined,
-  columns: number,
-): string | undefined {
+export function getColumnOffset(offset: number | undefined, columns: number): string | undefined {
   if (offset === 0) {
     return '0';
   }

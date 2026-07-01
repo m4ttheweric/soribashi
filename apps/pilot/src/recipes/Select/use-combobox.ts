@@ -30,10 +30,15 @@ export interface ComboboxKeyResult<V extends Primitive> {
   open?: boolean;
 }
 
-export function useCombobox<V extends Primitive>(opts: { options: ComboboxItem<V>[]; opened: boolean }) {
+export function useCombobox<V extends Primitive>(opts: {
+  options: ComboboxItem<V>[];
+  opened: boolean;
+}) {
   const { options, opened } = opts;
   const [activeIndex, setActiveIndex] = useState<number>(-1);
-  useEffect(() => { setActiveIndex(-1); }, [options]);
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [options]);
 
   const onKeyDown = (e: { key: string; preventDefault: () => void }): ComboboxKeyResult<V> => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -47,7 +52,9 @@ export function useCombobox<V extends Primitive>(opts: { options: ComboboxItem<V
     }
     if (e.key === 'Home' || e.key === 'End') {
       e.preventDefault();
-      setActiveIndex(nextEnabledIndex(options, e.key === 'Home' ? -1 : 0, e.key === 'Home' ? 1 : -1));
+      setActiveIndex(
+        nextEnabledIndex(options, e.key === 'Home' ? -1 : 0, e.key === 'Home' ? 1 : -1),
+      );
       return {};
     }
     if (e.key === 'Enter') {

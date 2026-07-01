@@ -12,10 +12,10 @@
  *     responsive cols and type='container' mode deferred.
  */
 import { defineComponent } from '@soribashi/factory';
-import { getSpacing } from '../utils/index.ts';
-import { rem } from '../utils/rem.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getSpacing } from '../utils/index.ts';
+import { rem } from '../utils/rem.ts';
 
 export interface SimpleGridOwnProps extends BoxOwnProps {
   /** Number of columns @default 1 */
@@ -43,8 +43,8 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
     const spacing = getSpacing(p.spacing) ?? 'var(--spacing-md)';
     const minWidth =
       typeof p.minColWidth === 'number'
-        ? rem(p.minColWidth) ?? '12rem'
-        : p.minColWidth ?? '12rem';
+        ? (rem(p.minColWidth) ?? '12rem')
+        : (p.minColWidth ?? '12rem');
     const vars: Record<string, string> = {
       '--sg-cols': String(p.cols ?? 1),
       '--sg-spacing-x': spacing,
@@ -79,8 +79,7 @@ export const SimpleGrid = defineComponent<SimpleGridOwnProps>({
       ...rest
     } = props as any;
 
-    const autoFlowAttr =
-      minColWidth !== undefined ? autoFlow ?? 'auto-fill' : autoFlow;
+    const autoFlowAttr = minColWidth !== undefined ? (autoFlow ?? 'auto-fill') : autoFlow;
 
     return (
       <Box

@@ -1,4 +1,4 @@
-import { createTheme, defaultTokens, defaultDarkTokens, defineVocabulary } from '@soribashi/core';
+import { createTheme, defaultDarkTokens, defaultTokens, defineVocabulary } from '@soribashi/core';
 
 /**
  * Per-tenant scoped themes. Each theme sets `scope` to a class selector so its

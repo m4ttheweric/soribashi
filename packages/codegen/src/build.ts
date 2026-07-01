@@ -1,9 +1,9 @@
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import type { CodegenConfig } from './types.ts';
 import { emitCss } from './emit-css.ts';
 import { emitTailwindV3 } from './emit-tailwind-v3.ts';
 import { emitTailwindV4 } from './emit-tailwind-v4.ts';
+import type { CodegenConfig } from './types.ts';
 import { validateTheme } from './validate-theme.ts';
 
 export interface BuildResult {

@@ -1,4 +1,4 @@
-import { Container, Stack, Group, Title, Text, Paper } from '@soribashi/core';
+import { Container, Group, Paper, Stack, Text, Title } from '@soribashi/core';
 import { Button } from '../components/Button/Button.tsx';
 
 /**

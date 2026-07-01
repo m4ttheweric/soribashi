@@ -11,9 +11,9 @@
  *   - Renders Box for style-prop pass-through (gives Group polymorphism via Box)
  */
 import { defineComponent } from '@soribashi/factory';
-import { getSpacing } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getSpacing } from '../utils/index.ts';
 import { filterFalsyChildren } from './filter-falsy-children.ts';
 
 export interface GroupOwnProps extends BoxOwnProps {

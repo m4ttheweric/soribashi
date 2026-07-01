@@ -1,10 +1,10 @@
+import { Container, Group, SoribashiProvider, Title } from '@soribashi/core';
 import { useState } from 'react';
-import { SoribashiProvider, Container, Group, Title } from '@soribashi/core';
-import { theme } from './theme/index.ts';
-import { ThemeLab } from './pages/ThemeLab.tsx';
+import { Button } from './components/Button/Button.tsx';
 import { BlocksDemo } from './pages/BlocksDemo.tsx';
 import { Tenants } from './pages/Tenants.tsx';
-import { Button } from './components/Button/Button.tsx';
+import { ThemeLab } from './pages/ThemeLab.tsx';
+import { theme } from './theme/index.ts';
 
 type Page = 'theme-lab' | 'blocks' | 'tenants';
 

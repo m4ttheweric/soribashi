@@ -1,3 +1,6 @@
+import { SoribashiProvider, createTheme } from '@soribashi/core';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 /**
  * Tooltip recipe tests — Wave 2 pilot
  *
@@ -7,12 +10,9 @@
  *   8.4 — asChild, portal, default + subtle variant vars, safe-context throw
  */
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { SoribashiProvider, createTheme } from '@soribashi/core';
 import { theme } from '../../theme/index.ts';
-import { Tooltip } from './Tooltip.tsx';
 import classes from './Tooltip.module.css';
+import { Tooltip } from './Tooltip.tsx';
 
 // ---------------------------------------------------------------------------
 // Test wrappers
@@ -21,9 +21,7 @@ import classes from './Tooltip.module.css';
 function withProviders(node: React.ReactNode) {
   return (
     <SoribashiProvider theme={theme}>
-      <Tooltip.Provider>
-        {node}
-      </Tooltip.Provider>
+      <Tooltip.Provider>{node}</Tooltip.Provider>
     </SoribashiProvider>
   );
 }
@@ -32,9 +30,7 @@ function withProviders(node: React.ReactNode) {
 function withProvidersFastDelay(node: React.ReactNode) {
   return (
     <SoribashiProvider theme={theme}>
-      <Tooltip.Provider delayDuration={0}>
-        {node}
-      </Tooltip.Provider>
+      <Tooltip.Provider delayDuration={0}>{node}</Tooltip.Provider>
     </SoribashiProvider>
   );
 }
@@ -82,10 +78,14 @@ describe('Tooltip recipe', () => {
     // Radix renders the tooltip text twice: once in the visible content div and
     // once in a visually-hidden <span role="tooltip"> for screen readers.
     // Wait for the accessible tooltip role to appear.
-    expect(await screen.findByRole('tooltip', { name: 'hover-tooltip-content' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('tooltip', { name: 'hover-tooltip-content' }),
+    ).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('tooltip', { name: 'hover-tooltip-content' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('tooltip', { name: 'hover-tooltip-content' }),
+    ).not.toBeInTheDocument();
   });
 
   // ---------------------------------------------------------------------------
@@ -149,7 +149,9 @@ describe('Tooltip recipe', () => {
     const contentDiv = document.body.querySelector(`.${classes.content}`) as HTMLElement;
     expect(contentDiv).not.toBeNull();
     expect(contentDiv.style.getPropertyValue('--sb-tooltip-bg')).toBe('var(--surface-floating)');
-    expect(contentDiv.style.getPropertyValue('--sb-tooltip-color')).toBe('var(--surface-floating-foreground)');
+    expect(contentDiv.style.getPropertyValue('--sb-tooltip-color')).toBe(
+      'var(--surface-floating-foreground)',
+    );
   });
 
   it('variant="subtle" applies the page-surface vars (opt-in non-inverted)', async () => {
@@ -199,7 +201,9 @@ describe('Tooltip recipe', () => {
     render(
       withProvidersFastDelay(
         <Tooltip>
-          <Tooltip.Trigger asChild><button>t</button></Tooltip.Trigger>
+          <Tooltip.Trigger asChild>
+            <button>t</button>
+          </Tooltip.Trigger>
           <Tooltip.Content className="custom-content-class">hi</Tooltip.Content>
         </Tooltip>,
       ),
@@ -227,7 +231,9 @@ describe('Tooltip recipe', () => {
       <SoribashiProvider theme={themeWithDefaults}>
         <Tooltip.Provider delayDuration={0}>
           <Tooltip>
-            <Tooltip.Trigger asChild><button>wd-trigger</button></Tooltip.Trigger>
+            <Tooltip.Trigger asChild>
+              <button>wd-trigger</button>
+            </Tooltip.Trigger>
             <Tooltip.Content>wd-tip</Tooltip.Content>
           </Tooltip>
         </Tooltip.Provider>

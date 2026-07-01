@@ -1,8 +1,8 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createTheme } from '@soribashi/theme';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { build } from '../src/build.ts';
 
 // build() validates semanticTokens refs against tokens, and createTheme's
@@ -156,7 +156,9 @@ describe('build', () => {
     const theme = createTheme({
       tokens: {
         colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {}, spacing: {}, fontSize: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
       },
     });
     const cssPath = join(tempDir, 'theme.css');
@@ -169,7 +171,9 @@ describe('build', () => {
     const theme = createTheme({
       tokens: {
         colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {}, spacing: {}, fontSize: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
       },
     });
     const cssPath = join(tempDir, 'theme.css');
@@ -186,7 +190,9 @@ describe('build', () => {
     const theme = createTheme({
       tokens: {
         colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {}, spacing: {}, fontSize: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
       },
     });
     const cssPath = join(tempDir, 'theme.css');
@@ -204,7 +210,9 @@ describe('build', () => {
     const theme = createTheme({
       tokens: {
         colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {}, spacing: {}, fontSize: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
       },
     });
     const cssPath = join(tempDir, 'theme.css');
@@ -222,7 +230,9 @@ describe('build', () => {
     const theme = createTheme({
       tokens: {
         colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {}, spacing: {}, fontSize: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
       },
     });
     const cssPath = join(tempDir, 'theme.css');
@@ -240,7 +250,9 @@ describe('build', () => {
     const theme = createTheme({
       tokens: {
         colors: { neutral, primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {}, spacing: {}, fontSize: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
       },
     });
     const cssPath = join(tempDir, 'theme.css');

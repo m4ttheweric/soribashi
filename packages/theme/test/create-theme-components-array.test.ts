@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createTheme } from '../src/create-theme.ts';
-import { isThemeComponentEntry } from '../src/theme-component-entry.ts';
 import type { ThemeComponentEntry } from '../src/index.ts';
+import { isThemeComponentEntry } from '../src/theme-component-entry.ts';
 
 const baseTokens = {
   colors: { neutral: { '0': 'hsl(0 0% 100%)' } },

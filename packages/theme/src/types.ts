@@ -1,6 +1,6 @@
-import type { ThemeComponentEntry } from './theme-component-entry.ts';
-import type { Vocabulary } from './define-vocabulary.ts';
 import type { DefaultVocabularies } from './default-vocabularies.ts';
+import type { Vocabulary } from './define-vocabulary.ts';
+import type { ThemeComponentEntry } from './theme-component-entry.ts';
 
 // Re-export so consumers can import ThemeComponentEntry from '@soribashi/theme'
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
@@ -195,7 +195,10 @@ export interface ComponentThemeConfig {
         theme: ResolvedTheme,
         props: Record<string, unknown>,
       ) => Record<string, Record<string, string | number>>);
-  vars?: (theme: ResolvedTheme, props: Record<string, unknown>) => Record<string, Record<string, string>>;
+  vars?: (
+    theme: ResolvedTheme,
+    props: Record<string, unknown>,
+  ) => Record<string, Record<string, string>>;
   attributes?: Record<string, Record<string, unknown>>;
 }
 
@@ -234,9 +237,8 @@ export interface ThemeDefinition<V extends PartialThemeVocabulary = PartialTheme
  * `ThemeDefinition` contract so a standalone theme cannot silently lack
  * required token families.
  */
-export type ComposableThemeDefinition<
-  V extends PartialThemeVocabulary = PartialThemeVocabulary,
-> = Omit<ThemeDefinition<V>, 'tokens'> & { tokens?: Partial<ThemeTokens> };
+export type ComposableThemeDefinition<V extends PartialThemeVocabulary = PartialThemeVocabulary> =
+  Omit<ThemeDefinition<V>, 'tokens'> & { tokens?: Partial<ThemeTokens> };
 
 /**
  * Definition form for themes that extend a base. `E` captures the base's exact
@@ -282,7 +284,7 @@ type ExtendsChainVocab<E> = VocabOfExtends<E extends { extends: infer X } ? X : 
 export interface ResolvedTheme<V extends ThemeVocabulary = ThemeVocabulary> {
   tokens: ThemeTokens;
   dark: PartialThemeTokens;
-  vocabulary: V;                        // fully resolved
+  vocabulary: V; // fully resolved
   semanticTokens: SemanticTokensConfig; // fully resolved
   intentResolver: IntentResolver;
   components: Record<string, ComponentThemeConfig>;

@@ -1,4 +1,8 @@
+import { composeTheme } from './compose-theme.ts';
 import { defaultIntentResolver } from './default-intent-resolver.ts';
+import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
+import { normalizeComponents } from './normalize-components.ts';
+import { defaultTokens } from './tokens/index.ts';
 import type {
   ComposableThemeDefinition,
   ExtendingThemeDefinition,
@@ -11,10 +15,6 @@ import type {
   ThemeVocabulary,
   VocabOfExtends,
 } from './types.ts';
-import { composeTheme } from './compose-theme.ts';
-import { normalizeComponents } from './normalize-components.ts';
-import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
-import { defaultTokens } from './tokens/index.ts';
 
 const DEFAULT_TEXT: Record<string, string> = {
   default: 'colors.neutral.900',

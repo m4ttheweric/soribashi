@@ -41,8 +41,6 @@ export function isThemeComponentEntry(value: unknown): value is ThemeComponentEn
   if (!isPlainObject(value)) return false;
   const v = value as Partial<ThemeComponentEntry> & { __soribashiThemeEntry?: unknown };
   return (
-    v.__soribashiThemeEntry === true &&
-    typeof v.name === 'string' &&
-    isPlainObject(v.defaultProps)
+    v.__soribashiThemeEntry === true && typeof v.name === 'string' && isPlainObject(v.defaultProps)
   );
 }

@@ -1,11 +1,16 @@
-import { describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
 import { SoribashiProvider } from '@soribashi/core';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { theme } from '../../theme/index.ts';
 import { Select } from './Select.tsx';
 
-const wrap = (ui: React.ReactNode) => render(<SoribashiProvider theme={theme}>{ui}</SoribashiProvider>);
-const data = [{ value: 'sm', label: 'Small' }, { value: 'md', label: 'Medium' }, { value: 'lg', label: 'Large', disabled: true }];
+const wrap = (ui: React.ReactNode) =>
+  render(<SoribashiProvider theme={theme}>{ui}</SoribashiProvider>);
+const data = [
+  { value: 'sm', label: 'Small' },
+  { value: 'md', label: 'Medium' },
+  { value: 'lg', label: 'Large', disabled: true },
+];
 
 describe('Select single', () => {
   it('renders a closed combobox trigger with placeholder', () => {
@@ -60,7 +65,13 @@ describe('Select multiple', () => {
     fireEvent.click(screen.getByRole('option', { name: 'Small' }));
     expect(onChange).toHaveBeenLastCalledWith(['sm'], [{ value: 'sm', label: 'Small' }]);
     fireEvent.click(screen.getByRole('option', { name: 'Medium' }));
-    expect(onChange).toHaveBeenLastCalledWith(['sm', 'md'], [{ value: 'sm', label: 'Small' }, { value: 'md', label: 'Medium' }]);
+    expect(onChange).toHaveBeenLastCalledWith(
+      ['sm', 'md'],
+      [
+        { value: 'sm', label: 'Small' },
+        { value: 'md', label: 'Medium' },
+      ],
+    );
   });
 
   it('renders a pill per selected value and stays open', () => {
@@ -142,11 +153,39 @@ describe('Select type narrowing (compile-time)', () => {
   // Enforced by `bun run typecheck`. Elements are constructed, never rendered.
   it('narrows Value from data and flips onChange on multiple', () => {
     // single: value narrows to the data union
-    void (<Select data={[{ value: 'sm', label: 'S' }, { value: 'md', label: 'M' }]} onChange={(v) => { const ok: 'sm' | 'md' | null = v; void ok; }} />);
+    void (
+      <Select
+        data={[
+          { value: 'sm', label: 'S' },
+          { value: 'md', label: 'M' },
+        ]}
+        onChange={(v) => {
+          const ok: 'sm' | 'md' | null = v;
+          void ok;
+        }}
+      />
+    );
     // multiple: onChange value is an array of the union
-    void (<Select data={['a', 'b']} multiple onChange={(v) => { const ok: ('a' | 'b')[] = v; void ok; }} />);
+    void (
+      <Select
+        data={['a', 'b']}
+        multiple
+        onChange={(v) => {
+          const ok: ('a' | 'b')[] = v;
+          void ok;
+        }}
+      />
+    );
     // numeric values narrow too
-    void (<Select data={[{ value: 1, label: 'one' }]} onChange={(v) => { const ok: 1 | null = v; void ok; }} />);
+    void (
+      <Select
+        data={[{ value: 1, label: 'one' }]}
+        onChange={(v) => {
+          const ok: 1 | null = v;
+          void ok;
+        }}
+      />
+    );
     // Value is pinned explicitly so `value` is checked against it (otherwise
     // `value` would participate in inference and widen V to include 'lg').
     // @ts-expect-error: 'lg' is not in the Value union 'sm' | 'md'

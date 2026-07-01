@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { emitTailwindV3 } from '../src/emit-tailwind-v3.ts';
 
 describe('emitTailwindV3', () => {
@@ -169,7 +169,9 @@ describe('emitTailwindV3 non-HSL tokens', () => {
     });
 
     const parsed = evalConfig(emitTailwindV3(theme));
-    expect(parsed.theme.colors?.brand?.solid).toBe('hsl(var(--__hsl-color-brand-solid) / <alpha-value>)');
+    expect(parsed.theme.colors?.brand?.solid).toBe(
+      'hsl(var(--__hsl-color-brand-solid) / <alpha-value>)',
+    );
     expect(parsed.theme.colors?.brand?.hex).toBe('var(--color-brand-hex)');
   });
 

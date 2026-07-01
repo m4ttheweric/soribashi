@@ -1,8 +1,8 @@
+import { build } from './build.ts';
 // Subprocess entry used by watch mode: loads the config fresh and runs one
 // build. Run via `bun src/build-once.ts <configPath>`. Prints the build result
 // as JSON on stdout; errors go to stderr with a non-zero exit.
 import { loadConfig } from './load-config.ts';
-import { build } from './build.ts';
 
 const configPath = process.argv[2];
 if (!configPath) {

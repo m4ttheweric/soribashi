@@ -9,23 +9,23 @@
  *   config 0 = default  |  config 1 = common  |  config 2 = stress
  */
 import {
+  AspectRatio,
   Box,
-  Stack,
-  Group,
+  Center,
+  Container,
   Flex,
   Grid,
-  SimpleGrid,
-  Container,
-  Center,
-  AspectRatio,
-  Space,
+  Group,
   Paper,
+  SimpleGrid,
+  SoribashiProvider,
+  Space,
+  Stack,
   Text,
   Title,
-  SoribashiProvider,
   createTheme,
-  defaultTokens,
   defaultDarkTokens,
+  defaultTokens,
   defineVocabulary,
 } from '@soribashi/core';
 
@@ -62,26 +62,31 @@ export function BrowserFixtures() {
   return (
     <SoribashiProvider theme={theme}>
       <div style={{ padding: '1rem' }}>
-
         {/* ===== Box ===== */}
         {/* config 0: default — just the root class, display:block from UA */}
         <Box data-testid="box-0">Box default</Box>
 
         {/* config 1: padding style prop */}
-        <Box data-testid="box-1" p="md">Box p=md</Box>
+        <Box data-testid="box-1" p="md">
+          Box p=md
+        </Box>
 
         {/* config 2: hiddenFrom="md" — rendered but hidden at ≥ 768px */}
-        <Box data-testid="box-2" hiddenFrom="md">Box hiddenFrom=md</Box>
+        <Box data-testid="box-2" hiddenFrom="md">
+          Box hiddenFrom=md
+        </Box>
 
         {/* ===== Stack ===== */}
         {/* config 0: default gap (--spacing-md) */}
         <Stack data-testid="stack-0">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </Stack>
 
         {/* config 1: explicit gap="lg" */}
         <Stack data-testid="stack-1" gap="lg">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </Stack>
 
         {/* config 2: align="center" */}
@@ -92,17 +97,20 @@ export function BrowserFixtures() {
         {/* ===== Group ===== */}
         {/* config 0: default */}
         <Group data-testid="group-0">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </Group>
 
         {/* config 1: justify="center" */}
         <Group data-testid="group-1" justify="center">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </Group>
 
         {/* config 2: wrap="nowrap" gap="xs" */}
         <Group data-testid="group-2" wrap="nowrap" gap="xs">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </Group>
 
         {/* ===== Flex ===== */}
@@ -113,53 +121,63 @@ export function BrowserFixtures() {
 
         {/* config 1: direction="column-reverse" */}
         <Flex data-testid="flex-1" direction="column-reverse">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </Flex>
 
         {/* config 2: justify="space-between" align="flex-end" */}
         <Flex data-testid="flex-2" justify="space-between" align="flex-end">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </Flex>
 
         {/* ===== Grid ===== */}
         {/* config 0: default 12-column grid */}
         <Grid data-testid="grid-0">
-          <Grid.Col span={6} data-testid="grid-col-0">Half</Grid.Col>
+          <Grid.Col span={6} data-testid="grid-col-0">
+            Half
+          </Grid.Col>
           <Grid.Col span={6}>Half</Grid.Col>
         </Grid>
 
         {/* config 1: 6-column grid, col span=3 → 50% */}
         <Grid data-testid="grid-1" columns={6}>
-          <Grid.Col span={3} data-testid="grid-col-1">3/6</Grid.Col>
+          <Grid.Col span={3} data-testid="grid-col-1">
+            3/6
+          </Grid.Col>
           <Grid.Col span={3}>3/6</Grid.Col>
         </Grid>
 
         {/* config 2: gap="xl" */}
         <Grid data-testid="grid-2" gap="xl">
-          <Grid.Col span={12} data-testid="grid-inner-2">Full</Grid.Col>
+          <Grid.Col span={12} data-testid="grid-inner-2">
+            Full
+          </Grid.Col>
         </Grid>
 
         {/* ===== SimpleGrid ===== */}
         {/* config 0: default cols=1 */}
         <SimpleGrid data-testid="sg-0">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </SimpleGrid>
 
         {/* config 1: cols=3 */}
         <SimpleGrid data-testid="sg-1" cols={3}>
-          <span>A</span><span>B</span><span>C</span>
+          <span>A</span>
+          <span>B</span>
+          <span>C</span>
         </SimpleGrid>
 
         {/* config 2: minColWidth="200px" → auto-fill */}
         <SimpleGrid data-testid="sg-2" minColWidth="200px">
-          <span>A</span><span>B</span>
+          <span>A</span>
+          <span>B</span>
         </SimpleGrid>
 
         {/* ===== Container ===== */}
         {/* config 0: default size=md */}
-        <Container data-testid="container-0">
-          Default container
-        </Container>
+        <Container data-testid="container-0">Default container</Container>
 
         {/* config 1: size="xl" */}
         <Container data-testid="container-1" size="xl">
@@ -190,12 +208,19 @@ export function BrowserFixtures() {
         {/* ===== AspectRatio ===== */}
         {/* config 0: default ratio 1 — use Box prop `w` to avoid style-merge conflict */}
         <AspectRatio data-testid="ar-0" w="200px">
-          <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
+          <img
+            src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+            alt=""
+          />
         </AspectRatio>
 
         {/* config 1: ratio 16/9 */}
         <AspectRatio data-testid="ar-1" ratio={16 / 9} w="200px">
-          <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-testid="ar-1-child" />
+          <img
+            src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+            alt=""
+            data-testid="ar-1-child"
+          />
         </AspectRatio>
 
         {/* config 2: ratio 4/3, with a div child */}
@@ -236,25 +261,31 @@ export function BrowserFixtures() {
         <Text data-testid="text-0">Default text</Text>
 
         {/* config 1: size="sm" */}
-        <Text data-testid="text-1" size="sm">Small text</Text>
+        <Text data-testid="text-1" size="sm">
+          Small text
+        </Text>
 
         {/* config 2: lineClamp=3 */}
         <Text data-testid="text-2" lineClamp={3}>
-          Line clamp text line 1. Line 2. Line 3. Line 4 gets clamped.
-          More text here that should be hidden beyond the 3-line limit.
+          Line clamp text line 1. Line 2. Line 3. Line 4 gets clamped. More text here that should be
+          hidden beyond the 3-line limit.
         </Text>
 
         {/* ===== Title ===== */}
         {/* config 0: order=1 (default) */}
-        <Title data-testid="title-0" order={1}>H1 Title</Title>
+        <Title data-testid="title-0" order={1}>
+          H1 Title
+        </Title>
 
         {/* config 1: order=3 */}
-        <Title data-testid="title-1" order={3}>H3 Title</Title>
+        <Title data-testid="title-1" order={3}>
+          H3 Title
+        </Title>
 
         {/* config 2: order=1 lineClamp=2 */}
         <Title data-testid="title-2" order={1} lineClamp={2}>
-          Title with line clamp — this is a very long title that will be clamped at two lines
-          when rendered in the browser
+          Title with line clamp — this is a very long title that will be clamped at two lines when
+          rendered in the browser
         </Title>
       </div>
     </SoribashiProvider>

@@ -1,15 +1,15 @@
 import {
-  Container,
-  Stack,
-  Group,
-  Grid,
-  SimpleGrid,
-  Center,
   Box,
+  Center,
+  Container,
+  Grid,
+  Group,
   Paper,
+  SimpleGrid,
+  Space,
+  Stack,
   Text,
   Title,
-  Space,
 } from '@soribashi/core';
 
 export function BlocksDemo() {

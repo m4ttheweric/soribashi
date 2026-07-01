@@ -1,4 +1,4 @@
-@import './generated/theme.css';
+@import "./generated/theme.css";
 
 @tailwind base;
 @tailwind components;
@@ -11,7 +11,6 @@ html {
   background: var(--surface-default);
   color: var(--text-default);
 }
-
 
 * {
   box-sizing: border-box;

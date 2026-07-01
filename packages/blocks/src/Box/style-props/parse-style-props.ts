@@ -14,12 +14,9 @@
  *   - Non-string/non-number values never resolve; they emit nothing plus a dev
  *     warning (Mantine string-coerces, which produced [object Object] output).
  */
-import { defaultTokens, type ResolvedTheme } from '@soribashi/theme';
+import { type ResolvedTheme, defaultTokens } from '@soribashi/theme';
 import { isDev } from '../../utils/is-dev.ts';
-import type {
-  ParsedStyleProps,
-  StylePropDefinition,
-} from './style-types.ts';
+import type { ParsedStyleProps, StylePropDefinition } from './style-types.ts';
 
 const DEFAULT_BREAKPOINT_KEYS = Object.keys(defaultTokens.breakpoint ?? {});
 

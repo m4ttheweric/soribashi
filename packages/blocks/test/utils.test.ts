@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
-  rem,
-  getSpacing,
-  getRadius,
-  getSize,
   getFontSize,
   getLineHeight,
+  getRadius,
   getShadow,
+  getSize,
+  getSpacing,
   getThemeColor,
+  rem,
 } from '../src/utils/index.ts';
 
 describe('rem', () => {

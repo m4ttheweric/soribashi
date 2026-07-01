@@ -1,7 +1,7 @@
-import { resolve, join } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
-import { loadConfig } from './load-config.ts';
+import { join, resolve } from 'node:path';
 import { build } from './build.ts';
+import { loadConfig } from './load-config.ts';
 import { watch } from './watch.ts';
 
 export interface CliOptions {
@@ -13,11 +13,7 @@ export interface CliOptions {
   silent?: boolean;
 }
 
-const DEFAULT_CONFIG_NAMES = [
-  'soribashi.config.ts',
-  'soribashi.config.js',
-  'soribashi.config.mjs',
-];
+const DEFAULT_CONFIG_NAMES = ['soribashi.config.ts', 'soribashi.config.js', 'soribashi.config.mjs'];
 
 const USAGE = `Usage: soribashi <build|watch> [options]
 
@@ -72,9 +68,7 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
   const configPath = args.configFlag ? resolve(cwd, args.configFlag) : findConfig(cwd);
 
   if (!configPath) {
-    error(
-      `[soribashi] No config found. Looked for: ${DEFAULT_CONFIG_NAMES.join(', ')} in ${cwd}`,
-    );
+    error(`[soribashi] No config found. Looked for: ${DEFAULT_CONFIG_NAMES.join(', ')} in ${cwd}`);
     return 1;
   }
 
@@ -141,9 +135,9 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function readOwnVersion(): string {
-  const pkg = JSON.parse(
-    readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
-  ) as { version?: string };
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
+    version?: string;
+  };
   return pkg.version ?? '0.0.0';
 }
 

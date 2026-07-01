@@ -1,3 +1,4 @@
+import { makeBuilders } from '@soribashi/core';
 /**
  * Local builder entry point for the pilot.
  *
@@ -11,7 +12,6 @@
  * `registerTheme(theme)` call in `theme/index.ts`.
  */
 import type { BaseTheme } from './theme/index.ts';
-import { makeBuilders } from '@soribashi/core';
 
 export const {
   defineComponent,

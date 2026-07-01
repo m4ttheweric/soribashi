@@ -5,8 +5,8 @@
  * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
  */
 import type { CSSProperties } from 'react';
-import type { StyleProp } from './style-props/style-types.ts';
 import type { BoxMod } from './get-box-mod.ts';
+import type { StyleProp } from './style-props/style-types.ts';
 
 export type { BoxMod };
 

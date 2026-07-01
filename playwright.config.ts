@@ -22,7 +22,10 @@ export default defineConfig({
   /* Single worker is fine for 42 fast assertions */
   workers: 1,
 
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'tests/browser-parity/playwright-report' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: 'tests/browser-parity/playwright-report' }],
+  ],
 
   use: {
     /* Viewport wide enough that "hiddenFrom=md" fires (≥ 768px = 48rem) */

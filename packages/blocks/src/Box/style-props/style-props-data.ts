@@ -9,19 +9,18 @@
  *   - Token names: --mantine-* → soribashi-equivalent (handled inside the resolvers)
  */
 import {
-  getSpacing,
-  getRadius,
   getFontSize,
   getLineHeight,
+  getRadius,
+  getSpacing,
   getThemeColor,
   rem,
 } from '../../utils/index.ts';
-import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
-import { fontFamilyResolver } from './resolvers/font-family-resolver.ts';
 import { borderResolver } from './resolvers/border-resolver.ts';
+import { fontFamilyResolver } from './resolvers/font-family-resolver.ts';
+import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
 
-const identity: StylePropResolver = (v) =>
-  v === undefined || v === null ? undefined : String(v);
+const identity: StylePropResolver = (v) => (v === undefined || v === null ? undefined : String(v));
 
 const sizeOrRem: StylePropResolver = (v) => {
   if (v === undefined || v === null) return undefined;

@@ -1,3 +1,6 @@
+import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
 /**
  * Regression test for the systemic style-merge bug discovered by the V4
  * browser-parity audit: blocks that wrap Box (`<Box {...getStyles('root')} {...rest}>`)
@@ -6,10 +9,16 @@
  * rendered with `--ar-ratio: '1'` (the default) instead of `'1.7778'`.
  */
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '@soribashi/factory';
-import { AspectRatio, Stack, Group, Paper, Text, Title, SimpleGrid, Container } from '../../src/index.ts';
+import {
+  AspectRatio,
+  Container,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '../../src/index.ts';
 
 const theme = createTheme({
   tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },

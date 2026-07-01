@@ -46,7 +46,13 @@ export function ButtonMatrix() {
         >
           {demoLoading ? 'Stop loading' : 'Start loading'}
         </button>
-        <span style={{ fontFamily: 'var(--font-family-sans)', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-family-sans)',
+            fontSize: 'var(--font-size-sm)',
+            color: 'var(--text-muted)',
+          }}
+        >
           Toggles the buttons below so you can watch the slide-out + veil + spinner-in animation.
         </span>
       </div>
@@ -68,9 +74,7 @@ export function ButtonMatrix() {
         </Button>
       </div>
 
-      <h2 style={{ fontFamily: 'var(--font-family-sans)' }}>
-        Variant × Intent (size = md)
-      </h2>
+      <h2 style={{ fontFamily: 'var(--font-family-sans)' }}>Variant × Intent (size = md)</h2>
       <table
         style={{
           borderCollapse: 'collapse',
@@ -82,7 +86,9 @@ export function ButtonMatrix() {
           <tr>
             <th style={{ textAlign: 'left', padding: '0.5rem' }}>variant ↓ intent →</th>
             {INTENTS.map((intent) => (
-              <th key={intent} style={{ textAlign: 'left', padding: '0.5rem' }}>{intent}</th>
+              <th key={intent} style={{ textAlign: 'left', padding: '0.5rem' }}>
+                {intent}
+              </th>
             ))}
           </tr>
         </thead>
@@ -92,7 +98,11 @@ export function ButtonMatrix() {
               <td style={{ padding: '0.5rem', fontWeight: 500 }}>{variant}</td>
               {INTENTS.map((intent) => (
                 <td key={intent} style={{ padding: '0.5rem' }}>
-                  <Button variant={variant} intent={intent} data-testid={`btn-${variant}-${intent}-md-default`}>
+                  <Button
+                    variant={variant}
+                    intent={intent}
+                    data-testid={`btn-${variant}-${intent}-md-default`}
+                  >
                     Click
                   </Button>
                 </td>
@@ -102,7 +112,9 @@ export function ButtonMatrix() {
         </tbody>
       </table>
 
-      <h2 style={{ fontFamily: 'var(--font-family-sans)' }}>Sizes (variant=filled, intent=primary)</h2>
+      <h2 style={{ fontFamily: 'var(--font-family-sans)' }}>
+        Sizes (variant=filled, intent=primary)
+      </h2>
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>
         {SIZES.map((size) => (
           <Button key={size} size={size} data-testid={`btn-filled-primary-${size}-default`}>
@@ -112,25 +124,65 @@ export function ButtonMatrix() {
       </div>
 
       <h2 style={{ fontFamily: 'var(--font-family-sans)' }}>States</h2>
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1rem',
+          alignItems: 'center',
+          marginBottom: '2rem',
+          flexWrap: 'wrap',
+        }}
+      >
         <Button data-testid="btn-state-default">Default</Button>
-        <Button disabled data-testid="btn-state-disabled">Disabled</Button>
-        <Button loading data-testid="btn-state-loading">Loading</Button>
-        <Button leftIcon={<span>+</span>} data-testid="btn-state-leftIcon">Add</Button>
-        <Button rightIcon={<span>→</span>} data-testid="btn-state-rightIcon">Next</Button>
-        <Button as="a" href="#nowhere" data-testid="btn-state-link">Link</Button>
+        <Button disabled data-testid="btn-state-disabled">
+          Disabled
+        </Button>
+        <Button loading data-testid="btn-state-loading">
+          Loading
+        </Button>
+        <Button leftIcon={<span>+</span>} data-testid="btn-state-leftIcon">
+          Add
+        </Button>
+        <Button rightIcon={<span>→</span>} data-testid="btn-state-rightIcon">
+          Next
+        </Button>
+        <Button as="a" href="#nowhere" data-testid="btn-state-link">
+          Link
+        </Button>
       </div>
 
       <div style={{ width: '300px' }}>
-        <Button fullWidth data-testid="btn-state-fullwidth">Full width</Button>
+        <Button fullWidth data-testid="btn-state-fullwidth">
+          Full width
+        </Button>
       </div>
 
-      <h2 style={{ fontFamily: 'var(--font-family-sans)', marginTop: '2rem' }}>Consolidation notes</h2>
-      <ul style={{ fontFamily: 'var(--font-family-sans)', fontSize: 'var(--font-size-sm)', maxWidth: '60ch' }}>
-        <li><strong>Variant axis split.</strong> the host library's mixed `primary | secondary | outline | ghost | danger | success` is now `variant × intent`: 5 visual styles × 6 semantic roles = 30 cells.</li>
-        <li><strong>`isLoading` → `loading`.</strong> Renamed for soribashi convention.</li>
-        <li><strong>`asChild` → `as`.</strong> Polymorphism via `as` prop. Disabled `&lt;a&gt;` uses `aria-disabled` since the HTML disabled attribute is button-only.</li>
-        <li><strong>Icons.</strong> ReactNode only — IconKey / icon-component wrapping is the integration project's concern.</li>
+      <h2 style={{ fontFamily: 'var(--font-family-sans)', marginTop: '2rem' }}>
+        Consolidation notes
+      </h2>
+      <ul
+        style={{
+          fontFamily: 'var(--font-family-sans)',
+          fontSize: 'var(--font-size-sm)',
+          maxWidth: '60ch',
+        }}
+      >
+        <li>
+          <strong>Variant axis split.</strong> the host library's mixed `primary | secondary |
+          outline | ghost | danger | success` is now `variant × intent`: 5 visual styles × 6
+          semantic roles = 30 cells.
+        </li>
+        <li>
+          <strong>`isLoading` → `loading`.</strong> Renamed for soribashi convention.
+        </li>
+        <li>
+          <strong>`asChild` → `as`.</strong> Polymorphism via `as` prop. Disabled `&lt;a&gt;` uses
+          `aria-disabled` since the HTML disabled attribute is button-only.
+        </li>
+        <li>
+          <strong>Icons.</strong> ReactNode only — IconKey / icon-component wrapping is the
+          integration project's concern.
+        </li>
       </ul>
     </div>
   );

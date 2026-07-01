@@ -1,11 +1,11 @@
+import { SoribashiProvider } from '@soribashi/factory';
+import { createTheme } from '@soribashi/theme';
+import { render } from '@testing-library/react';
 /**
  * Tests for SimpleGrid — Mantine parity renames + autoRows addition.
  * Covers findings #8 and #14 from the divergence ledger.
  */
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
-import { createTheme } from '@soribashi/theme';
-import { SoribashiProvider } from '@soribashi/factory';
 import { SimpleGrid } from '../src/index.ts';
 
 const theme = createTheme({
@@ -64,7 +64,6 @@ describe('SimpleGrid — prop renames (finding #8)', () => {
     const el = container.querySelector('div') as HTMLElement;
     expect(el.dataset.autoFlow).toBe('auto-fit');
   });
-
 });
 
 describe('SimpleGrid — autoRows prop (finding #8 addition)', () => {
@@ -75,9 +74,7 @@ describe('SimpleGrid — autoRows prop (finding #8 addition)', () => {
   });
 
   it('autoRows with min() syntax passes through as-is', () => {
-    const { container } = wrap(
-      <SimpleGrid autoRows="min(200px, 1fr)">X</SimpleGrid>,
-    );
+    const { container } = wrap(<SimpleGrid autoRows="min(200px, 1fr)">X</SimpleGrid>);
     const el = container.querySelector('div') as HTMLElement;
     expect(el.style.getPropertyValue('--sg-auto-rows')).toBe('min(200px, 1fr)');
   });

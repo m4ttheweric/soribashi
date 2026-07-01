@@ -1,8 +1,8 @@
+import { createTheme } from '@soribashi/theme';
 /**
  * Tests for the 12 style props added in finding #7.
  */
 import { describe, expect, it } from 'vitest';
-import { createTheme } from '@soribashi/theme';
 import { parseStyleProps } from '../../src/Box/style-props/parse-style-props.ts';
 import { STYLE_PROPS_DATA } from '../../src/Box/style-props/style-props-data.ts';
 

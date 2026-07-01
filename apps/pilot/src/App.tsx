@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
 import { SoribashiProvider } from '@soribashi/core';
-import { theme } from './theme/index.ts';
-import { TokenReview } from './pages/TokenReview.tsx';
-import { ScreenReplica } from './pages/ScreenReplica.tsx';
+import { useEffect, useState } from 'react';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
-import { TooltipMatrix } from './pages/TooltipMatrix.tsx';
-import { TabsMatrix } from './pages/TabsMatrix.tsx';
+import { ScreenReplica } from './pages/ScreenReplica.tsx';
 import { SelectMatrix } from './pages/SelectMatrix.tsx';
+import { TabsMatrix } from './pages/TabsMatrix.tsx';
+import { TokenReview } from './pages/TokenReview.tsx';
+import { TooltipMatrix } from './pages/TooltipMatrix.tsx';
 import { Tooltip } from './recipes/Tooltip/Tooltip.tsx';
+import { theme } from './theme/index.ts';
 
 type Page = 'tokens' | 'screen' | 'buttons' | 'tooltips' | 'tabs' | 'selects';
 
@@ -42,22 +42,40 @@ export function App() {
             }}
           >
             <strong style={{ fontFamily: 'var(--font-family-sans)' }}>recipe pilot</strong>
-            <button onClick={() => setPage('tokens')} aria-current={page === 'tokens' ? 'page' : undefined}>
+            <button
+              onClick={() => setPage('tokens')}
+              aria-current={page === 'tokens' ? 'page' : undefined}
+            >
               Tokens
             </button>
-            <button onClick={() => setPage('screen')} aria-current={page === 'screen' ? 'page' : undefined}>
+            <button
+              onClick={() => setPage('screen')}
+              aria-current={page === 'screen' ? 'page' : undefined}
+            >
               Screen replica
             </button>
-            <button onClick={() => setPage('buttons')} aria-current={page === 'buttons' ? 'page' : undefined}>
+            <button
+              onClick={() => setPage('buttons')}
+              aria-current={page === 'buttons' ? 'page' : undefined}
+            >
               Button matrix
             </button>
-            <button onClick={() => setPage('tooltips')} aria-current={page === 'tooltips' ? 'page' : undefined}>
+            <button
+              onClick={() => setPage('tooltips')}
+              aria-current={page === 'tooltips' ? 'page' : undefined}
+            >
               Tooltip matrix
             </button>
-            <button onClick={() => setPage('tabs')} aria-current={page === 'tabs' ? 'page' : undefined}>
+            <button
+              onClick={() => setPage('tabs')}
+              aria-current={page === 'tabs' ? 'page' : undefined}
+            >
               Tabs matrix
             </button>
-            <button onClick={() => setPage('selects')} aria-current={page === 'selects' ? 'page' : undefined}>
+            <button
+              onClick={() => setPage('selects')}
+              aria-current={page === 'selects' ? 'page' : undefined}
+            >
               Select matrix
             </button>
             <span style={{ marginLeft: 'auto' }}>

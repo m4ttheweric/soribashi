@@ -27,8 +27,8 @@
  *   - Sort order consistent across both emitters
  */
 
-import { describe, expect, it } from 'vitest';
 import { createTheme } from '@soribashi/theme';
+import { describe, expect, it } from 'vitest';
 import { emitTailwindV3 } from '../src/emit-tailwind-v3.ts';
 import { emitTailwindV4 } from '../src/emit-tailwind-v4.ts';
 
@@ -464,9 +464,7 @@ describe('emitTailwindV4 — emitter logic parity', () => {
       });
 
       const output = emitTailwindV4(theme);
-      expect(output.indexOf('--color-alpha-500')).toBeLessThan(
-        output.indexOf('--color-zebra-500'),
-      );
+      expect(output.indexOf('--color-alpha-500')).toBeLessThan(output.indexOf('--color-zebra-500'));
     });
 
     it('is deterministic across runs', () => {
@@ -574,7 +572,7 @@ describe('emitTailwindV4 — emitter logic parity', () => {
       const v4Output = emitTailwindV4(themeB);
 
       // v3: screens block with raw value
-      expect(v3Output).toContain("screens: {");
+      expect(v3Output).toContain('screens: {');
       expect(v3Output).toContain("md: '62em'");
       // v4: --breakpoint-* custom property
       expect(v4Output).toContain('--breakpoint-md: 62em;');

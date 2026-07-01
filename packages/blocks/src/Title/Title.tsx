@@ -13,7 +13,7 @@
 import { defineComponent } from '@soribashi/factory';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
-import { getTitleSize, type TitleOrder, type TitleSize } from './get-title-size.ts';
+import { type TitleOrder, type TitleSize, getTitleSize } from './get-title-size.ts';
 
 export type { TitleOrder, TitleSize };
 
@@ -76,13 +76,15 @@ export const Title = defineComponent<TitleOwnProps>({
         ref={ref}
         {...getStyles('root')}
         as={`h${order}` as any}
-        mod={[
-          {
-            'data-order': String(order),
-            'data-line-clamp': typeof lineClamp === 'number',
-          },
-          mod,
-        ].filter(Boolean) as any}
+        mod={
+          [
+            {
+              'data-order': String(order),
+              'data-line-clamp': typeof lineClamp === 'number',
+            },
+            mod,
+          ].filter(Boolean) as any
+        }
         {...rest}
       >
         {children}

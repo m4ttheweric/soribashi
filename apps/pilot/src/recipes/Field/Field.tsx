@@ -15,7 +15,11 @@ export interface FieldProps {
   children?: ReactNode;
 }
 
-export const Field = defineComponent<FieldProps, readonly ['root', 'label', 'required', 'description', 'error'], readonly []>({
+export const Field = defineComponent<
+  FieldProps,
+  readonly ['root', 'label', 'required', 'description', 'error'],
+  readonly []
+>({
   name: 'Field',
   element: 'div',
   selectors: ['root', 'label', 'required', 'description', 'error'] as const,
@@ -27,17 +31,30 @@ export const Field = defineComponent<FieldProps, readonly ['root', 'label', 'req
         {label && (
           <label {...getStyles('label')} htmlFor={id} data-part="label">
             {label}
-            {required && <span {...getStyles('required')} aria-hidden data-part="required">*</span>}
+            {required && (
+              <span {...getStyles('required')} aria-hidden data-part="required">
+                *
+              </span>
+            )}
           </label>
         )}
         {description && (
-          <div {...getStyles('description')} id={id ? `${id}-description` : undefined} data-part="description">
+          <div
+            {...getStyles('description')}
+            id={id ? `${id}-description` : undefined}
+            data-part="description"
+          >
             {description}
           </div>
         )}
         {children}
         {error && (
-          <div {...getStyles('error')} id={id ? `${id}-error` : undefined} role="alert" data-part="error">
+          <div
+            {...getStyles('error')}
+            id={id ? `${id}-error` : undefined}
+            role="alert"
+            data-part="error"
+          >
             {error}
           </div>
         )}

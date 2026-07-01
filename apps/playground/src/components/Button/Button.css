@@ -31,25 +31,25 @@
   outline-offset: 2px;
 }
 
-.pg-Button-root[data-size='sm'] {
+.pg-Button-root[data-size="sm"] {
   height: 2rem;
   padding: 0 0.75rem;
   font-size: var(--font-size-sm);
 }
 
-.pg-Button-root[data-size='md'] {
+.pg-Button-root[data-size="md"] {
   height: 2.5rem;
   padding: 0 1rem;
   font-size: var(--font-size-md);
 }
 
-.pg-Button-root[data-size='lg'] {
+.pg-Button-root[data-size="lg"] {
   height: 3rem;
   padding: 0 1.5rem;
   font-size: var(--font-size-lg);
 }
 
-.pg-Button-root[data-full-width='true'] {
+.pg-Button-root[data-full-width="true"] {
   width: 100%;
 }
 

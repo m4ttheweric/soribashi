@@ -1,3 +1,5 @@
+import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
+import { normalizeComponents } from './normalize-components.ts';
 import type {
   ComponentThemeConfig,
   ComposableThemeDefinition,
@@ -7,8 +9,6 @@ import type {
   ThemeTokens,
   ThemeVocabulary,
 } from './types.ts';
-import { normalizeComponents } from './normalize-components.ts';
-import { DEFAULT_VOCABULARIES } from './default-vocabularies.ts';
 
 /**
  * Merges a child theme definition on top of a resolved base theme.

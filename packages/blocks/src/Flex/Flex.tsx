@@ -14,9 +14,9 @@
  *     table for its non-Box-overlapping props).
  */
 import { defineComponent } from '@soribashi/factory';
-import { getSpacing } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getSpacing } from '../utils/index.ts';
 
 export interface FlexOwnProps extends BoxOwnProps {
   /** Theme spacing key or any valid CSS gap value */

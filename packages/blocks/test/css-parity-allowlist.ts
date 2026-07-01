@@ -14,7 +14,12 @@
 
 export interface AllowlistEntry {
   block: string;
-  kind: 'DECL_DIFF' | 'MISSING_IN_SORIBASHI' | 'EXTRA_IN_SORIBASHI' | 'TOKEN_DIFF' | 'SELECTOR_DIFF';
+  kind:
+    | 'DECL_DIFF'
+    | 'MISSING_IN_SORIBASHI'
+    | 'EXTRA_IN_SORIBASHI'
+    | 'TOKEN_DIFF'
+    | 'SELECTOR_DIFF';
   /** The Mantine selector for this rule (as reported by the audit script) */
   mantineSelector: string;
   /** Human-readable reason why this divergence is intentional */
@@ -33,7 +38,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '(none)',
     reason:
       'Box.css adds box-sizing: border-box as a layout reset. Mantine achieves this via a global CSS reset; soribashi scopes it to .sb-Box-root.',
-    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Box',
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Box',
   },
 
   // ---------------------------------------------------------------------------
@@ -48,7 +54,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root',
     reason:
       'Soribashi bakes flex-direction, flex-wrap, gap, row-gap, column-gap, and align-items as CSS-variable-driven defaults directly in the CSS file. Mantine only emits display:flex in the module and sets these via JS inline styles. This is an intentional adaptation: the CSS-variable approach is cleaner and avoids JS-computed inline styles for these common properties.',
-    ledgerRef: 'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 5 — Flex adaptation note; docs/superpowers/divergences/mantine-master.md § Closed > Flex',
+    ledgerRef:
+      'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 5 — Flex adaptation note; docs/superpowers/divergences/mantine-master.md § Closed > Flex',
   },
 
   // ---------------------------------------------------------------------------
@@ -61,7 +68,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.container',
     reason:
       'Mantine Grid has a .container class that sets up a CSS container query context (container: mantine-grid / inline-size). This is used for the type="container" responsive mode. That mode is deferred in soribashi per the divergence ledger.',
-    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Deferred > GridProvider context for responsive col span / offset / order',
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Deferred > GridProvider context for responsive col span / offset / order',
   },
 
   // ---------------------------------------------------------------------------
@@ -83,7 +91,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.container',
     reason:
       'Mantine SimpleGrid has a .container class for CSS container query context. type="container" mode is deferred in soribashi.',
-    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Deferred > SimpleGrid type=container mode',
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Deferred > SimpleGrid type=container mode',
   },
 
   // ---------------------------------------------------------------------------
@@ -99,7 +108,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root[data-auto-cols="auto-fill"]',
     reason:
       "Mantine uses [data-auto-cols] attribute; soribashi renamed it to [data-auto-flow] (more accurately reflects CSS grid auto-placement). The equivalent [data-auto-flow='auto-fill'] rule exists in soribashi.",
-    ledgerRef: "docs/superpowers/divergences/mantine-master.md § Closed > item #8: Prop renames (SimpleGrid autoCols → autoFlow)",
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Closed > item #8: Prop renames (SimpleGrid autoCols → autoFlow)',
   },
   {
     block: 'SimpleGrid',
@@ -107,7 +117,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root[data-auto-cols="auto-fit"]',
     reason:
       "Mantine uses [data-auto-cols] attribute; soribashi renamed it to [data-auto-flow]. The equivalent [data-auto-flow='auto-fit'] rule exists in soribashi.",
-    ledgerRef: "docs/superpowers/divergences/mantine-master.md § Closed > item #8: Prop renames (SimpleGrid autoCols → autoFlow)",
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Closed > item #8: Prop renames (SimpleGrid autoCols → autoFlow)',
   },
   {
     block: 'SimpleGrid',
@@ -115,7 +126,7 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '(none)',
     reason:
       "Soribashi uses [data-auto-flow] instead of Mantine's [data-auto-cols]. These are the soribashi-renamed equivalents. Also includes --sg-min-col-width fallback default of 12rem.",
-    ledgerRef: "docs/superpowers/divergences/mantine-master.md § Closed > item #8",
+    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Closed > item #8',
   },
 
   // ---------------------------------------------------------------------------
@@ -131,7 +142,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root',
     reason:
       'Soribashi adds a fallback default of 1 to --sg-cols (repeat(var(--sg-cols, 1), ...)). This prevents a layout collapse when the CSS variable is not yet set. Mantine relies on JS always setting --sg-cols before render.',
-    ledgerRef: 'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 5 — SimpleGrid; intentional defensive default',
+    ledgerRef:
+      'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 5 — SimpleGrid; intentional defensive default',
   },
 
   // ---------------------------------------------------------------------------
@@ -146,7 +158,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root:where([data-strategy="block"]):where([data-fluid])',
     reason:
       "Mantine chains two :where() pseudo-classes; soribashi combines them into one :where([data-strategy='block'][data-fluid]). Both match the same elements — semantically equivalent. The audit script doesn't normalize these equivalent forms.",
-    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Container',
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Container',
   },
   {
     block: 'Container',
@@ -154,7 +167,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '(none)',
     reason:
       "Soribashi uses combined :where([data-strategy='block'][data-fluid]) instead of Mantine's chained :where([data-strategy='block']):where([data-fluid]). Semantically equivalent.",
-    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Container',
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Container',
   },
 
   // ---------------------------------------------------------------------------
@@ -170,7 +184,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root',
     reason:
       'Soribashi declares --paper-border-color directly on .sb-Paper-root instead of inside @mixin light (which expands to :root scope). This keeps the variable scoped to the component per divergence ledger item #13 (Paper border-color global namespace fix).',
-    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Post-adaptation validation > item #13: Paper --paper-border-color scoped to .sb-Paper-root',
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Post-adaptation validation > item #13: Paper --paper-border-color scoped to .sb-Paper-root',
   },
 
   // ---------------------------------------------------------------------------
@@ -186,7 +201,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root',
     reason:
       'Soribashi adds 400 as a fallback value: var(--font-weight-regular, 400). This is a defensive addition ensuring normal font weight even if the CSS variable is not defined.',
-    ledgerRef: 'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 4 — Token substitution; intentional defensive fallback',
+    ledgerRef:
+      'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 4 — Token substitution; intentional defensive fallback',
   },
 
   // ---------------------------------------------------------------------------
@@ -198,7 +214,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '(none)',
     reason:
       'Space has no CSS file in either Mantine or soribashi. Soribashi implements Space as a one-line Box wrapper using Box style props (w/h/miw/mih). The audit script reports this as EXTRA_IN_SORIBASHI (no Mantine CSS to compare against).',
-    ledgerRef: 'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Space',
+    ledgerRef:
+      'docs/superpowers/divergences/mantine-master.md § Closed (adapted from Mantine) > Space',
   },
 
   // ---------------------------------------------------------------------------
@@ -214,7 +231,8 @@ export const ALLOWLIST: AllowlistEntry[] = [
     mantineSelector: '.root',
     reason:
       'Soribashi adds "wrap" as an ultimate fallback for text-wrap: var(--title-text-wrap, var(--heading-text-wrap, wrap)). This ensures text wraps normally even if neither variable is defined.',
-    ledgerRef: 'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 4 — Token substitution; intentional defensive fallback',
+    ledgerRef:
+      'docs/superpowers/specs/2026-04-25-mantine-blocks-adaptation-design.md § 4 — Token substitution; intentional defensive fallback',
   },
 ];
 
@@ -223,13 +241,9 @@ export const ALLOWLIST: AllowlistEntry[] = [
  * Key format: `${block}::${kind}::${mantineSelector}`
  */
 export function buildAllowlistSet(entries: AllowlistEntry[]): Set<string> {
-  return new Set(entries.map(e => `${e.block}::${e.kind}::${e.mantineSelector}`));
+  return new Set(entries.map((e) => `${e.block}::${e.kind}::${e.mantineSelector}`));
 }
 
-export function makeFindingKey(
-  block: string,
-  kind: string,
-  mantineSelector: string,
-): string {
+export function makeFindingKey(block: string, kind: string, mantineSelector: string): string {
   return `${block}::${kind}::${mantineSelector}`;
 }

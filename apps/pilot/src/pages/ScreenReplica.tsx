@@ -88,7 +88,11 @@ export function ScreenReplica() {
                 <div
                   tabIndex={0}
                   className="text-3xl font-semibold"
-                  style={{ color: 'var(--text-default)', cursor: 'default', display: 'inline-block' }}
+                  style={{
+                    color: 'var(--text-default)',
+                    cursor: 'default',
+                    display: 'inline-block',
+                  }}
                 >
                   {card.value}
                 </div>
@@ -112,23 +116,34 @@ export function ScreenReplica() {
         </h2>
         <ul className="space-y-3">
           {[
-            { who: 'M. Goodwin', what: 'Reviewed FNOL statement', when: '2h ago', fullTime: 'May 5, 2026 at 10:14 AM' },
-            { who: 'A. Patel', what: 'Added incident notes', when: '5h ago', fullTime: 'May 5, 2026 at 7:22 AM' },
-            { who: 'System', what: 'Merged FC into incident', when: 'yesterday', fullTime: 'May 4, 2026 at 3:45 PM' },
+            {
+              who: 'M. Goodwin',
+              what: 'Reviewed FNOL statement',
+              when: '2h ago',
+              fullTime: 'May 5, 2026 at 10:14 AM',
+            },
+            {
+              who: 'A. Patel',
+              what: 'Added incident notes',
+              when: '5h ago',
+              fullTime: 'May 5, 2026 at 7:22 AM',
+            },
+            {
+              who: 'System',
+              what: 'Merged FC into incident',
+              when: 'yesterday',
+              fullTime: 'May 4, 2026 at 3:45 PM',
+            },
           ].map((row, idx, all) => (
             <li
               key={row.who + row.when}
               className="pb-3"
               style={{
-                borderBottom:
-                  idx < all.length - 1 ? '1px solid var(--border-muted)' : 'none',
+                borderBottom: idx < all.length - 1 ? '1px solid var(--border-muted)' : 'none',
               }}
             >
               {/* tailwind utility `text-default` not emitted; using direct var() per journal § 6 */}
-              <div
-                className="text-sm font-medium"
-                style={{ color: 'var(--text-default)' }}
-              >
+              <div className="text-sm font-medium" style={{ color: 'var(--text-default)' }}>
                 {row.who}
               </div>
               {/* tailwind utility `text-muted` not emitted; using direct var() per journal § 6 */}
@@ -239,7 +254,9 @@ export function ScreenReplica() {
               Disputed
             </span>
           </Tooltip.Trigger>
-          <Tooltip.Content>Claimant has opened a formal dispute — legal hold active</Tooltip.Content>
+          <Tooltip.Content>
+            Claimant has opened a formal dispute — legal hold active
+          </Tooltip.Content>
         </Tooltip>
       </section>
     </div>

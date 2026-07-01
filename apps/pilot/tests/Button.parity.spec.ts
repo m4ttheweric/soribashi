@@ -7,7 +7,7 @@
  *
  * Pattern reference: tests/browser-parity/blocks-computed-styles.spec.ts
  */
-import { test, expect, type Page } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 function cs(page: Page, testId: string, prop: string): Promise<string> {
   return page.evaluate(
@@ -91,7 +91,7 @@ test('size lg: height = 3rem (48px)', async ({ page }) => {
 
 test('disabled: opacity = 0.5', async ({ page }) => {
   const o = await cs(page, 'btn-state-disabled', 'opacity');
-  expect(parseFloat(o)).toBeCloseTo(0.5, 2);
+  expect(Number.parseFloat(o)).toBeCloseTo(0.5, 2);
 });
 
 test('loading: spinner is present and disabled flag is set', async ({ page }) => {

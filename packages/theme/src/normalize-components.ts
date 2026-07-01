@@ -1,6 +1,6 @@
-import type { ComponentThemeConfig, ThemeDefinition, ThemeVocabulary } from './types.ts';
-import { isThemeComponentEntry } from './theme-component-entry.ts';
 import type { Vocabulary } from './define-vocabulary.ts';
+import { isThemeComponentEntry } from './theme-component-entry.ts';
+import type { ComponentThemeConfig, ThemeDefinition, ThemeVocabulary } from './types.ts';
 import type { VocabularyOverride } from './vocabulary-override.ts';
 
 /**
@@ -30,9 +30,7 @@ function resolveVocabOverride(
   if (override === undefined) return undefined;
   if (typeof override === 'function') {
     if (current === undefined) {
-      throw new Error(
-        'Vocabulary function-form override needs a global vocabulary to extend from',
-      );
+      throw new Error('Vocabulary function-form override needs a global vocabulary to extend from');
     }
     return override(current);
   }
@@ -115,7 +113,7 @@ export function normalizeComponents(
       if (!isThemeComponentEntry(entry)) {
         throw new Error(
           `createTheme: components array contains a non-ThemeComponentEntry value. ` +
-          `Use Component.extend({...}) to construct entries; got: ${describe(entry)}`,
+            `Use Component.extend({...}) to construct entries; got: ${describe(entry)}`,
         );
       }
       // Last-write-wins: later entries override earlier ones with the same name.

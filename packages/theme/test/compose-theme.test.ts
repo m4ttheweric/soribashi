@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createTheme } from '../src/create-theme.ts';
 import { composeTheme } from '../src/compose-theme.ts';
+import { createTheme } from '../src/create-theme.ts';
 
 describe('theme composition (extends)', () => {
   it('extending a theme inherits base tokens', () => {

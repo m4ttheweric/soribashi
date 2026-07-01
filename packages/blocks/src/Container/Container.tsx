@@ -14,9 +14,9 @@
  *     within max-width.
  */
 import { defineComponent } from '@soribashi/factory';
-import { getSize } from '../utils/index.ts';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
+import { getSize } from '../utils/index.ts';
 
 export interface ContainerOwnProps extends BoxOwnProps {
   /** max-width: Mantine container size key (xs/sm/md/lg/xl) OR any CSS value @default 'md' */
@@ -36,7 +36,9 @@ export const Container = defineComponent<ContainerOwnProps>({
     const p = props as ContainerOwnProps;
     return {
       root: {
-        '--container-size': p.fluid ? '' : getSize(p.size as string | number, 'container-size') ?? '',
+        '--container-size': p.fluid
+          ? ''
+          : (getSize(p.size as string | number, 'container-size') ?? ''),
       },
     };
   },
@@ -60,10 +62,7 @@ export const Container = defineComponent<ContainerOwnProps>({
       <Box
         ref={ref}
         {...getStyles('root')}
-        mod={[
-          { strategy, fluid: !!fluid },
-          mod,
-        ].filter(Boolean) as any}
+        mod={[{ strategy, fluid: !!fluid }, mod].filter(Boolean) as any}
         {...rest}
       >
         {children}

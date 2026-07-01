@@ -1,4 +1,4 @@
-import { defineVocabulary, type Vocabulary } from './define-vocabulary.ts';
+import { type Vocabulary, defineVocabulary } from './define-vocabulary.ts';
 
 /**
  * Internal-only default vocabularies. Used by createTheme() when the consumer
@@ -13,21 +13,8 @@ import { defineVocabulary, type Vocabulary } from './define-vocabulary.ts';
 
 export const DEFAULT_VOCABULARIES = {
   size: defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl']),
-  intent: defineVocabulary([
-    'primary',
-    'neutral',
-    'success',
-    'warning',
-    'danger',
-    'info',
-  ]),
-  variant: defineVocabulary([
-    'filled',
-    'outline',
-    'subtle',
-    'ghost',
-    'link',
-  ]),
+  intent: defineVocabulary(['primary', 'neutral', 'success', 'warning', 'danger', 'info']),
+  variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']),
 } as const satisfies Record<string, Vocabulary>;
 
 /**

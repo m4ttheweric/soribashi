@@ -12,13 +12,13 @@
  * Spec: docs/superpowers/specs/2026-05-10-wave-3-tabs-pilot-design.md
  */
 import * as RadixTabs from '@radix-ui/react-tabs';
-import type { CSSProperties, ElementType, ReactNode } from 'react';
-import { defineCompound } from '../../builders.ts';
 import {
-  defineVocabulary,
   type PartRenderCtx,
   type PolymorphicPartRenderCtx,
+  defineVocabulary,
 } from '@soribashi/core';
+import type { CSSProperties, ElementType, ReactNode } from 'react';
+import { defineCompound } from '../../builders.ts';
 import classes from './Tabs.module.css';
 
 const variants = ['default', 'outline', 'pills'] as const;
@@ -48,9 +48,7 @@ export interface TabsContentProps {
   children?: ReactNode;
 }
 
-interface TabsCtxExtras {
-  // No extras beyond what the factory injects (variant, getStyles).
-}
+type TabsCtxExtras = {};
 
 export const Tabs = defineCompound({
   name: 'Tabs',
@@ -64,15 +62,14 @@ export const Tabs = defineCompound({
     // don't read these but the resolver still emits sentinel values so
     // tests can assert the per-variant routing.
     list: {
-      '--sb-tabs-active-bg':
-        props.variant === 'pills' ? 'var(--color-primary-500)' : 'transparent',
+      '--sb-tabs-active-bg': props.variant === 'pills' ? 'var(--color-primary-500)' : 'transparent',
       '--sb-tabs-active-color':
         props.variant === 'pills'
           ? 'var(--surface-default-foreground, var(--color-neutral-0))'
           : 'var(--text-default)',
     },
   }),
-  context: (_rootProps) => ({} as TabsCtxExtras),
+  context: (_rootProps) => ({}) as TabsCtxExtras,
   parts: {
     root: {
       render: ({ props, children }: PartRenderCtx<TabsRootProps, TabsCtxExtras>) => (
@@ -139,12 +136,7 @@ export const Tabs = defineCompound({
         const Tag = Element as ElementType;
         return (
           <RadixTabs.Trigger asChild value={value} disabled={disabled}>
-            <Tag
-              ref={ref}
-              data-variant={ctx.variant}
-              {...rest}
-              {...getStyles()}
-            >
+            <Tag ref={ref} data-variant={ctx.variant} {...rest} {...getStyles()}>
               {children}
             </Tag>
           </RadixTabs.Trigger>
@@ -152,11 +144,7 @@ export const Tabs = defineCompound({
       },
     },
     content: {
-      render: ({
-        getStyles,
-        props,
-        children,
-      }: PartRenderCtx<TabsContentProps, TabsCtxExtras>) => (
+      render: ({ getStyles, props, children }: PartRenderCtx<TabsContentProps, TabsCtxExtras>) => (
         <RadixTabs.Content
           value={props.value}
           forceMount={props.forceMount || undefined}

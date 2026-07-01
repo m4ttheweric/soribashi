@@ -12,44 +12,64 @@
 
 /* hidden-from-* — element is hidden AT AND ABOVE the given breakpoint */
 @media (min-width: 24rem) {
-  .sb-hidden-from-xs { display: none !important; }
+  .sb-hidden-from-xs {
+    display: none !important;
+  }
 }
 
 @media (min-width: 40rem) {
-  .sb-hidden-from-sm { display: none !important; }
+  .sb-hidden-from-sm {
+    display: none !important;
+  }
 }
 
 @media (min-width: 48rem) {
-  .sb-hidden-from-md { display: none !important; }
+  .sb-hidden-from-md {
+    display: none !important;
+  }
 }
 
 @media (min-width: 64rem) {
-  .sb-hidden-from-lg { display: none !important; }
+  .sb-hidden-from-lg {
+    display: none !important;
+  }
 }
 
 @media (min-width: 80rem) {
-  .sb-hidden-from-xl { display: none !important; }
+  .sb-hidden-from-xl {
+    display: none !important;
+  }
 }
 
 /* visible-from-* — element is hidden BELOW the given breakpoint */
 @media (max-width: calc(24rem - 0.0625rem)) {
-  .sb-visible-from-xs { display: none !important; }
+  .sb-visible-from-xs {
+    display: none !important;
+  }
 }
 
 @media (max-width: calc(40rem - 0.0625rem)) {
-  .sb-visible-from-sm { display: none !important; }
+  .sb-visible-from-sm {
+    display: none !important;
+  }
 }
 
 @media (max-width: calc(48rem - 0.0625rem)) {
-  .sb-visible-from-md { display: none !important; }
+  .sb-visible-from-md {
+    display: none !important;
+  }
 }
 
 @media (max-width: calc(64rem - 0.0625rem)) {
-  .sb-visible-from-lg { display: none !important; }
+  .sb-visible-from-lg {
+    display: none !important;
+  }
 }
 
 @media (max-width: calc(80rem - 0.0625rem)) {
-  .sb-visible-from-xl { display: none !important; }
+  .sb-visible-from-xl {
+    display: none !important;
+  }
 }
 
 /* light/dark scheme hidden helpers */

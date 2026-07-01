@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
 import { createTheme, defaultTokens } from '@soribashi/theme';
+import { describe, expect, it, vi } from 'vitest';
 import { emitCss } from '../src/emit-css.ts';
 
 describe('emitCss', () => {
@@ -263,7 +263,10 @@ describe('emitCss', () => {
   it('emits font-weight, line-height, font-family-heading vars', () => {
     const theme = createTheme({
       tokens: {
-        colors: {}, radius: {}, spacing: {}, fontSize: {},
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
         fontFamily: { sans: 'Inter', heading: 'Georgia' },
         fontWeight: { regular: '400', bold: '700' },
         lineHeight: { md: '1.55' },
@@ -279,7 +282,10 @@ describe('emitCss', () => {
   it('emits heading sizes per order as separate vars', () => {
     const theme = createTheme({
       tokens: {
-        colors: {}, radius: {}, spacing: {}, fontSize: {},
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
         heading: {
           sizes: {
             h1: { fontSize: '2rem', fontWeight: '700', lineHeight: '1.3' },
@@ -302,7 +308,10 @@ describe('emitCss', () => {
   it('emits --heading-text-wrap when tokens.heading.textWrap is set', () => {
     const theme = createTheme({
       tokens: {
-        colors: {}, radius: {}, spacing: {}, fontSize: {},
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
         heading: {
           sizes: {
             h1: { fontSize: '2rem' },
@@ -323,7 +332,10 @@ describe('emitCss', () => {
   it('does not emit --heading-text-wrap when tokens.heading is absent', () => {
     const theme = createTheme({
       tokens: {
-        colors: {}, radius: {}, spacing: {}, fontSize: {},
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
       },
     });
     const css = emitCss(theme);
@@ -361,7 +373,7 @@ describe('emitCss with EmitCssOptions.cssVariablesResolver', () => {
     // Both lines exist in the :root block; the later one (consumer's) is the cascade winner.
     const rootBlock = css.split('.dark')[0]!;
     const lastIndex = rootBlock.lastIndexOf('--spacing-md:');
-    const lastLine = rootBlock.substring(lastIndex).split(';')[0]!
+    const lastLine = rootBlock.substring(lastIndex).split(';')[0]!;
     expect(lastLine).toBe('--spacing-md: 99px');
   });
 
@@ -397,20 +409,26 @@ describe('emitCss with EmitCssOptions.removeDefaultVariables', () => {
   });
 
   it('produces only overridden vars when one token is overridden', () => {
-    const theme = createTheme({ tokens: { ...defaultTokens, spacing: { ...defaultTokens.spacing, md: '20px' } } });
+    const theme = createTheme({
+      tokens: { ...defaultTokens, spacing: { ...defaultTokens.spacing, md: '20px' } },
+    });
     const css = emitCss(theme, { removeDefaultVariables: true });
     expect(css).toContain('--spacing-md: 20px;');
     expect(css).not.toContain('--spacing-xs:'); // matches default — dedup'd
   });
 
   it('default (no opts) emits the full theme as before', () => {
-    const theme = createTheme({ tokens: { colors: {}, radius: {}, spacing: { md: '0.75rem' }, fontSize: { md: '1rem' } } });
+    const theme = createTheme({
+      tokens: { colors: {}, radius: {}, spacing: { md: '0.75rem' }, fontSize: { md: '1rem' } },
+    });
     const css = emitCss(theme);
     expect(css).toContain('--spacing-md:');
   });
 
   it('removeDefaultVariables: false is equivalent to omitting opts', () => {
-    const theme = createTheme({ tokens: { colors: {}, radius: {}, spacing: { md: '0.75rem' }, fontSize: { md: '1rem' } } });
+    const theme = createTheme({
+      tokens: { colors: {}, radius: {}, spacing: { md: '0.75rem' }, fontSize: { md: '1rem' } },
+    });
     const cssA = emitCss(theme, { removeDefaultVariables: false });
     const cssB = emitCss(theme);
     expect(cssA).toBe(cssB);

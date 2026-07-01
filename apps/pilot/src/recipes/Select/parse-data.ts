@@ -15,13 +15,19 @@ export interface ComboboxGroup<V extends Primitive = string> {
   items: (V | ComboboxItem<V>)[];
 }
 
-export type SelectData<V extends Primitive = string> = readonly (V | ComboboxItem<V> | ComboboxGroup<V>)[];
+export type SelectData<V extends Primitive = string> = readonly (
+  | V
+  | ComboboxItem<V>
+  | ComboboxGroup<V>
+)[];
 
 export type ParsedItem<V extends Primitive = string> =
   | ComboboxItem<V>
   | { group: string; items: ComboboxItem<V>[] };
 
-function parseItem<V extends Primitive>(item: V | ComboboxItem<V> | ComboboxGroup<V>): ParsedItem<V> {
+function parseItem<V extends Primitive>(
+  item: V | ComboboxItem<V> | ComboboxGroup<V>,
+): ParsedItem<V> {
   if (typeof item !== 'object') {
     return { value: item, label: `${item}` };
   }
@@ -37,7 +43,9 @@ function parseItem<V extends Primitive>(item: V | ComboboxItem<V> | ComboboxGrou
   return item;
 }
 
-export function parseSelectData<V extends Primitive>(data: SelectData<V> | undefined): ParsedItem<V>[] {
+export function parseSelectData<V extends Primitive>(
+  data: SelectData<V> | undefined,
+): ParsedItem<V>[] {
   if (!data) {
     return [];
   }

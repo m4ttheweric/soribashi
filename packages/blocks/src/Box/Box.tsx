@@ -11,18 +11,18 @@
  *   - Drops Mantine's nonce, sx, classNamesPrefix, deduplicateInlineStyles internals
  */
 import {
-  definePolymorphicComponent,
   InlineStyles,
+  definePolymorphicComponent,
   useRandomClassName,
   useTheme,
 } from '@soribashi/factory';
 import type { CSSProperties } from 'react';
 import { isDev } from '../utils/is-dev.ts';
+import type { BoxOwnProps, BoxStyleProps } from './Box.types.ts';
+import { type BoxMod, getBoxMod } from './get-box-mod.ts';
 import { extractStyleProps } from './style-props/extract-style-props.ts';
 import { parseStyleProps } from './style-props/parse-style-props.ts';
 import { STYLE_PROPS_DATA } from './style-props/style-props-data.ts';
-import { getBoxMod, type BoxMod } from './get-box-mod.ts';
-import type { BoxOwnProps, BoxStyleProps } from './Box.types.ts';
 
 export type { BoxOwnProps, BoxMod, BoxStyleProps };
 

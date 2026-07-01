@@ -1,7 +1,7 @@
 import { createTheme, defineVocabulary, registerTheme } from '@soribashi/core';
 import { buttonTheme } from '../recipes/Button/Button.tsx';
-import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
 import { tabsTheme } from '../recipes/Tabs/Tabs.tsx';
+import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
 
 /**
  * Wave 1 consolidated theme for the recipe pilot.
@@ -267,11 +267,11 @@ const definition = {
         // which read as heavy navy on the page. Dialled down to 6-10%
         // saturation — subtle cool tint, reads as dark gray rather than blue.
         // Hue shifted slightly to 220 for consistency. Lightness preserved.
-        '0': 'hsl(220 6% 9%)',     // was hsl(222 84% 5%) — page bg / surface.default
-        '50': 'hsl(220 6% 13%)',   // was hsl(222 47% 11%) — surface.sunken in dark
-        '100': 'hsl(220 5% 18%)',  // was hsl(217 33% 17%) — surface.raised (default-variant tooltip)
-        '200': 'hsl(220 5% 25%)',  // was hsl(215 25% 27%) — borders
-        '300': 'hsl(220 5% 35%)',  // was hsl(215 19% 35%)
+        '0': 'hsl(220 6% 9%)', // was hsl(222 84% 5%) — page bg / surface.default
+        '50': 'hsl(220 6% 13%)', // was hsl(222 47% 11%) — surface.sunken in dark
+        '100': 'hsl(220 5% 18%)', // was hsl(217 33% 17%) — surface.raised (default-variant tooltip)
+        '200': 'hsl(220 5% 25%)', // was hsl(215 25% 27%) — borders
+        '300': 'hsl(220 5% 35%)', // was hsl(215 19% 35%)
         '400': 'hsl(215 16% 47%)', // unchanged — mid-tone, sat already moderate
         '500': 'hsl(215 20% 65%)',
         '600': 'hsl(213 27% 84%)',
@@ -389,7 +389,7 @@ const definition = {
  * footgun (passing it to SoribashiProvider would silently skip per-recipe
  * variant validation). The runtime always uses the full `theme` below.
  */
-export type BaseTheme = ReturnType<typeof createTheme<typeof definition['vocabulary']>>;
+export type BaseTheme = ReturnType<typeof createTheme<(typeof definition)['vocabulary']>>;
 
 /**
  * The full theme used at runtime. Adds the per-recipe vocabulary entries via

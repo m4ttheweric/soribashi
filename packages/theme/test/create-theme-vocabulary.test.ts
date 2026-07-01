@@ -27,10 +27,19 @@ describe('createTheme — vocabulary field', () => {
     });
     expect(theme.vocabulary.size.values).toEqual(['s', 'm', 'l']);
     expect(theme.vocabulary.intent.values).toEqual([
-      'primary', 'neutral', 'success', 'warning', 'danger', 'info',
+      'primary',
+      'neutral',
+      'success',
+      'warning',
+      'danger',
+      'info',
     ]);
     expect(theme.vocabulary.variant.values).toEqual([
-      'filled', 'outline', 'subtle', 'ghost', 'link',
+      'filled',
+      'outline',
+      'subtle',
+      'ghost',
+      'link',
     ]);
   });
 
@@ -57,8 +66,8 @@ describe('createTheme — vocabulary field', () => {
 // VocabularyOverride resolution in components
 // ---------------------------------------------------------------------------
 
-import type { ThemeComponentEntry } from '../src/theme-component-entry.ts';
 import type { Vocabulary } from '../src/define-vocabulary.ts';
+import type { ThemeComponentEntry } from '../src/theme-component-entry.ts';
 
 describe('createTheme — VocabularyOverride resolution in components', () => {
   it('replace-mode: passes Vocabulary directly through normalizeComponents', () => {
