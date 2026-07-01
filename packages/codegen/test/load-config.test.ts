@@ -40,6 +40,8 @@ describe('loadConfig', () => {
   });
 });
 
+// These fixtures carry vocabulary: {} because loadConfig now checks for the
+// resolved-theme shape (vocabulary/semanticTokens/scope present).
 describe('loadConfig with emit options', () => {
   let tempDir: string;
 
