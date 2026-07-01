@@ -13,6 +13,7 @@ import type { ResolvedTheme } from '@soribashi/theme';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { useTheme } from './provider/use-theme.ts';
+import { makeWithProps } from './with-props.tsx';
 import { createSafeContext } from './create-safe-context.ts';
 import { validateVocabularyProps } from './validate-vocabulary-props.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
@@ -35,9 +36,16 @@ import type { VocabularyAxis, InjectedVocabularyProps, VariantProp } from './typ
  * explicitly pass the variants tuple (e.g. `PartRenderCtx<P, Ctx>`) continue
  * to compile: `ctx.variant` is just `string | undefined` in that case.
  *
- * TSlotKeys defaults to `string` for backwards compatibility when not derived
- * from config.classes; when defineCompound infers TSlotKeys from config.classes,
- * typos like `getStyles({ part: 'arroow' })` are caught at compile time.
+ * TSlotKeys defaults to `string`. defineCompound CANNOT contextually inject
+ * the captured slot keys into unannotated inline renders (object-literal
+ * sibling-property inference doesn't propagate that far; see the Cycle 7.12
+ * test note), so slot-key checking on `getStyles({ part })` comes from
+ * explicitly annotating the render ctx:
+ * `PartRenderCtx<Props, Ctx, typeof variants, keyof typeof classes>`.
+ *
+ * `props` carries the styles-API framework keys (className, style, classNames,
+ * styles, vars, attributes, unstyled) alongside TProps, matching what the
+ * runtime forwards, so recipes no longer hand-cast them off `props`.
  */
 export interface PartRenderCtx<
   TProps = unknown,
@@ -45,7 +53,7 @@ export interface PartRenderCtx<
   TVariants extends readonly string[] = readonly string[],
   TSlotKeys extends string = string,
 > {
-  props: TProps;
+  props: TProps & CompoundStylesApiProps<{ props: TProps; stylesNames: TSlotKeys } & FactoryPayload>;
   /**
    * Returns merged className/style/data-* for the given slot (defaults to this
    * part's own slot). Pass `{ part: 'otherSlot' }` to target sibling slots.
@@ -185,19 +193,20 @@ interface CompoundContextValue<TCtxExtra, TVariants extends readonly string[] = 
 /**
  * Constructs a minimal FactoryPayload from a part config so that StylesApiProps /
  * CompoundStylesApiProps can be parameterised without needing the full payload.
+ * TSlotKeys keys the part's public classNames/styles/attributes records.
  */
-type PartPayload<TPartConfig> = {
+type PartPayload<TPartConfig, TSlotKeys extends string = string> = {
   props: ExtractPartProps<TPartConfig>;
-  stylesNames: string;
+  stylesNames: TSlotKeys;
 } & FactoryPayload;
 
 /**
  * Static methods shared by all part component shapes (polymorphic and standard).
  */
-type PartStaticMethods<TPartConfig> = {
+type PartStaticMethods<TPartConfig, TSlotKeys extends string = string> = {
   extend: (
-    config: ComponentExtendConfig<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
-  ) => ThemeComponentEntry<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>;
+    config: ComponentExtendConfig<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>>,
+  ) => ThemeComponentEntry<ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>>;
   displayName?: string;
 };
 
@@ -207,22 +216,25 @@ type PartStaticMethods<TPartConfig> = {
  * mirrors `PolymorphicComponentLike` from `define-polymorphic-component.tsx`.
  * `<Foo.Trigger as="a" href="/x">` correctly narrows props to anchor attrs.
  */
-type PolymorphicCompoundPart<TPartConfig, TDefaultEl extends ElementType> =
+type PolymorphicCompoundPart<TPartConfig, TDefaultEl extends ElementType, TSlotKeys extends string = string> =
   (<TAs extends ElementType = TDefaultEl>(
-    props: PolymorphicComponentProps<TAs, ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig>>>,
-  ) => React.ReactElement | null) & PartStaticMethods<TPartConfig>;
+    props: PolymorphicComponentProps<TAs, ExtractPartProps<TPartConfig> & CompoundStylesApiProps<PartPayload<TPartConfig, TSlotKeys>>>,
+  ) => React.ReactElement | null) & PartStaticMethods<TPartConfig, TSlotKeys>;
 
-type PartsNamespace<TParts extends Record<string, PartConfig<any, any, any>>> = {
+type PartsNamespace<
+  TParts extends Record<string, PartConfig<any, any, any>>,
+  TSlotKeys extends string = string,
+> = {
   [K in Exclude<keyof TParts, 'root'> as Capitalize<K & string>]:
     TParts[K] extends PolymorphicPartConfig<any, any, any> & { defaultElement: infer DefaultEl }
       ? DefaultEl extends ElementType
-        ? PolymorphicCompoundPart<TParts[K], DefaultEl>
+        ? PolymorphicCompoundPart<TParts[K], DefaultEl, TSlotKeys>
         : never
       : React.ForwardRefExoticComponent<
           ExtractPartProps<TParts[K]>
-          & CompoundStylesApiProps<PartPayload<TParts[K]>>
+          & CompoundStylesApiProps<PartPayload<TParts[K], TSlotKeys>>
           & React.RefAttributes<unknown>
-        > & PartStaticMethods<TParts[K]>;
+        > & PartStaticMethods<TParts[K], TSlotKeys>;
 };
 
 /**
@@ -247,6 +259,28 @@ type CompoundRootPublicProps<
   VariantProp<TVariants> &
   StylesApiProps<{ props: ExtractPartProps<TParts['root']>; stylesNames: TSlotKeys } & FactoryPayload>;
 
+/**
+ * The value returned by `Root.withProps(...)`. Carries the Root statics but
+ * NOT the parts namespace: makeWithProps wraps only the Root component, so
+ * `Foo.withProps({...}).Label` does not exist at runtime either.
+ */
+type CompoundRootWithProps<
+  TParts extends Record<string, PartConfig<any, any, any>>,
+  TVariants extends readonly string[],
+  TVocabAxes extends readonly VocabularyAxis[],
+  TSlotKeys extends string,
+> = React.ForwardRefExoticComponent<
+  CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys> & React.RefAttributes<unknown>
+> & {
+  extend: (
+    config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
+  ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>;
+  withProps: (
+    presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
+  ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys>;
+  displayName?: string;
+};
+
 type CompoundComponent<
   TParts extends Record<string, PartConfig<any, any, any>>,
   TVariants extends readonly string[] = readonly string[],
@@ -256,10 +290,14 @@ type CompoundComponent<
   React.ForwardRefExoticComponent<
     CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>
     & React.RefAttributes<unknown>
-  > & PartsNamespace<TParts> & {
+  > & PartsNamespace<TParts, TSlotKeys> & {
     extend: (
       config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
     ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>;
+    withProps: (
+      presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
+    ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys>;
+    classes?: Partial<Record<TSlotKeys, string>>;
     displayName?: string;
   };
 
@@ -425,6 +463,8 @@ export function defineCompound<
 
   Root.displayName = config.name;
   (Root as any).__vocabularyAxes = config.vocabularyAxes ?? [];
+  (Root as any).classes = config.classes;
+  (Root as any).withProps = makeWithProps(Root as any);
 
   (Root as any).extend = makeExtendEntry<TRootProps>(config.name);
 

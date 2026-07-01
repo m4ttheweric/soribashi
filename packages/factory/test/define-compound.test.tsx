@@ -1184,3 +1184,49 @@ describe('defineCompound — context value stability', () => {
     expect(seen).toContain('b');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Root statics — withProps and classes (phase 2 goal 6c)
+// ---------------------------------------------------------------------------
+
+describe('defineCompound — Root statics', () => {
+  const makeStaticsFoo = () =>
+    defineCompound({
+      name: 'StaticsFoo',
+      variants: ['default', 'pills'] as const,
+      classes: { root: 'sf-root', label: 'sf-label' },
+      parts: {
+        root: {
+          render: ({ getStyles, ctx, children }) => (
+            <div {...getStyles()} data-variant={(ctx as any).variant}>
+              {children}
+            </div>
+          ),
+        },
+        label: { render: ({ getStyles }) => <span {...getStyles()} /> },
+      },
+    });
+
+  it('Root.withProps pre-applies presets', () => {
+    const Foo = makeStaticsFoo();
+    const PillFoo = Foo.withProps({ variant: 'pills' });
+    const { container } = render(
+      <SoribashiProvider theme={minimalTheme}>
+        <PillFoo />
+      </SoribashiProvider>,
+    );
+    expect(container.querySelector('.sf-root')?.getAttribute('data-variant')).toBe('pills');
+  });
+
+  it('Root.withProps result still chains extend', () => {
+    const Foo = makeStaticsFoo();
+    const entry = Foo.withProps({ variant: 'pills' }).extend({ classNames: { root: 'x' } });
+    expect((entry as any).__soribashiThemeEntry).toBe(true);
+    expect((entry as any).name).toBe('StaticsFoo');
+  });
+
+  it('Root.classes exposes the configured classes', () => {
+    const Foo = makeStaticsFoo();
+    expect(Foo.classes).toEqual({ root: 'sf-root', label: 'sf-label' });
+  });
+});
