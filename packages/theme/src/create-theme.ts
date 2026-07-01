@@ -24,7 +24,10 @@ const DEFAULT_SURFACE: Record<string, string> = {
   default: 'colors.neutral.0',
   raised: 'colors.neutral.100',
   sunken: 'colors.neutral.50',
-  overlay: 'colors.neutral.900',
+  // Raw value on purpose: a neutral-scale reference inverts under the default
+  // dark tokens, turning the scrim near-white. A scrim must stay dark in both
+  // schemes, so it bypasses the ramp entirely.
+  overlay: 'hsl(222 47% 11% / 0.6)',
 };
 
 const DEFAULT_BORDER: Record<string, string> = {
@@ -58,7 +61,10 @@ export function createTheme<const V extends PartialThemeVocabulary = PartialThem
 ): ResolvedTheme<ResolveVocab<V>> {
   const base: ResolvedTheme | null = definition.extends ? createTheme(definition.extends) : null;
 
-  const merged: ThemeDefinition = base ? composeTheme(base, definition) : definition;
+  // composeTheme rejects a child carrying `extends` (it cannot resolve one);
+  // it is already resolved into `base` here, so strip it before composing.
+  const { extends: _resolved, ...childDefinition } = definition;
+  const merged: ThemeDefinition = base ? composeTheme(base, childDefinition) : definition;
 
   const vocabulary: ThemeVocabulary = {
     size: merged.vocabulary?.size ?? DEFAULT_VOCABULARIES.size,
@@ -66,10 +72,12 @@ export function createTheme<const V extends PartialThemeVocabulary = PartialThem
     variant: merged.vocabulary?.variant ?? DEFAULT_VOCABULARIES.variant,
   };
 
+  // Per-key merge over the defaults, matching composeTheme's per-slot merge:
+  // declaring `surface.brand` must not delete `surface.default` and friends.
   const semanticTokens: SemanticTokensConfig = {
-    text: merged.semanticTokens?.text ?? DEFAULT_TEXT,
-    surface: merged.semanticTokens?.surface ?? DEFAULT_SURFACE,
-    border: merged.semanticTokens?.border ?? DEFAULT_BORDER,
+    text: { ...DEFAULT_TEXT, ...merged.semanticTokens?.text },
+    surface: { ...DEFAULT_SURFACE, ...merged.semanticTokens?.surface },
+    border: { ...DEFAULT_BORDER, ...merged.semanticTokens?.border },
     ...(merged.semanticTokens?.accent ? { accent: merged.semanticTokens.accent } : {}),
   };
 

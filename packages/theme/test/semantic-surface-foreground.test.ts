@@ -51,7 +51,8 @@ describe('SemanticSurfaceValue', () => {
       },
     });
 
-    expect(theme.semanticTokens.surface).toEqual({
+    // Declared slots resolve as given; the remaining defaults merge in per-key.
+    expect(theme.semanticTokens.surface).toMatchObject({
       default: 'colors.neutral.0',
       floating: { value: 'colors.neutral.900', foreground: 'colors.neutral.0' },
     });

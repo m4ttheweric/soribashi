@@ -260,6 +260,109 @@ describe('theme composition (extends)', () => {
     expect(child.tokens.heading?.textWrap).toBe('wrap');
   });
 
+  it('child re-extending a component inherits base fields it does not override', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+      components: {
+        Button: {
+          defaultProps: { size: 'md' },
+          classNames: { root: 'base-button-root' },
+          attributes: { root: { 'data-flavor': 'base' } },
+        },
+      },
+    });
+
+    const child = createTheme({
+      extends: base,
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+      components: {
+        Button: { defaultProps: { size: 'lg' } },
+      },
+    });
+
+    // Overridden field wins; absent fields inherit from the base entry.
+    expect(child.components.Button?.defaultProps).toEqual({ size: 'lg' });
+    expect(child.components.Button?.classNames).toEqual({ root: 'base-button-root' });
+    expect(child.components.Button?.attributes).toEqual({ root: { 'data-flavor': 'base' } });
+  });
+
+  it('components only present in one theme survive composition untouched', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+      components: {
+        Card: { classNames: { root: 'base-card' } },
+      },
+    });
+
+    const child = createTheme({
+      extends: base,
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      components: {
+        Badge: { defaultProps: { size: 'sm' } },
+      },
+    });
+
+    expect(child.components.Card?.classNames).toEqual({ root: 'base-card' });
+    expect(child.components.Badge?.defaultProps).toEqual({ size: 'sm' });
+  });
+
+  it('composeTheme throws an actionable error when the child declares extends', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+
+    expect(() =>
+      composeTheme(base, {
+        extends: base,
+        tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      }),
+    ).toThrowError(/extends/);
+  });
+
+  it('createTheme still resolves extends chains (extends is stripped before composeTheme)', () => {
+    const grandBase = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+      name: 'grand-base',
+    });
+    const child = createTheme({
+      extends: {
+        extends: grandBase,
+        tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+        name: 'middle',
+      },
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      name: 'leaf',
+    });
+
+    expect(child.tokens.colors.primary?.['500']).toBe('#aaa');
+    expect(child.name).toBe('leaf');
+  });
+
   it('CT-BUG-5: composeTheme preserves fontWeight when dark tokens have fontWeight', () => {
     const base = createTheme({
       tokens: {
@@ -285,5 +388,54 @@ describe('theme composition (extends)', () => {
     });
 
     expect(child.dark.fontWeight?.regular).toBe('400');
+  });
+});
+
+describe('composeTheme: dark families stay honest', () => {
+  it('extending a theme without dark overrides yields an empty dark object', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+    });
+
+    const child = createTheme({
+      extends: base,
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+    });
+
+    // No fabricated empty families: "does this theme have dark overrides"
+    // checks (codegen's .dark block emission) must see a truly empty object.
+    expect(child.dark).toEqual({});
+    expect(Object.keys(child.dark)).toEqual([]);
+  });
+
+  it('only families with actual dark overrides appear in the composed dark', () => {
+    const base = createTheme({
+      tokens: {
+        colors: { primary: { '500': '#aaa' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+      dark: {
+        colors: { primary: { '500': '#123' } },
+      },
+    });
+
+    const child = createTheme({
+      extends: base,
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+      dark: {
+        shadow: { sm: 'none' },
+      },
+    });
+
+    expect(Object.keys(child.dark).sort()).toEqual(['colors', 'shadow']);
+    expect(child.dark.colors?.primary?.['500']).toBe('#123');
+    expect(child.dark.shadow?.sm).toBe('none');
   });
 });
