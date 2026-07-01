@@ -117,10 +117,10 @@ describe('emitCss', () => {
     expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
   });
 
-  it('does not emit an empty .dark block for composed themes without dark overrides', () => {
-    // composeTheme materializes every token section in `dark` as an empty
-    // object, so a key-count check on theme.dark sees ~11 entries with
-    // nothing to emit.
+  it('does not emit an empty .dark block when dark holds only empty sections', () => {
+    // composeTheme no longer materializes empty dark families, but the
+    // emitter's guard against an all-empty dark object still deserves
+    // coverage, so construct that shape explicitly.
     const base = createTheme({
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
@@ -129,13 +129,10 @@ describe('emitCss', () => {
         fontSize: { md: '1rem' },
       },
     });
-    const extended = createTheme({
-      extends: base,
-      tokens: { colors: { brand: { '500': 'hsl(10 80% 50%)' } }, radius: {}, spacing: {}, fontSize: {} },
-    });
+    const theme = { ...base, dark: { colors: {}, radius: {}, spacing: {}, fontSize: {} } };
 
-    expect(Object.keys(extended.dark).length).toBeGreaterThan(0);
-    const css = emitCss(extended);
+    expect(Object.keys(theme.dark).length).toBeGreaterThan(0);
+    const css = emitCss(theme);
     expect(css).not.toContain('.dark');
   });
 
@@ -446,7 +443,11 @@ describe('emitCss with EmitCssOptions.removeDefaultVariables warning', () => {
           fontSize: {},
         },
       });
-      emitCss(theme, { removeDefaultVariables: true });
+      // createTheme backfills default breakpoints, which match the dedup
+      // baseline and would trigger the warning; strip them so the fixture
+      // stays default-free.
+      const { breakpoint: _backfilled, ...tokens } = theme.tokens;
+      emitCss({ ...theme, tokens }, { removeDefaultVariables: true });
       expect(warn).not.toHaveBeenCalled();
     } finally {
       warn.mockRestore();
