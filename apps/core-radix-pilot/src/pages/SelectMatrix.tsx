@@ -10,11 +10,12 @@ export function SelectMatrix() {
   const [multi, setMulti] = useState<string[]>([]);
   return (
     <div style={{ display: 'grid', gap: '1.5rem', maxWidth: 320, padding: '1.5rem' }}>
-      <Select data={sizes} label="Single" description="pick one" placeholder="Choose a size" clearable value={single} onChange={setSingle} />
+      <Select data={sizes} label="Single" description="pick one" placeholder="Choose a size" value={single} onChange={setSingle} />
       <Select data={sizes} label="Searchable" placeholder="Type to filter" searchable />
-      <Select data={sizes} label="Multiple" placeholder="Choose sizes" multiple clearable value={multi} onChange={(v) => setMulti(v as string[])} />
+      <Select data={sizes} label="Multiple" placeholder="Choose sizes" multiple value={multi} onChange={(v) => setMulti(v as string[])} />
       <Select data={sizes} label="Disabled" placeholder="Unavailable" disabled />
       <Select data={sizes} label="With error" placeholder="Choose" error="Required field" required />
+      <Select data={sizes} label="Clearable (opt-in)" placeholder="Choose a size" clearable value={single} onChange={setSingle} />
     </div>
   );
 }

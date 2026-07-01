@@ -110,50 +110,53 @@ export const Select = defineGenericComponent<SelectSignature>({
 
     return (
       <Field id={id} label={props.label} description={props.description} error={props.error} required={props.required}>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-          {multiple && selectedMulti.length > 0 && (
-            <span className={classes.pills} data-part="pills">
-              {selectedMulti.map((o) => (
-                <span key={String(o.value)} className={classes.pill} data-part="pill" data-testid="select-pill">
-                  {o.label}
-                  <button type="button" aria-label={`Remove ${o.label}`} className={classes.pillRemove}
-                    onClick={(e) => { e.stopPropagation(); submit(o); }}>{'×'}</button>
-                </span>
-              ))}
-            </span>
-          )}
-          <button
+        <div style={{ position: 'relative' }}>
+          <div
             ref={refs.setReference}
-            type="button" role="combobox" aria-expanded={opened} aria-controls={`${id}-listbox`}
-            aria-activedescendant={activeIndex >= 0 ? `${id}-opt-${activeIndex}` : undefined}
-            aria-describedby={[props.description ? `${id}-description` : '', props.error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined}
-            aria-invalid={props.error ? true : undefined}
-            disabled={props.disabled} data-disabled={props.disabled ? 'true' : undefined}
-            className={classes.trigger} data-part="trigger"
-            onClick={() => !props.disabled && setOpened((o) => !o)} onKeyDown={handleKeyDown}
-            style={{ flex: 1 }}
+            className={classes.trigger}
+            data-part="control"
+            data-disabled={props.disabled ? 'true' : undefined}
+            onClick={() => !props.disabled && setOpened(true)}
           >
-            {!multiple && selectedSingle ? (
-              <span data-part="value">{selectedSingle.label}</span>
-            ) : (
-              <span className={classes.placeholder} data-part="placeholder">{props.placeholder}</span>
+            {multiple && selectedMulti.length > 0 && (
+              <span className={classes.pills} data-part="pills">
+                {selectedMulti.map((o) => (
+                  <span key={String(o.value)} className={classes.pill} data-part="pill" data-testid="select-pill">
+                    {o.label}
+                    <button type="button" aria-label={`Remove ${o.label}`} className={classes.pillRemove}
+                      onClick={(e) => { e.stopPropagation(); submit(o); }}>{'×'}</button>
+                  </span>
+                ))}
+              </span>
             )}
-            <span aria-hidden>{opened ? '▲' : '▼'}</span>
-          </button>
-          {props.clearable && hasValue && (
-            <button type="button" aria-label="Clear" className={classes.clear}
-              onClick={(e) => { e.stopPropagation(); clear(); }}>{'×'}</button>
-          )}
+            <input
+              id={id}
+              role="combobox"
+              aria-expanded={opened}
+              aria-controls={`${id}-listbox`}
+              aria-activedescendant={activeIndex >= 0 ? `${id}-opt-${activeIndex}` : undefined}
+              aria-describedby={[props.description ? `${id}-description` : '', props.error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined}
+              aria-invalid={props.error ? true : undefined}
+              disabled={props.disabled}
+              readOnly={!props.searchable}
+              className={classes.input}
+              data-part="input"
+              placeholder={multiple
+                ? (selectedMulti.length > 0 ? '' : props.placeholder)
+                : (props.searchable && selectedSingle ? selectedSingle.label : props.placeholder)}
+              value={props.searchable ? query : (!multiple && selectedSingle ? selectedSingle.label : '')}
+              onChange={(e) => { if (props.searchable) { setQuery(e.target.value); setOpened(true); } }}
+              onKeyDown={handleKeyDown}
+            />
+            {props.clearable && hasValue && (
+              <button type="button" aria-label="Clear" className={classes.clear}
+                onClick={(e) => { e.stopPropagation(); clear(); }}>{'×'}</button>
+            )}
+            <button type="button" aria-label={opened ? 'Close' : 'Open'} tabIndex={-1} className={classes.chevron}
+              onClick={(e) => { e.stopPropagation(); if (!props.disabled) { setOpened((o) => !o); } }}>{opened ? '▲' : '▼'}</button>
+          </div>
           {opened && (
             <ul ref={refs.setFloating} id={`${id}-listbox`} role="listbox" className={classes.dropdown} data-part="dropdown" style={floatingStyles}>
-              {props.searchable && (
-                <li role="presentation">
-                  <input role="searchbox" aria-label="Search" autoFocus value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    style={{ width: '100%', border: 0, outline: 'none', padding: '0.25rem 0.5rem', background: 'transparent' }} />
-                </li>
-              )}
               {options.map((opt, i) => {
                 const isSel = multiple ? multiValue.includes(opt.value) : opt.value === singleValue;
                 return (
