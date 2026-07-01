@@ -66,7 +66,7 @@ describe('createTheme components array-form normalization', () => {
   it('throws a descriptive error (without itself throwing) for a circular-ref entry', () => {
     // Build a circular-reference object — JSON.stringify would throw on this.
     const circular: Record<string, unknown> = { key: 'value' };
-    circular['self'] = circular;
+    circular.self = circular;
 
     expect(() =>
       createTheme({

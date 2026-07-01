@@ -203,7 +203,7 @@ describe('watch — config reload integration', () => {
     const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));
     try {
       const configPath = join(dir, 'soribashi.config.ts');
-      writeFileSync(configPath, `export default { output: {} };`);
+      writeFileSync(configPath, 'export default { output: {} };');
 
       await expect(watch(configPath, { silent: true, cwd: dir })).rejects.toThrow(/theme/);
     } finally {

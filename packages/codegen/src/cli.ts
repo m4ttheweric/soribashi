@@ -87,7 +87,7 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
     }
 
     const handle = await watch(configPath, { silent: options.silent, cwd });
-    log(`[soribashi] watching for changes... (Ctrl+C to stop)`);
+    log('[soribashi] watching for changes... (Ctrl+C to stop)');
     return await new Promise<number>((resolveExit) => {
       process.once('SIGINT', () => {
         log('[soribashi] shutting down...');
@@ -117,7 +117,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     } else if (arg === '--config') {
       const value = argv[i + 1];
       if (value === undefined || value.startsWith('-')) {
-        args.error ??= `--config requires a path argument`;
+        args.error ??= '--config requires a path argument';
       } else {
         args.configFlag = value;
         i++;

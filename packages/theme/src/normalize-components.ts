@@ -112,8 +112,7 @@ export function normalizeComponents(
     for (const entry of input) {
       if (!isThemeComponentEntry(entry)) {
         throw new Error(
-          `createTheme: components array contains a non-ThemeComponentEntry value. ` +
-            `Use Component.extend({...}) to construct entries; got: ${describe(entry)}`,
+          `createTheme: components array contains a non-ThemeComponentEntry value. Use Component.extend({...}) to construct entries; got: ${describe(entry)}`,
         );
       }
       // Last-write-wins: later entries override earlier ones with the same name.

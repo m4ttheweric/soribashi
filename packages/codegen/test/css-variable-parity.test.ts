@@ -331,7 +331,7 @@ function buildCanonicalList(): ParityEntry[] {
         mantineVar: `--mantine-color-${family}-${i}`,
         soribashiVar: null,
         status: 'INTENTIONAL_GAP',
-        notes: `Mantine ships named color families (blue, gray, red, etc.) with numeric 0-9 shades. Soribashi ships semantic families (primary, neutral, danger, etc.) with numeric 50-950 shades. The structural pattern --color-{family}-{shade} IS implemented; the specific families and shade keys differ intentionally.`,
+        notes: 'Mantine ships named color families (blue, gray, red, etc.) with numeric 0-9 shades. Soribashi ships semantic families (primary, neutral, danger, etc.) with numeric 50-950 shades. The structural pattern --color-{family}-{shade} IS implemented; the specific families and shade keys differ intentionally.',
       });
     }
 
@@ -643,8 +643,7 @@ describe('CSS variable parity (Mantine → soribashi)', () => {
     // This is informational only — don't fail if something new is emitted, just report
     if (accidentallyEmitted.length > 0) {
       console.warn(
-        '[parity] These vars are listed as INTENTIONAL_GAP but are now emitted — consider updating the parity table:\n' +
-          accidentallyEmitted.map((s) => `  ${s}`).join('\n'),
+        `[parity] These vars are listed as INTENTIONAL_GAP but are now emitted — consider updating the parity table:\n${accidentallyEmitted.map((s) => `  ${s}`).join('\n')}`,
       );
     }
   });

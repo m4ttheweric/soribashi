@@ -17,7 +17,7 @@ describe('loadConfig', () => {
 
   it('throws a clear error if the config has no default export', async () => {
     const configPath = join(tempDir, 'soribashi.config.ts');
-    writeFileSync(configPath, `export const x = 1;`);
+    writeFileSync(configPath, 'export const x = 1;');
 
     await expect(loadConfig(configPath)).rejects.toThrow(/default export/);
   });
@@ -31,7 +31,7 @@ describe('loadConfig', () => {
 
   it('throws when output.css is missing', async () => {
     const configPath = join(tempDir, 'soribashi.config.ts');
-    writeFileSync(configPath, `export default { theme: { tokens: {} }, output: {} };`);
+    writeFileSync(configPath, 'export default { theme: { tokens: {} }, output: {} };');
 
     await expect(loadConfig(configPath)).rejects.toThrow(/output\.css/);
   });

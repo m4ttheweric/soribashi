@@ -9,9 +9,9 @@
  *   bun run packages/blocks/scripts/css-parity-audit.ts
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -661,7 +661,7 @@ function formatDeclDiff(mantineDecls: Declaration[], sbDecls: Declaration[], max
     const sbVal = sbMap.get(prop);
     if (sbVal === undefined) {
       lines.push(`  - mantine: ${prop}: ${val}`);
-      lines.push(`  + soribashi: (missing)`);
+      lines.push('  + soribashi: (missing)');
     } else if (sbVal !== val) {
       lines.push(`  - mantine: ${prop}: ${val}`);
       lines.push(`  + soribashi: ${prop}: ${sbVal}`);
@@ -669,7 +669,7 @@ function formatDeclDiff(mantineDecls: Declaration[], sbDecls: Declaration[], max
   }
   for (const [prop, val] of sbMap) {
     if (!mantineMap.has(prop)) {
-      lines.push(`  - mantine: (missing)`);
+      lines.push('  - mantine: (missing)');
       lines.push(`  + soribashi: ${prop}: ${val}`);
     }
   }
@@ -886,9 +886,9 @@ export function generateReport(summaries: BlockSummary[]): string {
 
   lines.push('# CSS Parity Audit: soribashi blocks vs. Mantine');
   lines.push('');
-  lines.push(`**Generated:** 2026-04-25`);
-  lines.push(`**Mantine commit:** \`63dafbbf\``);
-  lines.push(`**Script:** \`packages/blocks/scripts/css-parity-audit.ts\``);
+  lines.push('**Generated:** 2026-04-25');
+  lines.push('**Mantine commit:** `63dafbbf`');
+  lines.push('**Script:** `packages/blocks/scripts/css-parity-audit.ts`');
   lines.push('');
   lines.push('---');
   lines.push('');

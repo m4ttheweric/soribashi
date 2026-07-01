@@ -61,8 +61,7 @@ export function validateTheme(theme: ResolvedTheme): void {
 
   if (errors.length > 0) {
     throw new Error(
-      `[soribashi] invalid theme '${theme.name}' (${errors.length} error(s)):\n` +
-        errors.map((e) => `  - ${e}`).join('\n'),
+      `[soribashi] invalid theme '${theme.name}' (${errors.length} error(s)):\n${errors.map((e) => `  - ${e}`).join('\n')}`,
     );
   }
 }
