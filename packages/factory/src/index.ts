@@ -28,7 +28,7 @@ export { useStyles } from './hooks/use-styles.ts';
 export { createVarsResolver } from './create-vars-resolver.ts';
 
 // Utilities
-export { cn } from './cn.ts';
+export { cn, configureClassNameMerge } from './cn.ts';
 export type { ClassValue } from './cn.ts';
 export { useRandomClassName } from './use-random-class-name.ts';
 export { hashStyleProps } from './hash-style-props.ts';
