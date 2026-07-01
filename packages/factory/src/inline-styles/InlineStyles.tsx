@@ -49,5 +49,7 @@ export function InlineStyles({ selector, styles, media }: InlineStylesProps) {
     )
     .join(' ');
   const css = [baseRule, mediaRules].filter(Boolean).join(' ');
-  return <style>{css}</style>;
+  // dangerouslySetInnerHTML (Mantine-matched): text children are HTML-escaped
+  // by react-dom/server, which breaks quoted CSS values under SSR.
+  return <style dangerouslySetInnerHTML={{ __html: css }} />;
 }

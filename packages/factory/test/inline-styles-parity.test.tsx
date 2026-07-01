@@ -549,3 +549,39 @@ describe('Integration: selector scoping', () => {
     expect(text).toContain('color: blue;');
   });
 });
+
+// ---------------------------------------------------------------------------
+// IS-11 (BUG → FIXED): CSS rendered via dangerouslySetInnerHTML for SSR safety
+// Mantine: <style dangerouslySetInnerHTML={{ __html: ... }} />
+// Soribashi previously rendered CSS as text children, which react-dom/server
+// HTML-escapes — quoted values like fontFamily: '"Inter", sans-serif' emitted
+// broken CSS (&quot;) in SSR output.
+// ---------------------------------------------------------------------------
+
+describe('IS-11 (BUG → FIXED): SSR output keeps quotes unescaped', () => {
+  it('IS-11: quoted CSS values survive renderToString', async () => {
+    const { renderToString } = await import('react-dom/server');
+    const html = renderToString(
+      <InlineStyles
+        selector=".x"
+        styles={{ fontFamily: '"Inter", sans-serif' }}
+        media={{}}
+      />,
+    );
+    expect(html).toContain('font-family: "Inter", sans-serif;');
+    expect(html).not.toContain('&quot;');
+  });
+
+  it('IS-11: single quotes in media rules survive renderToString', async () => {
+    const { renderToString } = await import('react-dom/server');
+    const html = renderToString(
+      <InlineStyles
+        selector=".x"
+        styles={{}}
+        media={{ '(min-width: 48em)': { content: "'a'" } }}
+      />,
+    );
+    expect(html).toContain("content: 'a';");
+    expect(html).not.toContain('&#x27;');
+  });
+});
