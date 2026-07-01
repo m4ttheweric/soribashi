@@ -4,6 +4,7 @@ import type { CodegenConfig } from './types.ts';
 import { emitCss } from './emit-css.ts';
 import { emitTailwindV3 } from './emit-tailwind-v3.ts';
 import { emitTailwindV4 } from './emit-tailwind-v4.ts';
+import { validateTheme } from './validate-theme.ts';
 
 export interface BuildResult {
   written: string[];
@@ -12,8 +13,13 @@ export interface BuildResult {
 /**
  * Runs all configured emitters and writes outputs to disk.
  * Creates parent directories as needed. Returns the list of written paths.
+ *
+ * Throws (without writing anything) when the theme fails validation — e.g.
+ * semanticTokens references to nonexistent token families/shades/keys.
  */
 export async function build(config: CodegenConfig): Promise<BuildResult> {
+  validateTheme(config.theme);
+
   const written: string[] = [];
 
   // Resolve the `--__hsl-` companion-emit policy. Default ('auto') skips the

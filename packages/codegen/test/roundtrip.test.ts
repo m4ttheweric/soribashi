@@ -5,6 +5,12 @@ import { tmpdir } from 'node:os';
 import { createTheme } from '@soribashi/theme';
 import { build } from '../src/build.ts';
 
+// build() now validates semanticTokens refs against tokens. These minimal
+// fixtures do not define the neutral family that createTheme's default
+// semanticTokens reference, so give them explicitly empty semantic slots to
+// keep each test focused on its own behavior.
+const noSemanticTokens = { text: {}, surface: {}, border: {} };
+
 describe('token roundtrip integration', () => {
   let tempDir: string;
 
@@ -18,6 +24,7 @@ describe('token roundtrip integration', () => {
 
   it('a new color family added to the theme appears in both theme.css and tailwind config', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: {
           primary: { '500': 'hsl(217 91% 60%)' },
@@ -55,6 +62,7 @@ describe('token roundtrip integration', () => {
 
   it('a removed color family disappears from outputs', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': '#000' } },
         radius: {},
@@ -76,6 +84,7 @@ describe('token roundtrip integration', () => {
 
   it('extending a base theme produces inherited + new tokens', async () => {
     const baseTheme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': '#aaa' } },
         radius: { md: '0.5rem' },
@@ -86,6 +95,7 @@ describe('token roundtrip integration', () => {
     });
 
     const tenantTheme = createTheme({
+      semanticTokens: noSemanticTokens,
       extends: baseTheme,
       tokens: {
         colors: { brand: { '500': '#ff0' } },
@@ -110,6 +120,7 @@ describe('token roundtrip integration', () => {
 
   it('custom scope and dark mode propagate through codegen end-to-end', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': 'hsl(217 91% 60%)' } },
         radius: {},
@@ -144,6 +155,11 @@ describe('token roundtrip integration', () => {
         fontSize: {},
       },
       semanticTokens: {
+        // text/border left explicitly empty: their defaults reference neutral
+        // shades (900/500/400/200) this fixture does not define, and build()
+        // validates refs.
+        text: {},
+        border: {},
         surface: {
           canvas: 'colors.neutral.50',
           default: 'colors.neutral.0',
@@ -166,6 +182,7 @@ describe('token roundtrip integration', () => {
 
   it('byte-identical output across runs (determinism)', async () => {
     const theme = createTheme({
+      semanticTokens: noSemanticTokens,
       tokens: {
         colors: { primary: { '500': '#000' }, brand: { '500': '#fff' } },
         radius: { md: '0.5rem' },
