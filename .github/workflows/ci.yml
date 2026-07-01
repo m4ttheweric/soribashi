@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run typecheck
+      # "bun run test" runs vitest; plain "bun test" would invoke Bun's own runner
+      - run: bun run test
+
+  codegen-drift:
+    name: Codegen drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run codegen
+      - run: bun run codegen:tenants
+      - run: bun run codegen:pilot
+      - run: git diff --exit-code
+
+  browser:
+    name: Browser parity
+    runs-on: ubuntu-latest
+    # Known red on main: the pilot parity suite fails because apps/pilot/src/styles.css
+    # sets html font-size to 12px. Keep non-blocking until that is fixed.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:browser

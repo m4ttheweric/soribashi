@@ -213,10 +213,15 @@
   --text-disabled: var(--color-neutral-400);
   --text-muted: var(--color-neutral-500);
   --surface-canvas: var(--color-neutral-50);
+  --__hsl-surface-canvas: var(--__hsl-color-neutral-50);
   --surface-default: var(--color-neutral-0);
+  --__hsl-surface-default: var(--__hsl-color-neutral-0);
   --surface-overlay: var(--color-neutral-900);
+  --__hsl-surface-overlay: var(--__hsl-color-neutral-900);
   --surface-raised: var(--color-neutral-100);
+  --__hsl-surface-raised: var(--__hsl-color-neutral-100);
   --surface-sunken: var(--color-neutral-50);
+  --__hsl-surface-sunken: var(--__hsl-color-neutral-50);
   --border-default: var(--color-neutral-200);
   --border-muted: var(--color-neutral-100);
   --border-strong: var(--color-neutral-400);
