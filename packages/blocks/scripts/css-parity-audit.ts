@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const SORIBASHI_ROOT = join(__dirname, '..', '..', '..');
-const MANTINE_ROOT = '/Users/matt/Documents/GitHub/mantine';
+export const MANTINE_ROOT = process.env.MANTINE_ROOT ?? '/Users/matt/Documents/GitHub/mantine';
 
 // ---------------------------------------------------------------------------
 // Types

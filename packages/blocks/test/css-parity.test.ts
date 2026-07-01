@@ -14,11 +14,24 @@
  *   2. Re-run the tests — this test should pass
  */
 
+import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { runAudit } from '../scripts/css-parity-audit.ts';
+import { MANTINE_ROOT, runAudit } from '../scripts/css-parity-audit.ts';
 import { ALLOWLIST, buildAllowlistSet, makeFindingKey } from './css-parity-allowlist.ts';
 
-describe('CSS parity: soribashi blocks vs. Mantine', () => {
+// The audit diffs against a local Mantine checkout (override via the
+// MANTINE_ROOT env var). Without one, parseCssFile returns [] for every
+// upstream file and the audit passes vacuously while the count canaries
+// fail with misleading messages, so skip the whole suite instead.
+const hasMantineCheckout = existsSync(MANTINE_ROOT);
+if (!hasMantineCheckout) {
+  console.warn(
+    `[css-parity] Mantine checkout not found at ${MANTINE_ROOT}; skipping parity suite. ` +
+      'Set MANTINE_ROOT to a mantine@63dafbbf checkout to run it.',
+  );
+}
+
+describe.skipIf(!hasMantineCheckout)('CSS parity: soribashi blocks vs. Mantine', () => {
   // Run the audit once for all assertions
   const summaries = runAudit();
   const allowlistSet = buildAllowlistSet(ALLOWLIST);
