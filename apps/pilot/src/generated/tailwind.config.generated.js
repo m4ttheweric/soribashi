@@ -134,5 +134,14 @@ module.exports = {
       sm: 'var(--shadow-sm)',
       xl: 'var(--shadow-xl)',
     },
+    screens: {
+      '2xl': '96rem',
+      '3xl': '120rem',
+      lg: '64rem',
+      md: '48rem',
+      sm: '40rem',
+      xl: '80rem',
+      xs: '24rem',
+    },
   },
 };
