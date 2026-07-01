@@ -37,5 +37,22 @@ export async function loadConfig(absolutePath: string): Promise<CodegenConfig> {
     );
   }
 
+  // A raw ThemeDefinition (author forgot createTheme()) crashes deep inside
+  // the emitters with a bare TypeError; catch it here with a useful message.
+  // vocabulary/semanticTokens/scope are always present on a ResolvedTheme and
+  // absent from typical definitions.
+  const theme = config.theme as Record<string, unknown>;
+  const looksResolved =
+    typeof theme === 'object' &&
+    theme !== null &&
+    theme.vocabulary !== undefined &&
+    theme.semanticTokens !== undefined &&
+    typeof theme.scope === 'string';
+  if (!looksResolved) {
+    throw new Error(
+      `[soribashi] Config at ${absolutePath}: config.theme does not look like a ResolvedTheme; did you forget to wrap it in createTheme()?`,
+    );
+  }
+
   return config as CodegenConfig;
 }
