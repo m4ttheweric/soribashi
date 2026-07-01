@@ -157,14 +157,21 @@ export function definePolymorphicComponent<
  * vocabulary axes (string-typed; theme-narrowed via makeBuilders), the
  * recipe's variant tuple, and the selector-keyed styles API.
  */
-type PolymorphicPublicProps<
+/**
+ * `TExtra` is the theme-narrowing hook: the themed builder instantiates it
+ * with `ThemedVocabularyProps<TVocab, TVocabAxes>` so global axes intersect
+ * down from `string` to the theme's literal unions.
+ */
+export type PolymorphicPublicProps<
   TOwnProps,
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
+  TExtra = unknown,
 > = TOwnProps &
   InjectedVocabularyProps<TVocabAxes> &
   VariantProp<TVariants> &
+  TExtra &
   StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
 
 type PolymorphicExtendProps<
@@ -173,14 +180,15 @@ type PolymorphicExtendProps<
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
-> = PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> &
+  TExtra = unknown,
+> = PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> &
   Omit<ComponentPropsWithoutRef<TDefaultAs>, keyof TOwnProps | keyof StylesApiProps<FactoryPayload>> & {
     variant?: TVariants[number];
     intent?: string;
   };
 
 /**
- * The component value produced by a raw `definePolymorphicComponent` call.
+ * The component value produced by a `definePolymorphicComponent` call.
  * Generic over the target element at the call site (`as="span"` narrows props
  * to span attributes); `withProps` returns the same shape so static chains
  * (`.withProps().withProps()`, `.withProps().extend()`) keep type-checking.
@@ -191,23 +199,24 @@ export type PolymorphicComponentResult<
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
+  TExtra = unknown,
 > = (<TAs extends ElementType = TDefaultAs>(
   props: PolymorphicComponentProps<
     TAs,
-    PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes>
+    PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>
   >,
 ) => React.ReactElement | null) & {
   withProps: <TAs extends ElementType = TDefaultAs>(
-    presets: Partial<PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes>> & {
+    presets: Partial<PolymorphicPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>> & {
       as?: TAs;
     },
-  ) => PolymorphicComponentResult<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>;
+  ) => PolymorphicComponentResult<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes, TExtra>;
   extend: (
     config: ComponentExtendConfig<
-      PolymorphicExtendProps<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>
+      PolymorphicExtendProps<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes, TExtra>
     >,
   ) => ThemeComponentEntry<
-    PolymorphicExtendProps<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes>
+    PolymorphicExtendProps<TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes, TExtra>
   >;
   classes?: Partial<Record<TSelectors[number], string>>;
   displayName?: string;

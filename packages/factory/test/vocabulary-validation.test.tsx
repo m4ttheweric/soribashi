@@ -44,7 +44,7 @@ describe('vocabulary runtime validation', () => {
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     // Cast past TS to simulate the runtime-only failure mode
-    render(<SoribashiProvider theme={theme}><Button size="medium">x</Button></SoribashiProvider>);
+    render(<SoribashiProvider theme={theme}><Button size={"medium" as never}>x</Button></SoribashiProvider>);
     expect(errSpy).toHaveBeenCalled();
     const firstCall = errSpy.mock.calls[0];
     expect(firstCall).toBeDefined();
@@ -177,7 +177,7 @@ describe('vocabulary runtime validation', () => {
       render: ({ props }: any) => <button data-size={props.size}>x</button>,
     });
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<SoribashiProvider theme={theme}><Button size="compact">x</Button></SoribashiProvider>);
+    render(<SoribashiProvider theme={theme}><Button size={"compact" as never}>x</Button></SoribashiProvider>);
     expect(errSpy).not.toHaveBeenCalled();
     errSpy.mockClear();
     render(<SoribashiProvider theme={theme}><Button size="s">x</Button></SoribashiProvider>);

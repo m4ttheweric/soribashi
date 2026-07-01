@@ -55,38 +55,46 @@ export type DefineComponentResult<
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
+  TExtra = unknown,
 > = React.ForwardRefExoticComponent<
-  DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> &
+  DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> &
     React.RefAttributes<HTMLElement>
 > & {
   extend: (
     config: ComponentExtendConfig<
-      DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> & {
+      DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> & {
         variant?: TVariants[number];
         intent?: string;
       }
     >,
   ) => ThemeComponentEntry<
-    DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes> & {
+    DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> & {
       variant?: TVariants[number];
       intent?: string;
     }
   >;
   withProps: (
-    presets: Partial<DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes>>,
-  ) => DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes>;
+    presets: Partial<DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>>,
+  ) => DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>;
   classes?: Partial<Record<TSelectors[number], string>>;
   displayName?: string;
 };
 
+/**
+ * `TExtra` is the theme-narrowing hook: the themed builders (makeBuilders)
+ * instantiate it with `ThemedVocabularyProps<TVocab, TVocabAxes>` so global
+ * axes intersect down from `string` to the theme's literal unions.
+ */
 export type DefineComponentPublicProps<
   TOwnProps,
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
+  TExtra = unknown,
 > = TOwnProps &
   InjectedVocabularyProps<TVocabAxes> &
   VariantProp<TVariants> &
+  TExtra &
   StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
 
 /**

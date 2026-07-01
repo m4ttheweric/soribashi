@@ -114,7 +114,7 @@ export type PartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = 
 // ---------------------------------------------------------------------------
 
 /** Extract TProps from a PartConfig<TProps, any, any>; falls back to Record<string, unknown> for untyped configs */
-type ExtractPartProps<C> = C extends PartConfig<infer P, any, any>
+export type ExtractPartProps<C> = C extends PartConfig<infer P, any, any>
   ? [P] extends [never]
     ? Record<string, unknown>
     : unknown extends P
@@ -133,7 +133,7 @@ type ExtractPartProps<C> = C extends PartConfig<infer P, any, any>
  * from context (PartRenderCtx for plain parts, PolymorphicPartRenderCtx for
  * parts with polymorphic: true), eliminating spurious annotation requirements.
  */
-type AnyPartConfig = {
+export type AnyPartConfig = {
   render: (ctx: any) => ReactNode;
   defaults?: any;
   polymorphic?: true;
@@ -141,7 +141,7 @@ type AnyPartConfig = {
 };
 
 /** Constrain parts map — each value must satisfy the minimal AnyPartConfig shape */
-type PartsRecord = Record<string, AnyPartConfig>;
+export type PartsRecord = Record<string, AnyPartConfig>;
 
 export interface DefineCompoundConfig<
   TParts extends PartsRecord,
@@ -242,21 +242,24 @@ type PartsNamespace<
  * keys of `config.classes`. Degrades to `string` when classes come from an
  * untyped source (e.g. a CSS module typed as Record<string, string>).
  */
-type CompoundSlotKeys<TParts, TClasses> = (keyof TParts | keyof TClasses) & string;
+export type CompoundSlotKeys<TParts, TClasses> = (keyof TParts | keyof TClasses) & string;
 
 /**
  * Root's public call-site props: root part props, declared vocabulary axes
  * (string-typed raw; theme-narrowed via makeBuilders), the recipe's variant
- * tuple, and the slot-keyed styles API.
+ * tuple, and the slot-keyed styles API. `TExtra` is the theme-narrowing hook
+ * (instantiated with ThemedVocabularyProps by the themed builder).
  */
 type CompoundRootPublicProps<
   TParts extends Record<string, PartConfig<any, any, any>>,
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
   TSlotKeys extends string,
+  TExtra = unknown,
 > = ExtractPartProps<TParts['root']> &
   InjectedVocabularyProps<TVocabAxes> &
   VariantProp<TVariants> &
+  TExtra &
   StylesApiProps<{ props: ExtractPartProps<TParts['root']>; stylesNames: TSlotKeys } & FactoryPayload>;
 
 /**
@@ -269,34 +272,36 @@ type CompoundRootWithProps<
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
   TSlotKeys extends string,
+  TExtra = unknown,
 > = React.ForwardRefExoticComponent<
-  CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys> & React.RefAttributes<unknown>
+  CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra> & React.RefAttributes<unknown>
 > & {
   extend: (
-    config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
-  ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>;
+    config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
+  ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>;
   withProps: (
-    presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
-  ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys>;
+    presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
+  ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>;
   displayName?: string;
 };
 
-type CompoundComponent<
+export type CompoundComponent<
   TParts extends Record<string, PartConfig<any, any, any>>,
   TVariants extends readonly string[] = readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
   TSlotKeys extends string = string,
+  TExtra = unknown,
 > =
   React.ForwardRefExoticComponent<
-    CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>
+    CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>
     & React.RefAttributes<unknown>
   > & PartsNamespace<TParts, TSlotKeys> & {
     extend: (
-      config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
-    ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>;
+      config: ComponentExtendConfig<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
+    ) => ThemeComponentEntry<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>;
     withProps: (
-      presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys>>,
-    ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys>;
+      presets: Partial<CompoundRootPublicProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>>,
+    ) => CompoundRootWithProps<TParts, TVariants, TVocabAxes, TSlotKeys, TExtra>;
     classes?: Partial<Record<TSlotKeys, string>>;
     displayName?: string;
   };
