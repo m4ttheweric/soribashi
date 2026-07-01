@@ -82,3 +82,7 @@ export type { VocabularyOverride } from '@soribashi/theme';
 // cycle-safe split (type-only theme in builders.ts, value registration at app
 // entry); `createSoribashiBuilders` is the combined convenience.
 export { createSoribashiBuilders, makeBuilders, registerTheme } from './create-builders.ts';
+
+// Extract a vocab axis's literal union from a theme type, for typing vocab-axis
+// props in generic (defineGenericComponent) recipes against the theme.
+export type { VocabValue, VocabularyOf } from './types/themed-builders.ts';

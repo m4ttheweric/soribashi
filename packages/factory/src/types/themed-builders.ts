@@ -106,3 +106,16 @@ export type ThemedDefinePolymorphicComponent<TVocab extends ThemeVocabulary> = <
 
 /** Convenience: extract the resolved vocabulary type from a ResolvedTheme. */
 export type VocabularyOf<TTheme extends ResolvedTheme> = TTheme['vocabulary'];
+
+/**
+ * The literal value union for a single vocabulary axis of a theme, e.g.
+ * `VocabValue<typeof theme, 'size'>` is `'xs' | 'sm' | 'md' | 'lg' | 'xl'`.
+ *
+ * For generic recipes authored with `defineGenericComponent` (whose signature is
+ * author-controlled, so there is no prop-injection slot like the polymorphic
+ * builder has), use this to type a vocab-axis prop against the theme instead of
+ * a bare `string` — the generic-builder analog of the size/intent narrowing the
+ * polymorphic builder injects automatically.
+ */
+export type VocabValue<TTheme extends ResolvedTheme, K extends VocabularyAxis> =
+  NonNullable<VocabularyOf<TTheme>[K]['type']>;

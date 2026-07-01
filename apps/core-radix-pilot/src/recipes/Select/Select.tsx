@@ -6,7 +6,7 @@
  */
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { useFloating, useDismiss, useInteractions, offset, flip, shift, size, autoUpdate } from '@floating-ui/react';
-import { defineGenericComponent } from '../../builders.ts';
+import { defineGenericComponent, type SizeValue } from '../../builders.ts';
 import { Field } from '../Field/Field.tsx';
 import { parseSelectData, flattenOptions, type ComboboxItem, type SelectData, type Primitive } from './parse-data.ts';
 import { useCombobox } from './use-combobox.ts';
@@ -18,7 +18,7 @@ export interface BaseSelectProps<V extends Primitive> {
   searchable?: boolean;
   clearable?: boolean;
   disabled?: boolean;
-  size?: string;
+  size?: SizeValue;
   label?: ReactNode;
   description?: ReactNode;
   error?: ReactNode;
@@ -44,6 +44,7 @@ export type SelectSignature = <const V extends Primitive = string>(
 
 export const Select = defineGenericComponent<SelectSignature>({
   name: 'Select',
+  vocabularyAxes: ['size'] as const,
   selectors: ['trigger', 'dropdown', 'option', 'group', 'placeholder', 'pills', 'pill', 'clear'] as const,
   classes,
   render: ({ props }: any) => {
