@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./generated/tailwind.css";
+@import "./generated/theme.css";
+
+@custom-variant dark (&:is(.dark *));
+
+body {
+  background: var(--surface-canvas);
+  color: var(--text-default);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+}
