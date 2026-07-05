@@ -9,7 +9,7 @@ export function App() {
   return (
     <SoribashiProvider theme={theme}>
       <div className={dark ? 'dark' : undefined}>
-        <div className="min-h-screen p-8">
+        <div className="min-h-screen bg-(--surface-canvas) p-8 text-(--text-default)">
           <header className="mb-8 flex items-center justify-between">
             <h1 className="text-xl font-semibold">shadcn starter</h1>
             <button

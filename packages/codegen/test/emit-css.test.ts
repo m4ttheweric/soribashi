@@ -117,6 +117,40 @@ describe('emitCss', () => {
     expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
   });
 
+  it('re-declares semantic vars inside .dark so wrapper-scoped dark mode flips them', () => {
+    // Custom properties substitute their var() reference at the element where
+    // they are declared, and descendants inherit the resolved value. If
+    // --surface-canvas is only declared in :root, it resolves against the
+    // light --color-neutral-50 once and never re-resolves just because a
+    // `.dark` wrapper div further down the tree redeclares --color-neutral-50.
+    // The semantic var must be redeclared inside .dark too, so its var()
+    // reference re-substitutes against the flipped token there.
+    const theme = createTheme({
+      tokens: {
+        colors: { neutral: { '50': '#fafafa', '900': '#111111' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+      },
+      dark: {
+        colors: { neutral: { '50': '#0a0a0a', '900': '#eeeeee' } },
+      },
+      semanticTokens: {
+        surface: { canvas: 'colors.neutral.50' },
+      },
+    });
+
+    const css = emitCss(theme);
+    // Sanity: the semantic var is declared in :root as expected.
+    const rootBlock = css.slice(0, css.indexOf('.dark {'));
+    expect(rootBlock).toContain('--surface-canvas: var(--color-neutral-50);');
+
+    // The fix: the .dark block must also carry the semantic re-declaration,
+    // not just the raw token override.
+    const darkBlock = css.slice(css.indexOf('.dark {'));
+    expect(darkBlock).toContain('--surface-canvas: var(--color-neutral-50);');
+  });
+
   it('does not emit an empty .dark block when dark holds only empty sections', () => {
     // composeTheme no longer materializes empty dark families, but the
     // emitter's guard against an all-empty dark object still deserves
