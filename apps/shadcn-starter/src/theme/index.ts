@@ -259,13 +259,15 @@ const definition = {
   },
 } as const;
 
+import { buttonTheme } from '../recipes/Button/Button.tsx';
+
 /** Component-free theme TYPE for builders.ts threading (no runtime cycle). */
 export type BaseTheme = ReturnType<typeof createTheme<(typeof definition)['vocabulary']>>;
 
 /** Full runtime theme. Recipes register via .extend() entries here (Task 4). */
 export const theme = createTheme({
   ...definition,
-  components: [],
+  components: [buttonTheme],
 });
 
 registerTheme(theme);

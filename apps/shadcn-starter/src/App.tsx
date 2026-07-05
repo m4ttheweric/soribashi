@@ -1,5 +1,6 @@
 import { SoribashiProvider } from '@soribashi/core';
 import { useState } from 'react';
+import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { theme } from './theme/index.ts';
 
 export function App() {
@@ -19,7 +20,9 @@ export function App() {
               {dark ? 'Light' : 'Dark'} mode
             </button>
           </header>
-          <main data-testid="starter-main">Walking skeleton. Button lands in Task 4.</main>
+          <main data-testid="starter-main">
+            <ButtonMatrix />
+          </main>
         </div>
       </div>
     </SoribashiProvider>
