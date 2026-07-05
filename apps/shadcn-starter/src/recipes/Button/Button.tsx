@@ -77,6 +77,8 @@ export const Button = definePolymorphicComponent<
   >) => {
     const {
       variant,
+      intent,
+      size,
       children,
       className,
       style,
@@ -88,6 +90,8 @@ export const Button = definePolymorphicComponent<
       ...rest
     } = props;
     void variant;
+    void intent;
+    void size;
     return (
       <Element
         ref={ref}

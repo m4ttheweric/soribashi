@@ -28,6 +28,8 @@ describe('Button walking skeleton', () => {
     expect(btn).toHaveAttribute('data-variant', 'filled');
     expect(btn).toHaveAttribute('data-intent', 'primary');
     expect(btn).toHaveAttribute('data-size', 'md');
+    expect(btn).not.toHaveAttribute('intent');
+    expect(btn).not.toHaveAttribute('size');
   });
 
   it('routes size through the vars resolver to codegen-emitted dimensions', () => {
