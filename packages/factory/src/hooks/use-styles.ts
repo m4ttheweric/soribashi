@@ -21,6 +21,12 @@ export interface UseStylesConfig<P extends FactoryPayload> {
   vars?: Vars<P>;
   attributes?: Attributes<P>;
   unstyled?: boolean;
+  /**
+   * Root-slot data attributes derived from the recipe's declared vocabulary
+   * axes (data-variant / data-intent / data-size). Emitted only for the
+   * `root` selector; explicit `attributes` entries override on key conflict.
+   */
+  dataAttrs?: Record<string, string | undefined>;
   props: P['props'];
   varsResolver?: (
     theme: ResolvedTheme,
@@ -177,8 +183,13 @@ export function useStyles<P extends FactoryPayload>(config: UseStylesConfig<P>):
       selector as string,
     );
 
+    const rootDataAttrs = isRoot ? filterDefinedValues(config.dataAttrs ?? {}) : {};
+    const callDataAttrs = filterDefinedValues(options?.dataAttrs ?? {});
+
     const result: GetStylesResult = {
       className,
+      ...rootDataAttrs,
+      ...callDataAttrs,
       ...themeAttrs,
       ...instanceAttrs,
       ...partCallAttrs,

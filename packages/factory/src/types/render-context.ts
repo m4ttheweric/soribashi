@@ -64,6 +64,11 @@ export interface GetStylesOptions {
   attributes?: Attributes<FactoryPayload>;
   /** When true, suppresses built-in class output for the resolved slot. */
   unstyled?: boolean;
+  /**
+   * Per-call data attributes for this slot (compound parts pass e.g.
+   * `{ 'data-variant': ctx.variant }`). Undefined values are skipped.
+   */
+  dataAttrs?: Record<string, string | undefined>;
 }
 
 export interface RenderContext<P extends FactoryPayload> {

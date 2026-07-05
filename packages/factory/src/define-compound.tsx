@@ -11,6 +11,7 @@ import {
   useRef,
 } from 'react';
 import { createSafeContext } from './create-safe-context.ts';
+import { buildDataAttrs } from './data-attrs.ts';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
@@ -447,6 +448,11 @@ export function defineCompound<
       vars: (merged as { vars?: unknown }).vars as never,
       attributes: (merged as { attributes?: unknown }).attributes as never,
       unstyled: (merged as { unstyled?: unknown }).unstyled as never,
+      dataAttrs: buildDataAttrs(
+        config.vocabularyAxes ?? [],
+        (config.variants?.length ?? 0) > 0,
+        merged as Record<string, unknown>,
+      ),
       props: merged as Record<string, any>,
       varsResolver: config.vars
         ? (theme: ResolvedTheme, props: Record<string, any>) =>
@@ -597,6 +603,7 @@ export function defineCompound<
               vars: m.vars,
               attributes: m.attributes,
               unstyled: m.unstyled,
+              dataAttrs: opts?.dataAttrs,
               active: opts?.active,
               variant: opts?.variant,
               themeName: partName,
@@ -692,6 +699,7 @@ export function defineCompound<
           vars: m.vars,
           attributes: m.attributes,
           unstyled: m.unstyled,
+          dataAttrs: opts?.dataAttrs,
           active: opts?.active,
           variant: opts?.variant,
           themeName: partName,
