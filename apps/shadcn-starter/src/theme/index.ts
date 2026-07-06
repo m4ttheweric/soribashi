@@ -46,7 +46,7 @@ const definition = {
         foreground: '#fafafa',
       },
       success: {
-        // the host library ramp preserved verbatim — anchors and steps already coherent.
+        // the host library ramp preserved verbatim: anchors and steps already coherent.
         '50': 'hsl(138 76% 97%)',
         '100': 'hsl(141 84% 93%)',
         '200': 'hsl(141 79% 85%)',
@@ -62,7 +62,7 @@ const definition = {
       },
       warning: {
         // the host library ramp preserved verbatim. Note: the host library's `500` anchor sits at
-        // hue 38 while `50..400` and `600..950` sit at hues 22..49 — the
+        // hue 38 while `50..400` and `600..950` sit at hues 22..49, and the
         // ramp is intentionally warm-amber on the upper end and cooler-
         // gold on the lighter end. Not regenerated.
         '50': 'hsl(48 96% 89%)',
@@ -76,7 +76,7 @@ const definition = {
         '800': 'hsl(23 83% 31%)',
         '900': 'hsl(22 78% 26%)',
         '950': 'hsl(26 83% 14%)',
-        // black on warning yellow for legibility — matches playground.
+        // black on warning yellow for legibility: matches playground.
         foreground: 'hsl(0 0% 0%)',
       },
       danger: {
@@ -99,7 +99,7 @@ const definition = {
         // the host library ramp preserved verbatim. Note: like warning, the `500` anchor
         // (hue 199) shifts from the `50..400` cyan band (hues 183..188) and
         // sits cooler than the `600..950` blues (hues 200..204). Treated as
-        // intentional crossfade — not regenerated. (Compare to primary,
+        // intentional crossfade, not regenerated. (Compare to primary,
         // where the 240 → 221 jump was a clear seed-from-defaults artifact.)
         '50': 'hsl(183 100% 96%)',
         '100': 'hsl(185 96% 90%)',

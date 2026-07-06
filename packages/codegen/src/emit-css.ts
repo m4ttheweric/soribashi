@@ -345,8 +345,10 @@ function resolveSurfacePair(raw: SemanticSurfaceValue): SurfacePair {
  *
  * Emitting a var() reference rather than a literal HSL string ensures dark-mode
  * overrides cascade correctly: the `.dark` block already overrides
- * `--__hsl-color-*` (Wave 1 dual-emit), and semantic companions pick that up
- * automatically via the var() indirection.
+ * `--__hsl-color-*` (Wave 1 dual-emit), and `emitSemanticLines` is re-invoked
+ * inside that dark block (see the comment above the dark block in `emitCss`),
+ * so the `--__hsl-surface-*` companions re-substitute against the flipped
+ * dark values at that scope instead of relying on automatic inheritance.
  *
  * Used to emit `--__hsl-surface-{name}` Tailwind alpha companions alongside
  * the canonical `--surface-{name}: var(--color-*)` vars.
