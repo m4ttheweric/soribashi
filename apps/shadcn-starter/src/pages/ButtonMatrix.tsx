@@ -1,8 +1,5 @@
 import { Button } from '../recipes/Button/Button.tsx';
-
-const INTENTS = ['primary', 'neutral', 'success', 'warning', 'danger', 'info'] as const;
-const VARIANTS = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
-const SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
+import { intents as INTENTS, sizes as SIZES, buttonVariants as VARIANTS } from '../theme/index.ts';
 
 export function ButtonMatrix() {
   return (

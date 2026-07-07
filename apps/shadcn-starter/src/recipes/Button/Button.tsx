@@ -2,7 +2,7 @@ import { type PolymorphicRenderCtx, autoVars, defineVocabulary } from '@soribash
 import type { ReactNode } from 'react';
 import { definePolymorphicComponent } from '../../builders.ts';
 
-const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
+export const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
 type Variant = (typeof variants)[number];
 
 export interface ButtonOwnProps {

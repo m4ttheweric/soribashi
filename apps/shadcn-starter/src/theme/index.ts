@@ -259,7 +259,7 @@ const definition = {
   },
 } as const;
 
-import { buttonTheme } from '../recipes/Button/Button.tsx';
+import { buttonTheme, variants as buttonVariants } from '../recipes/Button/Button.tsx';
 
 /** Component-free theme TYPE for builders.ts threading (no runtime cycle). */
 export type BaseTheme = ReturnType<typeof createTheme<(typeof definition)['vocabulary']>>;
@@ -271,3 +271,13 @@ export const theme = createTheme({
 });
 
 registerTheme(theme);
+
+/**
+ * Raw vocabulary arrays for pages/tests that need to enumerate values (e.g.
+ * ButtonMatrix). size and intent are global theme axes; variant is per-recipe
+ * (invariant 2), so it is re-exported from the Button recipe rather than
+ * pulled off theme.vocabulary.
+ */
+export const sizes = theme.vocabulary.size.values;
+export const intents = theme.vocabulary.intent.values;
+export { buttonVariants };
