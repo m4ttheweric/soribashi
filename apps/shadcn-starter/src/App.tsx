@@ -6,10 +6,12 @@ import { BadgeMatrix } from './pages/BadgeMatrix.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { CardDemo } from './pages/CardDemo.tsx';
 import { CheckboxDemo } from './pages/CheckboxDemo.tsx';
+import { Dashboard } from './pages/Dashboard.tsx';
 import { DialogDemo } from './pages/DialogDemo.tsx';
 import { DropdownMenuDemo } from './pages/DropdownMenuDemo.tsx';
 import { SelectDemo } from './pages/SelectDemo.tsx';
 import { TabsDemo } from './pages/TabsDemo.tsx';
+import { TokenReview } from './pages/TokenReview.tsx';
 import { TooltipDemo } from './pages/TooltipDemo.tsx';
 import { theme } from './theme/index.ts';
 
@@ -30,6 +32,8 @@ const pages: Record<string, PageEntry> = {
   accordion: { label: 'Accordion', component: AccordionDemo },
   checkbox: { label: 'Checkbox', component: CheckboxDemo },
   select: { label: 'Select', component: SelectDemo },
+  tokens: { label: 'Tokens', component: TokenReview },
+  dashboard: { label: 'Dashboard', component: Dashboard },
 };
 
 export function App() {
