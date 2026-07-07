@@ -5,6 +5,7 @@ import { AccordionDemo } from './pages/AccordionDemo.tsx';
 import { BadgeMatrix } from './pages/BadgeMatrix.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { CardDemo } from './pages/CardDemo.tsx';
+import { CheckboxDemo } from './pages/CheckboxDemo.tsx';
 import { DialogDemo } from './pages/DialogDemo.tsx';
 import { DropdownMenuDemo } from './pages/DropdownMenuDemo.tsx';
 import { TabsDemo } from './pages/TabsDemo.tsx';
@@ -26,6 +27,7 @@ const pages: Record<string, PageEntry> = {
   dropdownMenu: { label: 'DropdownMenu', component: DropdownMenuDemo },
   tabs: { label: 'Tabs', component: TabsDemo },
   accordion: { label: 'Accordion', component: AccordionDemo },
+  checkbox: { label: 'Checkbox', component: CheckboxDemo },
 };
 
 export function App() {

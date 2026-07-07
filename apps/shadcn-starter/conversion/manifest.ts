@@ -189,4 +189,37 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 3,
   },
+  {
+    component: 'field',
+    category: 4,
+    builder: 'defineComponent',
+    // Category 4 form-control template: structural wrapper with multiple
+    // selectors, not a compound. Composes with any form control (e.g.
+    // Checkbox) via normal React children.
+    selectors: ['root', 'label', 'description', 'error'],
+    propMap: {},
+    upstream: {
+      registryItem: 'field',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 4,
+  },
+  {
+    component: 'checkbox',
+    category: 4,
+    builder: 'defineComponent',
+    // Category 4 form control: wraps @radix-ui/react-checkbox. No
+    // vocabulary axes, no variants. Composes with Field via children.
+    selectors: ['root', 'indicator'],
+    propMap: {},
+    upstream: {
+      registryItem: 'checkbox',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 4,
+  },
 ];

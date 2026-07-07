@@ -270,8 +270,10 @@ import {
   cardTheme,
   cardTitleTheme,
 } from '../recipes/Card/Card.tsx';
+import { checkboxTheme } from '../recipes/Checkbox/Checkbox.tsx';
 import { dialogTheme } from '../recipes/Dialog/Dialog.tsx';
 import { dropdownMenuTheme } from '../recipes/DropdownMenu/DropdownMenu.tsx';
+import { fieldTheme } from '../recipes/Field/Field.tsx';
 import { tabsTheme, variants as tabsVariants } from '../recipes/Tabs/Tabs.tsx';
 import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
 
@@ -295,6 +297,8 @@ export const theme = createTheme({
     dropdownMenuTheme,
     tabsTheme,
     accordionTheme,
+    fieldTheme,
+    checkboxTheme,
   ],
 });
 
