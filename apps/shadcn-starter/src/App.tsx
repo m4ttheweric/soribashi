@@ -8,6 +8,7 @@ import { CardDemo } from './pages/CardDemo.tsx';
 import { CheckboxDemo } from './pages/CheckboxDemo.tsx';
 import { DialogDemo } from './pages/DialogDemo.tsx';
 import { DropdownMenuDemo } from './pages/DropdownMenuDemo.tsx';
+import { SelectDemo } from './pages/SelectDemo.tsx';
 import { TabsDemo } from './pages/TabsDemo.tsx';
 import { TooltipDemo } from './pages/TooltipDemo.tsx';
 import { theme } from './theme/index.ts';
@@ -28,6 +29,7 @@ const pages: Record<string, PageEntry> = {
   tabs: { label: 'Tabs', component: TabsDemo },
   accordion: { label: 'Accordion', component: AccordionDemo },
   checkbox: { label: 'Checkbox', component: CheckboxDemo },
+  select: { label: 'Select', component: SelectDemo },
 };
 
 export function App() {

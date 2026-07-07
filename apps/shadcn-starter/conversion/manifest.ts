@@ -222,4 +222,36 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 4,
   },
+  {
+    component: 'select',
+    category: 4,
+    // Spec-classified generic component (defineGenericComponent), but wraps
+    // @radix-ui/react-select, which owns its own open/value context -- the
+    // same shared-context need as the Category 2 overlay compounds. Phase 1
+    // pragmatic call: built with defineCompound (see Select.tsx doc comment).
+    // The generic call-site value typing from defineGenericComponent (see
+    // apps/pilot/src/recipes/Select/Select.tsx) is a Phase 2+ upgrade.
+    builder: 'defineCompound',
+    selectors: [
+      'root',
+      'trigger',
+      'value',
+      'content',
+      'viewport',
+      'group',
+      'label',
+      'item',
+      'separator',
+      'scrollUpButton',
+      'scrollDownButton',
+    ],
+    propMap: {},
+    upstream: {
+      registryItem: 'select',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 4,
+  },
 ];
