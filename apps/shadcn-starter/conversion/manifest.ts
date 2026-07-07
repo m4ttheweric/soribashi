@@ -122,4 +122,36 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 2,
   },
+  {
+    component: 'dropdown-menu',
+    category: 2,
+    builder: 'defineCompound',
+    // Most complex compound in Phase 1: root, trigger, content, item,
+    // checkboxItem, radioItem, radioGroup, label, separator, sub, subTrigger,
+    // subContent, plus shortcut as a style-addressable (non-consumer-facing)
+    // slot rendered internally by item/subTrigger.
+    selectors: [
+      'root',
+      'trigger',
+      'content',
+      'item',
+      'checkboxItem',
+      'radioItem',
+      'radioGroup',
+      'label',
+      'separator',
+      'sub',
+      'subTrigger',
+      'subContent',
+      'shortcut',
+    ],
+    propMap: {},
+    upstream: {
+      registryItem: 'dropdown-menu',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 2,
+  },
 ];
