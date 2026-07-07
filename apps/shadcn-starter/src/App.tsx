@@ -1,6 +1,7 @@
 import { SoribashiProvider } from '@soribashi/core';
 import type { ReactElement } from 'react';
 import { useState } from 'react';
+import { BadgeMatrix } from './pages/BadgeMatrix.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { theme } from './theme/index.ts';
 
@@ -12,6 +13,7 @@ interface PageEntry {
 /** Gallery routing table. Each subsequent conversion task adds its entry here. */
 const pages: Record<string, PageEntry> = {
   button: { label: 'Button', component: ButtonMatrix },
+  badge: { label: 'Badge', component: BadgeMatrix },
 };
 
 export function App() {

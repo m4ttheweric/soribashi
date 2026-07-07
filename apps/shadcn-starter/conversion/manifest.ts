@@ -42,4 +42,24 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 1,
   },
+  {
+    component: 'badge',
+    category: 1,
+    builder: 'definePolymorphicComponent',
+    selectors: ['root'],
+    propMap: {
+      'variant=default': 'intent=primary variant=filled',
+      'variant=secondary': 'intent=neutral variant=subtle',
+      'variant=destructive': 'intent=danger variant=filled',
+      'variant=outline': 'intent=neutral variant=outline',
+      asChild: 'as',
+    },
+    upstream: {
+      registryItem: 'badge',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 1,
+  },
 ];
