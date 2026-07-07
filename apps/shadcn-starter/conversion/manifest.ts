@@ -171,4 +171,22 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 3,
   },
+  {
+    component: 'accordion',
+    category: 3,
+    builder: 'defineCompound',
+    // Category 3 persistent-compound, same template as Tabs: root, item,
+    // trigger, content. No portal, no per-recipe variant vocabulary. Root
+    // threads Radix's type ('single' | 'multiple') and collapsible, defaulting
+    // to type="single" collapsible={true}.
+    selectors: ['root', 'item', 'trigger', 'content', 'contentInner'],
+    propMap: {},
+    upstream: {
+      registryItem: 'accordion',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 3,
+  },
 ];

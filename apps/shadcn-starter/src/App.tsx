@@ -1,6 +1,7 @@
 import { SoribashiProvider } from '@soribashi/core';
 import type { ReactElement } from 'react';
 import { useState } from 'react';
+import { AccordionDemo } from './pages/AccordionDemo.tsx';
 import { BadgeMatrix } from './pages/BadgeMatrix.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { CardDemo } from './pages/CardDemo.tsx';
@@ -24,6 +25,7 @@ const pages: Record<string, PageEntry> = {
   dialog: { label: 'Dialog', component: DialogDemo },
   dropdownMenu: { label: 'DropdownMenu', component: DropdownMenuDemo },
   tabs: { label: 'Tabs', component: TabsDemo },
+  accordion: { label: 'Accordion', component: AccordionDemo },
 };
 
 export function App() {

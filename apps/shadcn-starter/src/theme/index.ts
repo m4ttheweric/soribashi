@@ -259,6 +259,7 @@ const definition = {
   },
 } as const;
 
+import { accordionTheme } from '../recipes/Accordion/Accordion.tsx';
 import { badgeTheme, variants as badgeVariants } from '../recipes/Badge/Badge.tsx';
 import { buttonTheme, variants as buttonVariants } from '../recipes/Button/Button.tsx';
 import {
@@ -293,6 +294,7 @@ export const theme = createTheme({
     dialogTheme,
     dropdownMenuTheme,
     tabsTheme,
+    accordionTheme,
   ],
 });
 
