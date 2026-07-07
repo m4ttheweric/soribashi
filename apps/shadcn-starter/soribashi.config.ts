@@ -1,18 +1,43 @@
 import { theme } from './src/theme/index.ts';
 
+/** The theme's declared size values, narrowed to a literal union for BUTTON_DIMENSIONS. */
+type ButtonSize = NonNullable<(typeof theme.vocabulary.size)['type']>;
+
 /**
  * Component dimension vars, emitted at codegen time via cssVariablesResolver.
  * Theme-driven and JIT-immune: recipes reference var(--button-height-md) etc.
  * through their vars resolvers; a theme that adds a size value adds a row here.
  * KEEP KEYS IN SYNC with theme vocabulary.size.
  */
-const BUTTON_DIMENSIONS: Record<string, { height: string; px: string }> = {
+const BUTTON_DIMENSIONS: Record<ButtonSize, { height: string; px: string }> = {
   xs: { height: '1.75rem', px: '0.625rem' },
   sm: { height: '2rem', px: '0.75rem' },
   md: { height: '2.25rem', px: '1rem' },
   lg: { height: '2.5rem', px: '1.5rem' },
   xl: { height: '2.75rem', px: '2rem' },
 };
+
+/**
+ * Guards against BUTTON_DIMENSIONS drifting from theme.vocabulary.size. The type
+ * annotation above only helps under a type checker; this config runs through
+ * `bun run codegen:shadcn-starter`, which strips types without checking them, so
+ * the runtime check is what actually catches drift.
+ */
+function assertKeysMatchVocabulary(
+  dimensions: Record<string, unknown>,
+  vocabValues: readonly string[],
+): void {
+  const dimensionKeys = Object.keys(dimensions);
+  const missing = vocabValues.filter((v) => !dimensionKeys.includes(v));
+  const extra = dimensionKeys.filter((k) => !vocabValues.includes(k));
+  if (missing.length > 0 || extra.length > 0) {
+    throw new Error(
+      `[shadcn-starter] BUTTON_DIMENSIONS keys are out of sync with theme.vocabulary.size (missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}).`,
+    );
+  }
+}
+
+assertKeysMatchVocabulary(BUTTON_DIMENSIONS, theme.vocabulary.size.values);
 
 export default {
   theme,
