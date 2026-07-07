@@ -78,4 +78,20 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 1,
   },
+  {
+    component: 'tooltip',
+    category: 2,
+    builder: 'defineCompound',
+    // First compound in shadcn-starter: root (Provider+Root), trigger,
+    // content, plus arrow as a style-addressable (non-consumer-facing) slot.
+    selectors: ['root', 'trigger', 'content', 'arrow'],
+    propMap: {},
+    upstream: {
+      registryItem: 'tooltip',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 2,
+  },
 ];

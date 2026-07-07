@@ -269,11 +269,12 @@ import {
   cardTheme,
   cardTitleTheme,
 } from '../recipes/Card/Card.tsx';
+import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
 
 /** Component-free theme TYPE for builders.ts threading (no runtime cycle). */
 export type BaseTheme = ReturnType<typeof createTheme<(typeof definition)['vocabulary']>>;
 
-/** Full runtime theme. Recipes register via .extend() entries here (Task 4). */
+/** Full runtime theme. Recipes register via .extend() entries here. */
 export const theme = createTheme({
   ...definition,
   components: [
@@ -285,6 +286,7 @@ export const theme = createTheme({
     cardDescriptionTheme,
     cardContentTheme,
     cardFooterTheme,
+    tooltipTheme,
   ],
 });
 

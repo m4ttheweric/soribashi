@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { BadgeMatrix } from './pages/BadgeMatrix.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { CardDemo } from './pages/CardDemo.tsx';
+import { TooltipDemo } from './pages/TooltipDemo.tsx';
 import { theme } from './theme/index.ts';
 
 interface PageEntry {
@@ -16,6 +17,7 @@ const pages: Record<string, PageEntry> = {
   button: { label: 'Button', component: ButtonMatrix },
   badge: { label: 'Badge', component: BadgeMatrix },
   card: { label: 'Card', component: CardDemo },
+  tooltip: { label: 'Tooltip', component: TooltipDemo },
 };
 
 export function App() {
