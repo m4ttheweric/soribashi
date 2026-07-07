@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { BadgeMatrix } from './pages/BadgeMatrix.tsx';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { CardDemo } from './pages/CardDemo.tsx';
+import { DialogDemo } from './pages/DialogDemo.tsx';
 import { TooltipDemo } from './pages/TooltipDemo.tsx';
 import { theme } from './theme/index.ts';
 
@@ -18,6 +19,7 @@ const pages: Record<string, PageEntry> = {
   badge: { label: 'Badge', component: BadgeMatrix },
   card: { label: 'Card', component: CardDemo },
   tooltip: { label: 'Tooltip', component: TooltipDemo },
+  dialog: { label: 'Dialog', component: DialogDemo },
 };
 
 export function App() {

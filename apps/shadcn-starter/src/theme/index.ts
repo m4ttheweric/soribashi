@@ -269,6 +269,7 @@ import {
   cardTheme,
   cardTitleTheme,
 } from '../recipes/Card/Card.tsx';
+import { dialogTheme } from '../recipes/Dialog/Dialog.tsx';
 import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
 
 /** Component-free theme TYPE for builders.ts threading (no runtime cycle). */
@@ -287,6 +288,7 @@ export const theme = createTheme({
     cardContentTheme,
     cardFooterTheme,
     tooltipTheme,
+    dialogTheme,
   ],
 });
 

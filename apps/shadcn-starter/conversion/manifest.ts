@@ -94,4 +94,32 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 2,
   },
+  {
+    component: 'dialog',
+    category: 2,
+    builder: 'defineCompound',
+    // Overlay compound following Tooltip's template: root, trigger, header,
+    // footer, title, description, close (consumer-facing), plus content
+    // (which internally renders the overlay backdrop and built-in X close
+    // button as style-addressable, non-consumer-facing slots).
+    selectors: [
+      'root',
+      'trigger',
+      'overlay',
+      'content',
+      'header',
+      'footer',
+      'title',
+      'description',
+      'close',
+    ],
+    propMap: {},
+    upstream: {
+      registryItem: 'dialog',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 2,
+  },
 ];
