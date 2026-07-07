@@ -6,6 +6,7 @@ import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { CardDemo } from './pages/CardDemo.tsx';
 import { DialogDemo } from './pages/DialogDemo.tsx';
 import { DropdownMenuDemo } from './pages/DropdownMenuDemo.tsx';
+import { TabsDemo } from './pages/TabsDemo.tsx';
 import { TooltipDemo } from './pages/TooltipDemo.tsx';
 import { theme } from './theme/index.ts';
 
@@ -22,6 +23,7 @@ const pages: Record<string, PageEntry> = {
   tooltip: { label: 'Tooltip', component: TooltipDemo },
   dialog: { label: 'Dialog', component: DialogDemo },
   dropdownMenu: { label: 'DropdownMenu', component: DropdownMenuDemo },
+  tabs: { label: 'Tabs', component: TabsDemo },
 };
 
 export function App() {

@@ -271,6 +271,7 @@ import {
 } from '../recipes/Card/Card.tsx';
 import { dialogTheme } from '../recipes/Dialog/Dialog.tsx';
 import { dropdownMenuTheme } from '../recipes/DropdownMenu/DropdownMenu.tsx';
+import { tabsTheme, variants as tabsVariants } from '../recipes/Tabs/Tabs.tsx';
 import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
 
 /** Component-free theme TYPE for builders.ts threading (no runtime cycle). */
@@ -291,6 +292,7 @@ export const theme = createTheme({
     tooltipTheme,
     dialogTheme,
     dropdownMenuTheme,
+    tabsTheme,
   ],
 });
 
@@ -304,4 +306,4 @@ registerTheme(theme);
  */
 export const sizes = theme.vocabulary.size.values;
 export const intents = theme.vocabulary.intent.values;
-export { buttonVariants, badgeVariants };
+export { buttonVariants, badgeVariants, tabsVariants };

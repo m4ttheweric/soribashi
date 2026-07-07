@@ -154,4 +154,21 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 2,
   },
+  {
+    component: 'tabs',
+    category: 3,
+    builder: 'defineCompound',
+    // Category 3 persistent-compound template (as opposed to Category 2's
+    // transient overlays): root, list, trigger, content. No portal; carries
+    // a per-recipe variant vocabulary (default | outline | pills).
+    selectors: ['root', 'list', 'trigger', 'content'],
+    propMap: {},
+    upstream: {
+      registryItem: 'tabs',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 3,
+  },
 ];
