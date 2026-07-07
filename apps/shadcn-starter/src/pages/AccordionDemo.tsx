@@ -14,8 +14,8 @@ export function AccordionDemo() {
         <Accordion.Item value="item-2">
           <Accordion.Trigger>Is it styled?</Accordion.Trigger>
           <Accordion.Content>
-            Yes. It comes with default styles from the recipe's classes, themeable via the
-            styles API.
+            Yes. It comes with default styles from the recipe's classes, themeable via the styles
+            API.
           </Accordion.Content>
         </Accordion.Item>
         <Accordion.Item value="item-3">
