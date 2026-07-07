@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { defineComponent } from '../src/define-component.tsx';
 import { defineCompound } from '../src/define-compound.tsx';
@@ -13,7 +14,7 @@ const Badge = defineComponent({
   render: ({ props, getStyles }) => (
     <div data-testid="root" {...getStyles('root')}>
       <span data-testid="label" {...getStyles('label')}>
-        {(props as { children?: React.ReactNode }).children}
+        {(props as { children?: ReactNode }).children}
       </span>
     </div>
   ),
