@@ -62,4 +62,20 @@ export const manifest: ManifestEntry[] = [
     },
     wave: 1,
   },
+  {
+    component: 'card',
+    category: 1,
+    builder: 'defineComponent',
+    // Part-family namespace (spec section 10): one selector per independent
+    // part, each with its own single 'root' selector internally.
+    selectors: ['Card', 'CardHeader', 'CardTitle', 'CardDescription', 'CardContent', 'CardFooter'],
+    propMap: {},
+    upstream: {
+      registryItem: 'card',
+      style: 'new-york',
+      registryVersion: '2025-06-01',
+      contentHash: 'TBD',
+    },
+    wave: 1,
+  },
 ];

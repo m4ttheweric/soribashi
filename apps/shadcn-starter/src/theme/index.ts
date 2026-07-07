@@ -261,6 +261,14 @@ const definition = {
 
 import { badgeTheme, variants as badgeVariants } from '../recipes/Badge/Badge.tsx';
 import { buttonTheme, variants as buttonVariants } from '../recipes/Button/Button.tsx';
+import {
+  cardContentTheme,
+  cardDescriptionTheme,
+  cardFooterTheme,
+  cardHeaderTheme,
+  cardTheme,
+  cardTitleTheme,
+} from '../recipes/Card/Card.tsx';
 
 /** Component-free theme TYPE for builders.ts threading (no runtime cycle). */
 export type BaseTheme = ReturnType<typeof createTheme<(typeof definition)['vocabulary']>>;
@@ -268,7 +276,16 @@ export type BaseTheme = ReturnType<typeof createTheme<(typeof definition)['vocab
 /** Full runtime theme. Recipes register via .extend() entries here (Task 4). */
 export const theme = createTheme({
   ...definition,
-  components: [buttonTheme, badgeTheme],
+  components: [
+    buttonTheme,
+    badgeTheme,
+    cardTheme,
+    cardHeaderTheme,
+    cardTitleTheme,
+    cardDescriptionTheme,
+    cardContentTheme,
+    cardFooterTheme,
+  ],
 });
 
 registerTheme(theme);
