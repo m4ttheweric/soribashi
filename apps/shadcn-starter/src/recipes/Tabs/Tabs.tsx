@@ -31,6 +31,8 @@ const classes = {
   list: [
     'inline-flex h-9 items-center justify-center rounded-lg p-1',
     'bg-(--accent-muted) text-(--text-muted)',
+    'data-[variant=outline]:border data-[variant=outline]:border-(--border-default) data-[variant=outline]:bg-transparent',
+    'data-[variant=pills]:bg-transparent',
   ].join(' '),
   trigger: [
     'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1',
@@ -38,6 +40,8 @@ const classes = {
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     'disabled:pointer-events-none disabled:opacity-50',
     'data-[state=active]:bg-(--surface-raised) data-[state=active]:text-(--text-default) data-[state=active]:shadow',
+    'data-[variant=outline]:data-[state=active]:border-b-2 data-[variant=outline]:data-[state=active]:border-(--border-focus) data-[variant=outline]:data-[state=active]:shadow-none',
+    'data-[variant=pills]:rounded-full',
   ].join(' '),
   content: [
     'mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
@@ -113,7 +117,7 @@ export const Tabs = defineCompound({
       },
     },
     list: {
-      render: ({ props, getStyles, children, ref }: any) => {
+      render: ({ props, getStyles, ctx, children, ref }: any) => {
         const { className, style, classNames, styles, unstyled, attributes, vars, ...rest } = props;
         void className;
         void style;
@@ -123,14 +127,14 @@ export const Tabs = defineCompound({
         void attributes;
         void vars;
         return (
-          <RadixTabs.List ref={ref} {...rest} {...getStyles()}>
+          <RadixTabs.List ref={ref} data-variant={ctx.variant} {...rest} {...getStyles()}>
             {children}
           </RadixTabs.List>
         );
       },
     },
     trigger: {
-      render: ({ props, getStyles, children, ref }: any) => {
+      render: ({ props, getStyles, ctx, children, ref }: any) => {
         const { value, className, style, classNames, styles, unstyled, attributes, vars, ...rest } =
           props;
         void className;
@@ -141,7 +145,13 @@ export const Tabs = defineCompound({
         void attributes;
         void vars;
         return (
-          <RadixTabs.Trigger ref={ref} value={value} {...rest} {...getStyles()}>
+          <RadixTabs.Trigger
+            ref={ref}
+            value={value}
+            data-variant={ctx.variant}
+            {...rest}
+            {...getStyles()}
+          >
             {children}
           </RadixTabs.Trigger>
         );

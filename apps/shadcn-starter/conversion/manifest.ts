@@ -101,7 +101,8 @@ export const manifest: ManifestEntry[] = [
     // Overlay compound following Tooltip's template: root, trigger, header,
     // footer, title, description, close (consumer-facing), plus content
     // (which internally renders the overlay backdrop and built-in X close
-    // button as style-addressable, non-consumer-facing slots).
+    // button -- overlay and closeButton are style-addressable,
+    // non-consumer-facing slots).
     selectors: [
       'root',
       'trigger',
@@ -112,6 +113,7 @@ export const manifest: ManifestEntry[] = [
       'title',
       'description',
       'close',
+      'closeButton',
     ],
     propMap: {},
     upstream: {

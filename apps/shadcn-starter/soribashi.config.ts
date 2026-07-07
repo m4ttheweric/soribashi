@@ -26,18 +26,19 @@ const BUTTON_DIMENSIONS: Record<ButtonSize, { height: string; px: string }> = {
 function assertKeysMatchVocabulary(
   dimensions: Record<string, unknown>,
   vocabValues: readonly string[],
+  label: string,
 ): void {
   const dimensionKeys = Object.keys(dimensions);
   const missing = vocabValues.filter((v) => !dimensionKeys.includes(v));
   const extra = dimensionKeys.filter((k) => !vocabValues.includes(k));
   if (missing.length > 0 || extra.length > 0) {
     throw new Error(
-      `[shadcn-starter] BUTTON_DIMENSIONS keys are out of sync with theme.vocabulary.size (missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}).`,
+      `[shadcn-starter] ${label} keys are out of sync with theme.vocabulary.size (missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}).`,
     );
   }
 }
 
-assertKeysMatchVocabulary(BUTTON_DIMENSIONS, theme.vocabulary.size.values);
+assertKeysMatchVocabulary(BUTTON_DIMENSIONS, theme.vocabulary.size.values, 'BUTTON_DIMENSIONS');
 
 type BadgeSize = NonNullable<(typeof theme.vocabulary.size)['type']>;
 
@@ -49,7 +50,7 @@ const BADGE_DIMENSIONS: Record<BadgeSize, { height: string; px: string; fontSize
   xl: { height: '1.75rem', px: '1rem', fontSize: '0.875rem' },
 };
 
-assertKeysMatchVocabulary(BADGE_DIMENSIONS, theme.vocabulary.size.values);
+assertKeysMatchVocabulary(BADGE_DIMENSIONS, theme.vocabulary.size.values, 'BADGE_DIMENSIONS');
 
 export default {
   theme,
