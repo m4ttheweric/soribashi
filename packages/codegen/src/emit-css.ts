@@ -61,6 +61,16 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
     lines.push('');
     lines.push(`${effectiveTheme.darkMode.selector} {`);
     lines.push(...darkLines);
+    // Custom properties are not "live" references: a var() inside a property
+    // substitutes at the element where that property is declared, and the
+    // RESOLVED value is what descendants inherit. Semantic vars declared only
+    // in :root (e.g. --surface-canvas: var(--color-neutral-50)) resolve once
+    // against the light tokens and never re-resolve just because a `.dark`
+    // wrapper element further down the tree redeclares --color-neutral-50.
+    // Re-declaring the same var() references here forces them to
+    // re-substitute against the flipped dark tokens at this scope, which is
+    // required for wrapper-scoped (non-:root) dark mode to actually flip.
+    emitSemanticLines(lines, effectiveTheme, emitCompanion);
     if (additions?.dark) {
       for (const [key, value] of Object.entries(additions.dark)) {
         lines.push(`  ${key}: ${value};`);
@@ -335,8 +345,10 @@ function resolveSurfacePair(raw: SemanticSurfaceValue): SurfacePair {
  *
  * Emitting a var() reference rather than a literal HSL string ensures dark-mode
  * overrides cascade correctly: the `.dark` block already overrides
- * `--__hsl-color-*` (Wave 1 dual-emit), and semantic companions pick that up
- * automatically via the var() indirection.
+ * `--__hsl-color-*` (Wave 1 dual-emit), and `emitSemanticLines` is re-invoked
+ * inside that dark block (see the comment above the dark block in `emitCss`),
+ * so the `--__hsl-surface-*` companions re-substitute against the flipped
+ * dark values at that scope instead of relying on automatic inheritance.
  *
  * Used to emit `--__hsl-surface-{name}` Tailwind alpha companions alongside
  * the canonical `--surface-{name}: var(--color-*)` vars.

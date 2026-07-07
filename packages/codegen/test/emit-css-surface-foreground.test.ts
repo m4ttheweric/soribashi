@@ -80,7 +80,7 @@ describe('emitCss surface foreground', () => {
     expect(css).not.toMatch(/--__hsl-surface-floating:\s*\d+\s+\d+%\s+\d+%/);
   });
 
-  it('dark-mode overrides cascade through to --__hsl-surface-* via the var() reference', () => {
+  it('dark-mode overrides require the surface companion to be redeclared in .dark', () => {
     const theme = createTheme({
       tokens: baseTokens as never,
       dark: {
@@ -93,11 +93,13 @@ describe('emitCss surface foreground', () => {
     });
     const css = emitCss(theme, { emitCompanionHsl: true });
 
-    // The .dark block overrides --__hsl-color-neutral-900 (from Wave 1 dual-emit);
-    // --__hsl-surface-floating's var() reference picks it up automatically.
+    // The .dark block overrides --__hsl-color-neutral-900 (from Wave 1 dual-emit).
     expect(css).toMatch(/\.dark[^{]*\{[\s\S]*--__hsl-color-neutral-900:\s*0 0% 95%/);
-    // The .dark block should NOT redundantly redefine the surface companion
-    expect(css).not.toMatch(/\.dark[^{]*\{[\s\S]*--__hsl-surface-floating:/);
+    // A custom property's var() reference substitutes at the element where the
+    // property is declared, not wherever it is later read. --__hsl-surface-floating
+    // must be redeclared inside .dark too, or it stays frozen at the value it
+    // resolved to in :root and never picks up the dark override.
+    expect(css).toMatch(/\.dark[^{]*\{[\s\S]*--__hsl-surface-floating:/);
   });
 
   it('emits dark token overrides so surface foreground pair resolves correctly in dark mode', () => {

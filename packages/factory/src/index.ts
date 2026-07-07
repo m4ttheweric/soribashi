@@ -29,6 +29,7 @@ export { createVarsResolver } from './create-vars-resolver.ts';
 
 // Utilities
 export { cn, configureClassNameMerge } from './cn.ts';
+export { autoVars } from './auto-vars.ts';
 export type { ClassValue } from './cn.ts';
 export { useRandomClassName } from './use-random-class-name.ts';
 export { hashStyleProps } from './hash-style-props.ts';

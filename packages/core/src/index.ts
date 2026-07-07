@@ -10,6 +10,8 @@ export {
   makeBuilders,
   registerTheme,
   cn,
+  configureClassNameMerge,
+  autoVars,
 } from '@soribashi/factory';
 
 export type {

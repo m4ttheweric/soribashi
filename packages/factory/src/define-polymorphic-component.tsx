@@ -1,6 +1,7 @@
 import type { ResolvedTheme } from '@soribashi/theme';
 import { type ComponentPropsWithoutRef, type ElementType, type Ref, forwardRef } from 'react';
 import { autoVars } from './auto-vars.ts';
+import { buildDataAttrs } from './data-attrs.ts';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
@@ -141,6 +142,11 @@ export function definePolymorphicComponent<
       vars: (rest as any).vars,
       attributes: (rest as any).attributes,
       unstyled: (rest as any).unstyled,
+      dataAttrs: buildDataAttrs(
+        config.vocabularyAxes ?? [],
+        hasVariants,
+        rest as Record<string, unknown>,
+      ),
       props: rest as any,
       varsResolver: varsResolver as any,
     });

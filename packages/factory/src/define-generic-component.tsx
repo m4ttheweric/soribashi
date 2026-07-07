@@ -1,6 +1,7 @@
 import type { ResolvedTheme } from '@soribashi/theme';
 import { type Ref, forwardRef } from 'react';
 import { autoVars } from './auto-vars.ts';
+import { buildDataAttrs } from './data-attrs.ts';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
@@ -114,6 +115,11 @@ export function defineGenericComponent<
       vars: (merged as any).vars,
       attributes: (merged as any).attributes,
       unstyled: (merged as any).unstyled,
+      dataAttrs: buildDataAttrs(
+        config.vocabularyAxes ?? [],
+        hasVariants,
+        merged as Record<string, unknown>,
+      ),
       props: merged as any,
       varsResolver: varsResolver as any,
     });
