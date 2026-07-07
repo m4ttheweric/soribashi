@@ -1,27 +1,54 @@
 import { SoribashiProvider } from '@soribashi/core';
+import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { ButtonMatrix } from './pages/ButtonMatrix.tsx';
 import { theme } from './theme/index.ts';
 
+interface PageEntry {
+  label: string;
+  component: () => ReactElement;
+}
+
+/** Gallery routing table. Each subsequent conversion task adds its entry here. */
+const pages: Record<string, PageEntry> = {
+  button: { label: 'Button', component: ButtonMatrix },
+};
+
 export function App() {
   const [dark, setDark] = useState(false);
+  const [page, setPage] = useState('button');
+  const Page = pages[page]?.component ?? ButtonMatrix;
 
   return (
     <SoribashiProvider theme={theme}>
-      <div className={dark ? 'dark' : undefined}>
-        <div className="min-h-screen bg-(--surface-canvas) p-8 text-(--text-default)">
-          <header className="mb-8 flex items-center justify-between">
-            <h1 className="text-xl font-semibold">shadcn starter</h1>
-            <button
-              type="button"
-              className="rounded-md border px-3 py-1 text-sm"
-              onClick={() => setDark((d) => !d)}
-            >
-              {dark ? 'Light' : 'Dark'} mode
-            </button>
-          </header>
-          <main data-testid="starter-main">
-            <ButtonMatrix />
+      <div className={dark ? 'dark' : undefined} data-testid="starter-main">
+        <div className="flex min-h-screen bg-(--surface-canvas) text-(--text-default)">
+          <nav className="w-56 shrink-0 space-y-1 border-(--border-default) border-r p-4">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="font-semibold text-sm">shadcn-starter</span>
+              <button
+                type="button"
+                onClick={() => setDark((d) => !d)}
+                className="rounded border border-(--border-default) px-2 py-1 text-xs"
+              >
+                {dark ? 'Light' : 'Dark'}
+              </button>
+            </div>
+            {Object.entries(pages).map(([key, { label }]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setPage(key)}
+                className={`block w-full rounded px-2 py-1.5 text-left text-sm ${
+                  page === key ? 'bg-(--accent-default) font-medium' : 'hover:bg-(--accent-muted)'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <main className="flex-1 overflow-auto p-8">
+            <Page />
           </main>
         </div>
       </div>

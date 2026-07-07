@@ -46,9 +46,15 @@ export default defineConfig({
       testMatch: '**/*.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5174' },
     },
+    {
+      name: 'shadcn-starter',
+      testDir: './apps/shadcn-starter/tests',
+      testMatch: '**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5175' },
+    },
   ],
 
-  /* Boot both apps in parallel */
+  /* Boot all apps in parallel */
   webServer: [
     {
       command: 'bun run --filter @soribashi/playground dev',
@@ -59,6 +65,12 @@ export default defineConfig({
     {
       command: 'bun run --filter @soribashi/pilot dev',
       url: 'http://localhost:5174',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+    {
+      command: 'bun run --filter @soribashi/shadcn-starter dev',
+      url: 'http://localhost:5175',
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
     },
