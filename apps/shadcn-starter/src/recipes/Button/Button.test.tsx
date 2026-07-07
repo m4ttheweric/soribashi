@@ -28,7 +28,15 @@ describe('Button walking skeleton', () => {
     expect(btn).toHaveAttribute('data-variant', 'filled');
     expect(btn).toHaveAttribute('data-intent', 'primary');
     expect(btn).toHaveAttribute('data-size', 'md');
+  });
+
+  // Copy this block as-is for each new recipe in the sweep: swap the import/JSX
+  // and the raw prop names for the recipe's own vocabulary axes.
+  it('does not leak vocabulary props onto the DOM', () => {
+    wrap(<Button>Save</Button>);
+    const btn = screen.getByRole('button');
     expect(btn).not.toHaveAttribute('intent');
+    // vacuous on <button> (React drops string size); intent assertion is the real guard
     expect(btn).not.toHaveAttribute('size');
   });
 
