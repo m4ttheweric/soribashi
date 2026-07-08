@@ -32,6 +32,8 @@ const classes = {
     'border border-(--button-border) bg-(--button-bg) text-(--button-color)',
     'hover:bg-(--button-hover)',
     // band 3: data-attribute-scoped structural variant utilities
+    'data-[variant=outline]:hover:bg-(--color-neutral-100) data-[variant=outline]:hover:text-(--text-default)',
+    'data-[variant=ghost]:hover:bg-(--color-neutral-100) data-[variant=ghost]:hover:text-(--text-default)',
     'data-[variant=link]:underline-offset-4 data-[variant=link]:hover:underline',
     'data-[variant=link]:border-transparent data-[variant=link]:bg-transparent',
   ].join(' '),
