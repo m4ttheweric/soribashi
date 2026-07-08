@@ -5,7 +5,7 @@ description: Compare shadcn-starter recipes against shadcn/ui originals in Chrom
 
 # Visual Parity Check
 
-Verify that shadcn-starter recipes visually match their shadcn/ui donor components. The bar is intent parity (same visual language), not pixel parity.
+Verify that shadcn-starter recipes visually match their shadcn/ui donor components by extracting and diffing computed CSS styles from both sites. The bar is zero computed-style diffs on the properties that define visual identity.
 
 ## Prerequisites
 
@@ -22,119 +22,189 @@ tabs_context_mcp({ createIfEmpty: true })
 tabs_create_mcp()  // second tab for shadcn docs
 ```
 
-- Tab 1: `http://localhost:5175/` (our app)
-- Tab 2: `https://ui.shadcn.com/docs/components/<component>` (shadcn original)
+- Tab 1 (ours): `http://localhost:5175/`
+- Tab 2 (shadcn): `https://ui.shadcn.com/docs/components/<component>`
 
-### 2. For each component, check ALL of the following
+### 2. PRIMARY METHOD: Computed style extraction and diff
 
-#### A. Static appearance (light mode)
+This is the autonomous feedback loop. Do NOT rely on screenshots for visual comparison -- they are not precise enough to catch 2px height differences, font-weight mismatches, or subtle border-color differences.
 
-1. Navigate to our component's gallery page (click nav item)
-2. Navigate to shadcn's component doc page
-3. Take zoomed screenshots of both at the same scale
-4. Compare:
-   - **Border radius** (rounded-md vs rounded-full vs rounded-lg)
-   - **Padding/spacing** (compact vs tall)
-   - **Typography** (font size, weight)
-   - **Colors** (bg, text, border -- compare against shadcn's default/secondary/destructive/outline/ghost)
-   - **Shadow** (present/absent, intensity)
-   - **Border** (visible/transparent, color)
+#### Step A: Extract shadcn's actual classes from the DOM
 
-#### B. Static appearance (dark mode)
+On the shadcn tab, run JavaScript to find the component element and extract its full class list:
 
-1. Click the Dark/Light toggle in our app's nav
-2. Repeat the same visual checks
-3. Key things that break in dark mode:
-   - Semantic var flipping (surface, text, border tokens)
-   - Contrast on inverted components (tooltip, badge filled)
-   - Border visibility
+```javascript
+// Find the component by data-slot attribute (shadcn v4 convention)
+const el = document.querySelector('[data-slot="badge"]'); // or button, etc.
+JSON.stringify({
+  className: el?.getAttribute('class'),
+  // also get computed values for verification
+  ...(() => {
+    const cs = getComputedStyle(el);
+    return {
+      fontSize: cs.fontSize, fontWeight: cs.fontWeight, lineHeight: cs.lineHeight,
+      paddingTop: cs.paddingTop, paddingRight: cs.paddingRight,
+      paddingBottom: cs.paddingBottom, paddingLeft: cs.paddingLeft,
+      borderRadius: cs.borderRadius, borderWidth: cs.borderWidth,
+      borderColor: cs.borderColor, backgroundColor: cs.backgroundColor,
+      color: cs.color, height: cs.height, display: cs.display,
+      justifyContent: cs.justifyContent, alignItems: cs.alignItems,
+      whiteSpace: cs.whiteSpace, overflow: cs.overflow,
+      boxShadow: cs.boxShadow, opacity: cs.opacity,
+    };
+  })()
+}, null, 2);
+```
 
-#### C. Hover states
+**The className string is the source of truth.** Copy shadcn's actual Tailwind classes and use them as the basis for our recipe's band-1 structural literals.
 
-1. Hover over each variant of the component
-2. Take screenshot while hovering
-3. Compare hover bg/opacity change against shadcn
-4. shadcn patterns:
-   - Default button: `hover:bg-primary/80` (slightly lighter)
-   - Outline/Ghost: `hover:bg-accent` (subtle highlight)
-   - Destructive: `hover:bg-destructive/80`
-   - Link: `hover:underline`
+#### Step B: Extract our component's computed styles
 
-#### D. Focus states
+On our tab, run the same extraction:
 
-1. Tab to the component to trigger focus-visible ring
-2. Screenshot the focus ring
-3. Compare ring color and offset against shadcn's `ring-ring ring-offset-2`
+```javascript
+const el = document.querySelector('[data-variant="filled"][data-intent="primary"]'); // adjust selector per component
+const cs = getComputedStyle(el);
+JSON.stringify({
+  fontSize: cs.fontSize, fontWeight: cs.fontWeight, lineHeight: cs.lineHeight,
+  paddingTop: cs.paddingTop, paddingRight: cs.paddingRight,
+  paddingBottom: cs.paddingBottom, paddingLeft: cs.paddingLeft,
+  borderRadius: cs.borderRadius, borderWidth: cs.borderWidth,
+  borderColor: cs.borderColor, backgroundColor: cs.backgroundColor,
+  color: cs.color, height: cs.height, display: cs.display,
+  justifyContent: cs.justifyContent, alignItems: cs.alignItems,
+  whiteSpace: cs.whiteSpace, overflow: cs.overflow,
+  boxShadow: cs.boxShadow, opacity: cs.opacity,
+}, null, 2);
+```
 
-#### E. Active/pressed states
+#### Step C: Diff the values
 
-1. Click and hold (where applicable)
-2. Check for any pressed visual feedback
+Compare each property. Build a diff table:
 
-#### F. Interactive behavior (component-specific)
+```javascript
+// Run on our tab after capturing shadcn's values
+const shadcn = { /* paste shadcn values here */ };
+const el = document.querySelector('[data-variant="filled"]');
+const cs = getComputedStyle(el);
+const diffs = [];
+for (const [key, expected] of Object.entries(shadcn)) {
+  const actual = cs[key];
+  if (actual !== expected) diffs.push({ property: key, expected, actual });
+}
+JSON.stringify({ totalDiffs: diffs.length, diffs }, null, 2);
+```
 
-For each component type, verify these interactions:
+#### Step D: Fix until diffs = 0
 
-**Button:** hover all variants, verify link variant underlines on hover
-**Badge:** verify all variants render (filled, outline, subtle), check sizes scale correctly
-**Card:** verify shadow, border, padding on all sub-parts
-**Tooltip:** hover trigger, verify tooltip appears with correct position/styling/animation
-**Dialog:** click trigger, verify overlay backdrop (black/80), content centered, X button in corner, close on X/Escape/overlay click
-**DropdownMenu:** click trigger, verify menu appears with items/shortcuts/separators, hover items for highlight, check checkbox items toggle, verify sub-menu opens on hover
-**Tabs:** click each tab, verify active state switches, check all variants (default/outline/pills) look distinct
-**Accordion:** click each trigger, verify expand/collapse animation, chevron rotation, only one open in single mode
-**Checkbox:** click to toggle, verify check icon appears, verify disabled state, verify with Field composition
-**Select:** click trigger, verify dropdown with items, select an item, verify disabled items
+For each diff:
+1. Identify which Tailwind class causes the mismatch
+2. Update the recipe's class string in the `.tsx` file
+3. Run `bun run test` to verify no regressions
+4. Re-run the diff to confirm the fix
 
-### 3. Known intentional differences (not bugs)
+**Loop until `totalDiffs: 0`.**
+
+#### Properties to compare (the parity-critical set)
+
+| Property | What it catches |
+|----------|----------------|
+| fontSize | text-xs vs text-sm mismatch |
+| fontWeight | font-medium (500) vs font-semibold (600) |
+| height | explicit h-5 vs padding-only |
+| paddingTop/Right/Bottom/Left | px-2 vs px-2.5, py-0.5 vs py-1 |
+| borderRadius | rounded-md vs rounded-full vs rounded-lg |
+| borderWidth | border vs border-0 |
+| borderColor | border-transparent vs visible border |
+| backgroundColor | fill color correctness |
+| color | text color correctness |
+| display | flex vs inline-flex |
+| justifyContent | center vs start |
+| whiteSpace | nowrap vs normal |
+| overflow | hidden vs visible |
+| boxShadow | shadow presence/absence |
+
+#### Finding component elements on shadcn's docs
+
+shadcn v4 uses `data-slot` attributes:
+- `[data-slot="badge"]`
+- `[data-slot="button"]`
+- `[data-slot="card"]`
+- `[data-slot="accordion"]`, `[data-slot="accordion-item"]`, `[data-slot="accordion-trigger"]`, `[data-slot="accordion-content"]`
+- `[data-slot="checkbox"]`
+- `[data-slot="select-trigger"]`
+- `[data-slot="tabs-list"]`, `[data-slot="tabs-trigger"]`, `[data-slot="tabs-content"]`
+- `[data-slot="dialog-overlay"]`, `[data-slot="dialog-content"]`, `[data-slot="dialog-title"]`
+- `[data-slot="dropdown-menu-content"]`, `[data-slot="dropdown-menu-item"]`
+- `[data-slot="tooltip-content"]`
+
+If `data-slot` doesn't exist, fall back to finding elements inside the demo preview containers on the docs page.
+
+#### Finding component elements in our app
+
+Our components use `data-variant`, `data-intent`, `data-size` attributes:
+- `[data-variant="filled"][data-intent="primary"]` for default-state components
+- Compound parts: query by Radix's `data-state`, `role`, or the element's position in the DOM
+
+### 3. SECONDARY METHOD: Interactive behavior verification
+
+After computed styles match, verify interactive states. These can't be diffed numerically -- use screenshots.
+
+#### Hover states
+1. Hover over component on our tab, take screenshot
+2. Hover over component on shadcn tab, take screenshot
+3. Compare visually (opacity change, bg shift, underline)
+
+#### Focus states
+1. Tab to component, screenshot the focus ring
+2. Compare ring color/width/offset
+
+#### Open/close behavior (overlays, menus, dialogs)
+1. Click trigger on our tab, screenshot the opened state
+2. Click trigger on shadcn tab, screenshot the opened state
+3. Compare: positioning, backdrop, animation, content layout
+
+### 4. Known intentional differences (not bugs)
 
 These differ from shadcn by design (soribashi vocabulary extensions):
 - 6 intents (primary, neutral, success, warning, danger, info) vs shadcn's 3 (default, secondary, destructive)
-- 5 sizes (xs-xl) vs shadcn's fewer
 - `variant=subtle` does not exist in shadcn
 - `as` prop replaces shadcn's `asChild`
-- Colors route through soribashi's intent resolver, not hardcoded
+- Colors route through soribashi's intent resolver (`--badge-bg`, `--button-bg`), not hardcoded. The resolved COLOR should match, but the CSS property name will differ (our `background-color` comes from a var, theirs is direct).
+- Our components emit `data-variant`/`data-intent`/`data-size` attributes that shadcn doesn't have. These don't affect computed styles.
 
-### 4. Common failure patterns (from prior sessions)
-
-These are bugs we've actually hit. Check for them:
+### 5. Common failure patterns (from prior sessions)
 
 1. **`@theme` clobbers Tailwind defaults.** Named utilities like `max-w-sm`, `max-w-lg`, `max-w-xl` resolve to garbage because our `@theme` block replaces the entire Tailwind theme. Fix: use arbitrary values like `max-w-[24rem]`.
 
-2. **Tooltip invisible.** If tooltip content uses `bg-(--surface-floating)` it blends into the page. shadcn tooltips use inverted colors (`bg-primary text-primary-foreground`).
+2. **Tooltip invisible.** If tooltip content uses `bg-(--surface-floating)` it blends into the page. shadcn tooltips use inverted colors.
 
-3. **Badge not pill-shaped.** shadcn badges use `rounded-full`. If ours use `rounded-md` they look boxy.
+3. **Badge dimensions wrong.** shadcn badges use explicit `h-5` + `px-2 py-0.5 text-xs font-medium`. Dimension vars that deviate from these make badges visibly different.
 
 4. **Compound parts not full-width.** Accordion/Field content wrapping per-word means something is constraining width (often the `@theme` issue above).
 
 5. **Dialog close button positioning leak.** If `Dialog.Close` (consumer-facing) shares the same classes slot as the internal X button, it inherits `absolute right-4 top-4`. Fix: split into `close` and `closeButton` slots.
 
-6. **Checkbox/Select in Field layout.** Field's `space-y-2` stacks vertically. Checkbox+label should be inline (flex row) -- don't use Field's `label` prop for checkboxes; put the label inline next to the checkbox.
+6. **Checkbox/Select in Field layout.** Field's `space-y-2` stacks vertically. Checkbox+label should be inline (flex row).
 
-### 5. Reporting
+### 6. Reporting
 
 After checking all components, produce a findings table:
 
 ```markdown
-| Component | Light | Dark | Hover | Focus | Behavior | Issues |
-|-----------|-------|------|-------|-------|----------|--------|
-| Button    | OK    | OK   | OK    | OK    | OK       | none   |
-| Badge     | OK    | OK   | -     | OK    | -        | none   |
-| ...       |       |      |       |       |          |        |
+| Component | Computed Diffs | Interactive | Issues |
+|-----------|---------------|-------------|--------|
+| Badge     | 0             | OK          | none   |
+| Button    | 0             | OK          | none   |
+| ...       |               |             |        |
 ```
 
-For each issue found:
-1. Screenshot the problem (ours)
-2. Screenshot the reference (shadcn)
-3. Identify the CSS class or var causing the difference
-4. Suggest the fix (which file, which class string to change)
-
-### 6. Fixing issues
+### 7. Fixing issues
 
 After the audit:
 1. Fix all issues in recipe files or demo pages
 2. Run `bun run typecheck && bun run test`
-3. Re-verify in browser
+3. Re-run the computed-style diff to confirm zero diffs
 4. Commit with: `fix(shadcn-starter): visual parity fixes from audit`
 
 ## Component-to-URL mapping
