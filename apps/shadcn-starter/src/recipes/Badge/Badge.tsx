@@ -14,13 +14,13 @@ const selectors = ['root'] as const;
 
 const classes = {
   root: [
-    // band 1: structural literals
-    'inline-flex items-center rounded-full border font-semibold transition-colors',
+    // band 1: structural (donor-faithful: shadcn badge.tsx)
+    'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors',
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     // band 2: var-indirection
-    'h-(--sb-badge-h) px-(--sb-badge-px) text-(--sb-badge-fs)',
     'bg-(--badge-bg) text-(--badge-color) border-(--badge-border)',
     // band 3: data-attribute structural variants
+    'data-[variant=filled]:border-transparent data-[variant=subtle]:border-transparent',
     'data-[variant=outline]:bg-transparent',
   ].join(' '),
 };
@@ -41,14 +41,7 @@ export const Badge = definePolymorphicComponent<
   defaults: { intent: 'primary', variant: 'filled', size: 'sm' },
   vars: (theme, props) => {
     const auto = autoVars(theme, 'Badge', props as Record<string, unknown>, true);
-    return {
-      root: {
-        ...(auto.root ?? {}),
-        '--sb-badge-h': `var(--badge-height-${(props as { size?: string }).size ?? 'sm'})`,
-        '--sb-badge-px': `var(--badge-px-${(props as { size?: string }).size ?? 'sm'})`,
-        '--sb-badge-fs': `var(--badge-fs-${(props as { size?: string }).size ?? 'sm'})`,
-      },
-    };
+    return { root: { ...(auto.root ?? {}) } };
   },
   render: ({
     Element,

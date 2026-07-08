@@ -41,7 +41,7 @@ describe('Badge', () => {
   it('routes size through vars resolver', () => {
     wrap(<Badge size="lg">Big</Badge>);
     const el = screen.getByText('Big');
-    expect(el.style.getPropertyValue('--sb-badge-h')).toBe('var(--badge-height-lg)');
+    expect(el).toHaveAttribute('data-size', 'lg');
   });
 
   it('threads .extend({ defaultProps })', () => {

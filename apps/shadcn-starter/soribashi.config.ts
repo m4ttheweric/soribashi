@@ -40,17 +40,6 @@ function assertKeysMatchVocabulary(
 
 assertKeysMatchVocabulary(BUTTON_DIMENSIONS, theme.vocabulary.size.values, 'BUTTON_DIMENSIONS');
 
-type BadgeSize = NonNullable<(typeof theme.vocabulary.size)['type']>;
-
-const BADGE_DIMENSIONS: Record<BadgeSize, { height: string; px: string; fontSize: string }> = {
-  xs: { height: '1.125rem', px: '0.375rem', fontSize: '0.625rem' },
-  sm: { height: '1.25rem', px: '0.5rem', fontSize: '0.6875rem' },
-  md: { height: '1.375rem', px: '0.625rem', fontSize: '0.75rem' },
-  lg: { height: '1.5rem', px: '0.75rem', fontSize: '0.8125rem' },
-  xl: { height: '1.75rem', px: '1rem', fontSize: '0.875rem' },
-};
-
-assertKeysMatchVocabulary(BADGE_DIMENSIONS, theme.vocabulary.size.values, 'BADGE_DIMENSIONS');
 
 export default {
   theme,
@@ -68,13 +57,6 @@ export default {
           Object.entries(BUTTON_DIMENSIONS).flatMap(([size, d]) => [
             [`--button-height-${size}`, d.height],
             [`--button-px-${size}`, d.px],
-          ]),
-        ),
-        ...Object.fromEntries(
-          Object.entries(BADGE_DIMENSIONS).flatMap(([size, d]) => [
-            [`--badge-height-${size}`, d.height],
-            [`--badge-px-${size}`, d.px],
-            [`--badge-fs-${size}`, d.fontSize],
           ]),
         ),
       },
