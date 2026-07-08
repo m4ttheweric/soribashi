@@ -4,7 +4,7 @@ export function AccordionDemo() {
   return (
     <div className="space-y-8">
       <h2 className="text-lg font-semibold">Accordion</h2>
-      <Accordion type="single" collapsible className="w-full max-w-xl">
+      <Accordion type="single" collapsible className="w-full max-w-[36rem]">
         <Accordion.Item value="item-1">
           <Accordion.Trigger>Is it accessible?</Accordion.Trigger>
           <Accordion.Content>
