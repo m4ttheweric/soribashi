@@ -15,7 +15,7 @@ const selectors = ['root'] as const;
 const classes = {
   root: [
     // band 1: structural literals
-    'inline-flex items-center rounded-md border font-semibold transition-colors',
+    'inline-flex items-center rounded-full border font-semibold transition-colors',
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     // band 2: var-indirection
     'h-(--sb-badge-h) px-(--sb-badge-px) text-(--sb-badge-fs)',
