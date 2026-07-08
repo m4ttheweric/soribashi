@@ -42,39 +42,46 @@ export function CheckboxDemo() {
       <section className="max-w-sm space-y-6">
         <h3 className="text-sm font-medium text-(--text-muted)">Wrapped in Field</h3>
 
-        <Field label="Accept terms and conditions" htmlFor="terms">
-          <div className="flex items-center gap-2">
+        <Field htmlFor="terms">
+          <div className="flex items-start gap-2">
             <Checkbox id="terms" />
-            <label htmlFor="terms" className="text-sm">
-              I agree to the terms of service
-            </label>
+            <div className="space-y-1">
+              <label htmlFor="terms" className="text-sm font-medium leading-none">
+                Accept terms and conditions
+              </label>
+              <p className="text-sm text-(--text-muted)">I agree to the terms of service</p>
+            </div>
           </div>
         </Field>
 
         <Field
-          label="Marketing emails"
           description="Receive occasional product updates and announcements."
           htmlFor="marketing"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
             <Checkbox id="marketing" checked={marketing} onCheckedChange={setMarketing} />
-            <label htmlFor="marketing" className="text-sm">
-              Subscribe
-            </label>
+            <div className="space-y-1">
+              <label htmlFor="marketing" className="text-sm font-medium leading-none">
+                Marketing emails
+              </label>
+              <p className="text-sm text-(--text-muted)">Subscribe</p>
+            </div>
           </div>
         </Field>
 
         <Field
-          label="Accept terms"
           description="You must accept the terms to continue."
           error="You must accept the terms before submitting."
           htmlFor="required-terms"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
             <Checkbox id="required-terms" required />
-            <label htmlFor="required-terms" className="text-sm">
-              I have read and agree
-            </label>
+            <div className="space-y-1">
+              <label htmlFor="required-terms" className="text-sm font-medium leading-none">
+                Accept terms
+              </label>
+              <p className="text-sm text-(--text-muted)">I have read and agree</p>
+            </div>
           </div>
         </Field>
       </section>

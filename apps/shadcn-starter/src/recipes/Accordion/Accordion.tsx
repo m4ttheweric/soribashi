@@ -33,10 +33,10 @@ import { defineCompound } from '../../builders.ts';
  */
 
 const classes = {
-  root: '',
+  root: 'w-full',
   item: 'border-b border-(--border-default)',
   trigger: [
-    'flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all',
+    'flex w-full flex-1 items-center justify-between py-4 text-sm font-medium transition-all',
     'hover:underline',
     '[&[data-state=open]>svg]:rotate-180',
   ].join(' '),

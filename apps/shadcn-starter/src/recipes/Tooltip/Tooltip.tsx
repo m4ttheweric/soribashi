@@ -33,10 +33,9 @@ const classes = {
     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',
     'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
     // band 2: var-indirection
-    'bg-(--surface-floating) text-(--surface-floating-foreground)',
-    'border border-(--border-default)',
+    'bg-(--color-primary-900) text-(--color-primary-foreground)',
   ].join(' '),
-  arrow: 'fill-(--surface-floating)',
+  arrow: 'fill-(--color-primary-900)',
 };
 
 export interface TooltipRootProps {

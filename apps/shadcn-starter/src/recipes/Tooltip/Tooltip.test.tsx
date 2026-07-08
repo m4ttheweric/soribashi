@@ -128,7 +128,7 @@ describe('Tooltip compound', () => {
     const contentDiv = content.closest('[data-side]') as HTMLElement;
     expect(contentDiv).not.toBeNull();
     expect(contentDiv.className).toContain('rounded-md');
-    expect(contentDiv.className).toContain('bg-(--surface-floating)');
+    expect(contentDiv.className).toContain('bg-(--color-primary-900)');
   });
 
   it('defaults side to top via context when not overridden', async () => {

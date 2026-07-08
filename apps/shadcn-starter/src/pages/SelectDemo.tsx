@@ -76,7 +76,7 @@ export function SelectDemo() {
           htmlFor="timezone-select"
         >
           <Select value={timezone} onValueChange={setTimezone}>
-            <Select.Trigger id="timezone-select">
+            <Select.Trigger id="timezone-select" className="w-full">
               <Select.Value placeholder="Select a timezone" />
             </Select.Trigger>
             <Select.Content>
@@ -94,7 +94,7 @@ export function SelectDemo() {
           htmlFor="role-select"
         >
           <Select required>
-            <Select.Trigger id="role-select">
+            <Select.Trigger id="role-select" className="w-full">
               <Select.Value placeholder="Select a role" />
             </Select.Trigger>
             <Select.Content>
