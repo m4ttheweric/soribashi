@@ -29,13 +29,13 @@ export const variants = ['default', 'outline', 'pills'] as const;
 const classes = {
   root: '',
   list: [
-    'inline-flex h-9 items-center justify-center rounded-lg p-1',
+    'inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]',
     'bg-(--accent-muted) text-(--text-muted)',
     'data-[variant=outline]:border data-[variant=outline]:border-(--border-default) data-[variant=outline]:bg-transparent',
     'data-[variant=pills]:bg-transparent',
   ].join(' '),
   trigger: [
-    'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1',
+    'relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-transparent px-2 py-1',
     'text-sm font-medium transition-all',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     'disabled:pointer-events-none disabled:opacity-50',

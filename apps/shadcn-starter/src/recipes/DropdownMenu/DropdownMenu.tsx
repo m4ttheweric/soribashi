@@ -33,7 +33,7 @@ const classes = {
   root: '',
   trigger: '',
   content: [
-    'z-50 min-w-[8rem] overflow-hidden rounded-md p-1 shadow-md',
+    'z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md p-1 shadow-md',
     'bg-(--surface-floating) text-(--text-default) border border-(--border-default)',
     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
@@ -44,7 +44,7 @@ const classes = {
     'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none',
     'transition-colors focus:bg-(--accent-default) focus:text-(--text-default)',
     'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-    '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   checkboxItem: [
     'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
@@ -57,16 +57,16 @@ const classes = {
     'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
   ].join(' '),
   radioGroup: '',
-  label: 'px-2 py-1.5 text-sm font-semibold',
+  label: 'px-2 py-1.5 text-sm font-medium',
   separator: '-mx-1 my-1 h-px bg-(--border-default)',
   sub: '',
   subTrigger: [
     'flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none',
     'focus:bg-(--accent-default) data-[state=open]:bg-(--accent-default)',
-    '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   subContent: [
-    'z-50 min-w-[8rem] overflow-hidden rounded-md p-1 shadow-lg',
+    'z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md p-1 shadow-lg',
     'bg-(--surface-floating) text-(--text-default) border border-(--border-default)',
     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',

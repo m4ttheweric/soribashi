@@ -22,10 +22,11 @@ const selectors = ['root'] as const;
 const classes = {
   root: [
     // band 1: structural literals (donor-faithful)
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md',
-    'text-sm font-medium transition-colors outline-none',
-    'focus-visible:ring-2 focus-visible:ring-(--border-focus)',
+    'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md',
+    'text-sm font-medium transition-all outline-none',
+    'focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
     'disabled:pointer-events-none disabled:opacity-50',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     // band 2: var-indirection (vocabulary-driven; values flow at runtime)
     'h-(--sb-button-h) px-(--sb-button-px)',
     'border border-(--button-border) bg-(--button-bg) text-(--button-color)',

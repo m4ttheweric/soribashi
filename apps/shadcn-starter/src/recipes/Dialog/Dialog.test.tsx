@@ -136,7 +136,7 @@ describe('Dialog compound', () => {
       </Dialog>,
     );
 
-    const overlay = document.body.querySelector('.fixed.inset-0.z-50.bg-black\\/80');
+    const overlay = document.body.querySelector('.fixed.inset-0.z-50.bg-black\\/50');
     expect(overlay).not.toBeNull();
   });
 

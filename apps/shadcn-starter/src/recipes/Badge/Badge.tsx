@@ -15,8 +15,9 @@ const selectors = ['root'] as const;
 const classes = {
   root: [
     // band 1: structural (donor-faithful: shadcn badge.tsx)
-    'inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-colors',
-    'focus:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
+    'inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow]',
+    'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    '[&>svg]:pointer-events-none [&>svg]:size-3',
     // band 2: var-indirection
     'bg-(--badge-bg) text-(--badge-color) border-(--badge-border)',
     // band 3: data-attribute structural variants

@@ -26,7 +26,7 @@ describe('Card part-family', () => {
     const el = screen.getByText('Header');
     expect(el.className).toContain('flex');
     expect(el.className).toContain('flex-col');
-    expect(el.className).toContain('p-6');
+    expect(el.className).toContain('px-6');
   });
 
   it('CardTitle renders as h3', () => {
@@ -46,15 +46,14 @@ describe('Card part-family', () => {
   it('CardContent renders with padding', () => {
     wrap(<CardContent>Content</CardContent>);
     const el = screen.getByText('Content');
-    expect(el.className).toContain('p-6');
-    expect(el.className).toContain('pt-0');
+    expect(el.className).toContain('px-6');
   });
 
   it('CardFooter renders with flex + padding', () => {
     wrap(<CardFooter>Footer</CardFooter>);
     const el = screen.getByText('Footer');
     expect(el.className).toContain('flex');
-    expect(el.className).toContain('p-6');
+    expect(el.className).toContain('px-6');
   });
 
   it('all parts forward refs', () => {

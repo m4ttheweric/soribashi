@@ -9,13 +9,13 @@ const selectors = ['root', 'indicator'] as const;
 
 const classes = {
   root: [
-    'peer h-4 w-4 shrink-0 rounded-sm border border-(--border-input)',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
+    'peer size-4 shrink-0 rounded-[4px] border border-(--border-input) shadow-xs outline-none transition-shadow',
+    'focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
     'disabled:cursor-not-allowed disabled:opacity-50',
     'data-[state=checked]:bg-(--color-primary-500) data-[state=checked]:text-(--color-primary-foreground)',
     'data-[state=checked]:border-transparent',
   ].join(' '),
-  indicator: 'flex items-center justify-center text-current',
+  indicator: 'grid place-content-center text-current transition-none',
 };
 
 interface CheckboxOwnProps {

@@ -36,22 +36,22 @@ const classes = {
   root: '',
   trigger: '',
   overlay: [
-    'fixed inset-0 z-50 bg-black/80',
+    'fixed inset-0 z-50 bg-black/50',
     'data-[state=open]:animate-in data-[state=open]:fade-in-0',
     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0',
   ].join(' '),
   content: [
-    'fixed left-1/2 top-1/2 z-50 grid w-full max-w-[32rem] -translate-x-1/2 -translate-y-1/2',
-    'gap-4 border border-(--border-default) p-6 shadow-lg duration-200',
+    'fixed left-1/2 top-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 sm:max-w-[32rem]',
+    'gap-4 border border-(--border-default) p-6 shadow-lg duration-200 outline-none',
     'bg-(--surface-raised) text-(--text-default) rounded-lg',
     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
     'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
     'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
   ].join(' '),
-  header: 'flex flex-col gap-y-1.5 text-center sm:text-left',
-  footer: 'flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-x-2',
-  title: 'text-lg font-semibold leading-none tracking-tight',
+  header: 'flex flex-col gap-2 text-center sm:text-left',
+  footer: 'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
+  title: 'text-lg leading-none font-semibold',
   description: 'text-sm text-(--text-muted)',
   close:
     'rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus) disabled:pointer-events-none',
@@ -59,6 +59,7 @@ const classes = {
     'absolute right-4 top-4 rounded-sm opacity-70 transition-opacity',
     'hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     'disabled:pointer-events-none',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
 };
 
