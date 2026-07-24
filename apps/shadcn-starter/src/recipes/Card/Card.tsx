@@ -33,7 +33,7 @@ export const CardHeader = defineComponent<{ children?: ReactNode }>({
   name: 'CardHeader',
   selectors: ['root'] as const,
   classes: {
-    root: 'flex flex-col gap-2 px-6',
+    root: 'flex flex-col gap-2 px-6 [.border-b]:pb-6',
   },
   render: ({ props, getStyles, ref }: any) => {
     const { children, className, style, classNames, styles, unstyled, attributes, vars, ...rest } =
@@ -117,7 +117,7 @@ export const CardFooter = defineComponent<{ children?: ReactNode }>({
   name: 'CardFooter',
   selectors: ['root'] as const,
   classes: {
-    root: 'flex items-center px-6',
+    root: 'flex items-center px-6 [.border-t]:pt-6',
   },
   render: ({ props, getStyles, ref }: any) => {
     const { children, className, style, classNames, styles, unstyled, attributes, vars, ...rest } =

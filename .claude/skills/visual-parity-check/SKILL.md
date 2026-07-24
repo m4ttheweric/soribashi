@@ -1,223 +1,95 @@
 ---
 name: visual-parity-check
-description: Compare shadcn-starter recipes against shadcn/ui originals in Chrome for visual parity. Use when a recipe is added or changed and needs visual verification against the donor component.
+description: Compare shadcn-starter recipes against the pinned shadcn/ui donor source for visual parity. Use when a recipe is added or changed and needs verification against the donor.
 ---
 
 # Visual Parity Check
 
-Verify that shadcn-starter recipes visually match their shadcn/ui donor components by extracting and diffing computed CSS styles from both sites. The bar is zero computed-style diffs on the properties that define visual identity.
+Verify that shadcn-starter recipes match their shadcn/ui donor components. The bar is: every structural class the donor sets is accounted for in our recipe, either matched or deliberately diverged.
+
+## Read this first: do not measure ui.shadcn.com
+
+The docs site renders demo previews inside its own page chrome, and the chrome uses the same components at different sizes. Sampling `[data-slot="button"]` on a docs page can return a nav or copy button rather than the demo.
+
+This is not hypothetical. A prior audit measured the docs site and reported that shadcn's default button was `h-8 px-2.5` and that Card had migrated to a `--card-spacing` variable. Both were false. The donor's default button is `h-9 px-4 py-2` and Card was unchanged. The audit produced seven "blockers" that would have broken working parity had they been actioned.
+
+**The donor source in the pinned checkout is the source of truth. The live site is not.**
 
 ## Prerequisites
 
-- Chrome browser extension connected (`mcp__claude-in-chrome__list_connected_browsers`)
-- Dev server running (`bun run dev:shadcn-starter` on port 5175)
-- Load browser tools via ToolSearch: `select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__tabs_create_mcp,mcp__claude-in-chrome__browser_batch,mcp__claude-in-chrome__javascript_tool`
+A donor checkout pinned to the manifest's commit:
 
-## Process
-
-### 1. Set up two tabs
-
-```
-tabs_context_mcp({ createIfEmpty: true })
-tabs_create_mcp()  // second tab for shadcn docs
+```bash
+git clone https://github.com/shadcn-ui/ui.git ~/Documents/GitHub/shadcn-ui
+git -C ~/Documents/GitHub/shadcn-ui checkout $(grep -o "DONOR_COMMIT = '[^']*'" apps/shadcn-starter/conversion/manifest.ts | cut -d"'" -f2)
 ```
 
-- Tab 1 (ours): `http://localhost:5175/`
-- Tab 2 (shadcn): `https://ui.shadcn.com/docs/components/<component>`
+Confirm the pin is intact before trusting any comparison:
 
-### 2. PRIMARY METHOD: Computed style extraction and diff
-
-This is the autonomous feedback loop. Do NOT rely on screenshots for visual comparison -- they are not precise enough to catch 2px height differences, font-weight mismatches, or subtle border-color differences.
-
-#### Step A: Extract shadcn's actual classes from the DOM
-
-On the shadcn tab, run JavaScript to find the component element and extract its full class list:
-
-```javascript
-// Find the component by data-slot attribute (shadcn v4 convention)
-const el = document.querySelector('[data-slot="badge"]'); // or button, etc.
-JSON.stringify({
-  className: el?.getAttribute('class'),
-  // also get computed values for verification
-  ...(() => {
-    const cs = getComputedStyle(el);
-    return {
-      fontSize: cs.fontSize, fontWeight: cs.fontWeight, lineHeight: cs.lineHeight,
-      paddingTop: cs.paddingTop, paddingRight: cs.paddingRight,
-      paddingBottom: cs.paddingBottom, paddingLeft: cs.paddingLeft,
-      borderRadius: cs.borderRadius, borderWidth: cs.borderWidth,
-      borderColor: cs.borderColor, backgroundColor: cs.backgroundColor,
-      color: cs.color, height: cs.height, display: cs.display,
-      justifyContent: cs.justifyContent, alignItems: cs.alignItems,
-      whiteSpace: cs.whiteSpace, overflow: cs.overflow,
-      boxShadow: cs.boxShadow, opacity: cs.opacity,
-    };
-  })()
-}, null, 2);
+```bash
+bun run test -- donor-pin
 ```
 
-**The className string is the source of truth.** Copy shadcn's actual Tailwind classes and use them as the basis for our recipe's band-1 structural literals.
+If that fails, the checkout is off the pin or the donor moved. Resolve it first. A parity finding measured against the wrong donor version is worse than no finding.
 
-#### Step B: Extract our component's computed styles
+## Step 1 (primary): class-string diff, offline
 
-On our tab, run the same extraction:
+This catches nearly everything and costs no browser time.
 
-```javascript
-const el = document.querySelector('[data-variant="filled"][data-intent="primary"]'); // adjust selector per component
-const cs = getComputedStyle(el);
-JSON.stringify({
-  fontSize: cs.fontSize, fontWeight: cs.fontWeight, lineHeight: cs.lineHeight,
-  paddingTop: cs.paddingTop, paddingRight: cs.paddingRight,
-  paddingBottom: cs.paddingBottom, paddingLeft: cs.paddingLeft,
-  borderRadius: cs.borderRadius, borderWidth: cs.borderWidth,
-  borderColor: cs.borderColor, backgroundColor: cs.backgroundColor,
-  color: cs.color, height: cs.height, display: cs.display,
-  justifyContent: cs.justifyContent, alignItems: cs.alignItems,
-  whiteSpace: cs.whiteSpace, overflow: cs.overflow,
-  boxShadow: cs.boxShadow, opacity: cs.opacity,
-}, null, 2);
-```
+- **Donor:** `~/Documents/GitHub/shadcn-ui/apps/v4/registry/new-york-v4/ui/{registryItem}.tsx`
+- **Ours:** `apps/shadcn-starter/src/recipes/{Name}/{Name}.tsx`
+- `registryItem` per component is in `apps/shadcn-starter/conversion/manifest.ts`.
 
-#### Step C: Diff the values
+Read both. For each donor `className` string, find the matching selector in our `classes` object and compare token by token. Our recipes split the donor string into three bands (structural literals, var-indirection, data-attribute variants), so expect our version to be reordered and to substitute `bg-(--button-bg)` where the donor has `bg-primary`. Reordering and var substitution are expected. **Missing tokens are the finding.**
 
-Compare each property. Build a diff table:
+Report per selector: tokens present in the donor and absent from ours, tokens we add that the donor lacks, and any token whose value differs (`py-4` vs `py-2.5`).
 
-```javascript
-// Run on our tab after capturing shadcn's values
-const shadcn = { /* paste shadcn values here */ };
-const el = document.querySelector('[data-variant="filled"]');
-const cs = getComputedStyle(el);
-const diffs = [];
-for (const [key, expected] of Object.entries(shadcn)) {
-  const actual = cs[key];
-  if (actual !== expected) diffs.push({ property: key, expected, actual });
-}
-JSON.stringify({ totalDiffs: diffs.length, diffs }, null, 2);
-```
+## Step 2: computed-style diff in the browser, only where step 1 is inconclusive
 
-#### Step D: Fix until diffs = 0
+Class strings do not settle what a token resolves to once our theme's `@theme` block is in play. When a value is in question, measure ours and compare against the donor's declared intent.
 
-For each diff:
-1. Identify which Tailwind class causes the mismatch
-2. Update the recipe's class string in the `.tsx` file
-3. Run `bun run test` to verify no regressions
-4. Re-run the diff to confirm the fix
+Use Playwright MCP (`mcp__playwright__browser_*`). Never the Claude-in-Chrome tools. Delegate multi-step browser work to the `browser-driver` agent.
 
-**Loop until `totalDiffs: 0`.**
+Dev server: `bun run dev:shadcn-starter` on port 5175. The app is a single page with client-side state routing, so navigate by clicking sidebar labels (`Button`, `Badge`, `Card`, `Tooltip`, `Dialog`, `DropdownMenu`, `Tabs`, `Accordion`, `Checkbox`, `Select`, `Tokens`, `Dashboard`), not URLs. The sidebar's top button toggles dark mode.
 
-#### Properties to compare (the parity-critical set)
+Our elements are found via `[data-variant]`, `[data-intent]`, `[data-size]`. Extract with `getComputedStyle` over the parity-critical set:
 
-| Property | What it catches |
-|----------|----------------|
-| fontSize | text-xs vs text-sm mismatch |
-| fontWeight | font-medium (500) vs font-semibold (600) |
-| height | explicit h-5 vs padding-only |
-| paddingTop/Right/Bottom/Left | px-2 vs px-2.5, py-0.5 vs py-1 |
-| borderRadius | rounded-md vs rounded-full vs rounded-lg |
-| borderWidth | border vs border-0 |
-| borderColor | border-transparent vs visible border |
-| backgroundColor | fill color correctness |
-| color | text color correctness |
-| display | flex vs inline-flex |
-| justifyContent | center vs start |
-| whiteSpace | nowrap vs normal |
-| overflow | hidden vs visible |
-| boxShadow | shadow presence/absence |
+`fontSize, fontWeight, lineHeight, paddingTop/Right/Bottom/Left, borderRadius, borderWidth, borderColor, backgroundColor, color, height, display, justifyContent, alignItems, whiteSpace, overflow, boxShadow, opacity`
 
-#### Finding component elements on shadcn's docs
+If you do open the docs site for a sanity check, scope every query to inside the demo preview container, and treat any result that contradicts the donor source as a sampling error until proven otherwise.
 
-shadcn v4 uses `data-slot` attributes:
-- `[data-slot="badge"]`
-- `[data-slot="button"]`
-- `[data-slot="card"]`
-- `[data-slot="accordion"]`, `[data-slot="accordion-item"]`, `[data-slot="accordion-trigger"]`, `[data-slot="accordion-content"]`
-- `[data-slot="checkbox"]`
-- `[data-slot="select-trigger"]`
-- `[data-slot="tabs-list"]`, `[data-slot="tabs-trigger"]`, `[data-slot="tabs-content"]`
-- `[data-slot="dialog-overlay"]`, `[data-slot="dialog-content"]`, `[data-slot="dialog-title"]`
-- `[data-slot="dropdown-menu-content"]`, `[data-slot="dropdown-menu-item"]`
-- `[data-slot="tooltip-content"]`
+## Step 3: interaction states
 
-If `data-slot` doesn't exist, fall back to finding elements inside the demo preview containers on the docs page.
+These cannot be diffed from source. Drive them in the browser:
 
-#### Finding component elements in our app
+- **Overlays** (Tooltip, Dialog, DropdownMenu, Select): open, verify positioning, backdrop, and that content is legible against the page. Exercise submenus, checkbox items, radio groups.
+- **Persistent compounds** (Tabs, Accordion): switch or expand, verify active/open styling and chevron rotation.
+- **Controls** (Button, Checkbox): hover, focus-visible ring, disabled, checked.
 
-Our components use `data-variant`, `data-intent`, `data-size` attributes:
-- `[data-variant="filled"][data-intent="primary"]` for default-state components
-- Compound parts: query by Radix's `data-state`, `role`, or the element's position in the DOM
+## Known intentional differences (not defects)
 
-### 3. SECONDARY METHOD: Interactive behavior verification
+- 6 intents (primary, neutral, success, warning, danger, info) vs the donor's 3 (default, secondary, destructive).
+- `variant=subtle` has no donor equivalent.
+- Our `as` prop replaces the donor's `asChild`.
+- Colors resolve through soribashi's intent resolver via CSS vars (`--button-bg`). The resolved color should match; arriving via a var is expected.
+- We emit `data-variant` / `data-intent` / `data-size`, which the donor lacks. They do not affect computed styles.
+- Dimension vars (`--sb-button-h`) come from `BUTTON_DIMENSIONS` in `soribashi.config.ts`, keyed on the theme's size vocabulary. The donor's single default size maps to our `md`.
 
-After computed styles match, verify interactive states. These can't be diffed numerically -- use screenshots.
+## Known failure patterns
 
-#### Hover states
-1. Hover over component on our tab, take screenshot
-2. Hover over component on shadcn tab, take screenshot
-3. Compare visually (opacity change, bg shift, underline)
+1. Our `@theme` block replaces the whole Tailwind theme, so named utilities like `max-w-sm` can resolve to garbage. Use arbitrary values (`max-w-[24rem]`). Symptom: unexpectedly narrow containers, per-word text wrapping.
+2. A compound part sharing a classes slot with an internal element inherits its positioning (this produced the Dialog close-button leak, fixed by splitting `close` from `closeButton`).
+3. Donor conditional-sibling selectors (`[.border-t]:pt-6`, `[.border-b]:pb-6`) are easy to drop when splitting a class string into bands. Grep the donor string for `[.` before declaring a selector matched.
 
-#### Focus states
-1. Tab to component, screenshot the focus ring
-2. Compare ring color/width/offset
+## Reporting
 
-#### Open/close behavior (overlays, menus, dialogs)
-1. Click trigger on our tab, screenshot the opened state
-2. Click trigger on shadcn tab, screenshot the opened state
-3. Compare: positioning, backdrop, animation, content layout
+| Component | Selector | Donor token | Ours | Verdict |
+|---|---|---|---|---|
 
-### 4. Known intentional differences (not bugs)
+Verdict: `missing` (donor sets it, we do not), `differs` (both set it, values disagree), `added` (ours only), `intentional`.
 
-These differ from shadcn by design (soribashi vocabulary extensions):
-- 6 intents (primary, neutral, success, warning, danger, info) vs shadcn's 3 (default, secondary, destructive)
-- `variant=subtle` does not exist in shadcn
-- `as` prop replaces shadcn's `asChild`
-- Colors route through soribashi's intent resolver (`--badge-bg`, `--button-bg`), not hardcoded. The resolved COLOR should match, but the CSS property name will differ (our `background-color` comes from a var, theirs is direct).
-- Our components emit `data-variant`/`data-intent`/`data-size` attributes that shadcn doesn't have. These don't affect computed styles.
+State which components you completed and which you did not. A complete pass over 7 beats a shallow pass over 10.
 
-### 5. Common failure patterns (from prior sessions)
+## Fixing
 
-1. **`@theme` clobbers Tailwind defaults.** Named utilities like `max-w-sm`, `max-w-lg`, `max-w-xl` resolve to garbage because our `@theme` block replaces the entire Tailwind theme. Fix: use arbitrary values like `max-w-[24rem]`.
-
-2. **Tooltip invisible.** If tooltip content uses `bg-(--surface-floating)` it blends into the page. shadcn tooltips use inverted colors.
-
-3. **Badge dimensions wrong.** shadcn badges use explicit `h-5` + `px-2 py-0.5 text-xs font-medium`. Dimension vars that deviate from these make badges visibly different.
-
-4. **Compound parts not full-width.** Accordion/Field content wrapping per-word means something is constraining width (often the `@theme` issue above).
-
-5. **Dialog close button positioning leak.** If `Dialog.Close` (consumer-facing) shares the same classes slot as the internal X button, it inherits `absolute right-4 top-4`. Fix: split into `close` and `closeButton` slots.
-
-6. **Checkbox/Select in Field layout.** Field's `space-y-2` stacks vertically. Checkbox+label should be inline (flex row).
-
-### 6. Reporting
-
-After checking all components, produce a findings table:
-
-```markdown
-| Component | Computed Diffs | Interactive | Issues |
-|-----------|---------------|-------------|--------|
-| Badge     | 0             | OK          | none   |
-| Button    | 0             | OK          | none   |
-| ...       |               |             |        |
-```
-
-### 7. Fixing issues
-
-After the audit:
-1. Fix all issues in recipe files or demo pages
-2. Run `bun run typecheck && bun run test`
-3. Re-run the computed-style diff to confirm zero diffs
-4. Commit with: `fix(shadcn-starter): visual parity fixes from audit`
-
-## Component-to-URL mapping
-
-| Component    | Our nav label  | shadcn URL path                              |
-|-------------|----------------|----------------------------------------------|
-| Button      | Button         | /docs/components/button                      |
-| Badge       | Badge          | /docs/components/badge                       |
-| Card        | Card           | /docs/components/card                        |
-| Tooltip     | Tooltip        | /docs/components/tooltip                     |
-| Dialog      | Dialog         | /docs/components/dialog                      |
-| DropdownMenu| DropdownMenu   | /docs/components/dropdown-menu               |
-| Tabs        | Tabs           | /docs/components/tabs                        |
-| Accordion   | Accordion      | /docs/components/accordion                   |
-| Checkbox    | Checkbox       | /docs/components/checkbox                    |
-| Select      | Select         | /docs/components/select                      |
+Recipe files only; do not adjust the donor. After changes: `bun run typecheck && bun run test`, then re-run step 1. Commit as `fix(shadcn-starter): <what> to match donor`.
