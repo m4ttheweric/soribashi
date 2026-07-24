@@ -35,7 +35,10 @@ const classes = {
     // band 2: var-indirection
     'bg-(--color-primary-900) text-(--color-primary-foreground)',
   ].join(' '),
-  arrow: 'fill-(--color-primary-900)',
+  // Radix draws the arrow as an svg; the donor overlays a rotated, rounded
+  // square on it so the tip reads as a chamfered notch rather than a triangle.
+  arrow:
+    'z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px] bg-(--color-primary-900) fill-(--color-primary-900)',
 };
 
 export interface TooltipRootProps {

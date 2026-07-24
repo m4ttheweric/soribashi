@@ -59,6 +59,7 @@ const classes = {
     'absolute right-4 top-4 rounded-sm opacity-70 transition-opacity',
     'hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     'disabled:pointer-events-none',
+    'data-[state=open]:bg-(--accent-default) data-[state=open]:text-(--text-muted)',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
 };

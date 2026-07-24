@@ -152,7 +152,7 @@ export const Accordion = defineCompound({
           <RadixAccordion.Header className="flex">
             <RadixAccordion.Trigger ref={ref} {...rest} {...getStyles()}>
               {children}
-              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+              <ChevronDown className="pointer-events-none size-4 shrink-0 translate-y-0.5 text-(--text-muted) transition-transform duration-200" />
             </RadixAccordion.Trigger>
           </RadixAccordion.Header>
         );
