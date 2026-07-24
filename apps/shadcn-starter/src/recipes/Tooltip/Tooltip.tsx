@@ -33,12 +33,13 @@ const classes = {
     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',
     'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
     // band 2: var-indirection
-    'bg-(--color-primary-900) text-(--color-primary-foreground)',
+    // donor is bg-foreground/text-background: the page's own roles, inverted
+    'bg-(--text-default) text-(--surface-default)',
   ].join(' '),
   // Radix draws the arrow as an svg; the donor overlays a rotated, rounded
   // square on it so the tip reads as a chamfered notch rather than a triangle.
   arrow:
-    'z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px] bg-(--color-primary-900) fill-(--color-primary-900)',
+    'z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px] bg-(--text-default) fill-(--text-default)',
 };
 
 export interface TooltipRootProps {

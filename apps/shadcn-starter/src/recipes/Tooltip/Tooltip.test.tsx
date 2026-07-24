@@ -128,7 +128,8 @@ describe('Tooltip compound', () => {
     const contentDiv = content.closest('[data-side]') as HTMLElement;
     expect(contentDiv).not.toBeNull();
     expect(contentDiv.className).toContain('rounded-md');
-    expect(contentDiv.className).toContain('bg-(--color-primary-900)');
+    // inverse-of-page role tokens, matching the donor's bg-foreground
+    expect(contentDiv.className).toContain('bg-(--text-default)');
   });
 
   it('defaults side to top via context when not overridden', async () => {

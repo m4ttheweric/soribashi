@@ -45,6 +45,21 @@ function assertKeysMatchVocabulary(
 
 assertKeysMatchVocabulary(BUTTON_DIMENSIONS, theme.vocabulary.size.values, 'BUTTON_DIMENSIONS');
 
+/**
+ * The donor badge has a single size (px-2 py-0.5 text-xs), which `sm` reproduces
+ * exactly; the rest of the scale is this theme's own. No height row: the donor
+ * sets none, so the box is padding plus line-height.
+ */
+const BADGE_DIMENSIONS: Record<ButtonSize, { px: string; py: string; fontSize: string }> = {
+  xs: { px: '0.375rem', py: '0.0625rem', fontSize: '0.6875rem' },
+  sm: { px: '0.5rem', py: '0.125rem', fontSize: '0.75rem' },
+  md: { px: '0.625rem', py: '0.1875rem', fontSize: '0.75rem' },
+  lg: { px: '0.75rem', py: '0.25rem', fontSize: '0.8125rem' },
+  xl: { px: '1rem', py: '0.3125rem', fontSize: '0.875rem' },
+};
+
+assertKeysMatchVocabulary(BADGE_DIMENSIONS, theme.vocabulary.size.values, 'BADGE_DIMENSIONS');
+
 export default {
   theme,
   output: {
@@ -62,6 +77,13 @@ export default {
             [`--button-height-${size}`, d.height],
             [`--button-px-${size}`, d.px],
             [`--button-px-icon-${size}`, d.pxIcon],
+          ]),
+        ),
+        ...Object.fromEntries(
+          Object.entries(BADGE_DIMENSIONS).flatMap(([size, d]) => [
+            [`--badge-px-${size}`, d.px],
+            [`--badge-py-${size}`, d.py],
+            [`--badge-fs-${size}`, d.fontSize],
           ]),
         ),
       },

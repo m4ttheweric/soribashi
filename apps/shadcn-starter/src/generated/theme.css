@@ -133,6 +133,21 @@
   --button-height-xl: 2.75rem;
   --button-px-xl: 2rem;
   --button-px-icon-xl: 1.5rem;
+  --badge-px-xs: 0.375rem;
+  --badge-py-xs: 0.0625rem;
+  --badge-fs-xs: 0.6875rem;
+  --badge-px-sm: 0.5rem;
+  --badge-py-sm: 0.125rem;
+  --badge-fs-sm: 0.75rem;
+  --badge-px-md: 0.625rem;
+  --badge-py-md: 0.1875rem;
+  --badge-fs-md: 0.75rem;
+  --badge-px-lg: 0.75rem;
+  --badge-py-lg: 0.25rem;
+  --badge-fs-lg: 0.8125rem;
+  --badge-px-xl: 1rem;
+  --badge-py-xl: 0.3125rem;
+  --badge-fs-xl: 0.875rem;
 }
 
 .dark {

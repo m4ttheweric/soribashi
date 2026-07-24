@@ -120,12 +120,14 @@ export const Field = defineComponent<{
       'data-[orientation=horizontal]:flex-row data-[orientation=horizontal]:items-center',
       'data-[orientation=horizontal]:[&>[data-slot=field-label]]:flex-auto',
       'data-[orientation=horizontal]:has-[>[data-slot=field-content]]:items-start',
+      'data-[orientation=horizontal]:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
       // responsive: column until the field-group container is wide enough
-      'data-[orientation=responsive]:flex-col data-[orientation=responsive]:[&>*]:w-full',
+      'data-[orientation=responsive]:flex-col data-[orientation=responsive]:[&>*]:w-full data-[orientation=responsive]:[&>.sr-only]:w-auto',
       'data-[orientation=responsive]:@md/field-group:flex-row data-[orientation=responsive]:@md/field-group:items-center',
       'data-[orientation=responsive]:@md/field-group:[&>*]:w-auto',
       'data-[orientation=responsive]:@md/field-group:[&>[data-slot=field-label]]:flex-auto',
       'data-[orientation=responsive]:@md/field-group:has-[>[data-slot=field-content]]:items-start',
+      'data-[orientation=responsive]:@md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
     ].join(' '),
   },
   render: ({ props, getStyles, ref }: any) => {

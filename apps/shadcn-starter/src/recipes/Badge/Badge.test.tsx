@@ -38,10 +38,12 @@ describe('Badge', () => {
     expect(el).not.toHaveAttribute('size');
   });
 
-  it('routes size through vars resolver', () => {
+  it('routes size through the vars resolver onto --sb-badge-* ', () => {
     wrap(<Badge size="lg">Big</Badge>);
-    const el = screen.getByText('Big');
-    expect(el).toHaveAttribute('data-size', 'lg');
+    const big = screen.getByText('Big');
+    expect(big.style.getPropertyValue('--sb-badge-px')).toBe('var(--badge-px-lg)');
+    expect(big.style.getPropertyValue('--sb-badge-fs')).toBe('var(--badge-fs-lg)');
+    expect(big).toHaveAttribute('data-size', 'lg');
   });
 
   it('threads .extend({ defaultProps })', () => {

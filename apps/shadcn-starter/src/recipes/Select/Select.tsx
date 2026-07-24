@@ -45,12 +45,12 @@ const classes = {
     'focus-visible:border-(--border-focus) focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
     'aria-invalid:border-(--color-danger-500) aria-invalid:ring-(--color-danger-500)/20 dark:aria-invalid:ring-(--color-danger-500)/40',
     'disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
-    '*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
+    '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2',
     'data-[placeholder]:text-(--text-muted)',
   ].join(' '),
   value: '',
   content: [
-    'relative z-50 max-h-96 min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border border-(--border-default)',
+    'relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border border-(--border-default)',
     'bg-(--surface-floating) text-(--text-default) shadow-md',
     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
@@ -60,14 +60,16 @@ const classes = {
     'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1',
     'data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
   ].join(' '),
-  viewport: 'p-1',
+  viewport: 'p-1 scroll-my-1',
   group: '',
-  label: 'px-2 py-1.5 text-sm font-semibold',
+  label: 'px-2 py-1.5 text-xs text-(--text-muted)',
   item: [
     'relative flex w-full cursor-default select-none items-center gap-2 rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none',
     'focus:bg-(--accent-default) focus:text-(--text-default)',
     'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+    "[&_svg:not([class*='text-'])]:text-(--text-muted)",
+    '*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
   ].join(' '),
   separator: '-mx-1 my-1 h-px bg-(--border-default)',
   scrollUpButton: 'flex cursor-default items-center justify-center py-1',
@@ -218,7 +220,15 @@ export const Select = defineCompound({
           vars,
           ...rest
         } = props;
-        return <RadixSelect.Value ref={ref} placeholder={placeholder} {...rest} {...getStyles()} />;
+        return (
+          <RadixSelect.Value
+            ref={ref}
+            data-slot="select-value"
+            placeholder={placeholder}
+            {...rest}
+            {...getStyles()}
+          />
+        );
       },
     },
     // Content -- renders inside a Portal (same pattern as DropdownMenu.Content),

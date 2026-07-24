@@ -123,7 +123,10 @@ describe('Field part-family', () => {
     expect(screen.getByText('or')).toBeInTheDocument();
   });
 
-  it('FieldSet renders a fieldset and FieldGroup a container-query group', () => {
+  // Container queries do not resolve in jsdom, so this asserts the rule is
+  // emitted, not that responsive orientation actually reflows. That belongs in
+  // tests/browser-parity.
+  it('FieldSet renders a fieldset and FieldGroup carries the container-query rule', () => {
     const { container } = wrap(
       <FieldSet>
         <FieldGroup>

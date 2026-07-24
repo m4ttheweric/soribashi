@@ -33,7 +33,7 @@ const classes = {
   root: '',
   trigger: '',
   content: [
-    'z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md p-1 shadow-md',
+    'z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md p-1 shadow-md',
     'bg-(--surface-floating) text-(--text-default) border border-(--border-default)',
     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
@@ -48,14 +48,16 @@ const classes = {
     "[&_svg:not([class*='text-'])]:text-(--text-muted)",
   ].join(' '),
   checkboxItem: [
-    'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
+    'relative flex cursor-default select-none items-center gap-2 rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
     'transition-colors focus:bg-(--accent-default) focus:text-(--text-default)',
     'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   radioItem: [
-    'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
+    'relative flex cursor-default select-none items-center gap-2 rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
     'transition-colors focus:bg-(--accent-default) focus:text-(--text-default)',
     'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   radioGroup: '',
   label: 'px-2 py-1.5 text-sm font-medium data-[inset]:pl-8',
@@ -64,6 +66,7 @@ const classes = {
   subTrigger: [
     'flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none',
     'focus:bg-(--accent-default) data-[state=open]:bg-(--accent-default) data-[inset]:pl-8',
+    "[&_svg:not([class*='text-'])]:text-(--text-muted)",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   subContent: [
@@ -74,7 +77,7 @@ const classes = {
     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',
     'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
   ].join(' '),
-  shortcut: 'ml-auto text-xs tracking-widest opacity-60',
+  shortcut: 'ml-auto text-xs tracking-widest text-(--text-muted)',
 };
 
 export interface DropdownMenuRootProps {

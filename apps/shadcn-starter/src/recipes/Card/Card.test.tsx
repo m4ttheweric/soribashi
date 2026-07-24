@@ -37,10 +37,11 @@ describe('Card part-family', () => {
     expect(el.className).toContain('px-6');
   });
 
-  it('CardHeader promotes to two columns only when a CardAction is present', () => {
+  // The promotion itself is a :has() selector, which jsdom does not evaluate,
+  // so whether it FIRES is a browser assertion (tests/browser-parity), not one
+  // we can make here. All this checks is that the rule is emitted at all.
+  it('CardHeader carries the column-promotion rule', () => {
     wrap(<CardHeader>Header</CardHeader>);
-    // the promotion is a has-data-[slot=card-action] selector, so it is inert
-    // until such a child exists; the class is always on the element
     expect(screen.getByText('Header').className).toContain(
       'has-data-[slot=card-action]:grid-cols-[1fr_auto]',
     );

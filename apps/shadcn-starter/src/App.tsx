@@ -9,6 +9,7 @@ import { CheckboxDemo } from './pages/CheckboxDemo.tsx';
 import { Dashboard } from './pages/Dashboard.tsx';
 import { DialogDemo } from './pages/DialogDemo.tsx';
 import { DropdownMenuDemo } from './pages/DropdownMenuDemo.tsx';
+import { FieldDemo } from './pages/FieldDemo.tsx';
 import { SelectDemo } from './pages/SelectDemo.tsx';
 import { TabsDemo } from './pages/TabsDemo.tsx';
 import { TokenReview } from './pages/TokenReview.tsx';
@@ -31,6 +32,7 @@ const pages: Record<string, PageEntry> = {
   tabs: { label: 'Tabs', component: TabsDemo },
   accordion: { label: 'Accordion', component: AccordionDemo },
   checkbox: { label: 'Checkbox', component: CheckboxDemo },
+  field: { label: 'Field', component: FieldDemo },
   select: { label: 'Select', component: SelectDemo },
   tokens: { label: 'Tokens', component: TokenReview },
   dashboard: { label: 'Dashboard', component: Dashboard },

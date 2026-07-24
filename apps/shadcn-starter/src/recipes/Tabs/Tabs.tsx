@@ -44,13 +44,14 @@ const classes = {
   ].join(' '),
   trigger: [
     'relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-transparent px-2 py-1',
-    'text-sm font-medium transition-all',
+    'text-sm font-medium text-(--text-default)/60 transition-all hover:text-(--text-default)',
     'group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start',
-    'focus-visible:border-(--border-focus) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
+    'focus-visible:border-(--border-focus) focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
     'disabled:pointer-events-none disabled:opacity-50',
     'data-[state=active]:bg-(--surface-raised) data-[state=active]:text-(--text-default) data-[state=active]:shadow',
     'data-[variant=outline]:data-[state=active]:border-b-2 data-[variant=outline]:data-[state=active]:border-(--border-focus) data-[variant=outline]:data-[state=active]:shadow-none',
     'data-[variant=pills]:rounded-full',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     // the line variant swaps the raised pill for an underline drawn as ::after
     'data-[variant=line]:bg-transparent data-[variant=line]:data-[state=active]:bg-transparent data-[variant=line]:data-[state=active]:shadow-none',
     'after:absolute after:bg-(--text-default) after:opacity-0 after:transition-opacity',
