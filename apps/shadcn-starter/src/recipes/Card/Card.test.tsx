@@ -4,7 +4,15 @@ import { render, screen } from '@testing-library/react';
 import { twMerge } from 'tailwind-merge';
 import { describe, expect, it } from 'vitest';
 import { theme } from '../../theme/index.ts';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './Card.tsx';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './Card.tsx';
 
 configureClassNameMerge(twMerge);
 
@@ -21,12 +29,29 @@ describe('Card part-family', () => {
     expect(el.className).toContain('bg-(--surface-raised)');
   });
 
-  it('CardHeader renders with flex + padding', () => {
+  it('CardHeader renders as the donor grid + padding', () => {
     wrap(<CardHeader>Header</CardHeader>);
     const el = screen.getByText('Header');
-    expect(el.className).toContain('flex');
-    expect(el.className).toContain('flex-col');
+    expect(el.className).toContain('grid');
+    expect(el.className).toContain('auto-rows-min');
     expect(el.className).toContain('px-6');
+  });
+
+  it('CardHeader promotes to two columns only when a CardAction is present', () => {
+    wrap(<CardHeader>Header</CardHeader>);
+    // the promotion is a has-data-[slot=card-action] selector, so it is inert
+    // until such a child exists; the class is always on the element
+    expect(screen.getByText('Header').className).toContain(
+      'has-data-[slot=card-action]:grid-cols-[1fr_auto]',
+    );
+  });
+
+  it('CardAction emits the data-slot the header grid keys on', () => {
+    wrap(<CardAction>Action</CardAction>);
+    const el = screen.getByText('Action');
+    expect(el).toHaveAttribute('data-slot', 'card-action');
+    expect(el.className).toContain('col-start-2');
+    expect(el.className).toContain('justify-self-end');
   });
 
   it('CardTitle renders as h3', () => {

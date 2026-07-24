@@ -1,5 +1,7 @@
+import { Badge } from '../recipes/Badge/Badge.tsx';
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -23,6 +25,21 @@ export function CardDemo() {
           <CardFooter>
             <p className="text-sm text-(--text-muted)">Footer</p>
           </CardFooter>
+        </Card>
+        {/* Third column proves the header grid promotes only when CardAction is present */}
+        <Card>
+          <CardHeader>
+            <CardTitle>With action</CardTitle>
+            <CardDescription>Header promotes to two columns</CardDescription>
+            <CardAction>
+              <Badge intent="neutral" variant="outline">
+                New
+              </Badge>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            <p>The action sits top-right, spanning both header rows.</p>
+          </CardContent>
         </Card>
         {/* Second card for visual comparison: className override, no footer */}
         <Card className="border-dashed">

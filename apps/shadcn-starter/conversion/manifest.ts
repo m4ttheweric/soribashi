@@ -89,7 +89,15 @@ export const manifest: ManifestEntry[] = [
     builder: 'defineComponent',
     // Part-family namespace (spec section 10): one selector per independent
     // part, each with its own single 'root' selector internally.
-    selectors: ['Card', 'CardHeader', 'CardTitle', 'CardDescription', 'CardContent', 'CardFooter'],
+    selectors: [
+      'Card',
+      'CardHeader',
+      'CardAction',
+      'CardTitle',
+      'CardDescription',
+      'CardContent',
+      'CardFooter',
+    ],
     propMap: {},
     upstream: {
       registryItem: 'card',

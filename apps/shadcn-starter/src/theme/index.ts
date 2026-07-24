@@ -263,6 +263,7 @@ import { accordionTheme } from '../recipes/Accordion/Accordion.tsx';
 import { badgeTheme, variants as badgeVariants } from '../recipes/Badge/Badge.tsx';
 import { buttonTheme, variants as buttonVariants } from '../recipes/Button/Button.tsx';
 import {
+  cardActionTheme,
   cardContentTheme,
   cardDescriptionTheme,
   cardFooterTheme,
@@ -289,6 +290,7 @@ export const theme = createTheme({
     badgeTheme,
     cardTheme,
     cardHeaderTheme,
+    cardActionTheme,
     cardTitleTheme,
     cardDescriptionTheme,
     cardContentTheme,
