@@ -227,7 +227,18 @@ export const manifest: ManifestEntry[] = [
     // Category 4 form-control template: structural wrapper with multiple
     // selectors, not a compound. Composes with any form control (e.g.
     // Checkbox) via normal React children.
-    selectors: ['root', 'label', 'description', 'error'],
+    selectors: [
+      'FieldSet',
+      'FieldLegend',
+      'FieldGroup',
+      'Field',
+      'FieldContent',
+      'FieldLabel',
+      'FieldTitle',
+      'FieldDescription',
+      'FieldSeparator',
+      'FieldError',
+    ],
     propMap: {},
     upstream: {
       registryItem: 'field',

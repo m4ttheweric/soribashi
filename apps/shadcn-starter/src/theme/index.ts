@@ -274,7 +274,18 @@ import {
 import { checkboxTheme } from '../recipes/Checkbox/Checkbox.tsx';
 import { dialogTheme } from '../recipes/Dialog/Dialog.tsx';
 import { dropdownMenuTheme } from '../recipes/DropdownMenu/DropdownMenu.tsx';
-import { fieldTheme } from '../recipes/Field/Field.tsx';
+import {
+  fieldContentTheme,
+  fieldDescriptionTheme,
+  fieldErrorTheme,
+  fieldGroupTheme,
+  fieldLabelTheme,
+  fieldLegendTheme,
+  fieldSeparatorTheme,
+  fieldSetTheme,
+  fieldTheme,
+  fieldTitleTheme,
+} from '../recipes/Field/Field.tsx';
 import { selectTheme } from '../recipes/Select/Select.tsx';
 import { tabsTheme, variants as tabsVariants } from '../recipes/Tabs/Tabs.tsx';
 import { tooltipTheme } from '../recipes/Tooltip/Tooltip.tsx';
@@ -300,7 +311,16 @@ export const theme = createTheme({
     dropdownMenuTheme,
     tabsTheme,
     accordionTheme,
+    fieldSetTheme,
+    fieldLegendTheme,
+    fieldGroupTheme,
     fieldTheme,
+    fieldContentTheme,
+    fieldLabelTheme,
+    fieldTitleTheme,
+    fieldDescriptionTheme,
+    fieldSeparatorTheme,
+    fieldErrorTheme,
     checkboxTheme,
     selectTheme,
   ],

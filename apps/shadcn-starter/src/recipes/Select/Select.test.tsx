@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { twMerge } from 'tailwind-merge';
 import { describe, expect, it, vi } from 'vitest';
-import { Field } from '../../recipes/Field/Field.tsx';
+import { Field, FieldDescription, FieldLabel } from '../../recipes/Field/Field.tsx';
 import { theme } from '../../theme/index.ts';
 import { Select } from './Select.tsx';
 
@@ -135,7 +135,8 @@ describe('Select compound', () => {
 
   it('composes with Field: label/description/error render alongside the trigger', () => {
     wrap(
-      <Field label="Favorite fruit" description="Pick one you like" htmlFor="fruit-select">
+      <Field>
+        <FieldLabel htmlFor="fruit-select">Favorite fruit</FieldLabel>
         <Select>
           <Select.Trigger>
             <Select.Value placeholder="Pick a fruit" id="fruit-select" />
@@ -144,6 +145,7 @@ describe('Select compound', () => {
             <Select.Item value="apple">Apple</Select.Item>
           </Select.Content>
         </Select>
+        <FieldDescription>Pick one you like</FieldDescription>
       </Field>,
     );
 

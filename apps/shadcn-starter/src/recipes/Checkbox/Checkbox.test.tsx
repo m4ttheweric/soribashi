@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { twMerge } from 'tailwind-merge';
 import { describe, expect, it } from 'vitest';
 import { theme } from '../../theme/index.ts';
-import { Field } from '../Field/Field.tsx';
+import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from '../Field/Field.tsx';
 import { Checkbox } from './Checkbox.tsx';
 
 configureClassNameMerge(twMerge);
@@ -77,13 +77,13 @@ describe('Checkbox', () => {
 
   it('composes with Field: label, description, and error render around the control', () => {
     wrap(
-      <Field
-        label="Accept terms"
-        description="Read them first"
-        error="You must accept"
-        htmlFor="terms"
-      >
+      <Field orientation="horizontal" invalid>
         <Checkbox id="terms" />
+        <FieldContent>
+          <FieldLabel htmlFor="terms">Accept terms</FieldLabel>
+          <FieldDescription>Read them first</FieldDescription>
+          <FieldError errors={[{ message: 'You must accept' }]} />
+        </FieldContent>
       </Field>,
     );
 

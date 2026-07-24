@@ -4,7 +4,18 @@ import { twMerge } from 'tailwind-merge';
 import { describe, expect, it } from 'vitest';
 import { theme } from '../../theme/index.ts';
 import { Checkbox } from '../Checkbox/Checkbox.tsx';
-import { Field } from './Field.tsx';
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+} from './Field.tsx';
 
 configureClassNameMerge(twMerge);
 
@@ -12,58 +23,146 @@ function wrap(ui: React.ReactElement) {
   return render(<SoribashiProvider theme={theme}>{ui}</SoribashiProvider>);
 }
 
-describe('Field structural wrapper', () => {
-  it('renders label, description, and error when provided', () => {
-    wrap(
-      <Field label="Email" description="We will never share it" error="Required">
-        <input />
-      </Field>,
-    );
-
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByText('We will never share it')).toBeInTheDocument();
-    expect(screen.getByText('Required')).toBeInTheDocument();
-  });
-
-  it('links the label to the control via htmlFor', () => {
-    wrap(
-      <Field label="Email" htmlFor="email-input">
-        <input id="email-input" />
-      </Field>,
-    );
-
-    const label = screen.getByText('Email');
-    expect(label.tagName).toBe('LABEL');
-    expect(label.getAttribute('for')).toBe('email-input');
-  });
-
-  it('omits label, description, and error slots when their props are absent', () => {
+describe('Field part-family', () => {
+  it('Field is a role=group defaulting to vertical orientation', () => {
     wrap(
       <Field>
         <input />
       </Field>,
     );
-
-    expect(document.querySelector('label')).toBeNull();
-    expect(document.querySelectorAll('p').length).toBe(0);
+    const el = screen.getByRole('group');
+    expect(el).toHaveAttribute('data-slot', 'field');
+    expect(el).toHaveAttribute('data-orientation', 'vertical');
+    expect(el.className).toContain('group/field');
   });
 
-  it('renders only the provided slots (e.g. label without description or error)', () => {
+  it('Field threads orientation and invalid onto data attributes', () => {
     wrap(
-      <Field label="Name">
+      <Field orientation="horizontal" invalid>
         <input />
       </Field>,
     );
-
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(document.querySelectorAll('p').length).toBe(0);
+    const el = screen.getByRole('group');
+    expect(el).toHaveAttribute('data-orientation', 'horizontal');
+    expect(el).toHaveAttribute('data-invalid', 'true');
   });
 
-  it('applies the root spacing class and forwards a ref', () => {
+  it('Field omits data-invalid when not invalid, so the selector stays inert', () => {
+    wrap(
+      <Field>
+        <input />
+      </Field>,
+    );
+    expect(screen.getByRole('group')).not.toHaveAttribute('data-invalid');
+  });
+
+  it('FieldLabel renders a label linked via htmlFor', () => {
+    wrap(<FieldLabel htmlFor="email-input">Email</FieldLabel>);
+    const label = screen.getByText('Email');
+    expect(label.tagName).toBe('LABEL');
+    expect(label.getAttribute('for')).toBe('email-input');
+    expect(label).toHaveAttribute('data-slot', 'field-label');
+  });
+
+  it('FieldLegend defaults to the legend variant and accepts label', () => {
+    const { rerender } = wrap(<FieldLegend>Preferences</FieldLegend>);
+    expect(screen.getByText('Preferences')).toHaveAttribute('data-variant', 'legend');
+
+    rerender(
+      <SoribashiProvider theme={theme}>
+        <FieldLegend variant="label">Preferences</FieldLegend>
+      </SoribashiProvider>,
+    );
+    expect(screen.getByText('Preferences')).toHaveAttribute('data-variant', 'label');
+  });
+
+  it('FieldError renders nothing when it has neither children nor errors', () => {
+    const { container } = wrap(<FieldError />);
+    expect(container.querySelector('[data-slot=field-error]')).toBeNull();
+  });
+
+  it('FieldError renders a bare message for a single error', () => {
+    wrap(<FieldError errors={[{ message: 'Required' }]} />);
+    const el = screen.getByRole('alert');
+    expect(el).toHaveTextContent('Required');
+    expect(el.querySelector('ul')).toBeNull();
+  });
+
+  it('FieldError dedupes repeated messages before deciding to render a list', () => {
+    wrap(<FieldError errors={[{ message: 'Required' }, { message: 'Required' }]} />);
+    expect(screen.getByRole('alert').querySelector('ul')).toBeNull();
+  });
+
+  it('FieldError lists distinct messages', () => {
+    wrap(<FieldError errors={[{ message: 'Too short' }, { message: 'Must contain a digit' }]} />);
+    const items = screen.getByRole('alert').querySelectorAll('li');
+    expect(items).toHaveLength(2);
+  });
+
+  it('FieldError prefers children over errors', () => {
+    wrap(<FieldError errors={[{ message: 'ignored' }]}>Explicit</FieldError>);
+    expect(screen.getByRole('alert')).toHaveTextContent('Explicit');
+  });
+
+  it('FieldSeparator marks whether it carries content', () => {
+    const { container, rerender } = wrap(<FieldSeparator />);
+    expect(container.querySelector('[data-slot=field-separator]')).toHaveAttribute(
+      'data-content',
+      'false',
+    );
+
+    rerender(
+      <SoribashiProvider theme={theme}>
+        <FieldSeparator>or</FieldSeparator>
+      </SoribashiProvider>,
+    );
+    expect(container.querySelector('[data-slot=field-separator]')).toHaveAttribute(
+      'data-content',
+      'true',
+    );
+    expect(screen.getByText('or')).toBeInTheDocument();
+  });
+
+  it('FieldSet renders a fieldset and FieldGroup a container-query group', () => {
+    const { container } = wrap(
+      <FieldSet>
+        <FieldGroup>
+          <Field>
+            <input />
+          </Field>
+        </FieldGroup>
+      </FieldSet>,
+    );
+    expect(container.querySelector('fieldset')).toBeTruthy();
+    const group = container.querySelector('[data-slot=field-group]');
+    expect(group?.className).toContain('@container/field-group');
+  });
+
+  it('composes the donor checkbox row: control, content, label, description', () => {
+    wrap(
+      <Field orientation="horizontal">
+        <Checkbox id="terms" />
+        <FieldContent>
+          <FieldLabel htmlFor="terms">Accept terms</FieldLabel>
+          <FieldDescription>I agree to the terms of service</FieldDescription>
+        </FieldContent>
+      </Field>,
+    );
+
+    expect(screen.getByText('Accept terms').getAttribute('for')).toBe('terms');
+    expect(screen.getByRole('checkbox').id).toBe('terms');
+    expect(screen.getByText('I agree to the terms of service').tagName).toBe('P');
+  });
+
+  it('FieldTitle is a div, not a label, so it does not steal the control association', () => {
+    wrap(<FieldTitle>Section</FieldTitle>);
+    expect(screen.getByText('Section').tagName).toBe('DIV');
+  });
+
+  it('forwards refs on the parts', () => {
     let rootEl: HTMLDivElement | null = null;
     wrap(
       <Field
-        label="Name"
         ref={(el: HTMLDivElement | null) => {
           rootEl = el;
         }}
@@ -71,21 +170,6 @@ describe('Field structural wrapper', () => {
         <input />
       </Field>,
     );
-
     expect(rootEl).toBeInstanceOf(HTMLDivElement);
-    expect((rootEl as unknown as HTMLDivElement).className).toContain('space-y-2');
-  });
-
-  it('composes with a Checkbox child', () => {
-    wrap(
-      <Field label="Accept terms" htmlFor="terms">
-        <Checkbox id="terms" />
-      </Field>,
-    );
-
-    const label = screen.getByText('Accept terms');
-    const checkbox = screen.getByRole('checkbox');
-    expect(label.getAttribute('for')).toBe('terms');
-    expect(checkbox.id).toBe('terms');
   });
 });

@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
-import { Field } from '../recipes/Field/Field.tsx';
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from '../recipes/Field/Field.tsx';
 
 export function CheckboxDemo() {
   const [marketing, setMarketing] = useState<boolean | 'indeterminate'>(false);
@@ -42,48 +50,36 @@ export function CheckboxDemo() {
       <section className="max-w-[24rem] space-y-6">
         <h3 className="text-sm font-medium text-(--text-muted)">Wrapped in Field</h3>
 
-        <Field htmlFor="terms">
-          <div className="flex items-start gap-2">
+        <FieldGroup>
+          <Field orientation="horizontal">
             <Checkbox id="terms" />
-            <div className="space-y-1">
-              <label htmlFor="terms" className="text-sm font-medium leading-none">
-                Accept terms and conditions
-              </label>
-              <p className="text-sm text-(--text-muted)">I agree to the terms of service</p>
-            </div>
-          </div>
-        </Field>
+            <FieldContent>
+              <FieldLabel htmlFor="terms">Accept terms and conditions</FieldLabel>
+              <FieldDescription>I agree to the terms of service</FieldDescription>
+            </FieldContent>
+          </Field>
 
-        <Field
-          description="Receive occasional product updates and announcements."
-          htmlFor="marketing"
-        >
-          <div className="flex items-start gap-2">
+          <Field orientation="horizontal">
             <Checkbox id="marketing" checked={marketing} onCheckedChange={setMarketing} />
-            <div className="space-y-1">
-              <label htmlFor="marketing" className="text-sm font-medium leading-none">
-                Marketing emails
-              </label>
-              <p className="text-sm text-(--text-muted)">Subscribe</p>
-            </div>
-          </div>
-        </Field>
+            <FieldContent>
+              <FieldLabel htmlFor="marketing">Marketing emails</FieldLabel>
+              <FieldDescription>
+                Receive occasional product updates and announcements.
+              </FieldDescription>
+            </FieldContent>
+          </Field>
 
-        <Field
-          description="You must accept the terms to continue."
-          error="You must accept the terms before submitting."
-          htmlFor="required-terms"
-        >
-          <div className="flex items-start gap-2">
+          <FieldSeparator>or</FieldSeparator>
+
+          <Field orientation="horizontal" invalid>
             <Checkbox id="required-terms" required />
-            <div className="space-y-1">
-              <label htmlFor="required-terms" className="text-sm font-medium leading-none">
-                Accept terms
-              </label>
-              <p className="text-sm text-(--text-muted)">I have read and agree</p>
-            </div>
-          </div>
-        </Field>
+            <FieldContent>
+              <FieldLabel htmlFor="required-terms">Accept terms</FieldLabel>
+              <FieldDescription>You must accept the terms to continue.</FieldDescription>
+              <FieldError errors={[{ message: 'You must accept the terms before submitting.' }]} />
+            </FieldContent>
+          </Field>
+        </FieldGroup>
       </section>
     </div>
   );

@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Field } from '../recipes/Field/Field.tsx';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '../recipes/Field/Field.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 
 export function SelectDemo() {
@@ -70,40 +76,38 @@ export function SelectDemo() {
       <section className="max-w-[24rem] space-y-6">
         <h3 className="text-sm font-medium text-(--text-muted)">Wrapped in Field</h3>
 
-        <Field
-          label="Timezone"
-          description="Used for scheduling and notification times."
-          htmlFor="timezone-select"
-        >
-          <Select value={timezone} onValueChange={setTimezone}>
-            <Select.Trigger id="timezone-select" className="w-full">
-              <Select.Value placeholder="Select a timezone" />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="utc">Coordinated Universal Time (UTC)</Select.Item>
-              <Select.Item value="est">Eastern Standard Time (EST)</Select.Item>
-              <Select.Item value="pst">Pacific Standard Time (PST)</Select.Item>
-            </Select.Content>
-          </Select>
-        </Field>
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="timezone-select">Timezone</FieldLabel>
+            <Select value={timezone} onValueChange={setTimezone}>
+              <Select.Trigger id="timezone-select" className="w-full">
+                <Select.Value placeholder="Select a timezone" />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="utc">Coordinated Universal Time (UTC)</Select.Item>
+                <Select.Item value="est">Eastern Standard Time (EST)</Select.Item>
+                <Select.Item value="pst">Pacific Standard Time (PST)</Select.Item>
+              </Select.Content>
+            </Select>
+            <FieldDescription>Used for scheduling and notification times.</FieldDescription>
+          </Field>
 
-        <Field
-          label="Role"
-          description="Required to grant the correct permissions."
-          error="Please select a role before continuing."
-          htmlFor="role-select"
-        >
-          <Select required>
-            <Select.Trigger id="role-select" className="w-full">
-              <Select.Value placeholder="Select a role" />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="admin">Admin</Select.Item>
-              <Select.Item value="editor">Editor</Select.Item>
-              <Select.Item value="viewer">Viewer</Select.Item>
-            </Select.Content>
-          </Select>
-        </Field>
+          <Field invalid>
+            <FieldLabel htmlFor="role-select">Role</FieldLabel>
+            <Select required>
+              <Select.Trigger id="role-select" className="w-full">
+                <Select.Value placeholder="Select a role" />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="admin">Admin</Select.Item>
+                <Select.Item value="editor">Editor</Select.Item>
+                <Select.Item value="viewer">Viewer</Select.Item>
+              </Select.Content>
+            </Select>
+            <FieldDescription>Required to grant the correct permissions.</FieldDescription>
+            <FieldError errors={[{ message: 'Please select a role before continuing.' }]} />
+          </Field>
+        </FieldGroup>
       </section>
     </div>
   );
