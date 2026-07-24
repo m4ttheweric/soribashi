@@ -9,12 +9,17 @@ type ButtonSize = NonNullable<(typeof theme.vocabulary.size)['type']>;
  * through their vars resolvers; a theme that adds a size value adds a row here.
  * KEEP KEYS IN SYNC with theme vocabulary.size.
  */
-const BUTTON_DIMENSIONS: Record<ButtonSize, { height: string; px: string }> = {
-  xs: { height: '1.75rem', px: '0.625rem' },
-  sm: { height: '2rem', px: '0.75rem' },
-  md: { height: '2.25rem', px: '1rem' },
-  lg: { height: '2.5rem', px: '1.5rem' },
-  xl: { height: '2.75rem', px: '2rem' },
+/**
+ * pxIcon is the donor's `has-[>svg]:px-*` step: a button whose direct child is
+ * an icon tightens its horizontal padding one rung so the glyph does not sit in
+ * a wide gutter.
+ */
+const BUTTON_DIMENSIONS: Record<ButtonSize, { height: string; px: string; pxIcon: string }> = {
+  xs: { height: '1.75rem', px: '0.625rem', pxIcon: '0.375rem' },
+  sm: { height: '2rem', px: '0.75rem', pxIcon: '0.625rem' },
+  md: { height: '2.25rem', px: '1rem', pxIcon: '0.75rem' },
+  lg: { height: '2.5rem', px: '1.5rem', pxIcon: '1rem' },
+  xl: { height: '2.75rem', px: '2rem', pxIcon: '1.5rem' },
 };
 
 /**
@@ -56,6 +61,7 @@ export default {
           Object.entries(BUTTON_DIMENSIONS).flatMap(([size, d]) => [
             [`--button-height-${size}`, d.height],
             [`--button-px-${size}`, d.px],
+            [`--button-px-icon-${size}`, d.pxIcon],
           ]),
         ),
       },

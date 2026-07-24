@@ -43,7 +43,7 @@ const classes = {
   item: [
     'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none',
     'transition-colors focus:bg-(--accent-default) focus:text-(--text-default)',
-    'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+    'data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   checkboxItem: [
@@ -57,12 +57,12 @@ const classes = {
     'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
   ].join(' '),
   radioGroup: '',
-  label: 'px-2 py-1.5 text-sm font-medium',
+  label: 'px-2 py-1.5 text-sm font-medium data-[inset]:pl-8',
   separator: '-mx-1 my-1 h-px bg-(--border-default)',
   sub: '',
   subTrigger: [
     'flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none',
-    'focus:bg-(--accent-default) data-[state=open]:bg-(--accent-default)',
+    'focus:bg-(--accent-default) data-[state=open]:bg-(--accent-default) data-[inset]:pl-8',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   subContent: [
@@ -99,6 +99,8 @@ export interface DropdownMenuItemProps {
   children?: ReactNode;
   disabled?: boolean;
   shortcut?: ReactNode;
+  /** Indents the row to align with sibling rows that carry a leading indicator. */
+  inset?: boolean;
   onSelect?: (event: Event) => void;
 }
 
@@ -123,6 +125,8 @@ export interface DropdownMenuRadioGroupProps {
 
 export interface DropdownMenuLabelProps {
   children?: ReactNode;
+  /** Indents the row to align with sibling rows that carry a leading indicator. */
+  inset?: boolean;
 }
 
 export type DropdownMenuSeparatorProps = Record<string, never>;
@@ -138,6 +142,8 @@ export interface DropdownMenuSubTriggerProps {
   children?: ReactNode;
   disabled?: boolean;
   shortcut?: ReactNode;
+  /** Indents the row to align with sibling rows that carry a leading indicator. */
+  inset?: boolean;
 }
 
 export interface DropdownMenuSubContentProps {
@@ -234,6 +240,7 @@ export const DropdownMenu = defineCompound({
       render: ({ props, getStyles, children, ref }: any) => {
         const {
           shortcut,
+          inset,
           className,
           style,
           classNames,
@@ -244,7 +251,12 @@ export const DropdownMenu = defineCompound({
           ...rest
         } = props;
         return (
-          <RadixDropdownMenu.Item ref={ref} {...rest} {...getStyles()}>
+          <RadixDropdownMenu.Item
+            ref={ref}
+            data-inset={inset || undefined}
+            {...rest}
+            {...getStyles()}
+          >
             {children}
             {shortcut !== undefined ? (
               <span {...getStyles({ part: 'shortcut' })}>{shortcut}</span>
@@ -337,9 +349,15 @@ export const DropdownMenu = defineCompound({
     // Label -- structural, non-interactive row.
     label: {
       render: ({ props, getStyles, children, ref }: any) => {
-        const { className, style, classNames, styles, unstyled, attributes, vars, ...rest } = props;
+        const { inset, className, style, classNames, styles, unstyled, attributes, vars, ...rest } =
+          props;
         return (
-          <RadixDropdownMenu.Label ref={ref} {...rest} {...getStyles()}>
+          <RadixDropdownMenu.Label
+            ref={ref}
+            data-inset={inset || undefined}
+            {...rest}
+            {...getStyles()}
+          >
             {children}
           </RadixDropdownMenu.Label>
         );
@@ -382,6 +400,7 @@ export const DropdownMenu = defineCompound({
       render: ({ props, getStyles, children, ref }: any) => {
         const {
           shortcut,
+          inset,
           className,
           style,
           classNames,
@@ -392,7 +411,12 @@ export const DropdownMenu = defineCompound({
           ...rest
         } = props;
         return (
-          <RadixDropdownMenu.SubTrigger ref={ref} {...rest} {...getStyles()}>
+          <RadixDropdownMenu.SubTrigger
+            ref={ref}
+            data-inset={inset || undefined}
+            {...rest}
+            {...getStyles()}
+          >
             {children}
             {shortcut !== undefined ? (
               <span {...getStyles({ part: 'shortcut' })}>{shortcut}</span>

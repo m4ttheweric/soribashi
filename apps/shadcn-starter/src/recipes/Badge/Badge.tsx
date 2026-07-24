@@ -21,6 +21,8 @@ const classes = {
     '[&>svg]:pointer-events-none [&>svg]:size-3',
     // band 2: var-indirection
     'bg-(--badge-bg) text-(--badge-color) border-(--badge-border)',
+    // donor's [a&]: hover applies only when the badge renders as an anchor
+    '[a&]:hover:bg-(--badge-hover)',
     // band 3: data-attribute structural variants
     'data-[variant=filled]:border-transparent data-[variant=subtle]:border-transparent',
     'data-[variant=outline]:bg-transparent',

@@ -29,10 +29,11 @@ const classes = {
     'disabled:pointer-events-none disabled:opacity-50',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     // band 2: var-indirection (vocabulary-driven; values flow at runtime)
-    'h-(--sb-button-h) px-(--sb-button-px)',
+    'h-(--sb-button-h) px-(--sb-button-px) has-[>svg]:px-(--sb-button-px-icon)',
     'border border-(--button-border) bg-(--button-bg) text-(--button-color)',
     'hover:bg-(--button-hover)',
     // band 3: data-attribute-scoped structural variant utilities
+    'data-[variant=outline]:shadow-xs',
     'data-[variant=outline]:hover:bg-(--color-neutral-100) data-[variant=outline]:hover:text-(--text-default)',
     'data-[variant=ghost]:hover:bg-(--color-neutral-100) data-[variant=ghost]:hover:text-(--text-default)',
     'data-[variant=link]:underline-offset-4 data-[variant=link]:hover:underline',
@@ -64,6 +65,7 @@ export const Button = definePolymorphicComponent<
         ...(auto.root ?? {}),
         '--sb-button-h': `var(--button-height-${(props as { size?: string }).size ?? 'md'})`,
         '--sb-button-px': `var(--button-px-${(props as { size?: string }).size ?? 'md'})`,
+        '--sb-button-px-icon': `var(--button-px-icon-${(props as { size?: string }).size ?? 'md'})`,
       },
     };
   },
