@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { tabsVariants as VARIANTS } from '../theme/index.ts';
 
+const ORIENTATIONS = ['horizontal', 'vertical'] as const;
+
 export function TabsDemo() {
   const [variant, setVariant] = useState<(typeof VARIANTS)[number]>('default');
+  const [orientation, setOrientation] = useState<(typeof ORIENTATIONS)[number]>('horizontal');
 
   return (
     <div className="space-y-8">
@@ -23,7 +26,27 @@ export function TabsDemo() {
           </button>
         ))}
       </div>
-      <Tabs variant={variant} defaultValue="account" className="w-[400px]">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-(--text-muted)">orientation:</span>
+        {ORIENTATIONS.map((o) => (
+          <button
+            key={o}
+            type="button"
+            onClick={() => setOrientation(o)}
+            className={`rounded-md border border-(--border-default) px-3 py-1 text-sm ${
+              orientation === o ? 'bg-(--accent-default) font-medium' : 'hover:bg-(--accent-muted)'
+            }`}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+      <Tabs
+        variant={variant}
+        orientation={orientation}
+        defaultValue="account"
+        className="w-[400px]"
+      >
         <Tabs.List>
           <Tabs.Trigger value="account">Account</Tabs.Trigger>
           <Tabs.Trigger value="password">Password</Tabs.Trigger>

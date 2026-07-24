@@ -24,28 +24,41 @@ import { defineCompound } from '../../builders.ts';
  *     which panel it is.
  */
 
-export const variants = ['default', 'outline', 'pills'] as const;
+// `line` is the donor's own second variant; `outline` and `pills` are this
+// theme's additions. Vocabulary is theme-declared (CLAUDE.md invariant 2), so
+// adopting the donor's value is additive rather than a replacement.
+export const variants = ['default', 'outline', 'pills', 'line'] as const;
 
 const classes = {
-  root: '',
+  // group/tabs is what the orientation-scoped selectors on list and trigger
+  // key off; Radix sets data-orientation on this element.
+  root: 'group/tabs flex gap-2 data-[orientation=horizontal]:flex-col',
   list: [
-    'inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]',
+    'group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px]',
     'bg-(--accent-muted) text-(--text-muted)',
+    'group-data-[orientation=horizontal]/tabs:h-9',
+    'group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col',
     'data-[variant=outline]:border data-[variant=outline]:border-(--border-default) data-[variant=outline]:bg-transparent',
     'data-[variant=pills]:bg-transparent',
+    'data-[variant=line]:gap-1 data-[variant=line]:rounded-none data-[variant=line]:bg-transparent',
   ].join(' '),
   trigger: [
     'relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-transparent px-2 py-1',
     'text-sm font-medium transition-all',
+    'group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start',
     'focus-visible:border-(--border-focus) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     'disabled:pointer-events-none disabled:opacity-50',
     'data-[state=active]:bg-(--surface-raised) data-[state=active]:text-(--text-default) data-[state=active]:shadow',
     'data-[variant=outline]:data-[state=active]:border-b-2 data-[variant=outline]:data-[state=active]:border-(--border-focus) data-[variant=outline]:data-[state=active]:shadow-none',
     'data-[variant=pills]:rounded-full',
+    // the line variant swaps the raised pill for an underline drawn as ::after
+    'data-[variant=line]:bg-transparent data-[variant=line]:data-[state=active]:bg-transparent data-[variant=line]:data-[state=active]:shadow-none',
+    'after:absolute after:bg-(--text-default) after:opacity-0 after:transition-opacity',
+    'group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5',
+    'group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5',
+    'data-[variant=line]:data-[state=active]:after:opacity-100',
   ].join(' '),
-  content: [
-    'mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
-  ].join(' '),
+  content: 'flex-1 outline-none',
 };
 
 export interface TabsRootProps {
@@ -53,6 +66,8 @@ export interface TabsRootProps {
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
+  /** Drives the orientation-scoped layout on list and trigger. */
+  orientation?: 'horizontal' | 'vertical';
 }
 
 export interface TabsListProps {
@@ -84,6 +99,7 @@ export const Tabs = defineCompound({
           value,
           defaultValue,
           onValueChange,
+          orientation,
           variant,
           className,
           style,
@@ -108,6 +124,7 @@ export const Tabs = defineCompound({
             value={value}
             defaultValue={defaultValue}
             onValueChange={onValueChange}
+            orientation={orientation ?? 'horizontal'}
             {...rest}
             {...getStyles()}
           >
