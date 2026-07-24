@@ -14,6 +14,7 @@ playwright-report/
 tests/browser-parity/playwright-report/
 
 .claude/settings.local.json
+.claude/worktrees/
 .local-dev/
 
 .vscode/
