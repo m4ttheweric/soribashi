@@ -1,3 +1,18 @@
+/**
+ * The donor commit every entry below was converted from. Parity checks diff
+ * against this pinned tree, never against the live docs site: ui.shadcn.com
+ * renders its own page chrome alongside the demos, so measuring it confuses
+ * "our recipe drifted" with "we sampled the wrong element".
+ *
+ * Clone: git clone https://github.com/shadcn-ui/ui.git ~/Documents/GitHub/shadcn-ui
+ * Pin:   git checkout 093a538453d3455159fb12a9cc897e39826f9522
+ * Source of truth for a component: apps/v4/registry/new-york-v4/ui/{registryItem}.tsx
+ */
+export const DONOR_COMMIT = '093a538453d3455159fb12a9cc897e39826f9522';
+
+/** Where {registryItem}.tsx lives inside a donor checkout. */
+export const DONOR_REGISTRY_PATH = 'apps/v4/registry/new-york-v4/ui';
+
 export interface ManifestEntry {
   component: string;
   category: 1 | 2 | 3 | 4 | 'integration';
@@ -11,7 +26,13 @@ export interface ManifestEntry {
   upstream: {
     registryItem: string;
     style: 'new-york';
+    /** Donor commit this entry was converted from; see DONOR_COMMIT. */
     registryVersion: string;
+    /**
+     * First 16 hex of sha256 over the donor file at registryVersion:
+     * `shasum -a 256 apps/v4/registry/new-york-v4/ui/{registryItem}.tsx`
+     * A mismatch means the donor moved, so re-verify before assuming our recipe is wrong.
+     */
     contentHash: string;
   };
   wave: number;
@@ -37,8 +58,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'button',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: 'cc36af0f8b5019c3',
     },
     wave: 1,
   },
@@ -57,8 +78,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'badge',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: '46a0de5224f6a5d5',
     },
     wave: 1,
   },
@@ -73,8 +94,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'card',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: 'c48dd3b96be90a70',
     },
     wave: 1,
   },
@@ -89,8 +110,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'tooltip',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: 'a0784eb77831a799',
     },
     wave: 2,
   },
@@ -119,8 +140,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'dialog',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: '604b7782195aef76',
     },
     wave: 2,
   },
@@ -151,8 +172,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'dropdown-menu',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: '98f0dcdae38225b7',
     },
     wave: 2,
   },
@@ -168,8 +189,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'tabs',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: '865d0194331b9b2b',
     },
     wave: 3,
   },
@@ -186,8 +207,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'accordion',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: 'a4f153089ba886df',
     },
     wave: 3,
   },
@@ -203,8 +224,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'field',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: '37f60b671549593f',
     },
     wave: 4,
   },
@@ -219,8 +240,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'checkbox',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: 'b23ab9d4deeedf2a',
     },
     wave: 4,
   },
@@ -251,8 +272,8 @@ export const manifest: ManifestEntry[] = [
     upstream: {
       registryItem: 'select',
       style: 'new-york',
-      registryVersion: '2025-06-01',
-      contentHash: 'TBD',
+      registryVersion: '093a538453d3455159fb12a9cc897e39826f9522',
+      contentHash: '0b796a108a4eb5ba',
     },
     wave: 4,
   },
