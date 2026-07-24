@@ -40,7 +40,6 @@ function assertKeysMatchVocabulary(
 
 assertKeysMatchVocabulary(BUTTON_DIMENSIONS, theme.vocabulary.size.values, 'BUTTON_DIMENSIONS');
 
-
 export default {
   theme,
   output: {
