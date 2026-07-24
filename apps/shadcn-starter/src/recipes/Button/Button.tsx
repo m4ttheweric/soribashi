@@ -24,7 +24,8 @@ const classes = {
     // band 1: structural literals (donor-faithful)
     'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md',
     'text-sm font-medium transition-all outline-none',
-    'focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'focus-visible:border-(--border-focus) focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'aria-invalid:border-(--color-danger-500) aria-invalid:ring-(--color-danger-500)/20 dark:aria-invalid:ring-(--color-danger-500)/40',
     'disabled:pointer-events-none disabled:opacity-50',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     // band 2: var-indirection (vocabulary-driven; values flow at runtime)

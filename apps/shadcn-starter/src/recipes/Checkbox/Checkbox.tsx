@@ -10,7 +10,8 @@ const selectors = ['root', 'indicator'] as const;
 const classes = {
   root: [
     'peer size-4 shrink-0 rounded-[4px] border border-(--border-input) shadow-xs outline-none transition-shadow',
-    'focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'focus-visible:border-(--border-focus) focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'aria-invalid:border-(--color-danger-500) aria-invalid:ring-(--color-danger-500)/20 dark:aria-invalid:ring-(--color-danger-500)/40',
     'disabled:cursor-not-allowed disabled:opacity-50',
     'data-[state=checked]:bg-(--color-primary-500) data-[state=checked]:text-(--color-primary-foreground)',
     'data-[state=checked]:border-transparent',

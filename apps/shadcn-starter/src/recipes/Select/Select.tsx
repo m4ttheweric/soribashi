@@ -42,7 +42,8 @@ const classes = {
   trigger: [
     'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-(--border-input)',
     'bg-(--surface-raised) px-3 py-2 text-sm shadow-xs focus:outline-none',
-    'focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'focus-visible:border-(--border-focus) focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'aria-invalid:border-(--color-danger-500) aria-invalid:ring-(--color-danger-500)/20 dark:aria-invalid:ring-(--color-danger-500)/40',
     'disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
     'data-[placeholder]:text-(--text-muted)',
   ].join(' '),

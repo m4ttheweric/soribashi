@@ -16,7 +16,8 @@ const classes = {
   root: [
     // band 1: structural (donor-faithful: shadcn badge.tsx)
     'inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow]',
-    'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'focus:outline-none focus-visible:border-(--border-focus) focus-visible:ring-[3px] focus-visible:ring-(--border-focus)/50',
+    'aria-invalid:border-(--color-danger-500) aria-invalid:ring-(--color-danger-500)/20 dark:aria-invalid:ring-(--color-danger-500)/40',
     '[&>svg]:pointer-events-none [&>svg]:size-3',
     // band 2: var-indirection
     'bg-(--badge-bg) text-(--badge-color) border-(--badge-border)',

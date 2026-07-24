@@ -37,7 +37,7 @@ const classes = {
   trigger: [
     'relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-transparent px-2 py-1',
     'text-sm font-medium transition-all',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
+    'focus-visible:border-(--border-focus) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--border-focus)',
     'disabled:pointer-events-none disabled:opacity-50',
     'data-[state=active]:bg-(--surface-raised) data-[state=active]:text-(--text-default) data-[state=active]:shadow',
     'data-[variant=outline]:data-[state=active]:border-b-2 data-[variant=outline]:data-[state=active]:border-(--border-focus) data-[variant=outline]:data-[state=active]:shadow-none',
