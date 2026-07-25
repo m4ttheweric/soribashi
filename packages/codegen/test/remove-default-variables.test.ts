@@ -1,6 +1,7 @@
 import type { ThemeDefinition } from '@soribashi/theme';
-import { createTheme } from '@soribashi/theme';
+import { createTheme, defaultTokens } from '@soribashi/theme';
 import { describe, expect, it } from 'vitest';
+import { emitCss } from '../src/emit-css.ts';
 import { removeDefaultVariables } from '../src/remove-default-variables.ts';
 
 // Helper to avoid repeating the required-field boilerplate for minimal test themes.
@@ -74,5 +75,36 @@ describe('removeDefaultVariables', () => {
     } as ThemeDefinition);
     const dedup = removeDefaultVariables(theme);
     expect(dedup.scope).toBe('.test-theme');
+  });
+
+  // Regression: a dark colour override on an otherwise-default light shade
+  // used to vanish entirely. dedupColorScale dropped the light entry (it
+  // matched defaultTokens) while dedupPartialTokens kept the dark entry (it
+  // did not match defaultDarkTokens); emitTokenLines's pairing then walked
+  // light keys only, so the surviving dark entry was never visited and never
+  // emitted in either scheme. Fixed by threading the deduped dark colour
+  // keys into the light dedup as forced keepers.
+  it('retains the light entry for a dark-only-overridden default colour, so the override is not lost', () => {
+    // Light stays exactly at the soribashi defaults; only dark.colors.neutral.50
+    // is a real (non-default) override.
+    const theme = createTheme({
+      tokens: defaultTokens,
+      dark: { colors: { neutral: { '50': 'oklch(0.15 0 0)' } } },
+    });
+
+    const dedup = removeDefaultVariables(theme);
+    // The light default value survives (needed as light-dark()'s first arg),
+    // even though on its own it's identical to defaultTokens.colors.neutral.50
+    // and would normally be dropped.
+    expect(dedup.tokens.colors.neutral?.['50']).toBe(defaultTokens.colors.neutral?.['50']);
+    // A neutral shade with no dark override is still dropped as normal.
+    expect(dedup.tokens.colors.neutral?.['100']).toBeUndefined();
+    // The dark override survives too.
+    expect(dedup.dark.colors?.neutral?.['50']).toBe('oklch(0.15 0 0)');
+
+    const css = emitCss(dedup);
+    expect(css).toContain(
+      `--color-neutral-50: light-dark(${defaultTokens.colors.neutral?.['50']}, oklch(0.15 0 0));`,
+    );
   });
 });
