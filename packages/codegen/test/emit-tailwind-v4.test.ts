@@ -37,14 +37,17 @@ describe('emitTailwindV4', () => {
       tokens: {
         colors: {},
         radius: { md: '0.5rem' },
-        spacing: { lg: '1rem' },
+        // `cozy` rather than `lg`: keys that collide with Tailwind's
+        // --container-* scale are withheld by default. See
+        // tailwind-v4-spacing-collision.test.ts.
+        spacing: { cozy: '1rem' },
         fontSize: { md: '1rem' },
       },
     });
 
     const css = emitTailwindV4(theme);
     expect(css).toContain('--radius-md: 0.5rem;');
-    expect(css).toContain('--spacing-lg: 1rem;');
+    expect(css).toContain('--spacing-cozy: 1rem;');
     // Tailwind v4 reads font sizes from the --text-* namespace, not --font-size-*.
     expect(css).toContain('--text-md: 1rem;');
   });

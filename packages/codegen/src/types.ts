@@ -1,4 +1,5 @@
 import type { ResolvedTheme } from '@soribashi/theme';
+import type { SpacingUtilitiesMode } from './emit-tailwind-v4.ts';
 
 export interface CodegenOutput {
   /** Path (relative to project root) where theme.css will be written */
@@ -9,8 +10,13 @@ export interface CodegenOutput {
 
 export type TailwindOutput =
   | { mode: 'v3'; configPath: string }
-  | { mode: 'v4'; themeCssPath: string }
-  | { mode: 'both'; configPath: string; themeCssPath: string };
+  | { mode: 'v4'; themeCssPath: string; spacingUtilities?: SpacingUtilitiesMode }
+  | {
+      mode: 'both';
+      configPath: string;
+      themeCssPath: string;
+      spacingUtilities?: SpacingUtilitiesMode;
+    };
 
 export interface CodegenConfig {
   theme: ResolvedTheme;

@@ -77,11 +77,13 @@ These cannot be diffed from source. Drive them in the browser:
 
 ## Known failure patterns
 
-1. **Named sizing utilities silently collapse.** `max-w-sm`, `size-md`, `h-lg` and friends resolve to a few pixels. Use arbitrary values (`max-w-[24rem]`). Symptom: unexpectedly narrow containers, per-word text wrapping.
+1. **Named sizing utilities silently collapsed.** FIXED in the emitter; kept here because the workarounds it caused are still scattered through older recipes and demo pages.
 
-   The cause is NOT that `@theme` replaces the Tailwind defaults; it merges, and there is no `--*: initial` in the generated CSS. It is that codegen emits **named** spacing keys (`--spacing-xs/sm/md/lg/xl/2xl/3xl`), and Tailwind v4 resolves sizing utilities off the spacing namespace, so `max-w-sm` compiles to `max-width: var(--spacing-sm)` (0.5rem). Numeric utilities are unaffected: `h-9` still compiles to `calc(var(--spacing) * 9)`.
+   `max-w-sm`, `size-md`, `w-lg` and friends used to resolve to a few pixels. The cause was NOT that `@theme` replaces the Tailwind defaults; it merges, and there is no `--*: initial` in the generated CSS. It was that codegen emitted **named** spacing keys (`--spacing-xs/sm/md/lg/xl/2xl/3xl`), and Tailwind v4 resolves the sizing utilities off `--spacing-*` before `--container-*`, so `max-w-sm` compiled to `max-width: var(--spacing-sm)` (0.5rem) instead of 24rem. Numeric utilities were never affected: `h-9` compiles to `calc(var(--spacing) * 9)`.
 
-   Adding a container or max-width scale to `@theme` does NOT fix it: with `--container-sm` present, `max-w-sm` still resolves to `var(--spacing-sm)`. The real fix is in the emitter, either dropping the named `--spacing-*` keys or namespacing them. Until that lands, treat every named sizing utility as a trap.
+   Re-declaring `--container-*` did not fix it, and neither did `--spacing-*: initial`. `emitTailwindV4` now withholds spacing keys that collide with Tailwind's `--container-*` scale (`3xs 2xs xs sm md lg xl 2xl…7xl`) and names them in a comment in the generated `tailwind.css`. Named sizing utilities are safe to use again and should match the donor verbatim.
+
+   **What this means for parity work:** an arbitrary value where the donor has a named utility (`sm:max-w-[32rem]` against the donor's `sm:max-w-lg`) is a leftover workaround, not a deliberate divergence. Report it as `differs` and restore the donor token. Spacing utilities on colliding names (`p-md`, `gap-sm`) do not exist by design; recipes route spacing through `--sb-{component}-*` vars, and the donor uses numeric spacing anyway.
 2. A compound part sharing a classes slot with an internal element inherits its positioning (this produced the Dialog close-button leak, fixed by splitting `close` from `closeButton`).
 3. Donor conditional-sibling selectors (`[.border-t]:pt-6`, `[.border-b]:pb-6`) are easy to drop when splitting a class string into bands. Grep the donor string for `[.` before declaring a selector matched.
 

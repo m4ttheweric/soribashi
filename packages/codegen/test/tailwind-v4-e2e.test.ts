@@ -47,18 +47,20 @@ describe('emitTailwindV4 — Tailwind v4 compile', () => {
       tokens: {
         colors: { primary: { '500': 'hsl(217 91% 60%)' } },
         radius: { md: '0.5rem', lg: '0.75rem' },
-        spacing: { md: '0.75rem', lg: '1.5rem' },
+        // Non-colliding spacing keys: `md`/`lg` are withheld under the default
+        // 'safe' mode because they shadow Tailwind's --container-* scale.
+        spacing: { cozy: '0.75rem', roomy: '1.5rem' },
         fontSize: { md: '1rem', lg: '1.125rem' },
       },
     });
 
     const result = await compile(wrap(emitTailwindV4(theme)));
-    const css = result.build(['rounded-md', 'rounded-lg', 'p-md', 'm-lg', 'text-md']);
+    const css = result.build(['rounded-md', 'rounded-lg', 'p-cozy', 'm-roomy', 'text-md']);
 
     expect(css).toContain('.rounded-md');
     expect(css).toContain('.rounded-lg');
-    expect(css).toContain('.p-md');
-    expect(css).toContain('.m-lg');
+    expect(css).toContain('.p-cozy');
+    expect(css).toContain('.m-roomy');
     expect(css).toContain('.text-md');
   });
 
@@ -73,7 +75,7 @@ describe('emitTailwindV4 — Tailwind v4 compile', () => {
       },
     });
 
-    const result = await compile(wrap(emitTailwindV4(theme)));
+    const result = await compile(wrap(emitTailwindV4(theme, { spacingUtilities: 'all' })));
     const css = result.build(['md:bg-primary-500', 'lg:p-md']);
 
     expect(css).toContain('48rem');

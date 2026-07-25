@@ -16,6 +16,8 @@ export type {
   CssVariablesAddition,
   CssVariablesResolver,
 } from './types.ts';
+export type { EmitTailwindV4Options, SpacingUtilitiesMode } from './emit-tailwind-v4.ts';
+export type { EmitTailwindV3Options } from './emit-tailwind-v3.ts';
 export type { BuildResult } from './build.ts';
 export type { WatchHandle, WatchOptions } from './watch.ts';
 export type { CliOptions } from './cli.ts';

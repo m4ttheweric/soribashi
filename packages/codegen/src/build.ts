@@ -43,7 +43,10 @@ export async function build(config: CodegenConfig): Promise<BuildResult> {
       );
       written.push(tw.configPath);
     } else if (tw.mode === 'v4') {
-      await writeFileEnsureDir(tw.themeCssPath, emitTailwindV4(config.theme));
+      await writeFileEnsureDir(
+        tw.themeCssPath,
+        emitTailwindV4(config.theme, { spacingUtilities: tw.spacingUtilities }),
+      );
       written.push(tw.themeCssPath);
     } else if (tw.mode === 'both') {
       await writeFileEnsureDir(
@@ -51,7 +54,10 @@ export async function build(config: CodegenConfig): Promise<BuildResult> {
         emitTailwindV3(config.theme, { emitCompanionHsl: resolvedCompanion }),
       );
       written.push(tw.configPath);
-      await writeFileEnsureDir(tw.themeCssPath, emitTailwindV4(config.theme));
+      await writeFileEnsureDir(
+        tw.themeCssPath,
+        emitTailwindV4(config.theme, { spacingUtilities: tw.spacingUtilities }),
+      );
       written.push(tw.themeCssPath);
     }
   }

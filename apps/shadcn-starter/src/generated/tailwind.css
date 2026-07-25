@@ -79,13 +79,10 @@
   --radius-md: 0.5rem;
   --radius-sm: 0.375rem;
   --radius-xl: 0.875rem;
-  --spacing-2xl: 2rem;
-  --spacing-3xl: 3rem;
-  --spacing-lg: 1rem;
-  --spacing-md: 0.75rem;
-  --spacing-sm: 0.5rem;
-  --spacing-xl: 1.5rem;
-  --spacing-xs: 0.25rem;
+  /* Withheld from --spacing-*: 2xl, 3xl, lg, md, sm, xl, xs. These keys collide with Tailwind's --container-* scale,
+     and --spacing-* wins for max-w-/w-/min-w-/size-/basis-, which would silently shrink them.
+     The values are still emitted into theme.css, so p-(--spacing-2xl) works. Set
+     output.tailwind.spacingUtilities: 'all' to emit them as utilities anyway. */
   --text-2xl: 1.5rem;
   --text-3xl: 1.875rem;
   --text-base: 1rem;
