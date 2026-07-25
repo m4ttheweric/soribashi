@@ -19,9 +19,9 @@ Slice 1a (2026-07-24, its own record lives in `docs/superpowers/sessions/`) rebu
 - **The `authoring-a-recipe` skill.** `.claude/skills/authoring-a-recipe/SKILL.md` replaces the stale `visual-parity-check` skill (which targeted the now-removed `apps/shadcn-starter`) with the agent-facing checklist for adding or changing a `packages/ui` recipe: four-file layout, builder selection, the two CLAUDE.md invariants, CSS rules, data-attribute conventions, per-tier test expectations, the post-authoring manifest regen step, and the traps that have already bitten someone once.
 - **README reframed** around what this repo actually demonstrates: soribashi the authoring tool, `@soribashi/ui` the thing built with it, and the verification story that backs its claims.
 
-### Gate state (2026-07-25, branch `feat/slice-1b-vertical`, HEAD before this task's commit `eba1019`)
+### Gate state (2026-07-25, branch `feat/slice-1b-vertical`, at the end of the final review fix wave)
 
-- `bun run test`: 1234 tests passed across 107 files (tiers 1 + 2 across every package, including the contrast matrix, reskin guard, and no-hardcoded-values scan).
+- `bun run test`: 1233 tests passed across 107 files (tiers 1 + 2 across every package, including the contrast matrix, reskin guard, and no-hardcoded-values scan; the count dropped by one when the final fix wave merged two hardcoded registry drift tests into one manifest-derived test with identical byte-comparison coverage).
 - `bun run typecheck`: clean.
 - `bun run lint`: 0 errors, 479 baseline warnings (pre-existing `noExplicitAny` in Mantine-adapted block internals; not part of this slice's scope).
 - `bun run test:browser`: 46/46 Playwright browser-parity tests passed.

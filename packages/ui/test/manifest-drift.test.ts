@@ -36,6 +36,9 @@ describe('manifest and registry drift', () => {
 
   it('every manifest recipe has a matching, drift-free registry item file', async () => {
     const { manifest, items } = await buildRegistryArtifacts();
+    // Assumes registry item names are exactly the lowercased recipe name. True
+    // for single-word recipes; if a multi-word recipe (e.g. AlertDialog) ever
+    // kebab-cases differently in buildRecipeRegistryItem, update BOTH in step.
     const expectedNames = manifest.recipes.map((r) => r.name.toLowerCase()).sort();
     const actualNames = items.map((item) => item.name).sort();
     expect(actualNames, 'registry items must cover every recipe the manifest lists').toEqual(
