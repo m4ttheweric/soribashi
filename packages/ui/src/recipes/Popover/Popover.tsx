@@ -23,25 +23,53 @@ type PopoverSlotKey =
 type Ctx<TProps> = PartRenderCtx<TProps, object, readonly [], PopoverSlotKey>;
 
 type RootProps = BasePopover.Root.Props;
-type TriggerProps = BasePopover.Trigger.Props;
+
+// `render` is Base UI's own polymorphism mechanism (see the `as` question
+// note below the compound definition): every part-prop alias below omits it
+// so it is a type error at the call site, not just stripped at runtime.
+type TriggerProps = Omit<BasePopover.Trigger.Props, 'render'>;
 
 /**
  * Content composes Portal + Positioner + Popup + Arrow into a single public
- * part. `container` forwards to the Portal — load-bearing for Tasks 10/11:
- * a default-portalled popup renders under `<body>`, escaping any `.tenant-*`
- * or `.dark` scoped-theme wrapper, so a consumer must be able to re-anchor
- * the portal inside that scope via this prop. Everything else in `rest`
- * forwards to the Positioner (side/align/sideOffset/...); `children` render
- * inside the Popup.
+ * part. `container` forwards to the Portal: load-bearing for Tasks 10/11,
+ * since a default-portalled popup renders under `<body>`, escaping any
+ * `.tenant-*` or `.dark` scoped-theme wrapper, so a consumer must be able to
+ * re-anchor the portal inside that scope via this prop. Everything else in
+ * `rest` forwards to the Positioner (side/align/sideOffset/...); `children`
+ * render inside the Popup.
  */
-type ContentProps = Omit<BasePopover.Positioner.Props, 'children'> & {
+type ContentProps = Omit<BasePopover.Positioner.Props, 'children' | 'render'> & {
   container?: BasePopover.Portal.Props['container'];
   children?: ReactNode;
 };
 
-type TitleProps = BasePopover.Title.Props;
-type DescriptionProps = BasePopover.Description.Props;
-type CloseProps = BasePopover.Close.Props;
+type TitleProps = Omit<BasePopover.Title.Props, 'render'>;
+type DescriptionProps = Omit<BasePopover.Description.Props, 'render'>;
+type CloseProps = Omit<BasePopover.Close.Props, 'render'>;
+
+/**
+ * Strips the Styles API's own framework keys (consumed internally via
+ * getStyles, not valid DOM/Base UI props) plus Base UI's `render` prop
+ * (soribashi's compound parts do not expose it publicly). Shared by every
+ * leaf part below so a future part cannot silently drop one of these the
+ * way `render` was originally dropped from this stripping list.
+ */
+function stripFrameworkKeys<
+  T extends Partial<
+    Record<'classNames' | 'styles' | 'vars' | 'attributes' | 'unstyled' | 'render', unknown>
+  >,
+>(props: T): Omit<T, 'classNames' | 'styles' | 'vars' | 'attributes' | 'unstyled' | 'render'> {
+  const {
+    classNames: _classNames,
+    styles: _styles,
+    vars: _vars,
+    attributes: _attributes,
+    unstyled: _unstyled,
+    render: _render,
+    ...rest
+  } = props;
+  return rest;
+}
 
 const PopoverCompound = defineCompound({
   name: 'Popover',
@@ -54,19 +82,9 @@ const PopoverCompound = defineCompound({
     },
     trigger: {
       render: ({ props, getStyles, ref }: Ctx<TriggerProps>) => {
-        // classNames/styles/vars/attributes/unstyled are the Styles API's own
-        // config surface (consumed internally via getStyles, not valid DOM/Base
-        // UI props); stripped the same way Button.tsx strips them before spread.
-        const {
-          classNames: _classNames,
-          styles: _styles,
-          vars: _vars,
-          attributes: _attributes,
-          unstyled: _unstyled,
-          ...rest
-        } = props;
+        const rest = stripFrameworkKeys(props);
         // PartRenderCtx.ref is fixed as Ref<unknown> (not parametrized per
-        // part element type — see define-compound.tsx's PartRenderCtx), so a
+        // part element type, see define-compound.tsx's PartRenderCtx), so a
         // narrowing cast is required at each concrete Base UI element; the
         // runtime ref object/callback passes through defineCompound's
         // forwardRef wiring unchanged, only the static type is widened.
@@ -82,13 +100,9 @@ const PopoverCompound = defineCompound({
           container,
           className: _className,
           style: _style,
-          classNames: _classNames,
-          styles: _styles,
-          vars: _vars,
-          attributes: _attributes,
-          unstyled: _unstyled,
-          ...rest
+          ...withoutOwnProps
         } = props;
+        const rest = stripFrameworkKeys(withoutOwnProps);
         return (
           <BasePopover.Portal container={container}>
             <BasePopover.Positioner sideOffset={8} {...rest} {...getStyles({ part: 'positioner' })}>
@@ -103,14 +117,7 @@ const PopoverCompound = defineCompound({
     },
     title: {
       render: ({ props, getStyles, ref }: Ctx<TitleProps>) => {
-        const {
-          classNames: _classNames,
-          styles: _styles,
-          vars: _vars,
-          attributes: _attributes,
-          unstyled: _unstyled,
-          ...rest
-        } = props;
+        const rest = stripFrameworkKeys(props);
         return (
           <BasePopover.Title ref={ref as Ref<HTMLHeadingElement>} {...rest} {...getStyles()} />
         );
@@ -118,14 +125,7 @@ const PopoverCompound = defineCompound({
     },
     description: {
       render: ({ props, getStyles, ref }: Ctx<DescriptionProps>) => {
-        const {
-          classNames: _classNames,
-          styles: _styles,
-          vars: _vars,
-          attributes: _attributes,
-          unstyled: _unstyled,
-          ...rest
-        } = props;
+        const rest = stripFrameworkKeys(props);
         return (
           <BasePopover.Description
             ref={ref as Ref<HTMLParagraphElement>}
@@ -137,14 +137,7 @@ const PopoverCompound = defineCompound({
     },
     close: {
       render: ({ props, getStyles, ref }: Ctx<CloseProps>) => {
-        const {
-          classNames: _classNames,
-          styles: _styles,
-          vars: _vars,
-          attributes: _attributes,
-          unstyled: _unstyled,
-          ...rest
-        } = props;
+        const rest = stripFrameworkKeys(props);
         return <BasePopover.Close ref={ref as Ref<HTMLButtonElement>} {...rest} {...getStyles()} />;
       },
     },
@@ -152,12 +145,12 @@ const PopoverCompound = defineCompound({
 });
 
 /**
- * defineCompound's root part is designed to be used bare (`<PopoverCompound>`
- * — see define-compound.test.tsx's Cycle 7.1; `parts.root` is deliberately
+ * defineCompound's root part is designed to be used bare (`<PopoverCompound>`,
+ * see define-compound.test.tsx's Cycle 7.1; `parts.root` is deliberately
  * excluded from the dotted namespace, only `Trigger`/`Content`/`Title`/
  * `Description`/`Close` are attached). This recipe's call sites are meant to
  * read `Popover.Root`, `Popover.Trigger`, ... uniformly, so `Root` is
- * aliased here to the same component rather than exposed bare — a
+ * aliased here to the same component rather than exposed bare: a
  * recipe-level ergonomics choice layered on top of the framework mechanics,
  * not a framework change.
  */

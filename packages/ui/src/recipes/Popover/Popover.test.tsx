@@ -46,8 +46,8 @@ describe('Popover (browser)', () => {
     );
     const trigger = screen.getByRole('button', { name: 'Open' });
     await expect.element(trigger).toBeVisible();
-    // No `keepMounted`, so a never-opened popover renders nothing at all —
-    // not just hidden — confirmed against PopoverPortal.js's `mounted ||
+    // No `keepMounted`, so a never-opened popover renders nothing at all,
+    // not just hidden: confirmed against PopoverPortal.js's `mounted ||
     // keepMounted` guard.
     expect(screen.getByRole('dialog').query()).toBeNull();
   });
@@ -163,5 +163,32 @@ describe('Popover (browser)', () => {
     expect(localContainer.contains(dialogEl)).toBe(true);
 
     localContainer.remove();
+  });
+
+  it("does not expose Base UI's render prop on the public Trigger part", async () => {
+    // Compile-time pin: `render` is Base UI's own polymorphism mechanism and
+    // is deliberately omitted from every part's public prop type (see
+    // Popover.tsx's TriggerProps/ContentProps/TitleProps/DescriptionProps/
+    // CloseProps). If this ever stops erroring, the omission regressed.
+    const TriggerWithLeakedRender = () => (
+      // @ts-expect-error: `render` is not part of the public Trigger prop surface
+      <Popover.Trigger render={<span data-testid="leaked-render">nope</span>}>Open</Popover.Trigger>
+    );
+
+    const screen = await wrap(
+      <Popover.Root>
+        <TriggerWithLeakedRender />
+        <Popover.Content>
+          <Popover.Title>Title</Popover.Title>
+        </Popover.Content>
+      </Popover.Root>,
+    );
+
+    // Runtime pin: even if the type check is bypassed (e.g. an `as any` at
+    // a call site), a `render` value must not reach Base UI's element-swap
+    // mechanism. Trigger still renders as a real <button>, not the <span>.
+    const trigger = screen.getByRole('button', { name: 'Open' }).element();
+    expect(trigger.tagName).toBe('BUTTON');
+    expect(screen.container.querySelector('[data-testid="leaked-render"]')).toBeNull();
   });
 });
