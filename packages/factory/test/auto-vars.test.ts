@@ -27,8 +27,12 @@ describe('autoVars', () => {
 
   it('returns hover and active vars when resolver provides them', () => {
     const result = autoVars(theme, 'Button', { intent: 'primary', variant: 'filled' }, true);
-    expect(result.root?.['--button-hover']).toBe('var(--color-primary-600)');
-    expect(result.root?.['--button-active']).toBe('var(--color-primary-700)');
+    expect(result.root?.['--button-hover']).toBe(
+      'color-mix(in oklab, var(--color-primary-500) 90%, black)',
+    );
+    expect(result.root?.['--button-active']).toBe(
+      'color-mix(in oklab, var(--color-primary-500) 80%, black)',
+    );
   });
 
   it('omits hover when resolver does not provide it', () => {

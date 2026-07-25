@@ -27,9 +27,19 @@ describe('defaultIntentResolver', () => {
       expect(result.border).toBe('transparent');
     });
 
-    it('produces hover at intent-600', () => {
-      const result = defaultIntentResolver({ intent: 'danger', variant: 'filled', theme });
-      expect(result.hover).toBe('var(--color-danger-600)');
+    it('derives hover from the resolved background rather than a separate shade', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'filled', theme });
+      // Mixes toward `black`, not `transparent`: mixing toward transparent
+      // reduces alpha, so the painted result depends on whatever surface is
+      // behind the element and flips direction between light and dark
+      // schemes (verified in-browser; see task-11-report.md). Mixing toward
+      // black composites identically regardless of scheme.
+      expect(result.hover).toBe(`color-mix(in oklab, ${result.background} 90%, black)`);
+    });
+
+    it('derives active more strongly than hover', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'filled', theme });
+      expect(result.active).toBe(`color-mix(in oklab, ${result.background} 80%, black)`);
     });
   });
 
