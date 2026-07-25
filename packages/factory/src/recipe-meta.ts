@@ -18,12 +18,17 @@ export interface RecipeMeta {
  * tooling (manifest generation) can trust it as a value, not a mutable bag.
  */
 export function attachRecipeMeta<T extends object>(component: T, meta: RecipeMeta): T {
+  // The nested arrays and defaults object are reference-shared across every
+  // getRecipeMeta() call for this component (they are copied once here, not
+  // per call), so each one must be frozen individually. Freezing only the
+  // outer object would leave them mutable in place, silently corrupting the
+  // value every future caller receives.
   Object.defineProperty(component, 'recipeMeta', {
     value: Object.freeze({
       ...meta,
-      slots: [...meta.slots],
-      vocabularyAxes: [...meta.vocabularyAxes],
-      variants: [...meta.variants],
+      slots: Object.freeze([...meta.slots]),
+      vocabularyAxes: Object.freeze([...meta.vocabularyAxes]),
+      variants: Object.freeze([...meta.variants]),
       defaults: Object.freeze({ ...meta.defaults }),
     }),
     enumerable: false,

@@ -35,6 +35,9 @@ describe('recipe metadata static', () => {
     const meta = getRecipeMeta(Probe);
     expect(meta?.builder).toBe('definePolymorphicComponent');
     expect(Object.isFrozen(meta)).toBe(true);
+    expect(Object.isFrozen(meta?.slots)).toBe(true);
+    expect(Object.isFrozen(meta?.variants)).toBe(true);
+    expect(Object.isFrozen(meta?.defaults)).toBe(true);
     expect(Object.keys(Probe as object)).not.toContain('recipeMeta');
   });
 
