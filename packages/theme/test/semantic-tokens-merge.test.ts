@@ -76,6 +76,6 @@ describe('createTheme: default overlay pairing is scheme-stable', () => {
 
     // A colors.neutral.* reference would flip near-white under the default
     // dark inversion; the default scrim must stay dark in both schemes.
-    expect(theme.semanticTokens.surface.overlay).toBe('hsl(222 47% 11% / 0.6)');
+    expect(theme.semanticTokens.surface.overlay).toBe('oklch(0.2064 0.0388 265.55 / 0.6)');
   });
 });

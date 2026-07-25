@@ -30,7 +30,7 @@ const DEFAULT_SURFACE: Record<string, string> = {
   // Raw value on purpose: a neutral-scale reference inverts under the default
   // dark tokens, turning the scrim near-white. A scrim must stay dark in both
   // schemes, so it bypasses the ramp entirely.
-  overlay: 'hsl(222 47% 11% / 0.6)',
+  overlay: 'oklch(0.2064 0.0388 265.55 / 0.6)',
 };
 
 const DEFAULT_BORDER: Record<string, string> = {
