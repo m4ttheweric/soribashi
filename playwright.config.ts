@@ -41,11 +41,10 @@ export default defineConfig({
     },
   ],
 
-  // No webServer entry: apps/pilot, apps/playground and apps/shadcn-starter were
-  // all removed in slice 1a ("remove the ejected apps", 2026-07-24). Playground's
-  // Vite dev server used to boot here on :5173 for the `blocks` project above —
-  // nothing serves that port now, so `bun run test:browser` cannot connect until
-  // a replacement exists. Slice 1b's apps/workshop is meant to be that
-  // replacement: once it exists, add back a webServer entry that boots it on
-  // :5173 (or repoint the `blocks` project's baseURL at wherever it serves from).
+  webServer: {
+    command: 'bun run dev:workshop',
+    url: 'http://localhost:5173/browser-fixtures.html',
+    reuseExistingServer: !process.env.CI,
+    timeout: 60_000,
+  },
 });

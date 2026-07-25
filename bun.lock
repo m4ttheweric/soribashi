@@ -18,6 +18,7 @@
       "name": "workshop",
       "version": "0.0.0",
       "dependencies": {
+        "@soribashi/blocks": "workspace:*",
         "@soribashi/core": "workspace:*",
         "@soribashi/ui": "workspace:*",
         "react": "^19.2",

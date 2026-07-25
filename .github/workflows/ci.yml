@@ -31,11 +31,6 @@ jobs:
   browser:
     name: Browser parity
     runs-on: ubuntu-latest
-    # Known red: apps/pilot, apps/playground and apps/shadcn-starter were removed in
-    # slice 1a, and playwright.config.ts no longer has a webServer to boot the
-    # `blocks` project's target on :5173. Keep non-blocking until slice 1b's
-    # apps/workshop restores a server for it.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

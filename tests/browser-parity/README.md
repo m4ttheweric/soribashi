@@ -36,7 +36,7 @@ Token reference (browser default 16px/rem):
 
 ```sh
 # From the repo root (worktree or main checkout)
-bunx playwright test
+bun run test:browser
 
 # Run only a specific block's tests
 bunx playwright test --grep "Stack"
@@ -46,7 +46,7 @@ bunx playwright test --reporter=html
 open tests/browser-parity/playwright-report/index.html
 ```
 
-These commands describe how the suite is meant to run once a host app exists again. `apps/playground`, which used to boot the dev server they relied on, was removed in slice 1a (2026-07-24, "remove the ejected apps"), and `playwright.config.ts` no longer has a `webServer` entry. Nothing serves `/browser-fixtures.html` right now, so the suite cannot run until slice 1b provides a replacement host app.
+`playwright.config.ts` has a `webServer` entry that runs `bun run dev:workshop` (the `apps/workshop` Vite dev server, strictPort on :5173) and waits for `/browser-fixtures.html` to respond before the suite starts. Nothing to boot manually: `bun run test:browser` starts the server itself and reuses an already-running one outside CI (`reuseExistingServer: !process.env.CI`).
 
 ### First-time setup
 
@@ -58,19 +58,19 @@ bunx playwright install chromium
 
 ## Fixture page
 
-The fixture used to be rendered at `/browser-fixtures.html` by three files under `apps/playground`, all removed along with the rest of that app in slice 1a:
+The fixture is rendered at `/browser-fixtures.html` by three files under `apps/workshop`, the host app that replaced `apps/playground` (removed in slice 1a):
 
-- **HTML entry**: `apps/playground/browser-fixtures.html` (deleted)
-- **React entry**: `apps/playground/src/test-fixtures/main.tsx` (deleted)
-- **Fixture component**: `apps/playground/src/test-fixtures/BrowserFixtures.tsx` (deleted)
+- **HTML entry**: `apps/workshop/browser-fixtures.html`
+- **React entry**: `apps/workshop/src/test-fixtures/main.tsx`
+- **Fixture component**: `apps/workshop/src/test-fixtures/BrowserFixtures.tsx`
 
-None of these exist anymore. Whichever host app restores `test:browser` in slice 1b needs a fixture page that renders each block with `data-testid="{block}-{n}"` (n=0 default, n=1 common, n=2 stress), matching what `blocks-computed-styles.spec.ts` expects.
+The fixture component mounts its own `SoribashiProvider` with a plain default theme (`createTheme` over `defaultTokens`/`defaultDarkTokens`, no `uiTheme` vocabulary), independent of the workshop app's own theme, and renders each of the 14 blocks with `data-testid="{block}-{n}"` (n=0 default, n=1 common, n=2 stress), matching what `blocks-computed-styles.spec.ts` expects. The entry point pulls in `@soribashi/blocks/style.css` (the block CSS classes) and `apps/workshop/src/generated/theme.css` (the codegen-emitted token custom properties the block CSS resolves `var(--spacing-md)` and friends against).
 
 ## When a test fails
 
 1. **Read the failure message** — it shows the actual computed value from the browser.
 2. **Check if Mantine changed**: compare `packages/blocks/src/{Block}/{Block}.css` against the upstream at `63dafbbf`.
-3. **Check if a token changed**: look at `packages/theme/src/tokens/default-tokens.ts`. (There is no generated `theme.css` right now; codegen has no app config to build against until slice 1b.)
+3. **Check if a token changed**: look at `packages/theme/src/tokens/default-tokens.ts`, or the generated `apps/workshop/src/generated/theme.css` (run `bun run codegen` to regenerate it).
 4. **Common false positives**:
    - `gap` failures often mean a spacing token value changed — update the assertion.
    - `aspect-ratio` is reported as `"N / 1"` (fraction form) by Chromium, not as a float — the tests handle this with `toBeCloseTo`.
