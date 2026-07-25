@@ -6,6 +6,7 @@ import type {
 } from '@soribashi/theme';
 import { emitLayerDeclaration } from './emit-layer.ts';
 import { emitPropertyRegistrations } from './emit-property.ts';
+import { emitVisibilityUtilities } from './emit-visibility.ts';
 import { removeDefaultVariables } from './remove-default-variables.ts';
 import type { EmitCssOptions } from './types.ts';
 
@@ -43,6 +44,12 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   // to end. @property registrations are layered too, per emit-property.ts,
   // so a consumer can override a registration by declaring their own
   // unlayered @property for the same name.
+  //
+  // Visibility utility classes (.sb-hidden-from-*, .sb-visible-from-*,
+  // .sb-light-hidden, .sb-dark-hidden; see emit-visibility.ts) are NOT
+  // token-shaped: they are component-facing utility rules, not custom-property
+  // declarations, so they get their own soribashi.utilities layer below
+  // instead of living inside this one.
   const body: string[] = [];
 
   // :root block
@@ -114,6 +121,17 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
     ...body.map(indentLine),
     '}',
   ];
+
+  // Visibility utilities are opt-out (default on) since every builder emits
+  // their class names unconditionally; `utilities: false` lets a scoped/
+  // tenant emission (see codegen-tenants.ts) skip restating the identical
+  // global rules the root theme.css already provides. Reads `theme`, not
+  // `effectiveTheme`: see emit-visibility.ts for why the dedup pass must not
+  // apply here.
+  if (opts.utilities !== false) {
+    const utilities = emitVisibilityUtilities(theme);
+    lines.push('', '@layer soribashi.utilities {', ...utilities.map(indentLine), '}');
+  }
 
   return `${lines.join('\n')}\n`;
 }

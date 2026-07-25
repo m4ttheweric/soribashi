@@ -9,6 +9,7 @@ export { emitLayerDeclaration } from './emit-layer.ts';
 export { emitPropertyRegistrations } from './emit-property.ts';
 export type { EmitTailwindV4Options, SpacingUtilitiesMode } from './emit-tailwind-v4.ts';
 export { emitTailwindV4 } from './emit-tailwind-v4.ts';
+export { emitVisibilityUtilities } from './emit-visibility.ts';
 export { loadConfig } from './load-config.ts';
 export type {
   CodegenConfig,

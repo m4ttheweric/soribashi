@@ -71,4 +71,15 @@ export interface EmitCssOptions {
    * to `:root`, `.dark`, and (optionally) per-scope blocks.
    */
   cssVariablesResolver?: CssVariablesResolver;
+
+  /**
+   * If false, omits the `soribashi.utilities` layer (the visibility utility
+   * classes: `.sb-hidden-from-*`, `.sb-visible-from-*`, `.sb-light-hidden`,
+   * `.sb-dark-hidden`). These are global, breakpoint-and-darkMode-driven
+   * rules, not per-tenant token values, so a scoped/tenant emission that
+   * already gets them from the root theme.css should pass `false` here
+   * rather than restating identical rules per scope.
+   * @default true
+   */
+  utilities?: boolean;
 }

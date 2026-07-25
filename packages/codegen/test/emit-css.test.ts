@@ -356,7 +356,9 @@ describe('emitCss — @layer and @property wiring', () => {
 
   it('declares layer order before any layered rule appears', () => {
     const css = emitCss(theme);
-    const declarationPos = css.indexOf('@layer soribashi.tokens, soribashi.recipes;');
+    const declarationPos = css.indexOf(
+      '@layer soribashi.tokens, soribashi.recipes, soribashi.utilities;',
+    );
     const blockPos = css.indexOf('@layer soribashi.tokens {');
     expect(declarationPos).toBeGreaterThan(-1);
     expect(blockPos).toBeGreaterThan(declarationPos);
@@ -577,5 +579,66 @@ describe('emitCss zIndex tokens', () => {
     const css = emitCss(theme);
     expect(css).toContain('--z-index-modal: 200;');
     expect(css).not.toContain('light-dark(');
+  });
+});
+
+describe('emitCss visibility utilities (EmitCssOptions.utilities)', () => {
+  it('emits a soribashi.utilities layer with .sb-hidden-from-md guarded by (min-width: 48rem) by default', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme);
+    expect(css).toContain('@layer soribashi.utilities {');
+    expect(css).toContain('.sb-hidden-from-md');
+    expect(css).toContain('(min-width: 48rem)');
+  });
+
+  it('covers every declared breakpoint, including 2xl and 3xl', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme);
+    for (const key of Object.keys(defaultTokens.breakpoint ?? {})) {
+      expect(css).toContain(`.sb-hidden-from-${key}`);
+      expect(css).toContain(`.sb-visible-from-${key}`);
+    }
+  });
+
+  it('utilities layer sits inside the declared layer order', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme);
+    const declarationPos = css.indexOf(
+      '@layer soribashi.tokens, soribashi.recipes, soribashi.utilities;',
+    );
+    const utilitiesBlockPos = css.indexOf('@layer soribashi.utilities {');
+    expect(declarationPos).toBeGreaterThan(-1);
+    expect(utilitiesBlockPos).toBeGreaterThan(declarationPos);
+  });
+
+  it('emits sb-light-hidden / sb-dark-hidden using the theme darkMode selector', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme);
+    expect(css).toContain('.sb-light-hidden');
+    expect(css).toContain('.sb-dark-hidden');
+    expect(css).toContain('.dark .sb-light-hidden');
+    expect(css).toContain('.dark .sb-dark-hidden');
+  });
+
+  it('emitCss(theme, { utilities: false }) emits no .sb- utility class', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, { utilities: false });
+    expect(css).not.toContain('@layer soribashi.utilities');
+    expect(css).not.toMatch(/\.sb-[a-z-]/);
+  });
+
+  it('emitCss(theme, { utilities: false }) still declares the layer in the order (so a later opt-in stays valid)', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, { utilities: false });
+    expect(css).toContain('@layer soribashi.tokens, soribashi.recipes, soribashi.utilities;');
+  });
+
+  it('still emits the full breakpoint set when combined with removeDefaultVariables: utility media queries are not custom-property declarations and must not be deduped away', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, { removeDefaultVariables: true });
+    for (const [key, value] of Object.entries(defaultTokens.breakpoint ?? {})) {
+      expect(css).toContain(`.sb-hidden-from-${key}`);
+      expect(css).toContain(`(min-width: ${value})`);
+    }
   });
 });
