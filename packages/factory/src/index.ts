@@ -1,91 +1,82 @@
 // @soribashi/factory — public API
 
-// Daily-use authoring API
-export { defineComponent } from './define-component.tsx';
-export { definePolymorphicComponent } from './define-polymorphic-component.tsx';
-export { defineGenericComponent } from './define-generic-component.tsx';
-export { defineCompound } from './define-compound.tsx';
-export type {
-  DefineCompoundConfig,
-  PartConfig,
-  StandardPartConfig,
-  PolymorphicPartConfig,
-  PartRenderCtx,
-  PolymorphicPartRenderCtx,
-} from './define-compound.tsx';
-
-// Provider
-export { SoribashiProvider } from './provider/provider.tsx';
-export { useTheme } from './provider/use-theme.ts';
-export type { SoribashiProviderProps } from './provider/provider.tsx';
-
-// Lower-level escape hatches
-export { factory } from './factory.tsx';
-export { polymorphicComponent } from './polymorphic-component.tsx';
-export { genericComponent } from './generic-component.tsx';
-export { useProps } from './hooks/use-props.ts';
-export { useStyles } from './hooks/use-styles.ts';
-export { createVarsResolver } from './create-vars-resolver.ts';
-
-// Utilities
-export { cn, configureClassNameMerge } from './cn.ts';
+export type { VocabularyOverride } from '@soribashi/theme';
 export { autoVars } from './auto-vars.ts';
 export type { ClassValue } from './cn.ts';
-export { useRandomClassName } from './use-random-class-name.ts';
-export { hashStyleProps } from './hash-style-props.ts';
-export { InlineStyles } from './inline-styles/InlineStyles.tsx';
-export type { InlineStylesProps } from './inline-styles/InlineStyles.tsx';
-
-// Types
-export type {
-  FactoryPayload,
-  FactoryProps,
-  FactoryStylesNames,
-  FactoryVars,
-  StylesApiProps,
-  CompoundStylesApiProps,
-  ClassNames,
-  Styles,
-  Vars,
-  Attributes,
-  RenderContext,
-  GetStylesFn,
-  GetStylesResult,
-  GetStylesOptions,
-} from './types/index.ts';
-
-export type {
-  PolymorphicProps,
-  PolymorphicRef,
-  PolymorphicComponentProps,
-  SoribashiPolymorphicComponent,
-  PolymorphicRenderProps,
-} from './types/polymorphic.ts';
-
-export type { FactoryComponent } from './factory.tsx';
-export type { DefineComponentConfig } from './define-component.tsx';
-export type {
-  DefinePolymorphicComponentConfig,
-  PolymorphicRenderCtx,
-} from './define-polymorphic-component.tsx';
-export type {
-  DefineGenericComponentConfig,
-  GenericRenderCtx,
-} from './define-generic-component.tsx';
-export type { UseStylesConfig } from './hooks/use-styles.ts';
-
-// asChild slot-merging primitive
-export { Slot } from './slot.tsx';
-export type { SlotProps } from './slot.tsx';
-
-// Theme integration
-export type { ThemeComponentEntry } from './theme-component-entry.ts';
-export { isThemeComponentEntry } from './theme-component-entry.ts';
-
-export type { ComponentExtendConfig } from './types/component-extend.ts';
-export type { VocabularyOverride } from '@soribashi/theme';
-
+// Utilities
+export { cn, configureClassNameMerge } from './cn.ts';
 // Vocab-aware builder factory. `makeBuilders` + `registerTheme` are the
 // cycle-safe split (type-only theme in builders.ts, value registration at app
 // entry); `createSoribashiBuilders` is the combined convenience.
 export { createSoribashiBuilders, makeBuilders, registerTheme } from './create-builders.ts';
+export { createVarsResolver } from './create-vars-resolver.ts';
+export type { DefineComponentConfig } from './define-component.tsx';
+// Daily-use authoring API
+export { defineComponent } from './define-component.tsx';
+export type {
+  DefineCompoundConfig,
+  PartConfig,
+  PartRenderCtx,
+  PolymorphicPartConfig,
+  PolymorphicPartRenderCtx,
+  StandardPartConfig,
+} from './define-compound.tsx';
+export { defineCompound } from './define-compound.tsx';
+export type {
+  DefineGenericComponentConfig,
+  GenericRenderCtx,
+} from './define-generic-component.tsx';
+export { defineGenericComponent } from './define-generic-component.tsx';
+export type {
+  DefinePolymorphicComponentConfig,
+  PolymorphicRenderCtx,
+} from './define-polymorphic-component.tsx';
+export { definePolymorphicComponent } from './define-polymorphic-component.tsx';
+export type { FactoryComponent } from './factory.tsx';
+// Lower-level escape hatches
+export { factory } from './factory.tsx';
+export { genericComponent } from './generic-component.tsx';
+export { hashStyleProps } from './hash-style-props.ts';
+export { useProps } from './hooks/use-props.ts';
+export type { UseStylesConfig } from './hooks/use-styles.ts';
+export { useStyles } from './hooks/use-styles.ts';
+export type { InlineStylesProps } from './inline-styles/InlineStyles.tsx';
+export { InlineStyles } from './inline-styles/InlineStyles.tsx';
+export { polymorphicComponent } from './polymorphic-component.tsx';
+export type { SoribashiProviderProps } from './provider/provider.tsx';
+// Provider
+export { SoribashiProvider } from './provider/provider.tsx';
+export { useTheme } from './provider/use-theme.ts';
+export type { SlotProps } from './slot.tsx';
+
+// asChild slot-merging primitive
+export { Slot } from './slot.tsx';
+// Theme integration
+export type { ThemeComponentEntry } from './theme-component-entry.ts';
+export { isThemeComponentEntry } from './theme-component-entry.ts';
+export type { ComponentExtendConfig } from './types/component-extend.ts';
+// Types
+export type {
+  Attributes,
+  ClassNames,
+  CompoundStylesApiProps,
+  FactoryPayload,
+  FactoryProps,
+  FactoryStylesNames,
+  FactoryVars,
+  GetStylesFn,
+  GetStylesOptions,
+  GetStylesResult,
+  RenderContext,
+  Styles,
+  StylesApiProps,
+  Vars,
+} from './types/index.ts';
+export type {
+  PolymorphicComponentProps,
+  PolymorphicProps,
+  PolymorphicRef,
+  PolymorphicRenderProps,
+  SoribashiPolymorphicComponent,
+} from './types/polymorphic.ts';
+export { useRandomClassName } from './use-random-class-name.ts';

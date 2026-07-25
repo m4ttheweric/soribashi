@@ -6,19 +6,19 @@ export type {
 } from './factory-payload.ts';
 
 export type {
-  StylesApiProps,
-  CompoundStylesApiProps,
-  ClassNames,
-  Styles,
-  Vars,
   Attributes,
+  ClassNames,
+  CompoundStylesApiProps,
+  Styles,
+  StylesApiProps,
+  Vars,
 } from './props.ts';
 
 export type {
-  RenderContext,
   GetStylesFn,
-  GetStylesResult,
   GetStylesOptions,
+  GetStylesResult,
+  RenderContext,
 } from './render-context.ts';
 
-export type { VocabularyAxis, InjectedVocabularyProps } from './vocabulary-axes.ts';
+export type { InjectedVocabularyProps, VocabularyAxis } from './vocabulary-axes.ts';

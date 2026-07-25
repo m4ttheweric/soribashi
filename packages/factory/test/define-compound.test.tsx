@@ -3,7 +3,7 @@ import { fireEvent, render } from '@testing-library/react';
 import { createRef, memo, useState } from 'react';
 // packages/factory/test/define-compound.test.tsx
 import { describe, expect, it } from 'vitest';
-import { type PartRenderCtx, SoribashiProvider, defineCompound } from '../src/index.ts';
+import { defineCompound, type PartRenderCtx, SoribashiProvider } from '../src/index.ts';
 
 const baseTokens = {
   colors: { neutral: { '0': 'hsl(0 0% 100%)' } },

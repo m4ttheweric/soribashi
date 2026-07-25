@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -15,7 +18,7 @@
     "codegen:watch": "bun run packages/codegen/bin/soribashi.ts watch"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2",
     "@playwright/test": "^1.59.1",
     "@types/node": "^22.10.0",
     "playwright": "^1.59.1",

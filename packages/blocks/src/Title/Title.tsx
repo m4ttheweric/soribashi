@@ -13,7 +13,7 @@
 import { defineComponent } from '@soribashi/factory';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
-import { type TitleOrder, type TitleSize, getTitleSize } from './get-title-size.ts';
+import { getTitleSize, type TitleOrder, type TitleSize } from './get-title-size.ts';
 
 export type { TitleOrder, TitleSize };
 

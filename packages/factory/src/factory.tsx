@@ -1,4 +1,4 @@
-import { type ComponentType, type Ref, forwardRef } from 'react';
+import { type ComponentType, forwardRef, type Ref } from 'react';
 import type { FactoryPayload } from './types/factory-payload.ts';
 import { makeWithProps } from './with-props.tsx';
 

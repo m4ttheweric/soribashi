@@ -32,6 +32,11 @@ const Select = defineGenericComponent<SelectSignature>({
             {...getStyles('option')}
             data-selected={isSelected}
             onClick={() => props.onChange(item)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                props.onChange(item);
+              }
+            }}
           >
             {props.renderItem ? props.renderItem(item) : key}
           </li>

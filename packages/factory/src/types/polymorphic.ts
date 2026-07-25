@@ -16,11 +16,12 @@ export type PolymorphicProps<TAs extends ElementType, TOwnProps> = TOwnProps &
 /**
  * Extracts the ref type for a polymorphic target element.
  */
-export type PolymorphicRef<TAs extends ElementType> = ComponentPropsWithRef<TAs> extends {
-  ref?: infer R;
-}
-  ? R
-  : never;
+export type PolymorphicRef<TAs extends ElementType> =
+  ComponentPropsWithRef<TAs> extends {
+    ref?: infer R;
+  }
+    ? R
+    : never;
 
 /**
  * Public props shape for a polymorphic component. Identical to

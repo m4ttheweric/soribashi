@@ -1,4 +1,4 @@
-import { type Ref, forwardRef } from 'react';
+import { forwardRef, type Ref } from 'react';
 import { makeWithProps } from './with-props.tsx';
 
 const identity = <T,>(value: T): T => value;

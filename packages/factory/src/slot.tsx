@@ -1,12 +1,12 @@
 import {
   Children,
+  cloneElement,
   Fragment,
+  forwardRef,
+  isValidElement,
   type ReactElement,
   type ReactNode,
   type Ref,
-  cloneElement,
-  forwardRef,
-  isValidElement,
 } from 'react';
 import { mergeProps } from './merge-props.ts';
 import { mergeRefs } from './merge-refs.ts';

@@ -15,7 +15,7 @@ import { createTheme } from '@soribashi/theme';
 import { render, renderHook } from '@testing-library/react';
 import type { ElementType } from 'react';
 import { describe, expect, it } from 'vitest';
-import { SoribashiContext, defaultContextTheme } from '../src/provider/context.ts';
+import { defaultContextTheme, SoribashiContext } from '../src/provider/context.ts';
 import { SoribashiProvider } from '../src/provider/provider.tsx';
 import { useTheme } from '../src/provider/use-theme.ts';
 import type {

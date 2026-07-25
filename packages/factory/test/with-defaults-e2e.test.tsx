@@ -2,7 +2,7 @@ import { createTheme } from '@soribashi/theme';
 import { render } from '@testing-library/react';
 // packages/factory/test/with-defaults-e2e.test.tsx
 import { describe, expect, it } from 'vitest';
-import { SoribashiProvider, defineComponent } from '../src/index.ts';
+import { defineComponent, SoribashiProvider } from '../src/index.ts';
 
 describe('extend() end-to-end through createTheme + useProps', () => {
   interface FooProps {

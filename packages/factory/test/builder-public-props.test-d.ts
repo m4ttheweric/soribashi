@@ -10,7 +10,7 @@ import type { ComponentProps, ReactNode } from 'react';
  */
 import { describe, expectTypeOf, it } from 'vitest';
 import { defineComponent } from '../src/define-component.tsx';
-import { type PartRenderCtx, defineCompound } from '../src/define-compound.tsx';
+import { defineCompound, type PartRenderCtx } from '../src/define-compound.tsx';
 
 const badgeVariants = ['dot', 'pill'] as const;
 

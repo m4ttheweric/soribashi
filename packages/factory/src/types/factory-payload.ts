@@ -21,6 +21,5 @@ export type FactoryStylesNames<P extends FactoryPayload> = P['stylesNames'] exte
   ? P['stylesNames']
   : never;
 
-export type FactoryVars<P extends FactoryPayload> = P['vars'] extends Record<string, string>
-  ? P['vars']
-  : never;
+export type FactoryVars<P extends FactoryPayload> =
+  P['vars'] extends Record<string, string> ? P['vars'] : never;

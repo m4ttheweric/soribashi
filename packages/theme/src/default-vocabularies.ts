@@ -1,4 +1,4 @@
-import { type Vocabulary, defineVocabulary } from './define-vocabulary.ts';
+import { defineVocabulary, type Vocabulary } from './define-vocabulary.ts';
 
 /**
  * Internal-only default vocabularies. Used by createTheme() when the consumer

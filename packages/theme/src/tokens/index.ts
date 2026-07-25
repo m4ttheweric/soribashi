@@ -1,1 +1,1 @@
-export { defaultTokens, defaultDarkTokens } from './default-tokens.ts';
+export { defaultDarkTokens, defaultTokens } from './default-tokens.ts';

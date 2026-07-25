@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  type IntentResolver,
-  type ResolvedTheme,
-  type ThemeDefinition,
   createTheme,
   defaultDarkTokens,
   defaultIntentResolver,
   defaultTokens,
+  type IntentResolver,
+  type ResolvedTheme,
+  type ThemeDefinition,
 } from '../src/index.ts';
 
 describe('@soribashi/theme public API', () => {

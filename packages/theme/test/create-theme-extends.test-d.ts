@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import { createTheme } from '../src/create-theme.ts';
-import { defineVocabulary } from '../src/define-vocabulary.ts';
 import type { Vocabulary } from '../src/define-vocabulary.ts';
+import { defineVocabulary } from '../src/define-vocabulary.ts';
 
 const fullTokens = {
   colors: {},

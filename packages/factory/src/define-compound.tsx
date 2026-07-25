@@ -2,10 +2,10 @@ import type { ResolvedTheme } from '@soribashi/theme';
 import {
   type CSSProperties,
   type ElementType,
+  forwardRef,
   type JSX,
   type ReactNode,
   type Ref,
-  forwardRef,
   useContext,
   useMemo,
   useRef,
@@ -128,13 +128,14 @@ export type PartConfig<TProps, TCtxExtra, TVariants extends readonly string[] = 
 // ---------------------------------------------------------------------------
 
 /** Extract TProps from a PartConfig<TProps, any, any>; falls back to Record<string, unknown> for untyped configs */
-export type ExtractPartProps<C> = C extends PartConfig<infer P, any, any>
-  ? [P] extends [never]
-    ? Record<string, unknown>
-    : unknown extends P
+export type ExtractPartProps<C> =
+  C extends PartConfig<infer P, any, any>
+    ? [P] extends [never]
       ? Record<string, unknown>
-      : P
-  : Record<string, unknown>;
+      : unknown extends P
+        ? Record<string, unknown>
+        : P
+    : Record<string, unknown>;
 
 /**
  * Loose per-part constraint used for the TParts generic bound.

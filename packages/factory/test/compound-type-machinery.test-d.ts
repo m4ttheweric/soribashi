@@ -8,9 +8,9 @@ import type { ComponentProps, ReactNode } from 'react';
  */
 import { describe, expectTypeOf, it } from 'vitest';
 import {
+  defineCompound,
   type PartRenderCtx,
   type PolymorphicPartRenderCtx,
-  defineCompound,
 } from '../src/define-compound.tsx';
 import type { FactoryPayload } from '../src/types/factory-payload.ts';
 import type { ClassNames, CompoundStylesApiProps, StylesApiProps } from '../src/types/props.ts';

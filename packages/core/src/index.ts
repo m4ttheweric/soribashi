@@ -1,76 +1,73 @@
 // @soribashi/core — public barrel package
 
-// Authoring API
+// Layout blocks
 export {
-  defineComponent,
-  defineGenericComponent,
-  definePolymorphicComponent,
-  defineCompound,
-  createSoribashiBuilders,
-  makeBuilders,
-  registerTheme,
-  cn,
-  configureClassNameMerge,
-  autoVars,
-} from '@soribashi/factory';
+  AspectRatio,
+  Box,
+  Center,
+  Container,
+  Flex,
+  Grid,
+  Group,
+  Paper,
+  SimpleGrid,
+  Space,
+  Stack,
+  Text,
+  Title,
+} from '@soribashi/blocks';
 
 export type {
-  StylesApiProps,
-  PolymorphicProps,
-  PolymorphicRef,
+  ComponentExtendConfig,
   DefineCompoundConfig,
   PartConfig,
-  StandardPartConfig,
-  PolymorphicPartConfig,
   PartRenderCtx,
+  PolymorphicPartConfig,
   PolymorphicPartRenderCtx,
+  PolymorphicProps,
+  PolymorphicRef,
   PolymorphicRenderCtx,
-  ComponentExtendConfig,
+  StandardPartConfig,
+  StylesApiProps,
   VocabularyOverride,
 } from '@soribashi/factory';
-
-// Theme
+// Authoring API
+// Provider
 export {
-  createTheme,
-  composeTheme,
-  defaultIntentResolver,
-  defaultTokens,
-  defaultDarkTokens,
-  defineVocabulary,
-  isThemeComponentEntry,
-} from '@soribashi/theme';
-
+  autoVars,
+  cn,
+  configureClassNameMerge,
+  createSoribashiBuilders,
+  defineComponent,
+  defineCompound,
+  defineGenericComponent,
+  definePolymorphicComponent,
+  makeBuilders,
+  registerTheme,
+  SoribashiProvider,
+  useTheme,
+} from '@soribashi/factory';
 export type {
-  ResolvedTheme,
-  ThemeDefinition,
-  ThemeTokens,
-  PartialThemeTokens,
   ColorScale,
-  SemanticTokensConfig,
   ComponentThemeConfig,
   IntentResolver,
   IntentResolverInput,
   IntentResolverResult,
+  PartialThemeTokens,
+  ResolvedTheme,
+  SemanticTokensConfig,
   ThemeComponentEntry,
+  ThemeDefinition,
+  ThemeTokens,
   Vocabulary,
 } from '@soribashi/theme';
-
-// Provider
-export { SoribashiProvider, useTheme } from '@soribashi/factory';
-
-// Layout blocks
+// Theme
 export {
-  Box,
-  Flex,
-  Stack,
-  Group,
-  Grid,
-  SimpleGrid,
-  Container,
-  Center,
-  AspectRatio,
-  Space,
-  Paper,
-  Text,
-  Title,
-} from '@soribashi/blocks';
+  composeTheme,
+  createTheme,
+  defaultDarkTokens,
+  defaultIntentResolver,
+  defaultTokens,
+  defineVocabulary,
+  isThemeComponentEntry,
+} from '@soribashi/theme';

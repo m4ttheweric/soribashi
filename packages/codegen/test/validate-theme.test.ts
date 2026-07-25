@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createTheme } from '@soribashi/theme';
 import type { ThemeDefinition } from '@soribashi/theme';
+import { createTheme } from '@soribashi/theme';
 import { describe, expect, it } from 'vitest';
 import { build } from '../src/build.ts';
 import { validateTheme } from '../src/validate-theme.ts';

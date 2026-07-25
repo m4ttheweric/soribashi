@@ -1,5 +1,5 @@
 import type { ResolvedTheme } from '@soribashi/theme';
-import { type ComponentPropsWithoutRef, type ElementType, type Ref, forwardRef } from 'react';
+import { type ComponentPropsWithoutRef, type ElementType, forwardRef, type Ref } from 'react';
 import { autoVars } from './auto-vars.ts';
 import { buildDataAttrs } from './data-attrs.ts';
 import { useProps } from './hooks/use-props.ts';

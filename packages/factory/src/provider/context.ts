@@ -1,4 +1,4 @@
-import { type ResolvedTheme, createTheme } from '@soribashi/theme';
+import { createTheme, type ResolvedTheme } from '@soribashi/theme';
 import { createContext } from 'react';
 
 /**

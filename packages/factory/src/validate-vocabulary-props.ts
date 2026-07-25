@@ -1,4 +1,4 @@
-import { type VocabularyAxis, resolveComponentVocab, resolveVocab } from './vocabulary-registry.ts';
+import { resolveComponentVocab, resolveVocab, type VocabularyAxis } from './vocabulary-registry.ts';
 
 /**
  * Detect whether the consumer is running in a dev build.
@@ -15,7 +15,7 @@ import { type VocabularyAxis, resolveComponentVocab, resolveVocab } from './voca
 const isDev = (): boolean => {
   // Vite — browser-safe; `import.meta.env.DEV` is a literal boolean after build.
   try {
-    // @ts-ignore — import.meta.env is Vite-specific; not in the standard lib types.
+    // @ts-expect-error — import.meta.env is Vite-specific; not in the standard lib types.
     const viteEnv = import.meta?.env;
     if (viteEnv && typeof viteEnv.DEV === 'boolean') return viteEnv.DEV;
   } catch {

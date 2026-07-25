@@ -6,7 +6,7 @@
  */
 export const isDev = (): boolean => {
   try {
-    // @ts-ignore — import.meta.env is Vite-specific; not in the standard lib types.
+    // @ts-expect-error — import.meta.env is Vite-specific; not in the standard lib types.
     const viteEnv = import.meta?.env;
     if (viteEnv && typeof viteEnv.DEV === 'boolean') return viteEnv.DEV;
   } catch {

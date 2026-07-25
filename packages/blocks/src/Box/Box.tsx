@@ -11,8 +11,8 @@
  *   - Drops Mantine's nonce, sx, classNamesPrefix, deduplicateInlineStyles internals
  */
 import {
-  InlineStyles,
   definePolymorphicComponent,
+  InlineStyles,
   useRandomClassName,
   useTheme,
 } from '@soribashi/factory';
@@ -24,7 +24,7 @@ import { extractStyleProps } from './style-props/extract-style-props.ts';
 import { parseStyleProps } from './style-props/parse-style-props.ts';
 import { STYLE_PROPS_DATA } from './style-props/style-props-data.ts';
 
-export type { BoxOwnProps, BoxMod, BoxStyleProps };
+export type { BoxMod, BoxOwnProps, BoxStyleProps };
 
 let warnedSxIgnored = false;
 

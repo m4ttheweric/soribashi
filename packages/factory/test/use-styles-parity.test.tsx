@@ -1,5 +1,5 @@
-import { createTheme } from '@soribashi/theme';
 import type { ResolvedTheme } from '@soribashi/theme';
+import { createTheme } from '@soribashi/theme';
 import { renderHook } from '@testing-library/react';
 /**
  * Parity tests for soribashi `useStyles` vs Mantine `useStyles`.

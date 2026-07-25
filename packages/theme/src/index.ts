@@ -1,37 +1,35 @@
 // @soribashi/theme — public API
 
+export { composeTheme } from './compose-theme.ts';
 export { createTheme } from './create-theme.ts';
 export { defaultIntentResolver } from './default-intent-resolver.ts';
-export { defaultTokens, defaultDarkTokens } from './tokens/index.ts';
-export { composeTheme } from './compose-theme.ts';
+export type { Vocabulary } from './define-vocabulary.ts';
+export { defineVocabulary } from './define-vocabulary.ts';
 
+export { isThemeComponentEntry } from './theme-component-entry.ts';
+export { defaultDarkTokens, defaultTokens } from './tokens/index.ts';
 export type {
-  ThemeDefinition,
+  ColorScale,
+  ComponentThemeConfig,
   ComposableThemeDefinition,
   ExtendingThemeDefinition,
-  VocabOfExtends,
-  ResolvedTheme,
-  ThemeTokens,
-  PartialThemeTokens,
-  ColorScale,
-  SemanticReference,
-  SemanticSurfaceValue,
+  HeadingSize,
+  HeadingTokens,
   IntentResolver,
   IntentResolverInput,
   IntentResolverResult,
-  ComponentThemeConfig,
-  HeadingTokens,
-  HeadingSize,
-  ThemeComponentEntry,
-  ThemeVocabulary,
-  PartialThemeVocabulary,
-  SemanticTokensConfig,
   PartialSemanticTokensConfig,
+  PartialThemeTokens,
+  PartialThemeVocabulary,
+  ResolvedTheme,
+  SemanticReference,
+  SemanticSurfaceValue,
+  SemanticTokensConfig,
+  ThemeComponentEntry,
+  ThemeDefinition,
+  ThemeTokens,
+  ThemeVocabulary,
+  VocabOfExtends,
 } from './types.ts';
-
-export { isThemeComponentEntry } from './theme-component-entry.ts';
-
-export { defineVocabulary } from './define-vocabulary.ts';
-export type { Vocabulary } from './define-vocabulary.ts';
 
 export type { VocabularyOverride } from './vocabulary-override.ts';

@@ -260,13 +260,14 @@ export type ExtendingThemeDefinition<
  *   its own `extends` contributes
  * - no base (or an unrecognizable one) yields the default vocabularies
  */
-export type VocabOfExtends<E> = E extends ResolvedTheme<infer BV>
-  ? BV
-  : E extends { vocabulary: infer BV extends PartialThemeVocabulary }
-    ? ResolveVocab<BV, ExtendsChainVocab<E>>
-    : E extends { extends: unknown }
-      ? ExtendsChainVocab<E>
-      : DefaultVocabularies;
+export type VocabOfExtends<E> =
+  E extends ResolvedTheme<infer BV>
+    ? BV
+    : E extends { vocabulary: infer BV extends PartialThemeVocabulary }
+      ? ResolveVocab<BV, ExtendsChainVocab<E>>
+      : E extends { extends: unknown }
+        ? ExtendsChainVocab<E>
+        : DefaultVocabularies;
 
 /** Recurses into whatever `E.extends` holds; absent means the defaults. */
 type ExtendsChainVocab<E> = VocabOfExtends<E extends { extends: infer X } ? X : undefined>;
