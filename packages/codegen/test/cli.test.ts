@@ -1,13 +1,13 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { runCli } from '../src/cli.ts';
 
 describe('runCli flags', () => {
   let tempDir: string;
-  let log: ReturnType<typeof vi.spyOn>;
-  let error: ReturnType<typeof vi.spyOn>;
+  let log: MockInstance<typeof console.log>;
+  let error: MockInstance<typeof console.error>;
   let savedDebug: string | undefined;
 
   beforeEach(() => {
