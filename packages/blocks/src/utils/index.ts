@@ -1,8 +1,15 @@
-export { getFontSize } from './get-font-size.ts';
-export { getLineHeight } from './get-line-height.ts';
-export { getRadius } from './get-radius.ts';
-export { getShadow } from './get-shadow.ts';
-export { getSize } from './get-size.ts';
-export { getSpacing } from './get-spacing.ts';
-export { getThemeColor } from './get-theme-color.ts';
-export { rem } from './rem.ts';
+// The style-prop engine (and these theme-value getters) moved to
+// @soribashi/factory; re-exported here so blocks-internal imports of
+// '../utils/index.ts' keep working unchanged.
+export {
+  getFontSize,
+  getLineHeight,
+  getRadius,
+  getShadow,
+  getSize,
+  getSpacing,
+  getThemeColor,
+  isDev,
+  isRawCss,
+  rem,
+} from '@soribashi/factory';

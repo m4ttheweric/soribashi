@@ -8,7 +8,7 @@ import {
   getSpacing,
   getThemeColor,
   rem,
-} from '../src/utils/index.ts';
+} from '../../src/style-props/theme-resolvers/index.ts';
 
 describe('rem', () => {
   it('converts pixel numbers to rem', () => {

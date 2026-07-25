@@ -1,4 +1,5 @@
-import { getThemeColor } from '../../../utils/get-theme-color.ts';
+import type { StylePropResolver } from '../style-types.ts';
+import { getThemeColor } from '../theme-resolvers/get-theme-color.ts';
 /**
  * Adapted from @mantine/core
  * Source: packages/@mantine/core/src/core/Box/style-props/resolvers/border-resolver/border-resolver.ts
@@ -11,8 +12,7 @@ import { getThemeColor } from '../../../utils/get-theme-color.ts';
  *   - Color syntax: 'primary.500' (50–950 shade scale) instead of Mantine's
  *     'primary.5' (0–9 shade scale). Inherited from getThemeColor.
  */
-import { rem } from '../../../utils/rem.ts';
-import type { StylePropResolver } from '../style-types.ts';
+import { rem } from '../theme-resolvers/rem.ts';
 
 export const borderResolver: StylePropResolver = (value, theme) => {
   if (value === undefined || value === null) return undefined;

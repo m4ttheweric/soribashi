@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { borderResolver } from '../../src/Box/style-props/resolvers/border-resolver.ts';
+import { borderResolver } from '../../src/style-props/resolvers/border-resolver.ts';
 
 describe('borderResolver', () => {
   it('numeric input is rem-converted', () => {

@@ -17,8 +17,10 @@ export {
 } from '@soribashi/blocks';
 
 export type {
+  BoxStyleProps,
   ComponentExtendConfig,
   DefineCompoundConfig,
+  ParsedStyleProps,
   PartConfig,
   PartRenderCtx,
   PolymorphicPartConfig,
@@ -28,6 +30,8 @@ export type {
   PolymorphicRenderCtx,
   RecipeMeta,
   StandardPartConfig,
+  StyleProp,
+  StylePropDefinition,
   StylesApiProps,
   VocabularyOverride,
 } from '@soribashi/factory';
@@ -40,10 +44,21 @@ export {
   defineCompound,
   defineGenericComponent,
   definePolymorphicComponent,
+  extractStyleProps,
+  getFontSize,
+  getLineHeight,
+  getRadius,
   getRecipeMeta,
+  getShadow,
+  getSize,
+  getSpacing,
+  getThemeColor,
   makeBuilders,
+  parseStyleProps,
   registerTheme,
+  rem,
   SoribashiProvider,
+  STYLE_PROPS_DATA,
   useTheme,
 } from '@soribashi/factory';
 export type {

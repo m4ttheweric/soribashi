@@ -1,8 +1,9 @@
 /**
- * Detect whether the consumer is running in a dev build. Mirrors the detection
- * in @soribashi/factory's validate-vocabulary-props (kept private there):
- * Vite's import.meta.env.DEV first, then process.env.NODE_ENV, defaulting to
- * dev so warnings surface when the environment is unknown.
+ * Detect whether the consumer is running in a dev build. Mirrors the private
+ * detection in validate-vocabulary-props.ts (this copy is the public,
+ * re-exported version): Vite's import.meta.env.DEV first, then
+ * process.env.NODE_ENV, defaulting to dev so warnings surface when the
+ * environment is unknown.
  */
 export const isDev = (): boolean => {
   try {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fontFamilyResolver } from '../../src/Box/style-props/resolvers/font-family-resolver.ts';
+import { fontFamilyResolver } from '../../src/style-props/resolvers/font-family-resolver.ts';
 
 describe('fontFamilyResolver', () => {
   it('text → var(--font-family-sans)', () => {

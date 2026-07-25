@@ -15,8 +15,8 @@
  *     warning (Mantine string-coerces, which produced [object Object] output).
  */
 import { defaultTokens, type ResolvedTheme } from '@soribashi/theme';
-import { isDev } from '../../utils/is-dev.ts';
 import type { ParsedStyleProps, StylePropDefinition } from './style-types.ts';
+import { isDev } from './theme-resolvers/is-dev.ts';
 
 const DEFAULT_BREAKPOINT_KEYS = Object.keys(defaultTokens.breakpoint ?? {});
 

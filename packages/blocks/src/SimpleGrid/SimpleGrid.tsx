@@ -14,8 +14,7 @@
 import { defineComponent } from '@soribashi/factory';
 import { Box } from '../Box/Box.tsx';
 import type { BoxOwnProps } from '../Box/Box.types.ts';
-import { getSpacing } from '../utils/index.ts';
-import { rem } from '../utils/rem.ts';
+import { getSpacing, rem } from '../utils/index.ts';
 
 export interface SimpleGridOwnProps extends BoxOwnProps {
   /** Number of columns @default 1 */

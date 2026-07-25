@@ -5,9 +5,13 @@
  * License: MIT — see THIRD-PARTY-LICENSES.md at repo root
  *
  * Soribashi changes:
- *   - Resolvers reference soribashi's @soribashi/blocks/utils helpers
+ *   - Resolvers reference the sibling ./theme-resolvers helpers
  *   - Token names: --mantine-* → soribashi-equivalent (handled inside the resolvers)
  */
+
+import { borderResolver } from './resolvers/border-resolver.ts';
+import { fontFamilyResolver } from './resolvers/font-family-resolver.ts';
+import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
 import {
   getFontSize,
   getLineHeight,
@@ -15,10 +19,7 @@ import {
   getSpacing,
   getThemeColor,
   rem,
-} from '../../utils/index.ts';
-import { borderResolver } from './resolvers/border-resolver.ts';
-import { fontFamilyResolver } from './resolvers/font-family-resolver.ts';
-import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
+} from './theme-resolvers/index.ts';
 
 const identity: StylePropResolver = (v) => (v === undefined || v === null ? undefined : String(v));
 

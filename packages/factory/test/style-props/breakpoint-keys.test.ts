@@ -1,7 +1,7 @@
 import { createTheme } from '@soribashi/theme';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { parseStyleProps } from '../../src/Box/style-props/parse-style-props.ts';
-import { STYLE_PROPS_DATA } from '../../src/Box/style-props/style-props-data.ts';
+import { parseStyleProps } from '../../src/style-props/parse-style-props.ts';
+import { STYLE_PROPS_DATA } from '../../src/style-props/style-props-data.ts';
 
 const themeWithWideBreakpoints = createTheme({
   tokens: {

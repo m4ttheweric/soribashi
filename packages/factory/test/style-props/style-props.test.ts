@@ -1,9 +1,8 @@
 import { createTheme } from '@soribashi/theme';
 import { describe, expect, it } from 'vitest';
-import { getBoxMod } from '../../src/Box/get-box-mod.ts';
-import { extractStyleProps } from '../../src/Box/style-props/extract-style-props.ts';
-import { parseStyleProps } from '../../src/Box/style-props/parse-style-props.ts';
-import { STYLE_PROPS_DATA } from '../../src/Box/style-props/style-props-data.ts';
+import { extractStyleProps } from '../../src/style-props/extract-style-props.ts';
+import { parseStyleProps } from '../../src/style-props/parse-style-props.ts';
+import { STYLE_PROPS_DATA } from '../../src/style-props/style-props-data.ts';
 
 const theme = createTheme({
   tokens: {
@@ -110,47 +109,6 @@ describe('extractStyleProps', () => {
     expect(rest.id).toBe('my-id');
     expect(typeof rest.onClick).toBe('function');
     expect(rest['data-foo']).toBe('bar');
-  });
-});
-
-describe('getBoxMod', () => {
-  it('handles string input', () => {
-    expect(getBoxMod('active')).toEqual({ 'data-active': true });
-  });
-
-  it('handles record input — boolean true → true', () => {
-    expect(getBoxMod({ active: true })).toEqual({ 'data-active': true });
-  });
-
-  it('handles record input — false/null/undefined/"" are omitted; numeric 0 is kept (Mantine parity)', () => {
-    // Mantine getMod filters: undefined, '', false, null — but NOT numeric 0.
-    // See: packages/@mantine/core/src/core/Box/get-box-mod/get-box-mod.ts (63dafbbf)
-    expect(getBoxMod({ active: true, loading: false, x: null, y: undefined, z: 0, q: '' })).toEqual(
-      {
-        'data-active': true,
-        'data-z': 0,
-      },
-    );
-  });
-
-  it('truthy non-boolean values become the data-attribute value', () => {
-    expect(getBoxMod({ size: 'lg' })).toEqual({ 'data-size': 'lg' });
-  });
-
-  it('preserves keys that already start with data-', () => {
-    expect(getBoxMod({ 'data-state': 'open' })).toEqual({ 'data-state': 'open' });
-  });
-
-  it('handles array input — merges items', () => {
-    expect(getBoxMod([{ active: true }, 'open', { size: 'lg' }])).toEqual({
-      'data-active': true,
-      'data-open': true,
-      'data-size': 'lg',
-    });
-  });
-
-  it('returns empty object for undefined', () => {
-    expect(getBoxMod(undefined)).toEqual({});
   });
 });
 

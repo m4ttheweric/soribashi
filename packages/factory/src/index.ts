@@ -49,6 +49,30 @@ export type { SlotProps } from './slot.tsx';
 
 // asChild slot-merging primitive
 export { Slot } from './slot.tsx';
+export { extractStyleProps } from './style-props/extract-style-props.ts';
+export { parseStyleProps } from './style-props/parse-style-props.ts';
+export type { BoxStyleProps } from './style-props/style-props.types.ts';
+export { STYLE_PROPS_DATA } from './style-props/style-props-data.ts';
+export type {
+  ParsedStyleProps,
+  StyleProp,
+  StylePropDefinition,
+} from './style-props/style-types.ts';
+// isDev/isRawCss are shared helpers the engine's resolvers use internally;
+// re-exported because blocks-side consumers (Box's sx warning, Title's
+// font-size heuristic) that predate this move still need them directly.
+export {
+  getFontSize,
+  getLineHeight,
+  getRadius,
+  getShadow,
+  getSize,
+  getSpacing,
+  getThemeColor,
+  isDev,
+  isRawCss,
+  rem,
+} from './style-props/theme-resolvers/index.ts';
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
 export { isThemeComponentEntry } from './theme-component-entry.ts';
 export type { ComponentExtendConfig } from './types/component-extend.ts';

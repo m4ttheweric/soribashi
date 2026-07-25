@@ -1,4 +1,4 @@
-import { isRawCss } from '../utils/get-size.ts';
+import { isRawCss, rem } from '../utils/index.ts';
 /**
  * Adapted from @mantine/core
  * Source: packages/@mantine/core/src/components/Title/get-title-size.ts
@@ -9,13 +9,12 @@ import { isRawCss } from '../utils/get-size.ts';
  *   - Reads from soribashi heading vars: --heading-h{N}-{font-size,font-weight,line-height}
  *     (emitted by codegen from theme.tokens.heading.sizes; see emit-css.ts)
  *   - Font-size key path uses --font-size-{key} (no `--mantine-` prefix).
- *   - rem() helper imported from local utils.
+ *   - rem() helper re-exported from @soribashi/factory via local utils.
  *   - Font-size keys resolve open-endedly (any token-looking key becomes
  *     var(--font-size-{key}), matching getSpacing/getRadius) instead of a
  *     closed xs..3xl allowlist. Digit-leading {n}xl keys are carved out of
  *     the raw-CSS heuristic since they are documented font-size tokens.
  */
-import { rem } from '../utils/rem.ts';
 
 export type TitleOrder = 1 | 2 | 3 | 4 | 5 | 6;
 export type TitleSize = `h${TitleOrder}` | string | number;
