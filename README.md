@@ -25,7 +25,7 @@ Pick the one that matches the component's shape, one declarative config object i
 
 **Codegen closes the loop.** `soribashi build` reads your theme and emits a CSS stylesheet: colours as `oklch()`, dark overrides as `light-dark()` pairs that resolve at the point of use (no `:root` selector games, no manual dark-mode plumbing), everything scoped inside `@layer soribashi.tokens` / `@layer soribashi.recipes` so your own app styles always win a specificity fight, and non-colour tokens (radius, spacing, font-size) registered with `@property` so they're typed and animatable. Colour tokens are deliberately never registered with `@property`, because registration freezes `light-dark()` to whichever element declared it, which would quietly break scoped, multi-tenant dark mode. The workshop's Tenants page demos exactly that: two brand themes rendered on the same page, each scoped to its own class selector, one of them with an extra `.dark` wrapper flipping only that subtree, no provider swap, no remount.
 
-You cannot reference a token codegen didn't generate. Drift between the theme and what's usable is structurally impossible.
+Every token the theme declares is emitted exactly once by codegen; recipes are scanned so no literal colour or length can hide in a stylesheet instead of referencing a real token; and the token references each recipe actually uses are listed per recipe in the derived manifest below. This is not reference-existence checking: nothing today catches a recipe referencing a token codegen never emitted. `--accent-primary`, read by Button's focus ring via a var fallback, is a live counterexample (see STATUS.md).
 
 ## `@soribashi/ui` and the workshop
 
@@ -62,7 +62,7 @@ Layered on top: a WCAG AA contrast matrix (>= 4.5:1) checked across every intent
 
 Two things exist specifically so an agent (or a developer moving fast) doesn't have to re-derive facts about this library by reading source:
 
-- **A derived manifest.** `bun run generate:ui` walks every recipe's frozen metadata and its own source, and writes `packages/ui/manifest.json`: name, authoring category, builder, slots, vocabulary axes, variants, defaults, the four file paths, and every theme token the recipe's CSS actually depends on. Nothing in it is hand-authored; a drift test rebuilds it the same way and fails on any difference from what's committed.
+- **A derived manifest.** `bun run generate:ui` walks every recipe's frozen metadata and its own source, and writes `packages/ui/manifest.json`: name, authoring category, builder, slots, vocabulary axes, variants, defaults, the four file paths, and every theme token the recipe's CSS actually depends on. For compounds, `slots` lists PART names, not style-slot keys; the stylable slot keys a compound recipe exposes are a superset defined by its own `classes`/`getStyles` usage and aren't captured here yet. Nothing in it is hand-authored; a drift test rebuilds it the same way and fails on any difference from what's committed.
 - **In-repo skills.** `.claude/skills/authoring-a-recipe/` is the checklist for adding or changing a recipe: the four-file layout, builder selection, the CSS rules, what each test tier needs, and the traps that have already bitten someone once (async `render`, `light-dark()` being colour-only, a recipe's `vars` replacing rather than layering on `autoVars`, and more).
 
 ## Getting started

@@ -5,7 +5,16 @@ export interface RecipeMeta {
     | 'defineCompound'
     | 'defineGenericComponent';
   name: string;
-  /** Style slots: `selectors` for single components, part names for compounds. */
+  /**
+   * For single components (`defineComponent` / `definePolymorphicComponent` /
+   * `defineGenericComponent`), the recipe's style-slot selectors
+   * (`classNames`/`styles`/`getStyles` targets). For compounds
+   * (`defineCompound`), this carries PART names, not style-slot keys: the
+   * stylable slot keys a compound recipe actually exposes are a superset
+   * defined by its `classes`/`getStyles` usage, and that superset is not
+   * currently captured at runtime. A runtime slot-key source on
+   * `defineCompound` is future work.
+   */
   slots: readonly string[];
   vocabularyAxes: readonly string[];
   variants: readonly string[];
