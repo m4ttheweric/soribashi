@@ -8,7 +8,7 @@ Bun-workspace monorepo: a component-authoring framework for React adapted from M
 bun run test           # vitest across all packages
 bun run typecheck      # tsc -p tsconfig.json --noEmit
 bun run lint           # biome check .
-bun run codegen        # theme -> playground generated CSS/Tailwind config
+bun run codegen        # theme -> CSS/Tailwind config (no target app until slice 1b; currently errors)
 bun run test:browser   # Playwright parity suite
 ```
 

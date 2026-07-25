@@ -46,7 +46,7 @@ bunx playwright test --reporter=html
 open tests/browser-parity/playwright-report/index.html
 ```
 
-The playground dev server (`http://localhost:5173`) starts automatically. If it's already running, Playwright will reuse it (`reuseExistingServer: true`).
+These commands describe how the suite is meant to run once a host app exists again. `apps/playground`, which used to boot the dev server they relied on, was removed in slice 1a (2026-07-24, "remove the ejected apps"), and `playwright.config.ts` no longer has a `webServer` entry. Nothing serves `/browser-fixtures.html` right now, so the suite cannot run until slice 1b provides a replacement host app.
 
 ### First-time setup
 
@@ -58,19 +58,19 @@ bunx playwright install chromium
 
 ## Fixture page
 
-The fixture is rendered at `/browser-fixtures.html` by:
+The fixture used to be rendered at `/browser-fixtures.html` by three files under `apps/playground`, all removed along with the rest of that app in slice 1a:
 
-- **HTML entry**: `apps/playground/browser-fixtures.html`
-- **React entry**: `apps/playground/src/test-fixtures/main.tsx`
-- **Fixture component**: `apps/playground/src/test-fixtures/BrowserFixtures.tsx`
+- **HTML entry**: `apps/playground/browser-fixtures.html` (deleted)
+- **React entry**: `apps/playground/src/test-fixtures/main.tsx` (deleted)
+- **Fixture component**: `apps/playground/src/test-fixtures/BrowserFixtures.tsx` (deleted)
 
-Each block renders with `data-testid="{block}-{n}"` where n=0 (default), n=1 (common), n=2 (stress).
+None of these exist anymore. Whichever host app restores `test:browser` in slice 1b needs a fixture page that renders each block with `data-testid="{block}-{n}"` (n=0 default, n=1 common, n=2 stress), matching what `blocks-computed-styles.spec.ts` expects.
 
 ## When a test fails
 
 1. **Read the failure message** — it shows the actual computed value from the browser.
 2. **Check if Mantine changed**: compare `packages/blocks/src/{Block}/{Block}.css` against the upstream at `63dafbbf`.
-3. **Check if a token changed**: look at `packages/theme/src/tokens/default-tokens.ts` and `apps/playground/src/generated/theme.css`.
+3. **Check if a token changed**: look at `packages/theme/src/tokens/default-tokens.ts`. (There is no generated `theme.css` right now; codegen has no app config to build against until slice 1b.)
 4. **Common false positives**:
    - `gap` failures often mean a spacing token value changed — update the assertion.
    - `aspect-ratio` is reported as `"N / 1"` (fraction form) by Chromium, not as a float — the tests handle this with `toBeCloseTo`.

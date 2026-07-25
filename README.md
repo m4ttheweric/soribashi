@@ -118,13 +118,12 @@ Requires [Bun](https://bun.sh).
 
 ```bash
 bun install
-bun run dev        # codegen + playground dev server
 bun run test       # vitest across all packages (plain `bun test` invokes Bun's own runner)
 bun run typecheck
 bun run lint       # biome
 ```
 
-`bun run dev` runs codegen first (theme to CSS custom properties + Tailwind config), then starts the playground. Change the theme and codegen regenerates those outputs.
+There is no dev server in this repo right now. `apps/pilot`, `apps/playground` and `apps/shadcn-starter` were removed in slice 1a with no replacement consumer app; `apps/workshop` (slice 1b) is what restores one.
 
 ## Status
 
