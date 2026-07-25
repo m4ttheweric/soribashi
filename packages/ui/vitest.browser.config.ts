@@ -8,10 +8,7 @@ export default defineConfig({
     name: 'ui-browser',
     include: ['src/**/*.test.tsx'],
     exclude: ['src/**/*.visual.test.tsx'],
-    // No src/**/*.test.tsx files exist yet in this task; Task 4 (Button) adds
-    // the first one. Without this, vitest exits 1 on an empty project and
-    // breaks the default `bun run test` run. Remove once Task 4 lands.
-    passWithNoTests: true,
+    setupFiles: ['./src/test-setup.browser.ts'],
     browser: {
       enabled: true,
       headless: true,
