@@ -51,6 +51,11 @@ describe('token existence: recipe tokenDependencies resolve against emitted CSS'
     const css = emitCss(uiTheme);
     const emitted = extractEmittedVarNames(css);
     const manifest = await buildManifest();
+    // Floor: if the barrel ever silently resolved to zero recipes, the loop
+    // below would find nothing to check and this guard would pass
+    // vacuously. Guard against that silently-toothless state (same pattern
+    // as reskin.test.tsx's recipeCount floor).
+    expect(manifest.recipes.length, 'expected at least one manifest recipe').toBeGreaterThan(0);
 
     const missing: string[] = [];
     for (const recipe of manifest.recipes) {

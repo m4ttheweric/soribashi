@@ -121,7 +121,7 @@ describe('reskin guard', () => {
 });
 
 describe.each(Object.keys(RESKIN_FIXTURES))('%s theme-only re-skin', (name) => {
-  it('re-anchors background-color, color, or border-radius purely via the .reskin-b scope', async () => {
+  it('re-anchors background-color, color, border-radius, gap, or padding purely via the .reskin-b scope', async () => {
     const fixture = RESKIN_FIXTURES[name]!;
 
     const baseContainer = document.createElement('div');

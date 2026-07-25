@@ -15,6 +15,11 @@ const COLOR_TOKEN_RE = /--(color|text|surface|accent)-/;
 describe('contrast matrix classification guard', () => {
   it('every manifest recipe has a MATRIX_CLASSIFICATION entry', async () => {
     const manifest = await buildManifest();
+    // Floor: if the barrel ever silently resolved to zero recipes, the loop
+    // below would find nothing to check and this guard would pass
+    // vacuously. Guard against that silently-toothless state (same pattern
+    // as reskin.test.tsx's recipeCount floor).
+    expect(manifest.recipes.length, 'expected at least one manifest recipe').toBeGreaterThan(0);
     const missing = manifest.recipes
       .map((recipe) => recipe.name)
       .filter((name) => !(name in MATRIX_CLASSIFICATION));
@@ -62,6 +67,8 @@ describe('contrast matrix classification guard', () => {
       // fails on `'covered'` recipes, which have real rendered cells instead
       // of a text-based exemption reason.
       const manifest = await buildManifest();
+      // Floor: see the identical comment on the first test above.
+      expect(manifest.recipes.length, 'expected at least one manifest recipe').toBeGreaterThan(0);
       const byName = new Map(manifest.recipes.map((recipe) => [recipe.name, recipe]));
 
       const unacknowledged: string[] = [];
