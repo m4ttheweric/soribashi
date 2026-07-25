@@ -234,12 +234,36 @@ export const defaultTokens: ThemeTokens = {
  * semantics and intent resolver reference; a partial inversion leaves stray
  * light values (e.g. a near-white border.default) in dark mode.
  *
- * The intent scales (success/warning/danger/info) deliberately have no dark
- * story yet; their 500 anchors read acceptably on dark surfaces. The single
- * exception is `warning['600']`: a light-mode-only AA contrast fix (see the
- * comment on `defaultTokens.colors.warning['600']` above) needed dark to
- * keep its pre-fix value, so that one shade got an explicit override here
- * purely to stay unchanged, not a real "warning now has a dark ramp" story.
+ * The intent scales (success/warning/danger/info) still have no general dark
+ * ramp; their `500` anchors read acceptably on dark surfaces. What each one
+ * DOES have now is a single, narrowly-scoped `600` (the `link`-variant text
+ * shade, per default-intent-resolver.ts) dark override, added to clear AA
+ * against the dark canvas: see each family's own comment below for the
+ * derivation and the specific failing combination it fixes. `warning['600']`
+ * is the one exception within that group: its dark value is a restoration
+ * of the pre-fix value (light mode needed to darken it; dark already
+ * passed), not a newly-derived one.
+ *
+ * `primary` additionally has a dark `700` (the `outline`/`ghost`/`subtle`
+ * text shade), derived the same mechanical way, because `primary['100']`
+ * (this family's `subtle` background) already had its own dark tint before
+ * this task and needed a compatible dark text partner. The other four
+ * intent families do NOT have a dark `700`: their `100` (the `subtle`
+ * background) has no dark override at all, so it stays at its light-mode
+ * (light, near-white) value in dark mode, and `subtle` currently reads fine
+ * against it using the shared light-mode `700`. Overriding `700` for dark to
+ * fix `outline`/`ghost` (which need light text against the dark canvas)
+ * would read that same lighter override for `subtle` too (same CSS custom
+ * property, same variant-independent resolver lookup), breaking `subtle`
+ * against its still-light background. Verified this is a genuine
+ * conflict, not a tuning gap: computed the best-achievable simultaneous
+ * contrast across the full lightness range for each of
+ * success/danger/warning/info's `700` (same hue/chroma, canvas dark vs. that
+ * family's own light `100`) and the maximum lands between 3.49:1 and
+ * 4.05:1, short of 4.5:1, for all four. `outline`/`ghost` for these four
+ * intents remain a real, open AA gap in dark mode; see the task report for
+ * the full number-by-number breakdown and the escalation to the human this
+ * produced.
  */
 export const defaultDarkTokens: PartialThemeTokens = {
   colors: {
@@ -249,6 +273,32 @@ export const defaultDarkTokens: PartialThemeTokens = {
       // Mirrors the light-mode `500` fix above (same value in both schemes,
       // as before): oklch(0.6261 0.1859 259.6) -> oklch(0.57 0.1859 259.6).
       '500': 'oklch(0.57 0.1859 259.6)',
+      // New dark-only value (light keeps the original oklch(0.4896 0.2153
+      // 264.27)). `outline`/`ghost`/`subtle` all read this shade as their
+      // text colour (default-intent-resolver.ts: `color: v('700')` in all
+      // three), and against dark surfaces the light-mode value read as dark
+      // text on a dark background (2.68:1 against the dark canvas, 2.13:1
+      // against `subtle`'s own `primary['100']` dark tint above, both below
+      // AA's 4.5:1). Derivation: same hue/chroma as the light value, only
+      // lightness raised until the harder of the two backgrounds this shade
+      // is read against in dark mode (`primary['100']` above, lighter than
+      // the plain dark canvas) clears 4.5 with margin, then chroma
+      // gamut-clamped back into sRGB at that lightness (culori
+      // `clampChroma`, since the raw raised-lightness/original-chroma pair
+      // fell outside sRGB). Solved with culori, accepted against the real
+      // browser matrix: clears 4.8:1 against `primary['100']` (dark) and
+      // 6.07:1 against the dark canvas. Mechanical starting point, tunable
+      // by design review (same framing as the `subtle` hover/active
+      // weights in default-intent-resolver.ts).
+      '700': 'oklch(0.6798 0.1682 264.27)',
+      // New dark-only value (light keeps the original oklch(0.5449 0.2154
+      // 262.74)). Only `link` reads this shade (default-intent-resolver.ts:
+      // `color: v('600')` for `link` only, no other variant), so this is
+      // read only against the dark canvas: light-mode value gave 3.46:1 in
+      // dark, below AA. Same derivation as `700` above (raise lightness,
+      // gamut-clamp, target ~4.8 against the dark canvas with margin);
+      // clears 4.80:1 against the dark canvas.
+      '600': 'oklch(0.6226 0.203 262.74)',
       '900': 'oklch(0.9716 0.0136 255.03)',
     },
     neutral: {
@@ -267,12 +317,43 @@ export const defaultDarkTokens: PartialThemeTokens = {
       // The inverted 500 is light, so filled-neutral text flips dark.
       foreground: 'oklch(0.2064 0.0388 265.55)',
     },
+    success: {
+      // New dark-only value (light keeps the original oklch(0.5248 0.1373
+      // 149.83)). Only `link` reads this shade, so only against the dark
+      // canvas: light-mode value gave 3.52:1 in dark, below AA. Derivation:
+      // same hue/chroma, lightness raised until clearing ~4.8 against the
+      // dark canvas (culori, accepted against the real browser matrix:
+      // 4.80:1). Mechanical starting point, tunable by design review.
+      '600': 'oklch(0.5995 0.1373 149.83)',
+    },
+    danger: {
+      // New dark-only value (light keeps the light-mode `600`, unchanged by
+      // this task: oklch(0.5786 0.2137 27.17)). Only `link` reads this
+      // shade, so only against the dark canvas: light-mode value gave
+      // 3.73:1 in dark, below AA. Derivation: same hue/chroma, lightness
+      // raised until clearing ~4.8 against the dark canvas (culori,
+      // accepted against the real browser matrix: 4.80:1). Mechanical
+      // starting point, tunable by design review.
+      '600': 'oklch(0.6399 0.2137 27.17)',
+    },
     warning: {
       // Restores the light-mode `600`'s pre-fix value (see
       // defaultTokens.colors.warning['600']'s comment): this shade already
       // cleared AA in dark mode with this value, so dark keeps it unchanged
       // while light gets a darker one.
       '600': 'oklch(0.6688 0.1588 57.96)',
+    },
+    info: {
+      // New dark-only value (light keeps the earlier light-only fix from
+      // this task, oklch(0.5424 0.1366 241.18)). Only `link` reads this
+      // shade, so only against the dark canvas: even the already-darkened
+      // light-mode fix value gave 3.68:1 in dark, below AA (that earlier
+      // fix targeted light mode only; dark was never addressed and stayed
+      // failing). Derivation: same hue/chroma, lightness raised until
+      // clearing ~4.8 against the dark canvas (culori, accepted against the
+      // real browser matrix: 4.80:1). Mechanical starting point, tunable by
+      // design review.
+      '600': 'oklch(0.6107 0.1366 241.18)',
     },
   },
 };

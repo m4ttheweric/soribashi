@@ -11,7 +11,7 @@
     --color-danger-400: oklch(0.7123 0.1656 22.18);
     --color-danger-50: oklch(0.9344 0.0314 17.73);
     --color-danger-500: oklch(0.5885 0.2082 25.38);
-    --color-danger-600: oklch(0.5786 0.2137 27.17);
+    --color-danger-600: light-dark(oklch(0.5786 0.2137 27.17), oklch(0.6399 0.2137 27.17));
     --color-danger-700: oklch(0.4966 0.1918 27.56);
     --color-danger-800: oklch(0.441 0.1603 26.89);
     --color-danger-900: oklch(0.3996 0.1348 25.77);
@@ -23,7 +23,7 @@
     --color-info-400: oklch(0.7964 0.1343 211.78);
     --color-info-50: oklch(0.9831 0.0203 200.65);
     --color-info-500: oklch(0.5504 0.1481 238.1);
-    --color-info-600: oklch(0.5424 0.1366 241.18);
+    --color-info-600: light-dark(oklch(0.5424 0.1366 241.18), oklch(0.6107 0.1366 241.18));
     --color-info-700: oklch(0.4996 0.1179 242.21);
     --color-info-800: oklch(0.438 0.0988 240.83);
     --color-info-900: oklch(0.392 0.0844 240.76);
@@ -48,8 +48,8 @@
     --color-primary-400: oklch(0.7157 0.1425 254.45);
     --color-primary-50: light-dark(oklch(0.9716 0.0136 255.03), oklch(0.2463 0.0867 259.27));
     --color-primary-500: light-dark(oklch(0.57 0.1859 259.6), oklch(0.57 0.1859 259.6));
-    --color-primary-600: oklch(0.5449 0.2154 262.74);
-    --color-primary-700: oklch(0.4896 0.2153 264.27);
+    --color-primary-600: light-dark(oklch(0.5449 0.2154 262.74), oklch(0.6226 0.203 262.74));
+    --color-primary-700: light-dark(oklch(0.4896 0.2153 264.27), oklch(0.6798 0.1682 264.27));
     --color-primary-800: oklch(0.4226 0.181 265.65);
     --color-primary-900: light-dark(oklch(0.3814 0.1364 265.25), oklch(0.9716 0.0136 255.03));
     --color-primary-950: oklch(0.283 0.0872 267.76);
@@ -60,7 +60,7 @@
     --color-success-400: oklch(0.7205 0.192 149.49);
     --color-success-50: oklch(0.9836 0.0162 155.55);
     --color-success-500: oklch(0.5423 0.1688 149.18);
-    --color-success-600: oklch(0.5248 0.1373 149.83);
+    --color-success-600: light-dark(oklch(0.5248 0.1373 149.83), oklch(0.5995 0.1373 149.83));
     --color-success-700: oklch(0.4458 0.1087 150.91);
     --color-success-800: oklch(0.3909 0.0908 151.96);
     --color-success-900: oklch(0.3898 0.0885 152.69);
