@@ -79,6 +79,14 @@ export function contrastRatio(fg: string, bg: string, backdrop = 'rgb(255, 255, 
   let fgColor = parseColor(fg);
   let bgColor = parseColor(bg);
 
+  // Simplification: a translucent `fg` is composited straight over `backdrop`
+  // here, not over `bg` composited over `backdrop`, which is what actually
+  // paints on screen when both are translucent. Equivalent to the correct
+  // fg-over-bg-over-backdrop result today because every caller's fg is
+  // opaque (text colour) and every translucent input in this codebase is a
+  // background; a transparent bg just passes `backdrop` through unchanged
+  // either way. Revisit this shortcut before this function is ever asked to
+  // grade translucent text.
   if (fgColor.a < 1) fgColor = compositeOver(fgColor, backdropColor);
   if (bgColor.a < 1) bgColor = compositeOver(bgColor, backdropColor);
 

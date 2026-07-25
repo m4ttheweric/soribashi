@@ -14,10 +14,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(here, '..', 'src', 'generated', 'tenants.css');
 
 async function main(): Promise<void> {
-  const HEADER = '/* auto-generated tenant scopes — do not edit manually */';
+  const HEADER = '/* auto-generated tenant scopes: do not edit manually */';
   const sections = tenantThemes.map(
     (theme) =>
-      `/* tenant: ${theme.name ?? '(unnamed)'} — scope: ${theme.scope} */\n${emitCss(theme)}`,
+      `/* tenant: ${theme.name ?? '(unnamed)'}, scope: ${theme.scope} */\n${emitCss(theme)}`,
   );
   const out = `${HEADER}\n\n${sections.join('\n')}`;
 

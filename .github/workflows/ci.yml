@@ -32,6 +32,10 @@ jobs:
       # is the CI-side half of that gate, catching a committed manifest or
       # registry file nobody regenerated for.
       - run: bun run generate:ui
+      # Regenerates apps/workshop/src/generated/tenants.css from the tenant
+      # themes; part of the same drift gate so a hand-edited or stale
+      # tenants.css fails here too.
+      - run: bun run codegen:tenants
       - run: git diff --exit-code
 
   registry-smoke:

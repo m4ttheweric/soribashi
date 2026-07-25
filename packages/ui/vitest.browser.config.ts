@@ -4,6 +4,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
+  // Anchors `include` resolution to this package's directory regardless of
+  // invocation cwd, same rationale as vitest.visual.config.ts's `root`: Vite's
+  // default `root` is the process cwd, which would silently match zero files
+  // if this config were ever invoked via `--config` from the repo root.
+  root: import.meta.dirname,
   test: {
     name: 'ui-browser',
     include: ['src/**/*.test.tsx'],
