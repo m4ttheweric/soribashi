@@ -21,9 +21,15 @@ import type { IntentResolver, IntentResolverResult } from './types.ts';
  * flipped on a wrapper rather than swapping the token value. Mixing toward
  * `black` composites identically regardless of backdrop (measured
  * `rgb(51,113,214)` in both schemes) and keeps this resolver's pre-existing
- * scheme-invariant direction: shades 500/600/700 were never overridden per
- * scheme in the default dark tokens, so hover/active were already "always
- * darker" before this derivation replaced the ramp lookup.
+ * scheme-invariant direction: `defaultDarkTokens` DOES override several of
+ * these shades per scheme (e.g. `primary.500`, `neutral.500`, `neutral.600`
+ * in default-tokens.ts), so the literal CSS value substituted at each shade
+ * differs between light and dark. That doesn't undermine the "always
+ * darker" claim, though: mixing toward black darkens whatever the
+ * light-dark()-resolved background happens to be in the current scheme, so
+ * hover/active were already "always darker than background, in both
+ * schemes" before this derivation replaced the ramp lookup, regardless of
+ * whether the anchor shade itself was overridden per scheme.
  */
 function deriveState(background: string, weight: number): string {
   return `color-mix(in oklab, ${background} ${weight}%, black)`;

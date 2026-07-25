@@ -58,6 +58,11 @@ describe('defaultIntentResolver', () => {
       expect(result.background).toBe('var(--color-primary-100)');
       expect(result.color).toBe('var(--color-primary-700)');
     });
+
+    it('uses intent-200 as a ramp-lookup hover, not a derived color-mix (deliberate, see resolver doc comment)', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
+      expect(result.hover).toBe('var(--color-primary-200)');
+    });
   });
 
   describe('ghost variant', () => {
