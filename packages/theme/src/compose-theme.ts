@@ -85,9 +85,13 @@ function mergeComponents(
 
 /**
  * mergeTokens materializes every family, which is fine for light tokens (the
- * required families exist anyway) but dishonest for dark: codegen decides
- * whether to emit a `.dark {}` block by looking at what the theme declares,
- * so fabricated empty families must be stripped from the result.
+ * required families exist anyway) but dishonest for dark: PartialThemeTokens
+ * treats an omitted family as "no override declared", a state distinct from
+ * "family present but empty". Routing dark through the same shared
+ * mergeTokens machinery as light would otherwise fabricate an empty object
+ * for every family neither base nor child actually touched, so those
+ * fabricated empty families are stripped back out here to keep theme.dark's
+ * shape faithful to what the theme actually declared.
  */
 function mergeDarkTokens(base: PartialThemeTokens, child: PartialThemeTokens): PartialThemeTokens {
   const merged = mergeTokens(base as ThemeTokens, child as ThemeTokens);

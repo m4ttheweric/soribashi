@@ -7,10 +7,14 @@
  * They complement the existing emit-css.test.ts (which tests the happy path
  * of each token type) by covering:
  *   - BUG-E-1: breakpoint tokens not emitted by emitTokenLines()
- *   - BUG-E-2: emitDarkTokenLines() silently drops fontFamily, fontWeight,
- *              lineHeight, breakpoint, heading dark overrides
+ *   - BUG-E-2: dark overrides for fontFamily, fontWeight, lineHeight,
+ *              breakpoint, heading must thread through as light-dark() pairs
+ *              (originally caught against the now-removed emitDarkTokenLines(),
+ *              which silently dropped these families; superseded by Task 9's
+ *              light-dark() collapse, see emit-css.ts)
  *   - Sort order: colors sorted family-then-shade alphabetically
- *   - Conditional emission: dark block only when theme.dark is non-empty
+ *   - Dark block emission: the .dark selector is now unconditional (it only
+ *     flips color-scheme, so there is nothing to gate on theme.dark)
  *   - Edge cases: empty token sets, undefined heading props
  *   - semanticToVar: all four reference syntaxes
  */
@@ -78,11 +82,12 @@ describe('emitCss — BUG-E-1: breakpoint emission', () => {
 });
 
 // ---------------------------------------------------------------------------
-// BUG-E-2: emitDarkTokenLines must handle all PartialThemeTokens fields
+// BUG-E-2: dark overrides must thread through emitTokenLines() as
+// light-dark() pairs for every PartialThemeTokens field
 // ---------------------------------------------------------------------------
 
 describe('emitCss — BUG-E-2: dark override completeness', () => {
-  it('dark fontFamily overrides are emitted in the dark block', () => {
+  it('dark fontFamily overrides are emitted as a light-dark() pair', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -97,16 +102,10 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    // Dark block should override the font-family
-    expect(css).toContain('--font-family-sans: Inter;');
-    // The dark block must also contain the override
-    const darkStart = css.lastIndexOf('.dark {');
-    expect(darkStart).toBeGreaterThan(-1);
-    const darkBlock = css.slice(darkStart);
-    expect(darkBlock).toContain('--font-family-sans: SystemFont;');
+    expect(css).toContain('--font-family-sans: light-dark(Inter, SystemFont);');
   });
 
-  it('dark fontWeight overrides are emitted in the dark block', () => {
+  it('dark fontWeight overrides are emitted as a light-dark() pair', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -121,13 +120,10 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    const darkStart = css.lastIndexOf('.dark {');
-    expect(darkStart).toBeGreaterThan(-1);
-    const darkBlock = css.slice(darkStart);
-    expect(darkBlock).toContain('--font-weight-bold: 600;');
+    expect(css).toContain('--font-weight-bold: light-dark(700, 600);');
   });
 
-  it('dark lineHeight overrides are emitted in the dark block', () => {
+  it('dark lineHeight overrides are emitted as a light-dark() pair', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -142,13 +138,10 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    const darkStart = css.lastIndexOf('.dark {');
-    expect(darkStart).toBeGreaterThan(-1);
-    const darkBlock = css.slice(darkStart);
-    expect(darkBlock).toContain('--line-height-md: 1.6;');
+    expect(css).toContain('--line-height-md: light-dark(1.55, 1.6);');
   });
 
-  it('dark breakpoint overrides are emitted in the dark block', () => {
+  it('dark breakpoint overrides are emitted as a light-dark() pair', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -163,13 +156,10 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    const darkStart = css.lastIndexOf('.dark {');
-    expect(darkStart).toBeGreaterThan(-1);
-    const darkBlock = css.slice(darkStart);
-    expect(darkBlock).toContain('--breakpoint-md: 60em;');
+    expect(css).toContain('--breakpoint-md: light-dark(62em, 60em);');
   });
 
-  it('dark heading.textWrap override is emitted in the dark block', () => {
+  it('dark heading.textWrap override is emitted as a light-dark() pair', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -204,13 +194,10 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    const darkStart = css.lastIndexOf('.dark {');
-    expect(darkStart).toBeGreaterThan(-1);
-    const darkBlock = css.slice(darkStart);
-    expect(darkBlock).toContain('--heading-text-wrap: balance;');
+    expect(css).toContain('--heading-text-wrap: light-dark(wrap, balance);');
   });
 
-  it('dark heading fontSize overrides are emitted in the dark block', () => {
+  it('dark heading fontSize overrides are emitted as a light-dark() pair', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -243,10 +230,7 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    const darkStart = css.lastIndexOf('.dark {');
-    expect(darkStart).toBeGreaterThan(-1);
-    const darkBlock = css.slice(darkStart);
-    expect(darkBlock).toContain('--heading-h1-font-size: 1.875rem;');
+    expect(css).toContain('--heading-h1-font-size: light-dark(2rem, 1.875rem);');
   });
 });
 
@@ -317,11 +301,15 @@ describe('emitCss — sort order', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Conditional emission — dark block only if theme.dark is non-empty
+// Dark block emission — always present now; it only flips color-scheme
 // ---------------------------------------------------------------------------
 
-describe('emitCss — conditional dark block emission', () => {
-  it('no dark block when theme.dark is empty', () => {
+describe('emitCss — dark block emission', () => {
+  it('dark block is still emitted (color-scheme only) when theme.dark is empty', () => {
+    // Previously the .dark selector was only emitted when there was
+    // something to restate. Now it carries no tokens at all — just the
+    // color-scheme flip — so there is no longer a reason to omit it based on
+    // theme.dark's contents.
     const theme = createTheme({
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
@@ -332,7 +320,8 @@ describe('emitCss — conditional dark block emission', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).not.toContain('.dark {');
+    expect(css).toContain('.dark {\n  color-scheme: dark;\n}');
+    expect(css).not.toContain('light-dark(');
   });
 
   it('dark block emitted when theme.dark has at least one color', () => {
@@ -441,7 +430,7 @@ describe('emitCss — edge cases', () => {
     expect(css).not.toContain('--heading-text-wrap');
   });
 
-  it('dark override with undefined value is not emitted', () => {
+  it('dark override with undefined value falls back to a bare declaration, not light-dark(x, undefined)', () => {
     const theme = createTheme({
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)', '600': 'hsl(0 0% 40%)' } },
@@ -456,14 +445,12 @@ describe('emitCss — edge cases', () => {
     });
 
     const css = emitCss(theme);
-    // '500' has a real value
-    const darkStart = css.lastIndexOf('.dark {');
-    const darkBlock = css.slice(darkStart);
-    expect(darkBlock).toContain('--color-primary-500: hsl(0 0% 80%);');
-    // '600' is undefined — must NOT appear
-    expect(darkBlock).not.toContain('--color-primary-600');
-    // radius.md is undefined in dark — must NOT appear
-    expect(darkBlock).not.toContain('--radius-md');
+    // '500' has a real dark override — paired.
+    expect(css).toContain('--color-primary-500: light-dark(hsl(0 0% 50%), hsl(0 0% 80%));');
+    // '600' has no dark override — bare value, no light-dark() wrapping.
+    expect(css).toContain('--color-primary-600: hsl(0 0% 40%);');
+    // radius.md has no dark override — bare value.
+    expect(css).toContain('--radius-md: 0.5rem;');
   });
 });
 

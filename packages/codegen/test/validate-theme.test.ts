@@ -230,3 +230,232 @@ describe('build — fails on invalid semantic token refs', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// A dark-only token has no light value to pair with, so emitCss's pairing
+// logic (which walks light and looks up a matching dark entry) never visits
+// it — the token would otherwise be silently dropped from the emitted CSS
+// entirely, not just from one scheme. Every family that pairValue() handles
+// gets a dedicated case here so a future family addition to emitTokenLines
+// without a matching validation branch shows up as an obvious gap.
+// ---------------------------------------------------------------------------
+
+describe('validateTheme — dark overrides must have a light counterpart', () => {
+  it('accepts a dark override of a color shade that light declares (green path)', () => {
+    const theme = themeWith({
+      dark: { colors: { neutral: { '900': '#eee' } } },
+    });
+    expect(() => validateTheme(theme)).not.toThrow();
+  });
+
+  it('accepts normal dark overrides across every token family the pairing logic handles', () => {
+    const theme = createTheme({
+      tokens: {
+        // createTheme's default semanticTokens reference every shade in
+        // `neutral` (see the fixture comment at the top of this file), so
+        // reuse it rather than a minimal palette that would trip unrelated
+        // semantic-ref validation errors.
+        colors: { neutral },
+        radius: { md: '0.5rem' },
+        spacing: { md: '1rem' },
+        fontSize: { md: '1rem' },
+        fontFamily: { sans: 'Inter' },
+        fontWeight: { bold: '700' },
+        lineHeight: { md: '1.5' },
+        shadow: { md: '0 1px 2px black' },
+        breakpoint: { md: '48rem' },
+        zIndex: { modal: 200 },
+        heading: {
+          textWrap: 'wrap',
+          sizes: {
+            h1: { fontSize: '2rem', fontWeight: '700', lineHeight: '1.2' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+      dark: {
+        colors: { neutral: { '50': '#111', '0': '#000' } },
+        radius: { md: '0.75rem' },
+        spacing: { md: '1.25rem' },
+        fontSize: { md: '1.05rem' },
+        fontFamily: { sans: 'SystemFont' },
+        fontWeight: { bold: '600' },
+        lineHeight: { md: '1.6' },
+        shadow: { md: '0 1px 2px white' },
+        breakpoint: { md: '46rem' },
+        zIndex: { modal: 300 },
+        heading: {
+          textWrap: 'balance',
+          sizes: {
+            h1: { fontSize: '1.875rem', fontWeight: '600', lineHeight: '1.3' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+    });
+
+    expect(() => validateTheme(theme)).not.toThrow();
+  });
+
+  it('rejects a dark color shade with no light counterpart, naming the path', () => {
+    const theme = themeWith({
+      dark: { colors: { neutral: { '999': '#eee' } } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.colors\.neutral\.999/);
+    expect(() => validateTheme(theme)).toThrow(/dark may only override tokens that light declares/);
+  });
+
+  it('rejects a dark color family that light does not declare at all', () => {
+    const theme = themeWith({
+      dark: { colors: { ghost: { '50': 'red' } } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.colors\.ghost\.50/);
+  });
+
+  it('rejects a dark radius key with no light counterpart', () => {
+    const theme = themeWith({
+      dark: { radius: { xl: '9999px' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.radius\.xl/);
+  });
+
+  it('rejects a dark spacing key with no light counterpart', () => {
+    const theme = themeWith({
+      dark: { spacing: { xl: '4rem' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.spacing\.xl/);
+  });
+
+  it('rejects a dark fontSize key with no light counterpart', () => {
+    const theme = themeWith({
+      dark: { fontSize: { xl: '2rem' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.fontSize\.xl/);
+  });
+
+  it('rejects a dark fontFamily key when light declares no fontFamily at all', () => {
+    const theme = themeWith({
+      dark: { fontFamily: { sans: 'SystemFont' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.fontFamily\.sans/);
+  });
+
+  it('rejects a dark fontWeight key with no light counterpart', () => {
+    const theme = themeWith({
+      tokens: {
+        colors: { neutral },
+        radius: { md: '0.5rem' },
+        spacing: { md: '1rem' },
+        fontSize: { md: '1rem' },
+        fontWeight: { regular: '400' },
+      },
+      dark: { fontWeight: { bold: '700' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.fontWeight\.bold/);
+  });
+
+  it('rejects a dark lineHeight key with no light counterpart', () => {
+    const theme = themeWith({
+      dark: { lineHeight: { md: '1.6' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.lineHeight\.md/);
+  });
+
+  it('rejects a dark shadow key with no light counterpart', () => {
+    const theme = themeWith({
+      dark: { shadow: { md: '0 1px 2px black' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.shadow\.md/);
+  });
+
+  it('rejects a dark breakpoint key with no light counterpart', () => {
+    // themeWith doesn't set breakpoint, so createTheme backfills the default
+    // breakpoint scale (xs/sm/md/lg/xl/2xl/3xl) — pick a key outside that set
+    // so this is unambiguously an orphan rather than a collision with it.
+    const theme = themeWith({
+      dark: { breakpoint: { giant: '200em' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.breakpoint\.giant/);
+  });
+
+  it('rejects a dark zIndex key with no light counterpart', () => {
+    const theme = themeWith({
+      dark: { zIndex: { modal: 300 } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.zIndex\.modal/);
+  });
+
+  it('rejects a dark heading.textWrap override when light heading has no textWrap', () => {
+    const theme = themeWith({
+      tokens: {
+        colors: { neutral },
+        radius: { md: '0.5rem' },
+        spacing: { md: '1rem' },
+        fontSize: { md: '1rem' },
+        heading: {
+          sizes: {
+            h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+      dark: { heading: { textWrap: 'balance' } },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.heading\.textWrap/);
+  });
+
+  it('rejects a dark heading size sub-field with no light counterpart', () => {
+    const sizes = {
+      h1: { fontSize: '2rem' },
+      h2: { fontSize: '1.5rem' },
+      h3: { fontSize: '1.25rem' },
+      h4: { fontSize: '1.125rem' },
+      h5: { fontSize: '1rem' },
+      h6: { fontSize: '0.875rem' },
+    };
+    const theme = themeWith({
+      tokens: {
+        colors: { neutral },
+        radius: { md: '0.5rem' },
+        spacing: { md: '1rem' },
+        fontSize: { md: '1rem' },
+        heading: { sizes },
+      },
+      dark: {
+        heading: {
+          sizes: { ...sizes, h1: { ...sizes.h1, fontWeight: '700' } },
+        },
+      },
+    });
+    expect(() => validateTheme(theme)).toThrow(/dark\.heading\.sizes\.h1\.fontWeight/);
+  });
+});
+
+describe('build — fails on dark-only token overrides', () => {
+  it('rejects with the validation error instead of writing CSS that silently drops the token', async () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'soribashi-validate-dark-'));
+    try {
+      const theme = themeWith({
+        dark: { colors: { neutral: { '999': '#eee' } } },
+      });
+
+      await expect(build({ theme, output: { css: join(tempDir, 'theme.css') } })).rejects.toThrow(
+        /dark\.colors\.neutral\.999/,
+      );
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+});

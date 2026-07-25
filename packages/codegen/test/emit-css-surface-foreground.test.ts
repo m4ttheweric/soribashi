@@ -48,7 +48,7 @@ describe('emitCss surface foreground', () => {
     expect(css).not.toMatch(/--surface-floating-foreground/);
   });
 
-  it('emits dark token overrides so surface foreground pair resolves correctly in dark mode', () => {
+  it('emits dark token overrides via light-dark() so surface foreground pair resolves correctly in dark mode', () => {
     const theme = createTheme({
       tokens: baseTokens as never,
       dark: {
@@ -60,11 +60,13 @@ describe('emitCss surface foreground', () => {
       darkMode: { selector: '.dark' },
     });
     const css = emitCss(theme);
-    // Light block has the semantic pair as var() references
+    // The semantic pair is a var() reference, declared once.
     expect(css).toMatch(/--surface-floating:\s*var\(--color-neutral-900\)/);
     expect(css).toMatch(/--surface-floating-foreground:\s*var\(--color-neutral-0\)/);
-    // Dark block overrides the underlying color tokens so the semantic vars resolve correctly via cascade
-    expect(css).toMatch(/\.dark[^{]*\{[\s\S]*--color-neutral-0:\s*hsl\(0 0% 5%\)/);
-    expect(css).toMatch(/\.dark[^{]*\{[\s\S]*--color-neutral-900:\s*hsl\(0 0% 95%\)/);
+    // The underlying color tokens carry both schemes via light-dark(), so the
+    // semantic vars resolve correctly wherever they're consumed — no
+    // restatement inside .dark is required.
+    expect(css).toContain('--color-neutral-0: light-dark(hsl(0 0% 100%), hsl(0 0% 5%));');
+    expect(css).toContain('--color-neutral-900: light-dark(hsl(0 0% 10%), hsl(0 0% 95%));');
   });
 });

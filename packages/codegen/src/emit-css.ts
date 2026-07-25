@@ -35,7 +35,8 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
 
   // :root block
   lines.push(`${effectiveTheme.scope} {`);
-  emitTokenLines(lines, effectiveTheme.tokens);
+  lines.push('  color-scheme: light;');
+  emitTokenLines(lines, effectiveTheme.tokens, effectiveTheme.dark);
   emitSemanticLines(lines, effectiveTheme);
   if (additions?.root) {
     for (const [key, value] of Object.entries(additions.root)) {
@@ -44,34 +45,19 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   }
   lines.push('}');
 
-  // .dark block — emitted if there are dark token overrides OR consumer dark vars.
-  // Emit into a scratch array first: composed themes materialize every dark
-  // section as an empty object, so a key-count check on theme.dark would emit
-  // an empty block.
-  const darkLines: string[] = [];
-  emitDarkTokenLines(darkLines, effectiveTheme.dark);
-  const hasDarkAdditions = !!additions?.dark && Object.keys(additions.dark).length > 0;
-  if (darkLines.length > 0 || hasDarkAdditions) {
-    lines.push('');
-    lines.push(`${effectiveTheme.darkMode.selector} {`);
-    lines.push(...darkLines);
-    // Custom properties are not "live" references: a var() inside a property
-    // substitutes at the element where that property is declared, and the
-    // RESOLVED value is what descendants inherit. Semantic vars declared only
-    // in :root (e.g. --surface-canvas: var(--color-neutral-50)) resolve once
-    // against the light tokens and never re-resolve just because a `.dark`
-    // wrapper element further down the tree redeclares --color-neutral-50.
-    // Re-declaring the same var() references here forces them to
-    // re-substitute against the flipped dark tokens at this scope, which is
-    // required for wrapper-scoped (non-:root) dark mode to actually flip.
-    emitSemanticLines(lines, effectiveTheme);
-    if (additions?.dark) {
-      for (const [key, value] of Object.entries(additions.dark)) {
-        lines.push(`  ${key}: ${value};`);
-      }
+  // Tokens carry both schemes via light-dark(), so the dark selector only has
+  // to flip color-scheme. Re-emitting semantic vars here (which the previous
+  // implementation required) is no longer necessary: light-dark() resolves at
+  // the point of use, so a scoped wrapper flips without any restatement.
+  lines.push('');
+  lines.push(`${effectiveTheme.darkMode.selector} {`);
+  lines.push('  color-scheme: dark;');
+  if (additions?.dark) {
+    for (const [key, value] of Object.entries(additions.dark)) {
+      lines.push(`  ${key}: ${value};`);
     }
-    lines.push('}');
   }
+  lines.push('}');
 
   // Optional scopes — flat blocks for each scope name
   if (additions?.scopes) {
@@ -100,163 +86,101 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
 
 function countEmittedTokenVars(theme: ResolvedTheme): number {
   const scratch: string[] = [];
-  emitTokenLines(scratch, theme.tokens);
-  emitDarkTokenLines(scratch, theme.dark);
+  emitTokenLines(scratch, theme.tokens, theme.dark);
   return scratch.length;
 }
 
-function emitTokenLines(lines: string[], tokens: ThemeTokens): void {
+/**
+ * Pairs a light value with its dark override. Unregistered custom properties
+ * substitute lazily, so light-dark() resolves against the color-scheme of the
+ * element that USES the var, not the one that declares it. That is what lets a
+ * single declaration serve a scoped dark wrapper, and it is why colour tokens
+ * must never be registered via @property (see emit-property.ts).
+ */
+function pairValue(light: string, dark: string | undefined): string {
+  return dark === undefined ? light : `light-dark(${light}, ${dark})`;
+}
+
+function emitTokenLines(lines: string[], tokens: ThemeTokens, dark: PartialThemeTokens): void {
   for (const [family, scale] of Object.entries(tokens.colors).sort(byKey)) {
     for (const [shade, value] of Object.entries(scale).sort(byKey)) {
-      lines.push(`  --color-${family}-${shade}: ${value};`);
+      const darkValue = dark.colors?.[family]?.[shade];
+      lines.push(`  --color-${family}-${shade}: ${pairValue(value, darkValue)};`);
     }
   }
 
   for (const [key, value] of Object.entries(tokens.radius).sort(byKey)) {
-    lines.push(`  --radius-${key}: ${value};`);
+    lines.push(`  --radius-${key}: ${pairValue(value, dark.radius?.[key])};`);
   }
 
   for (const [key, value] of Object.entries(tokens.spacing).sort(byKey)) {
-    lines.push(`  --spacing-${key}: ${value};`);
+    lines.push(`  --spacing-${key}: ${pairValue(value, dark.spacing?.[key])};`);
   }
 
   for (const [key, value] of Object.entries(tokens.fontSize).sort(byKey)) {
-    lines.push(`  --font-size-${key}: ${value};`);
+    lines.push(`  --font-size-${key}: ${pairValue(value, dark.fontSize?.[key])};`);
   }
 
   if (tokens.fontFamily) {
     for (const [key, value] of Object.entries(tokens.fontFamily).sort(byKey)) {
-      lines.push(`  --font-family-${key}: ${value};`);
+      lines.push(`  --font-family-${key}: ${pairValue(value, dark.fontFamily?.[key])};`);
     }
   }
 
   if (tokens.fontWeight) {
     for (const [key, value] of Object.entries(tokens.fontWeight).sort(byKey)) {
-      lines.push(`  --font-weight-${key}: ${value};`);
+      lines.push(`  --font-weight-${key}: ${pairValue(value, dark.fontWeight?.[key])};`);
     }
   }
 
   if (tokens.lineHeight) {
     for (const [key, value] of Object.entries(tokens.lineHeight).sort(byKey)) {
-      lines.push(`  --line-height-${key}: ${value};`);
+      lines.push(`  --line-height-${key}: ${pairValue(value, dark.lineHeight?.[key])};`);
     }
   }
 
   if (tokens.shadow) {
     for (const [key, value] of Object.entries(tokens.shadow).sort(byKey)) {
-      lines.push(`  --shadow-${key}: ${value};`);
+      lines.push(`  --shadow-${key}: ${pairValue(value, dark.shadow?.[key])};`);
     }
   }
 
   if (tokens.breakpoint) {
     for (const [key, value] of Object.entries(tokens.breakpoint).sort(byKey)) {
-      lines.push(`  --breakpoint-${key}: ${value};`);
+      lines.push(`  --breakpoint-${key}: ${pairValue(value, dark.breakpoint?.[key])};`);
     }
   }
 
   if (tokens.zIndex) {
     for (const [key, value] of Object.entries(tokens.zIndex).sort(byKey)) {
-      lines.push(`  --z-index-${key}: ${value};`);
+      const darkValue = dark.zIndex?.[key];
+      lines.push(
+        `  --z-index-${key}: ${pairValue(String(value), darkValue === undefined ? undefined : String(darkValue))};`,
+      );
     }
   }
 
   if (tokens.heading) {
+    const darkHeading = dark.heading;
     if (tokens.heading.textWrap !== undefined) {
-      lines.push(`  --heading-text-wrap: ${tokens.heading.textWrap};`);
+      lines.push(
+        `  --heading-text-wrap: ${pairValue(tokens.heading.textWrap, darkHeading?.textWrap)};`,
+      );
     }
     for (const [order, size] of Object.entries(tokens.heading.sizes).sort(byKey)) {
-      lines.push(`  --heading-${order}-font-size: ${size.fontSize};`);
+      const darkSize = darkHeading?.sizes?.[order as keyof typeof tokens.heading.sizes];
+      lines.push(
+        `  --heading-${order}-font-size: ${pairValue(size.fontSize, darkSize?.fontSize)};`,
+      );
       if (size.fontWeight !== undefined) {
-        lines.push(`  --heading-${order}-font-weight: ${size.fontWeight};`);
+        lines.push(
+          `  --heading-${order}-font-weight: ${pairValue(size.fontWeight, darkSize?.fontWeight)};`,
+        );
       }
       if (size.lineHeight !== undefined) {
-        lines.push(`  --heading-${order}-line-height: ${size.lineHeight};`);
-      }
-    }
-  }
-}
-
-function emitDarkTokenLines(lines: string[], dark: PartialThemeTokens): void {
-  if (dark.colors) {
-    for (const [family, scale] of Object.entries(dark.colors).sort(byKey)) {
-      for (const [shade, value] of Object.entries(scale ?? {}).sort(byKey)) {
-        if (value !== undefined) {
-          lines.push(`  --color-${family}-${shade}: ${value};`);
-        }
-      }
-    }
-  }
-
-  if (dark.radius) {
-    for (const [key, value] of Object.entries(dark.radius).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --radius-${key}: ${value};`);
-    }
-  }
-
-  if (dark.spacing) {
-    for (const [key, value] of Object.entries(dark.spacing).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --spacing-${key}: ${value};`);
-    }
-  }
-
-  if (dark.fontSize) {
-    for (const [key, value] of Object.entries(dark.fontSize).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --font-size-${key}: ${value};`);
-    }
-  }
-
-  if (dark.shadow) {
-    for (const [key, value] of Object.entries(dark.shadow).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --shadow-${key}: ${value};`);
-    }
-  }
-
-  if (dark.fontFamily) {
-    for (const [key, value] of Object.entries(dark.fontFamily).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --font-family-${key}: ${value};`);
-    }
-  }
-
-  if (dark.fontWeight) {
-    for (const [key, value] of Object.entries(dark.fontWeight).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --font-weight-${key}: ${value};`);
-    }
-  }
-
-  if (dark.lineHeight) {
-    for (const [key, value] of Object.entries(dark.lineHeight).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --line-height-${key}: ${value};`);
-    }
-  }
-
-  if (dark.breakpoint) {
-    for (const [key, value] of Object.entries(dark.breakpoint).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --breakpoint-${key}: ${value};`);
-    }
-  }
-
-  if (dark.zIndex) {
-    for (const [key, value] of Object.entries(dark.zIndex).sort(byKey)) {
-      if (value !== undefined) lines.push(`  --z-index-${key}: ${value};`);
-    }
-  }
-
-  if (dark.heading) {
-    if (dark.heading.textWrap !== undefined) {
-      lines.push(`  --heading-text-wrap: ${dark.heading.textWrap};`);
-    }
-    if (dark.heading.sizes) {
-      for (const [order, size] of Object.entries(dark.heading.sizes).sort(byKey)) {
-        if (size === undefined) continue;
-        if (size.fontSize !== undefined) {
-          lines.push(`  --heading-${order}-font-size: ${size.fontSize};`);
-        }
-        if (size.fontWeight !== undefined) {
-          lines.push(`  --heading-${order}-font-weight: ${size.fontWeight};`);
-        }
-        if (size.lineHeight !== undefined) {
-          lines.push(`  --heading-${order}-line-height: ${size.lineHeight};`);
-        }
+        lines.push(
+          `  --heading-${order}-line-height: ${pairValue(size.lineHeight, darkSize?.lineHeight)};`,
+        );
       }
     }
   }

@@ -61,7 +61,7 @@ describe('emitCss', () => {
     expect(css).toContain('--font-size-md: 1rem;');
   });
 
-  it('emits dark-mode block when dark tokens are provided', () => {
+  it('emits the dark override as a light-dark() pair in :root, not a restated .dark block', () => {
     const theme = createTheme({
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
@@ -76,17 +76,19 @@ describe('emitCss', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('.dark {');
-    expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
+    expect(css).toContain('--color-primary-500: light-dark(hsl(0 0% 50%), hsl(0 0% 80%));');
+    // The .dark block only flips color-scheme now — it does not restate the token.
+    const darkBlock = css.slice(css.indexOf('.dark {'));
+    expect(darkBlock).not.toContain('--color-primary-500:');
   });
 
-  it('re-declares semantic vars inside .dark so wrapper-scoped dark mode flips them', () => {
-    // Custom properties substitute their var() reference at the element where
-    // they are declared, and descendants inherit the resolved value. If
-    // --surface-canvas is only declared in :root, it resolves against the
-    // light --color-neutral-50 once and never re-resolves just because a
-    // `.dark` wrapper div further down the tree redeclares --color-neutral-50.
-    // The semantic var must be redeclared inside .dark too, so its var()
-    // reference re-substitutes against the flipped token there.
+  it('does not restate semantic vars inside .dark — the underlying token already carries both schemes', () => {
+    // light-dark() resolves at the point of use against the CONSUMING
+    // element's color-scheme, not the declaring element's. So a semantic var
+    // declared only in :root (e.g. --surface-canvas: var(--color-neutral-50))
+    // still flips correctly under a scoped `.dark` wrapper: --color-neutral-50
+    // itself is light-dark(...), and that resolves fresh at every element that
+    // reads it, regardless of where the var() indirection was declared.
     const theme = createTheme({
       tokens: {
         colors: { neutral: { '50': '#fafafa', '900': '#111111' } },
@@ -103,20 +105,21 @@ describe('emitCss', () => {
     });
 
     const css = emitCss(theme);
-    // Sanity: the semantic var is declared in :root as expected.
+    // The semantic var is declared once in :root, referencing the light-dark() token.
     const rootBlock = css.slice(0, css.indexOf('.dark {'));
     expect(rootBlock).toContain('--surface-canvas: var(--color-neutral-50);');
+    expect(rootBlock).toContain('--color-neutral-50: light-dark(#fafafa, #0a0a0a);');
 
-    // The fix: the .dark block must also carry the semantic re-declaration,
-    // not just the raw token override.
+    // The .dark block no longer restates it — that's the whole point of the collapse.
     const darkBlock = css.slice(css.indexOf('.dark {'));
-    expect(darkBlock).toContain('--surface-canvas: var(--color-neutral-50);');
+    expect(darkBlock).not.toContain('--surface-canvas:');
   });
 
-  it('does not emit an empty .dark block when dark holds only empty sections', () => {
+  it('.dark block is always emitted with just color-scheme, even when dark holds only empty sections', () => {
     // composeTheme no longer materializes empty dark families, but the
-    // emitter's guard against an all-empty dark object still deserves
-    // coverage, so construct that shape explicitly.
+    // emitter no longer conditions block emission on theme.dark contents at
+    // all — the .dark selector's only job now is the color-scheme flip — so
+    // construct that shape explicitly to prove it still emits cleanly.
     const base = createTheme({
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
@@ -129,10 +132,11 @@ describe('emitCss', () => {
 
     expect(Object.keys(theme.dark).length).toBeGreaterThan(0);
     const css = emitCss(theme);
-    expect(css).not.toContain('.dark');
+    expect(css).toContain('.dark {\n  color-scheme: dark;\n}');
+    expect(css).not.toContain('light-dark(');
   });
 
-  it('still emits the .dark block for composed themes with real dark overrides', () => {
+  it('still emits the light-dark() pair for composed themes with real dark overrides', () => {
     const base = createTheme({
       tokens: {
         colors: { primary: { '500': 'hsl(0 0% 50%)' } },
@@ -149,7 +153,7 @@ describe('emitCss', () => {
 
     const css = emitCss(extended);
     expect(css).toContain('.dark {');
-    expect(css).toContain('--color-primary-500: hsl(0 0% 80%);');
+    expect(css).toContain('--color-primary-500: light-dark(hsl(0 0% 50%), hsl(0 0% 80%));');
   });
 
   it('respects custom scope and darkMode selector', () => {
@@ -498,7 +502,7 @@ describe('emitCss zIndex tokens', () => {
     expect(css).toContain('--z-index-max: 9999;');
   });
 
-  it('emits dark zIndex overrides in the .dark block', () => {
+  it('emits dark zIndex overrides as a light-dark() pair in :root', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -511,7 +515,6 @@ describe('emitCss zIndex tokens', () => {
     });
 
     const css = emitCss(theme);
-    const darkBlock = css.slice(css.indexOf('.dark {'));
-    expect(darkBlock).toContain('--z-index-modal: 300;');
+    expect(css).toContain('--z-index-modal: light-dark(200, 300);');
   });
 });
