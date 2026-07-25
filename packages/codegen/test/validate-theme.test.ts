@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { ThemeDefinition } from '@soribashi/theme';
+import type { HeadingTokens, ThemeDefinition } from '@soribashi/theme';
 import { createTheme } from '@soribashi/theme';
 import { describe, expect, it } from 'vitest';
 import { build } from '../src/build.ts';
@@ -354,35 +354,35 @@ describe('validateTheme — dark overrides must have a light counterpart', () =>
     expect(() => validateTheme(theme)).toThrow(/dark\.colors\.ghost\.50/);
   });
 
-  it('rejects a dark radius key with no light counterpart', () => {
+  it('rejects a dark radius override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { radius: { xl: '9999px' } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.radius\.xl/);
   });
 
-  it('rejects a dark spacing key with no light counterpart', () => {
+  it('rejects a dark spacing override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { spacing: { xl: '4rem' } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.spacing\.xl/);
   });
 
-  it('rejects a dark fontSize key with no light counterpart', () => {
+  it('rejects a dark fontSize override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { fontSize: { xl: '2rem' } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.fontSize\.xl/);
   });
 
-  it('rejects a dark fontFamily key when light declares no fontFamily at all', () => {
+  it('rejects a dark fontFamily override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { fontFamily: { sans: 'SystemFont' } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.fontFamily\.sans/);
   });
 
-  it('rejects a dark fontWeight key with no light counterpart', () => {
+  it('rejects a dark fontWeight override; dark overrides are colour-only', () => {
     const theme = themeWith({
       tokens: {
         colors: { neutral },
@@ -396,38 +396,35 @@ describe('validateTheme — dark overrides must have a light counterpart', () =>
     expect(() => validateTheme(theme)).toThrow(/dark\.fontWeight\.bold/);
   });
 
-  it('rejects a dark lineHeight key with no light counterpart', () => {
+  it('rejects a dark lineHeight override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { lineHeight: { md: '1.6' } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.lineHeight\.md/);
   });
 
-  it('rejects a dark shadow key with no light counterpart', () => {
+  it('rejects a dark shadow override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { shadow: { md: '0 1px 2px black' } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.shadow\.md/);
   });
 
-  it('rejects a dark breakpoint key with no light counterpart', () => {
-    // themeWith doesn't set breakpoint, so createTheme backfills the default
-    // breakpoint scale (xs/sm/md/lg/xl/2xl/3xl) — pick a key outside that set
-    // so this is unambiguously an orphan rather than a collision with it.
+  it('rejects a dark breakpoint override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { breakpoint: { giant: '200em' } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.breakpoint\.giant/);
   });
 
-  it('rejects a dark zIndex key with no light counterpart', () => {
+  it('rejects a dark zIndex override; dark overrides are colour-only', () => {
     const theme = themeWith({
       dark: { zIndex: { modal: 300 } },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.zIndex\.modal/);
   });
 
-  it('rejects a dark heading.textWrap override when light heading has no textWrap', () => {
+  it('rejects a dark heading.textWrap override; dark overrides are colour-only', () => {
     const theme = themeWith({
       tokens: {
         colors: { neutral },
@@ -450,7 +447,7 @@ describe('validateTheme — dark overrides must have a light counterpart', () =>
     expect(() => validateTheme(theme)).toThrow(/dark\.heading\.textWrap/);
   });
 
-  it('rejects a dark heading size sub-field with no light counterpart', () => {
+  it('rejects a dark heading size sub-field override; dark overrides are colour-only', () => {
     const sizes = {
       h1: { fontSize: '2rem' },
       h2: { fontSize: '1.5rem' },
@@ -474,6 +471,36 @@ describe('validateTheme — dark overrides must have a light counterpart', () =>
       },
     });
     expect(() => validateTheme(theme)).toThrow(/dark\.heading\.sizes\.h1\.fontWeight/);
+  });
+
+  // The guard clauses below (`if (!darkFamily) return`, `value === undefined`
+  // skips) have no error to assert, so a careless edit could turn them into
+  // false positives silently. Pin the green paths.
+
+  it('accepts an entirely-empty dark object', () => {
+    const theme = themeWith({ dark: {} });
+    expect(() => validateTheme(theme)).not.toThrow();
+  });
+
+  it('accepts empty dark groups (no keys, nothing to reject)', () => {
+    const theme = themeWith({
+      dark: { colors: {}, radius: {}, spacing: {}, heading: {} },
+    });
+    expect(() => validateTheme(theme)).not.toThrow();
+  });
+
+  it('ignores undefined-valued dark entries (spread residue is not an override)', () => {
+    const theme = themeWith({
+      dark: {
+        colors: { neutral: { '999': undefined } },
+        radius: { xl: undefined },
+        // The sizes record requires HeadingSize values for all six orders, so
+        // an undefined slot only arises at runtime (spreads over partial
+        // objects) — cast to build the fixture TS cannot express.
+        heading: { sizes: { h1: undefined } as unknown as HeadingTokens['sizes'] },
+      },
+    });
+    expect(() => validateTheme(theme)).not.toThrow();
   });
 });
 
