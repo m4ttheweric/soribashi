@@ -26,7 +26,25 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run codegen
+      # Regenerates packages/ui/manifest.json and registry/*.json from the
+      # same recipe statics/CSS scan the tier 1 drift test
+      # (packages/ui/test/manifest-drift.test.ts) already covers; this job
+      # is the CI-side half of that gate, catching a committed manifest or
+      # registry file nobody regenerated for.
+      - run: bun run generate:ui
       - run: git diff --exit-code
+
+  registry-smoke:
+    name: Registry install smoke check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      # Network-dependent (resolves the shadcn CLI and real npm deps) and
+      # takes minutes, which is why this is its own job and not part of
+      # `bun run test`.
+      - run: bun run smoke:registry
 
   browser:
     name: Browser parity
