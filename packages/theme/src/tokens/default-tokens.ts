@@ -245,25 +245,51 @@ export const defaultTokens: ThemeTokens = {
  * passed), not a newly-derived one.
  *
  * `primary` additionally has a dark `700` (the `outline`/`ghost`/`subtle`
- * text shade), derived the same mechanical way, because `primary['100']`
- * (this family's `subtle` background) already had its own dark tint before
- * this task and needed a compatible dark text partner. The other four
- * intent families do NOT have a dark `700`: their `100` (the `subtle`
- * background) has no dark override at all, so it stays at its light-mode
- * (light, near-white) value in dark mode, and `subtle` currently reads fine
- * against it using the shared light-mode `700`. Overriding `700` for dark to
- * fix `outline`/`ghost` (which need light text against the dark canvas)
- * would read that same lighter override for `subtle` too (same CSS custom
- * property, same variant-independent resolver lookup), breaking `subtle`
- * against its still-light background. Verified this is a genuine
- * conflict, not a tuning gap: computed the best-achievable simultaneous
- * contrast across the full lightness range for each of
- * success/danger/warning/info's `700` (same hue/chroma, canvas dark vs. that
- * family's own light `100`) and the maximum lands between 3.49:1 and
- * 4.05:1, short of 4.5:1, for all four. `outline`/`ghost` for these four
- * intents remain a real, open AA gap in dark mode; see the task report for
- * the full number-by-number breakdown and the escalation to the human this
- * produced.
+ * text shade) and, from before this task, a dark `100` (`subtle`'s
+ * background): a dark-tinted chip, not a light one, so `subtle`'s and
+ * `outline`/`ghost`'s dark-mode text wants the same thing (light text
+ * against a dark-ish surface), and one `700` value can serve all three.
+ *
+ * The other four intent families (success/danger/warning/info) did NOT have
+ * that until this pass: their `100` had no dark override at all, so it
+ * stayed at its light-mode (light, near-white) value in dark mode, and a
+ * `700` dark override light enough for `outline`/`ghost` (against the dark
+ * canvas) would read as `subtle`'s text too (same CSS custom property, same
+ * variant-independent resolver lookup) against that still-light
+ * background: light text on a near-white chip. Proved this was a genuine,
+ * unavoidable conflict, not a tuning gap, before touching anything further:
+ * computed the best achievable SIMULTANEOUS contrast across the full
+ * lightness range for each family's `700` (canvas dark vs. that family's
+ * OWN light-mode `100`) and the maximum landed between 3.49:1 and 4.05:1,
+ * short of 4.5:1, for all four.
+ *
+ * Resolution: dissolve the conflict by giving each of these four families
+ * its own dark `100`, mirroring `primary`'s existing light-to-dark `100`
+ * relationship mechanically rather than picking a value by eye: adopt
+ * `primary`'s dark `100` lightness (`0.2941`) for every family; scale each
+ * family's OWN light-mode `100` chroma by the same ratio `primary`'s dark
+ * `100` chroma bears to `primary`'s light `100` chroma (`0.1092 / 0.0305 ≈
+ * 3.58`), gamut-clamping back into sRGB where that scaled chroma doesn't
+ * fit (all four needed it); keep each family's own hue. Computed with
+ * culori's `clampChroma`. With every family's `100` now a dark tint instead
+ * of a light one, both `700` consumers want the same direction again, so
+ * `700` was re-derived the same way `primary`'s already was: same hue and
+ * chroma as the light-mode value, lightness raised until the harder of the
+ * two dark-mode backgrounds it's read against (the new `100` dark tint, in
+ * every case lighter than, and so the tighter constraint than, the plain
+ * dark canvas) clears 4.5 with margin. Every one of the four cleared on this
+ * second derivation (4.80:1 against its own family's new dark `100`,
+ * 5.86-6.34:1 against the dark canvas); see each family's own comment below
+ * for the exact before/after values, and the task report for the full
+ * derivation trail (the first, blocked attempt, the proof it was a genuine
+ * conflict, and this resolution).
+ *
+ * `subtle`'s dark-mode appearance for these four families changes as a
+ * direct, intended consequence: it now renders as a dark tinted chip
+ * (matching `primary`'s `subtle` in dark), not the light chip it was
+ * before. Mechanical starting point for all of the above, tunable by design
+ * review (same framing as the `subtle` hover/active weights in
+ * default-intent-resolver.ts).
  */
 export const defaultDarkTokens: PartialThemeTokens = {
   colors: {
@@ -318,6 +344,17 @@ export const defaultDarkTokens: PartialThemeTokens = {
       foreground: 'oklch(0.2064 0.0388 265.55)',
     },
     success: {
+      // New dark-only value (light keeps the original oklch(0.9646 0.0405
+      // 157.07)). `subtle`'s background. Derivation: mirrors `primary`'s
+      // light-to-dark `100` relationship mechanically, see the file header
+      // comment above for the full rule. Adopts `primary`'s dark-`100`
+      // lightness (0.2941); chroma is this family's own light-`100` chroma
+      // (0.0405) scaled by primary's dark/light `100` chroma ratio (~3.58)
+      // then gamut-clamped back into sRGB (0.145 raw -> 0.0699 clamped);
+      // hue is this family's own (157.07, unchanged). Turns `subtle` from a
+      // light mint chip into a dark tinted one in dark mode, matching
+      // `primary`'s `subtle`.
+      '100': 'oklch(0.2941 0.0699 157.07)',
       // New dark-only value (light keeps the original oklch(0.5248 0.1373
       // 149.83)). Only `link` reads this shade, so only against the dark
       // canvas: light-mode value gave 3.52:1 in dark, below AA. Derivation:
@@ -325,8 +362,29 @@ export const defaultDarkTokens: PartialThemeTokens = {
       // dark canvas (culori, accepted against the real browser matrix:
       // 4.80:1). Mechanical starting point, tunable by design review.
       '600': 'oklch(0.5995 0.1373 149.83)',
+      // New dark-only value (light keeps the original oklch(0.4458 0.1087
+      // 150.91)). `outline`/`ghost`/`subtle` all read this shade as text.
+      // Blocked in an earlier pass: with `100` still at its light value in
+      // dark mode, the best achievable simultaneous contrast against both
+      // the dark canvas and `100` topped out at 4.04:1, short of AA (see
+      // the file header comment). Unblocked once `100` above got a dark
+      // tint: both consumers now want light text against a dark-ish
+      // surface, so this could be re-derived the same way `primary.700`
+      // was (same hue/chroma, lightness raised until the harder of the two
+      // backgrounds, `100` above, clears 4.5 with margin). Clears 4.80:1
+      // against `success['100']` (dark) and 6.34:1 against the dark canvas.
+      // Mechanical starting point, tunable by design review.
+      '700': 'oklch(0.6736 0.1087 150.91)',
     },
     danger: {
+      // New dark-only value (light keeps the original oklch(0.8803 0.0615
+      // 18.39)). `subtle`'s background. Same derivation as `success['100']`
+      // above (mirrors `primary`'s light-to-dark `100` ratio mechanically):
+      // lightness 0.2941 (adopted from `primary`'s dark `100`), chroma
+      // 0.0615 (this family's own light-`100` chroma) scaled by ~3.58 then
+      // gamut-clamped (0.2202 raw -> 0.1179 clamped), hue 18.39 (own,
+      // unchanged).
+      '100': 'oklch(0.2941 0.1179 18.39)',
       // New dark-only value (light keeps the light-mode `600`, unchanged by
       // this task: oklch(0.5786 0.2137 27.17)). Only `link` reads this
       // shade, so only against the dark canvas: light-mode value gave
@@ -335,15 +393,48 @@ export const defaultDarkTokens: PartialThemeTokens = {
       // accepted against the real browser matrix: 4.80:1). Mechanical
       // starting point, tunable by design review.
       '600': 'oklch(0.6399 0.2137 27.17)',
+      // New dark-only value (light keeps the round-1 fix from this task,
+      // unrelated to dark: oklch(0.4966 0.1918 27.56)). `outline`/`ghost`/
+      // `subtle` all read this shade as text. Blocked in an earlier pass at
+      // a 3.49:1 simultaneous-contrast ceiling (see the file header
+      // comment); unblocked once `100` above got a dark tint. Re-derived
+      // the same way as `success.700` above. Clears 4.80:1 against
+      // `danger['100']` (dark) and 5.86:1 against the dark canvas.
+      // Mechanical starting point, tunable by design review.
+      '700': 'oklch(0.6877 0.1918 27.56)',
     },
     warning: {
+      // New dark-only value (light keeps the original oklch(0.9245 0.1131
+      // 95.76)). `subtle`'s background. Same derivation as `success['100']`
+      // above: lightness 0.2941 (adopted from `primary`'s dark `100`),
+      // chroma 0.1131 (this family's own light-`100` chroma) scaled by
+      // ~3.58 then gamut-clamped (0.4049 raw, well outside sRGB -> 0.0605
+      // clamped, the largest reduction of the four), hue 95.76 (own,
+      // unchanged).
+      '100': 'oklch(0.2941 0.0605 95.76)',
       // Restores the light-mode `600`'s pre-fix value (see
       // defaultTokens.colors.warning['600']'s comment): this shade already
       // cleared AA in dark mode with this value, so dark keeps it unchanged
       // while light gets a darker one.
       '600': 'oklch(0.6688 0.1588 57.96)',
+      // New dark-only value (light keeps the round-1 fix from this task,
+      // unrelated to dark: oklch(0.525 0.1447 49.16)). `outline`/`ghost`/
+      // `subtle` all read this shade as text. Blocked in an earlier pass at
+      // a 3.79:1 simultaneous-contrast ceiling (see the file header
+      // comment); unblocked once `100` above got a dark tint. Re-derived
+      // the same way as `success.700` above. Clears 4.80:1 against
+      // `warning['100']` (dark) and 6.17:1 against the dark canvas.
+      // Mechanical starting point, tunable by design review.
+      '700': 'oklch(0.6913 0.1447 49.16)',
     },
     info: {
+      // New dark-only value (light keeps the original oklch(0.9548 0.0462
+      // 203.22)). `subtle`'s background. Same derivation as
+      // `success['100']` above: lightness 0.2941 (adopted from `primary`'s
+      // dark `100`), chroma 0.0462 (this family's own light-`100` chroma)
+      // scaled by ~3.58 then gamut-clamped (0.1654 raw -> 0.0501 clamped),
+      // hue 203.22 (own, unchanged).
+      '100': 'oklch(0.2941 0.0501 203.22)',
       // New dark-only value (light keeps the earlier light-only fix from
       // this task, oklch(0.5424 0.1366 241.18)). Only `link` reads this
       // shade, so only against the dark canvas: even the already-darkened
@@ -354,6 +445,15 @@ export const defaultDarkTokens: PartialThemeTokens = {
       // real browser matrix: 4.80:1). Mechanical starting point, tunable by
       // design review.
       '600': 'oklch(0.6107 0.1366 241.18)',
+      // New dark-only value (light keeps the original oklch(0.4996 0.1179
+      // 242.21)). `outline`/`ghost`/`subtle` all read this shade as text.
+      // Blocked in an earlier pass at a 3.99:1 simultaneous-contrast
+      // ceiling, the closest of the four to clearing on its own (see the
+      // file header comment); unblocked once `100` above got a dark tint.
+      // Re-derived the same way as `success.700` above. Clears 4.80:1
+      // against `info['100']` (dark) and 6.28:1 against the dark canvas.
+      // Mechanical starting point, tunable by design review.
+      '700': 'oklch(0.6796 0.1179 242.21)',
     },
   },
 };
