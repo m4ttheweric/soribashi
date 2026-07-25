@@ -32,6 +32,19 @@ export interface UseStylesConfig<P extends FactoryPayload> {
     theme: ResolvedTheme,
     props: P['props'],
   ) => Partial<Record<FactoryStylesNames<P>, Record<string, string>>>;
+  /**
+   * Universal Style Props (Task 2): static style-prop-derived styles for the
+   * 'root' slot, produced by `useStyleProps`. Applied ONLY when the resolved
+   * selector is 'root', and pushed onto the style stack AFTER `config.style`
+   * so style props win over the instance `style` prop (spec precedence).
+   */
+  stylePropsStyle?: CSSProperties | null;
+  /**
+   * Universal Style Props (Task 2): the responsive class (when responsive
+   * style-prop values exist) plus visibility utility classes, for the 'root'
+   * slot only.
+   */
+  stylePropsClassName?: string;
 }
 
 /**
@@ -81,6 +94,8 @@ export function useStyles<P extends FactoryPayload>(config: UseStylesConfig<P>):
 
     const rootInstanceClass = isRoot ? (config.className ?? '') : '';
     const callSiteClass = options?.className ?? '';
+    // Universal Style Props (Task 2): responsive/visibility classes, root only.
+    const stylePropsClass = isRoot ? (config.stylePropsClassName ?? '') : '';
 
     const className = cn(
       builtIn,
@@ -90,6 +105,7 @@ export function useStyles<P extends FactoryPayload>(config: UseStylesConfig<P>):
       callClassNamesClass,
       rootInstanceClass,
       callSiteClass,
+      stylePropsClass,
     );
 
     const themeStyles = mergeStyles(
@@ -156,6 +172,9 @@ export function useStyles<P extends FactoryPayload>(config: UseStylesConfig<P>):
     ];
 
     if (isRoot && config.style) styleParts.push(config.style);
+    // Universal Style Props (Task 2): style props beat the instance `style`
+    // prop, so this layers in right after config.style (Global Constraint 8).
+    if (isRoot && config.stylePropsStyle) styleParts.push(config.stylePropsStyle);
     if (options?.style) styleParts.push(options.style);
 
     const style = mergeStyles(styleParts);

@@ -88,3 +88,21 @@ export interface BoxStyleProps {
   bgr?: StyleProp<CSSProperties['backgroundRepeat']>;
   bga?: StyleProp<CSSProperties['backgroundAttachment']>;
 }
+
+/**
+ * The full universal style-prop surface intersected into every built
+ * component's public props (defineComponent, definePolymorphicComponent, and
+ * defineCompound's Root; see packages/factory/src/style-props/use-style-props.tsx
+ * for the runtime that backs this type). Adds the four visibility props
+ * (consumed by the builder, never forwarded to the DOM) on top of BoxStyleProps.
+ */
+export interface UniversalStyleProps extends Partial<BoxStyleProps> {
+  /** Breakpoint above which the component is hidden with `display: none` */
+  hiddenFrom?: string;
+  /** Breakpoint below which the component is hidden with `display: none` */
+  visibleFrom?: string;
+  /** Hide the component in light color scheme */
+  lightHidden?: boolean;
+  /** Hide the component in dark color scheme */
+  darkHidden?: boolean;
+}

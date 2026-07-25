@@ -51,7 +51,7 @@ export type { SlotProps } from './slot.tsx';
 export { Slot } from './slot.tsx';
 export { extractStyleProps } from './style-props/extract-style-props.ts';
 export { parseStyleProps } from './style-props/parse-style-props.ts';
-export type { BoxStyleProps } from './style-props/style-props.types.ts';
+export type { BoxStyleProps, UniversalStyleProps } from './style-props/style-props.types.ts';
 export { STYLE_PROPS_DATA } from './style-props/style-props-data.ts';
 export type {
   ParsedStyleProps,
@@ -73,6 +73,8 @@ export {
   isRawCss,
   rem,
 } from './style-props/theme-resolvers/index.ts';
+export type { UseStylePropsResult } from './style-props/use-style-props.tsx';
+export { useStyleProps } from './style-props/use-style-props.tsx';
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
 export { isThemeComponentEntry } from './theme-component-entry.ts';
 export type { ComponentExtendConfig } from './types/component-extend.ts';

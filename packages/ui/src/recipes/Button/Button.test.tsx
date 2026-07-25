@@ -70,6 +70,16 @@ describe('Button (browser)', () => {
     expect(getComputedStyle(el).blockSize).toBe('28px');
   });
 
+  it('accepts universal style props with zero recipe changes (p="md" resolves to the theme spacing token)', async () => {
+    // Button.tsx is untouched by Task 2: style props are wired into every
+    // recipe at the builder level (definePolymorphicComponent), so this pins
+    // that the recipe file needed zero changes to gain them.
+    const screen = await wrap(<Button p="md">Padded</Button>);
+    const el = screen.getByRole('button', { name: 'Padded' }).element();
+    // uiTheme's --spacing-md resolves to 12px (0.75rem at a 16px root).
+    expect(getComputedStyle(el).padding).toBe('12px');
+  });
+
   it('has zero axe violations across its showcase states (intent x variant, sizes, disabled)', async () => {
     // Mirrors apps/workshop/src/pages/ButtonPage.tsx's showcase sections so
     // the axe case exercises the same combinations a person would actually

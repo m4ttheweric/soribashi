@@ -6,6 +6,8 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
 import { attachRecipeMeta } from './recipe-meta.ts';
+import type { UniversalStyleProps } from './style-props/style-props.types.ts';
+import { useStyleProps } from './style-props/use-style-props.tsx';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
@@ -113,7 +115,8 @@ export type DefineComponentPublicProps<
   InjectedVocabularyProps<TVocabAxes> &
   VariantProp<TVariants> &
   TExtra &
-  StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
+  StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload> &
+  UniversalStyleProps;
 
 /**
  * The daily-use component authoring API.
@@ -137,12 +140,9 @@ export function defineComponent<
       rawProps as TOwnProps & StylesApiProps<any>,
     );
 
-    validateVocabularyProps(
-      config.name,
-      config.vocabularyAxes ?? [],
-      merged as Record<string, unknown>,
-      config.variants,
-    );
+    const sp = useStyleProps(merged as Record<string, unknown>);
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], sp.rest, config.variants);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)
@@ -154,27 +154,34 @@ export function defineComponent<
     >({
       name: config.name,
       classes: config.classes as any,
-      className: (merged as any).className,
-      style: (merged as any).style,
-      classNames: (merged as any).classNames,
-      styles: (merged as any).styles,
-      vars: (merged as any).vars,
-      attributes: (merged as any).attributes,
-      unstyled: (merged as any).unstyled,
-      dataAttrs: buildDataAttrs(
-        config.vocabularyAxes ?? [],
-        hasVariants,
-        merged as Record<string, unknown>,
-      ),
-      props: merged as any,
+      className: (sp.rest as any).className,
+      style: (sp.rest as any).style,
+      classNames: (sp.rest as any).classNames,
+      styles: (sp.rest as any).styles,
+      vars: (sp.rest as any).vars,
+      attributes: (sp.rest as any).attributes,
+      unstyled: (sp.rest as any).unstyled,
+      dataAttrs: buildDataAttrs(config.vocabularyAxes ?? [], hasVariants, sp.rest),
+      props: sp.rest as any,
       varsResolver: varsResolver as any,
+      stylePropsStyle: sp.rootStyle as any,
+      stylePropsClassName: sp.rootClassName,
     });
 
-    return config.render({
-      props: merged as any,
+    const rendered = config.render({
+      props: sp.rest as any,
       getStyles: getStyles as any,
       ref,
     }) as React.ReactElement;
+
+    return sp.styleNode ? (
+      <>
+        {sp.styleNode}
+        {rendered}
+      </>
+    ) : (
+      rendered
+    );
   });
 
   Component.displayName = config.name;

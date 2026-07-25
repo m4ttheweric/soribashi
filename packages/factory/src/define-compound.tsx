@@ -17,6 +17,8 @@ import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
 import { useTheme } from './provider/use-theme.ts';
 import { attachRecipeMeta } from './recipe-meta.ts';
+import type { UniversalStyleProps } from './style-props/style-props.types.ts';
+import { useStyleProps } from './style-props/use-style-props.tsx';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
@@ -291,7 +293,8 @@ type CompoundRootPublicProps<
   TExtra &
   StylesApiProps<
     { props: ExtractPartProps<TParts['root']>; stylesNames: TSlotKeys } & FactoryPayload
-  >;
+  > &
+  UniversalStyleProps;
 
 /**
  * The value returned by `Root.withProps(...)`. Carries the Root statics but
@@ -433,39 +436,40 @@ export function defineCompound<
       rawProps as TRootProps,
     );
 
-    validateVocabularyProps(
-      config.name,
-      config.vocabularyAxes ?? [],
-      merged as Record<string, unknown>,
-      config.variants,
-    );
+    const sp = useStyleProps(merged as Record<string, unknown>);
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], sp.rest, config.variants);
 
     const getStyles = useStyles<FactoryPayload>({
       name: config.name,
       classes: config.classes as Record<string, string> | undefined,
-      className: (merged as { className?: string }).className,
-      style: (merged as { style?: CSSProperties }).style,
-      classNames: (merged as { classNames?: unknown }).classNames as never,
-      styles: (merged as { styles?: unknown }).styles as never,
-      vars: (merged as { vars?: unknown }).vars as never,
-      attributes: (merged as { attributes?: unknown }).attributes as never,
-      unstyled: (merged as { unstyled?: unknown }).unstyled as never,
+      className: (sp.rest as { className?: string }).className,
+      style: (sp.rest as { style?: CSSProperties }).style,
+      classNames: (sp.rest as { classNames?: unknown }).classNames as never,
+      styles: (sp.rest as { styles?: unknown }).styles as never,
+      vars: (sp.rest as { vars?: unknown }).vars as never,
+      attributes: (sp.rest as { attributes?: unknown }).attributes as never,
+      unstyled: (sp.rest as { unstyled?: unknown }).unstyled as never,
       dataAttrs: buildDataAttrs(
         config.vocabularyAxes ?? [],
         (config.variants?.length ?? 0) > 0,
-        merged as Record<string, unknown>,
+        sp.rest,
       ),
-      props: merged as Record<string, any>,
+      props: sp.rest as Record<string, any>,
       varsResolver: config.vars
         ? (theme: ResolvedTheme, props: Record<string, any>) =>
             config.vars!(theme, props as TRootProps) as never
         : undefined,
+      stylePropsStyle: sp.rootStyle as CSSProperties | null,
+      stylePropsClassName: sp.rootClassName,
     });
 
-    const variant = (merged as { variant?: string }).variant as TVariants[number] | undefined;
+    const variant = (sp.rest as { variant?: string }).variant as TVariants[number] | undefined;
     // config.context may call React hooks (documented contract), so it runs
     // unconditionally on every render; only its RESULT is stabilized below.
-    const ctxExtras = useShallowStable(config.context ? config.context(merged) : ({} as TCtxExtra));
+    const ctxExtras = useShallowStable(
+      config.context ? config.context(sp.rest as TRootProps) : ({} as TCtxExtra),
+    );
 
     const theme = useTheme();
     // getStyles doesn't read children, and children are recreated on every
@@ -510,20 +514,29 @@ export function defineCompound<
           : undefined,
       );
 
-    return (
+    const rendered = (
       <CompoundContext.Provider value={ctxValue}>
         {(
           config.parts.root.render as (
             c: PartRenderCtx<TRootProps, TCtxExtra, TVariants>,
           ) => ReactNode
         )({
-          props: merged,
+          props: sp.rest as TRootProps,
           getStyles: rootGetStyles,
           ctx: { variant, ...ctxExtras } as TCtxExtra & { variant: TVariants[number] | undefined },
-          children: (merged as { children?: ReactNode }).children,
+          children: (sp.rest as { children?: ReactNode }).children,
           ref,
         })}
       </CompoundContext.Provider>
+    );
+
+    return sp.styleNode ? (
+      <>
+        {sp.styleNode}
+        {rendered}
+      </>
+    ) : (
+      rendered
     );
   });
 

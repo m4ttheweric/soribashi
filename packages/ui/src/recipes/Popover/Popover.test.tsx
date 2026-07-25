@@ -193,6 +193,35 @@ describe('Popover (browser)', () => {
     expect(screen.container.querySelector('[data-testid="leaked-render"]')).toBeNull();
   });
 
+  it('accepts style props on Root, strips them, and applies no padding anywhere (Root has no DOM of its own)', async () => {
+    // Popover.tsx is untouched by Task 2. Root renders no element of its own
+    // (Base UI's Root is a context provider, see Popover.tsx's root part),
+    // so a style prop on Root is accepted and extracted by the builder but
+    // has nowhere to attach: inert by design. This pins that it never leaks
+    // as a raw `p` attribute or an unexpected inline `padding` on the
+    // trigger or popup elements it renders.
+    const screen = await wrap(
+      <Popover.Root p="md">
+        <Popover.Trigger>Open</Popover.Trigger>
+        <Popover.Content>
+          <Popover.Title>Title</Popover.Title>
+        </Popover.Content>
+      </Popover.Root>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Open' }).element();
+    expect(trigger.getAttribute('p')).toBeNull();
+    expect((trigger as HTMLElement).style.padding).toBe('');
+
+    await screen.getByRole('button', { name: 'Open' }).click();
+
+    const dialog = screen.getByRole('dialog');
+    await expect.element(dialog).toBeVisible();
+    const dialogEl = dialog.element();
+    expect(dialogEl.getAttribute('p')).toBeNull();
+    expect((dialogEl as HTMLElement).style.padding).toBe('');
+  });
+
   it('has zero axe violations for an open popover with title, description, and close', async () => {
     // `container` re-anchors the portal locally (see the classNames/container
     // test above) so axe gets a single local subtree covering the popup's

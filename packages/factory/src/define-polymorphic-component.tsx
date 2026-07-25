@@ -6,6 +6,8 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
 import { attachRecipeMeta } from './recipe-meta.ts';
+import type { UniversalStyleProps } from './style-props/style-props.types.ts';
+import { useStyleProps } from './style-props/use-style-props.tsx';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
@@ -119,12 +121,9 @@ export function definePolymorphicComponent<
     const { as: asProp, ...rest } = merged as { as?: ElementType };
     const Element: ElementType = asProp ?? config.defaultElement;
 
-    validateVocabularyProps(
-      config.name,
-      config.vocabularyAxes ?? [],
-      rest as Record<string, unknown>,
-      config.variants,
-    );
+    const sp = useStyleProps(rest as Record<string, unknown>);
+
+    validateVocabularyProps(config.name, config.vocabularyAxes ?? [], sp.rest, config.variants);
 
     const varsResolver = config.vars
       ? (theme: ResolvedTheme, props: any) => config.vars!(theme, props)
@@ -136,28 +135,35 @@ export function definePolymorphicComponent<
     >({
       name: config.name,
       classes: config.classes as any,
-      className: (rest as any).className,
-      style: (rest as any).style,
-      classNames: (rest as any).classNames,
-      styles: (rest as any).styles,
-      vars: (rest as any).vars,
-      attributes: (rest as any).attributes,
-      unstyled: (rest as any).unstyled,
-      dataAttrs: buildDataAttrs(
-        config.vocabularyAxes ?? [],
-        hasVariants,
-        rest as Record<string, unknown>,
-      ),
-      props: rest as any,
+      className: (sp.rest as any).className,
+      style: (sp.rest as any).style,
+      classNames: (sp.rest as any).classNames,
+      styles: (sp.rest as any).styles,
+      vars: (sp.rest as any).vars,
+      attributes: (sp.rest as any).attributes,
+      unstyled: (sp.rest as any).unstyled,
+      dataAttrs: buildDataAttrs(config.vocabularyAxes ?? [], hasVariants, sp.rest),
+      props: sp.rest as any,
       varsResolver: varsResolver as any,
+      stylePropsStyle: sp.rootStyle as any,
+      stylePropsClassName: sp.rootClassName,
     });
 
-    return config.render({
+    const rendered = config.render({
       Element,
-      props: rest as any,
+      props: sp.rest as any,
       getStyles: getStyles as any,
       ref,
     }) as React.ReactElement;
+
+    return sp.styleNode ? (
+      <>
+        {sp.styleNode}
+        {rendered}
+      </>
+    ) : (
+      rendered
+    );
   });
 
   Component.displayName = config.name;
@@ -210,7 +216,8 @@ export type PolymorphicPublicProps<
   InjectedVocabularyProps<TVocabAxes> &
   VariantProp<TVariants> &
   TExtra &
-  StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
+  StylesApiProps<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload> &
+  UniversalStyleProps;
 
 type PolymorphicExtendProps<
   TOwnProps,

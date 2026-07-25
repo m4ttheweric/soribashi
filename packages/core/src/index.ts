@@ -33,6 +33,8 @@ export type {
   StyleProp,
   StylePropDefinition,
   StylesApiProps,
+  UniversalStyleProps,
+  UseStylePropsResult,
   VocabularyOverride,
 } from '@soribashi/factory';
 export {
@@ -59,6 +61,7 @@ export {
   rem,
   SoribashiProvider,
   STYLE_PROPS_DATA,
+  useStyleProps,
   useTheme,
 } from '@soribashi/factory';
 export type {
