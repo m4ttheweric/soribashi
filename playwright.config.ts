@@ -3,9 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Soribashi browser-parity Playwright configuration.
  *
- * The test suite boots the playground's Vite dev server, navigates to
- * /browser-fixtures.html, and runs computed-style assertions against
- * each of the 14 soribashi blocks.
+ * The test suite navigates to /browser-fixtures.html and runs computed-style
+ * assertions against each of the 14 soribashi blocks.
  *
  * Run:  bunx playwright test
  */
@@ -40,39 +39,13 @@ export default defineConfig({
       testMatch: '**/*.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5173' },
     },
-    {
-      name: 'pilot',
-      testDir: './apps/pilot/tests',
-      testMatch: '**/*.spec.ts',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5174' },
-    },
-    {
-      name: 'shadcn-starter',
-      testDir: './apps/shadcn-starter/tests',
-      testMatch: '**/*.spec.ts',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5175' },
-    },
   ],
 
-  /* Boot all apps in parallel */
-  webServer: [
-    {
-      command: 'bun run --filter @soribashi/playground dev',
-      url: 'http://localhost:5173',
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    {
-      command: 'bun run --filter @soribashi/pilot dev',
-      url: 'http://localhost:5174',
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    {
-      command: 'bun run --filter @soribashi/shadcn-starter dev',
-      url: 'http://localhost:5175',
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-  ],
+  // No webServer entry: apps/pilot, apps/playground and apps/shadcn-starter were
+  // all removed in slice 1a ("remove the ejected apps", 2026-07-24). Playground's
+  // Vite dev server used to boot here on :5173 for the `blocks` project above —
+  // nothing serves that port now, so `bun run test:browser` cannot connect until
+  // a replacement exists. Slice 1b's apps/workshop is meant to be that
+  // replacement: once it exists, add back a webServer entry that boots it on
+  // :5173 (or repoint the `blocks` project's baseURL at wherever it serves from).
 });

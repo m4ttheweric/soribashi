@@ -126,8 +126,6 @@ bun run lint       # biome
 
 `bun run dev` runs codegen first (theme to CSS custom properties + Tailwind config), then starts the playground. Change the theme and codegen regenerates those outputs.
 
-The flagship consumer is `apps/pilot`, which ports real component recipes (Button, Tooltip, Tabs, Select) onto soribashi; run it with `bun run dev:pilot`.
-
 ## Status
 
 Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md). 980+ tests across packages. Packages are versioned at `0.0.0` and not yet published.

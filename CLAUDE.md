@@ -9,10 +9,7 @@ bun run test           # vitest across all packages
 bun run typecheck      # tsc -p tsconfig.json --noEmit
 bun run lint           # biome check .
 bun run codegen        # theme -> playground generated CSS/Tailwind config
-bun run codegen:tenants
-bun run codegen:pilot  # theme -> apps/pilot generated outputs
 bun run test:browser   # Playwright parity suite
-bun run dev:pilot      # flagship consumer app
 ```
 
 **Trap:** always `bun run test`. Plain `bun test` invokes Bun's own test runner, not vitest.

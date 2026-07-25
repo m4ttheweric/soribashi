@@ -26,15 +26,15 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run codegen
-      - run: bun run codegen:tenants
-      - run: bun run codegen:pilot
       - run: git diff --exit-code
 
   browser:
     name: Browser parity
     runs-on: ubuntu-latest
-    # Known red on main: the pilot parity suite fails because apps/pilot/src/styles.css
-    # sets html font-size to 12px. Keep non-blocking until that is fixed.
+    # Known red: apps/pilot, apps/playground and apps/shadcn-starter were removed in
+    # slice 1a, and playwright.config.ts no longer has a webServer to boot the
+    # `blocks` project's target on :5173. Keep non-blocking until slice 1b's
+    # apps/workshop restores a server for it.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
