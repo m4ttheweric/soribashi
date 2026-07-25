@@ -4,6 +4,8 @@ import type {
   SemanticSurfaceValue,
   ThemeTokens,
 } from '@soribashi/theme';
+import { emitLayerDeclaration } from './emit-layer.ts';
+import { emitPropertyRegistrations } from './emit-property.ts';
 import { removeDefaultVariables } from './remove-default-variables.ts';
 import type { EmitCssOptions } from './types.ts';
 
@@ -31,57 +33,89 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
     }
   }
 
-  const lines: string[] = [HEADER, ''];
+  // Everything token-shaped — the root scope, the dark flip, any per-scope
+  // additions, and the @property registrations — lands in the
+  // soribashi.tokens layer. Scope blocks are themselves token declarations
+  // (custom-property values for a specific tenant/scope), not component
+  // styles, so they belong alongside :root and .dark rather than outside the
+  // layer: leaving them unlayered would let their specificity fight a
+  // vendoring consumer's own classes, which is exactly the war @layer exists
+  // to end. @property registrations are layered too, per emit-property.ts,
+  // so a consumer can override a registration by declaring their own
+  // unlayered @property for the same name.
+  const body: string[] = [];
 
   // :root block
-  lines.push(`${effectiveTheme.scope} {`);
-  lines.push('  color-scheme: light;');
-  emitTokenLines(lines, effectiveTheme.tokens, effectiveTheme.dark);
-  emitSemanticLines(lines, effectiveTheme);
+  body.push(`${effectiveTheme.scope} {`);
+  body.push('  color-scheme: light;');
+  emitTokenLines(body, effectiveTheme.tokens, effectiveTheme.dark);
+  emitSemanticLines(body, effectiveTheme);
   if (additions?.root) {
     for (const [key, value] of Object.entries(additions.root)) {
-      lines.push(`  ${key}: ${value};`);
+      body.push(`  ${key}: ${value};`);
     }
   }
-  lines.push('}');
+  body.push('}');
 
   // Tokens carry both schemes via light-dark(), so the dark selector only has
   // to flip color-scheme. Re-emitting semantic vars here (which the previous
   // implementation required) is no longer necessary: light-dark() resolves at
   // the point of use, so a scoped wrapper flips without any restatement.
-  lines.push('');
-  lines.push(`${effectiveTheme.darkMode.selector} {`);
-  lines.push('  color-scheme: dark;');
+  body.push('');
+  body.push(`${effectiveTheme.darkMode.selector} {`);
+  body.push('  color-scheme: dark;');
   if (additions?.dark) {
     for (const [key, value] of Object.entries(additions.dark)) {
-      lines.push(`  ${key}: ${value};`);
+      body.push(`  ${key}: ${value};`);
     }
   }
-  lines.push('}');
+  body.push('}');
 
   // Optional scopes — flat blocks for each scope name
   if (additions?.scopes) {
     for (const [scopeName, scopeVars] of Object.entries(additions.scopes)) {
       if (scopeVars.root && Object.keys(scopeVars.root).length > 0) {
-        lines.push('');
-        lines.push(`${scopeName} {`);
+        body.push('');
+        body.push(`${scopeName} {`);
         for (const [key, value] of Object.entries(scopeVars.root)) {
-          lines.push(`  ${key}: ${value};`);
+          body.push(`  ${key}: ${value};`);
         }
-        lines.push('}');
+        body.push('}');
       }
       if (scopeVars.dark && Object.keys(scopeVars.dark).length > 0) {
-        lines.push('');
-        lines.push(`${effectiveTheme.darkMode.selector} ${scopeName} {`);
+        body.push('');
+        body.push(`${effectiveTheme.darkMode.selector} ${scopeName} {`);
         for (const [key, value] of Object.entries(scopeVars.dark)) {
-          lines.push(`  ${key}: ${value};`);
+          body.push(`  ${key}: ${value};`);
         }
-        lines.push('}');
+        body.push('}');
       }
     }
   }
 
+  // Typed registrations for non-colour tokens. Colours are never registered —
+  // see emit-property.ts for why that would silently break scoped dark mode.
+  const registrations = emitPropertyRegistrations(effectiveTheme);
+  if (registrations.length > 0) {
+    body.push('');
+    body.push(...registrations);
+  }
+
+  const lines: string[] = [
+    HEADER,
+    '',
+    emitLayerDeclaration().trimEnd(),
+    '',
+    '@layer soribashi.tokens {',
+    ...body.map(indentLine),
+    '}',
+  ];
+
   return `${lines.join('\n')}\n`;
+}
+
+function indentLine(line: string): string {
+  return line === '' ? '' : `  ${line}`;
 }
 
 function countEmittedTokenVars(theme: ResolvedTheme): number {

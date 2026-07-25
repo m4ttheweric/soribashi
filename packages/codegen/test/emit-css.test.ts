@@ -132,7 +132,8 @@ describe('emitCss', () => {
 
     expect(Object.keys(theme.dark).length).toBeGreaterThan(0);
     const css = emitCss(theme);
-    expect(css).toContain('.dark {\n  color-scheme: dark;\n}');
+    // Wrapped one level deeper inside @layer soribashi.tokens { ... } now.
+    expect(css).toContain('.dark {\n    color-scheme: dark;\n  }');
     expect(css).not.toContain('light-dark(');
   });
 
@@ -340,6 +341,57 @@ describe('emitCss', () => {
     });
     const css = emitCss(theme);
     expect(css).not.toContain('--heading-text-wrap');
+  });
+});
+
+describe('emitCss — @layer and @property wiring', () => {
+  const theme = createTheme({
+    tokens: {
+      colors: { primary: { '500': 'oklch(0.62 0.19 259)' } },
+      radius: { md: '0.5rem' },
+      spacing: { cozy: '0.75rem' },
+      fontSize: { md: '1rem' },
+    },
+  });
+
+  it('declares layer order before any layered rule appears', () => {
+    const css = emitCss(theme);
+    const declarationPos = css.indexOf('@layer soribashi.tokens, soribashi.recipes;');
+    const blockPos = css.indexOf('@layer soribashi.tokens {');
+    expect(declarationPos).toBeGreaterThan(-1);
+    expect(blockPos).toBeGreaterThan(declarationPos);
+  });
+
+  it('wraps the :root and .dark blocks inside @layer soribashi.tokens { ... }', () => {
+    const css = emitCss(theme);
+    const layerStart = css.indexOf('@layer soribashi.tokens {');
+    // Assumes emitCss() emits nothing after the layer closes, so its closing
+    // brace is the LAST '}' in the file. True today (the layer is the final
+    // thing emitted); would need a real matcher if that ever stops holding.
+    const layerEnd = css.lastIndexOf('}');
+    const rootPos = css.indexOf(':root {');
+    const darkPos = css.indexOf('.dark {');
+    expect(rootPos).toBeGreaterThan(layerStart);
+    expect(rootPos).toBeLessThan(layerEnd);
+    expect(darkPos).toBeGreaterThan(layerStart);
+    expect(darkPos).toBeLessThan(layerEnd);
+  });
+
+  it('registers non-colour tokens as @property inside the layer', () => {
+    const css = emitCss(theme);
+    expect(css).toContain('@property --radius-md {');
+    expect(css).toContain('@property --spacing-cozy {');
+    expect(css).toContain('@property --font-size-md {');
+    const layerStart = css.indexOf('@layer soribashi.tokens {');
+    // Same last-'}'-in-the-file assumption as above.
+    const layerEnd = css.lastIndexOf('}');
+    expect(css.indexOf('@property --radius-md {')).toBeGreaterThan(layerStart);
+    expect(css.indexOf('@property --radius-md {')).toBeLessThan(layerEnd);
+  });
+
+  it('NEVER registers a colour token as @property', () => {
+    const css = emitCss(theme);
+    expect(css).not.toContain('@property --color-primary-500');
   });
 });
 

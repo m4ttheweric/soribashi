@@ -320,7 +320,8 @@ describe('emitCss — dark block emission', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('.dark {\n  color-scheme: dark;\n}');
+    // Wrapped one level deeper inside @layer soribashi.tokens { ... } now.
+    expect(css).toContain('.dark {\n    color-scheme: dark;\n  }');
     expect(css).not.toContain('light-dark(');
   });
 
