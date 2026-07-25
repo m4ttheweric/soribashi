@@ -1,116 +1,69 @@
 # Soribashi
 
-A component-authoring framework for React. Define components once, theme them centrally, and generate the styling substrate -- so your team owns every line of UI code and still gets Mantine-grade DX.
+Soribashi is not a UI library. It is the tool you use to build one.
 
-Soribashi is not a component library. It is the toolkit you use to **build** one.
+Most teams pick between two bad trades: own your components and lose the governing layer (three components spell "size" three different ways, colour decisions leak into feature code), or adopt someone else's component library and lose control (you're stuck with their opinions, their release cycle, their component set). Soribashi gives you the authoring rails that make a framework like Mantine pleasant to work in, defineComponent, useProps, useStyles, an intent resolver, `.extend()`, without shipping you Mantine's components. You bring the components. Soribashi makes them cohere.
 
-## The problem
+But we also made one. A small one, `@soribashi/ui`, built with soribashi, verified the way we think a component should be verified before anyone vendors it into their own codebase. We think you'll like it, and more importantly, we think the way it was built is worth copying.
 
-Teams today choose between two poles:
+## The rails
 
-- **Own your components** (shadcn, hand-rolled CVA recipes) -- full control, but no governing layer. `size` means different things across components, color decisions scatter into feature code, and three developers spell "focus ring" three different ways.
-- **Adopt a framework** (Mantine, Chakra) -- world-class DX out of the box, but you're coupled to someone else's component set, styling conventions, and release cycle.
+**Vocabulary is declared, not assumed.** Soribashi itself has no opinion on what `size`, `intent`, or `variant` mean. You declare them once with `defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'])`, a typed tuple backed by Zod, and every component that opts into that axis gets compile-time narrowing and a runtime check for free. The framework packages never hardcode a vocabulary; only a consumer (like `@soribashi/ui`, in its own `theme.ts`) does.
 
-Soribashi bridges the gap. You get the authoring primitives that make Mantine's DX possible -- `defineComponent`, `useProps`, `useStyles`, the intent resolver, `.extend()`, `.withProps()` -- without adopting Mantine's components. You own everything. The framework just makes ownership sustainable.
+**Four builders for four shapes of component.**
 
-## Quick look
-
-**Define a vocabulary** -- the shared language your components speak:
-
-```ts
-import { defineVocabulary, createTheme } from '@soribashi/core';
-
-const size  = defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl']);
-const intent = defineVocabulary(['primary', 'neutral', 'success', 'warning', 'danger', 'info']);
-
-export const theme = createTheme({
-  vocabulary: { size, intent },
-  tokens: {
-    colors: {
-      primary: { 500: 'hsl(221 83% 53%)', foreground: 'hsl(0 0% 100%)' /* ...scale */ },
-      neutral: { 500: 'hsl(215 16% 47%)', foreground: 'hsl(0 0% 100%)' /* ...scale */ },
-    },
-    radius: { sm: '0.25rem', md: '0.375rem', lg: '0.5rem' },
-    spacing: { xs: '0.25rem', sm: '0.5rem', md: '0.75rem', lg: '1rem', xl: '1.5rem' },
-  },
-  semanticTokens: {
-    text:    { default: 'colors.neutral.900', muted: 'colors.neutral.500' },
-    surface: { default: 'colors.neutral.0', raised: 'colors.neutral.100' },
-    border:  { default: 'colors.neutral.200' },
-  },
-});
-```
-
-**Author a component** -- one declarative call, types inferred:
-
-```tsx
-import { definePolymorphicComponent, defineVocabulary } from '@soribashi/core';
-import classes from './Button.module.css';
-
-const variants = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
-
-export const Button = definePolymorphicComponent({
-  name: 'Button',
-  defaultElement: 'button',
-  vocabularyAxes: ['size', 'intent', 'variant'] as const,
-  selectors: ['root', 'inner', 'label', 'icon'] as const,
-  variants,
-  classes,
-  defaults: { intent: 'primary', variant: 'filled', size: 'md' },
-  render: ({ Element, props, getStyles, ref }) => (
-    <Element ref={ref} {...getStyles('root')} data-intent={props.intent} data-variant={props.variant}>
-      <span {...getStyles('label')}>{props.children}</span>
-    </Element>
-  ),
-});
-
-// Register variant vocabulary with the theme
-export const buttonTheme = Button.extend({
-  vocabulary: { variant: defineVocabulary(variants) },
-});
-```
-
-`getStyles(slot)` returns the class name and inline CSS vars for each slot. Intent and variant resolve against the theme automatically. Consumers get autocomplete on `size`, `intent`, and `variant` narrowed to the theme's literal unions.
-
-**Use it** -- feature code expresses intent, never raw values:
-
-```tsx
-<Button intent="primary" variant="filled" size="lg">
-  Submit
-</Button>
-
-<Button intent="danger" variant="outline" size="sm" component="a" href="/cancel">
-  Cancel
-</Button>
-```
-
-## Key ideas
-
-- **Theme is the contract.** `createTheme()` is the single authority for tokens, semantics, and component defaults. Feature code says `intent="primary"` -- it never picks shades or pixel values.
-- **Vocabulary, not magic strings.** `defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'])` produces a typed tuple backed by Zod. Compile-time inference and runtime validation from a single declaration.
-- **One function, one component.** `defineComponent`, `definePolymorphicComponent`, `defineCompound`, or `defineGenericComponent` -- pick the builder that fits. Each replaces Mantine's five-type-alias ceremony with a single config object.
-- **Codegen closes the loop.** `soribashi build` generates CSS custom properties and a Tailwind config from your theme. You cannot reference a token that does not exist.
-- **Substrate-agnostic.** CSS Modules, Tailwind v4, or plain class names. Mix and match across components.
-- **`.extend()` without forking.** Theme-level customization of any component -- override defaults, inject classes, add vocabulary -- without touching the component source.
-
-## Four builders for four shapes
-
-| Builder | Use case | Example |
+| Builder | Shape | Example |
 |---|---|---|
-| `defineComponent` | Standard component with style slots | Card, Badge, Alert |
-| `definePolymorphicComponent` | Renders as any element (`component="a"`) | Button, Text, Paper |
-| `defineCompound` | Multi-part with shared context | Tooltip, Tabs, Accordion |
-| `defineGenericComponent` | Data-driven with type inference | Select, Autocomplete, Table |
+| `defineComponent` | Standard component, style slots, no need to render as anything else | Card, Badge |
+| `definePolymorphicComponent` | Renders as any element (`as="a"`) | Button |
+| `defineCompound` | Multi-part, shared context, usually wrapping a Base UI primitive | Popover, Tabs |
+| `defineGenericComponent` | Data-driven, needs a real generic type parameter | Select |
 
-## Packages
+Pick the one that matches the component's shape, one declarative config object instead of a pile of type aliases, and the builder wires up prop merging, class resolution, and CSS variables for you.
 
-| Package | Purpose |
-|---|---|
-| `@soribashi/factory` | `defineComponent`, `definePolymorphicComponent`, `defineCompound`, `defineGenericComponent`, `useProps`, `useStyles`, `makeBuilders` |
-| `@soribashi/theme` | `createTheme`, `defineVocabulary`, `composeTheme`, intent resolver, default tokens |
-| `@soribashi/codegen` | Theme to CSS variables + Tailwind v4 config. CLI: `soribashi build` / `soribashi watch` |
-| `@soribashi/blocks` | 14 layout primitives: Box, Stack, Group, Flex, Grid, Grid.Col, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title |
-| `@soribashi/core` | Public barrel re-exporting all of the above |
+**`Recipe.extend()` is how you customize without forking.** Every recipe returned by a builder carries `.extend({ defaultProps, vocabulary, classNames, styles, vars, attributes })`. Override a default, inject a class, register a new vocabulary axis, all at the theme layer, without touching the component's source. It is first-class public API, not an escape hatch, and it is never bypassed anywhere in this repo.
+
+**Codegen closes the loop.** `soribashi build` reads your theme and emits a CSS stylesheet: colours as `oklch()`, dark overrides as `light-dark()` pairs that resolve at the point of use (no `:root` selector games, no manual dark-mode plumbing), everything scoped inside `@layer soribashi.tokens` / `@layer soribashi.recipes` so your own app styles always win a specificity fight, and non-colour tokens (radius, spacing, font-size) registered with `@property` so they're typed and animatable. Colour tokens are deliberately never registered with `@property`, because registration freezes `light-dark()` to whichever element declared it, which would quietly break scoped, multi-tenant dark mode. The workshop's Tenants page demos exactly that: two brand themes rendered on the same page, each scoped to its own class selector, one of them with an extra `.dark` wrapper flipping only that subtree, no provider swap, no remount.
+
+You cannot reference a token codegen didn't generate. Drift between the theme and what's usable is structurally impossible.
+
+## `@soribashi/ui` and the workshop
+
+`@soribashi/ui` is the library we built with the rails above: currently `Button` (a category-1 styled primitive) and `Popover` (a category-2 overlay compound over Base UI). Every recipe lives at `packages/ui/src/recipes/<Name>/` as exactly four files, the component, its stylesheet, a browser-tier test, a visual-tier test, and every one of them is required to be fully re-themeable: change the theme, not the recipe, and the component's whole look changes with it.
+
+`bun run dev:workshop` starts a small React app (`apps/workshop`) that renders both recipes across their full intent x variant x size surface, in light and dark, plus a token reference page and the multi-tenant demo described above. It's the fastest way to actually look at what the theme produces.
+
+## Vendoring it
+
+`@soribashi/ui` isn't distributed as an npm dependency you import. It's distributed the way shadcn/ui distributes components: as source you copy into your own repo and own from that point forward. `packages/ui/registry/` holds a shadcn-schema-compatible registry (`registry.json` plus one `registry:ui` item per recipe) generated straight from the recipes, and the real `shadcn` CLI can vendor from it:
+
+```bash
+bunx shadcn@latest add ./registry/button.json
+```
+
+That exact command, against that exact file, is what `bun run smoke:registry` runs end-to-end in CI: scaffold a throwaway Vite + React project, vendor Button into it with the real CLI, install, build, and assert the recipe's own CSS-module class actually made it into the built bundle. There's no hosted registry URL yet; `@soribashi/core` and its workspace dependencies aren't published to npm, so today's smoke check vendors against a local, in-repo copy of the packages rather than a real `bun add @soribashi/core`. That gap closes when we publish; it's called out plainly here instead of glossed over.
+
+## The verification story
+
+A recipe that claims "fully re-themeable" earns that claim with tests, not a comment. Every recipe runs through three tiers:
+
+1. **Tier 1, logic (Node, `vitest`).** Conformance scanners and manifest checks that don't need a browser.
+2. **Tier 2, browser (real Chromium via `@vitest/browser-playwright`).** Render, interaction, and accessibility assertions, plus the WCAG AA contrast matrix and the theme-only re-skin guard described below. `vitest-browser-react` drives real DOM, not jsdom.
+3. **Tier 3, visual (`bun run test:visual`).** Screenshot baselines per recipe, geometry, borders, radii, typography, focus rings, checked pixel-for-pixel against a committed reference image.
+
+Two conformance gates back the "re-themeable" claim mechanically, not just by test count:
+
+- **No hardcoded values.** Every recipe's stylesheet is scanned for any colour or length literal that didn't come from a `var(...)` reference (a short allowlist covers `0`/`1px`/`2px`/`100%` and unitless/time values). A recipe can't quietly reach for a raw hex value and still claim to be theme-driven.
+- **Theme-only re-skin.** Every recipe is rendered twice, once under its real theme, once under a second, deliberately garish theme scoped to a wrapper class, with zero changes to the recipe's source in between. The test asserts the computed background, foreground, or radius actually changed. This is what makes "fully re-skinnable through the theme alone" a checked fact about this repo rather than a claim about the design.
+
+Layered on top: a WCAG AA contrast matrix (>= 4.5:1) checked across every intent x variant x size combination, in both light and dark scheme, for every colour-bearing recipe; and a visual oracle whose baselines are generated exclusively by CI (a `workflow_dispatch` job, or the pinned Docker command it documents), never committed from a local machine, because Vitest suffixes baseline filenames by platform and a darwin screenshot is not the same file as the Linux one CI actually compares against.
+
+## Agentic artifacts
+
+Two things exist specifically so an agent (or a developer moving fast) doesn't have to re-derive facts about this library by reading source:
+
+- **A derived manifest.** `bun run generate:ui` walks every recipe's frozen metadata and its own source, and writes `packages/ui/manifest.json`: name, authoring category, builder, slots, vocabulary axes, variants, defaults, the four file paths, and every theme token the recipe's CSS actually depends on. Nothing in it is hand-authored; a drift test rebuilds it the same way and fails on any difference from what's committed.
+- **In-repo skills.** `.claude/skills/authoring-a-recipe/` is the checklist for adding or changing a recipe: the four-file layout, builder selection, the CSS rules, what each test tier needs, and the traps that have already bitten someone once (async `render`, `light-dark()` being colour-only, a recipe's `vars` replacing rather than layering on `autoVars`, and more).
 
 ## Getting started
 
@@ -118,20 +71,20 @@ Requires [Bun](https://bun.sh).
 
 ```bash
 bun install
-bun run test       # vitest across all packages (plain `bun test` invokes Bun's own runner)
+bun run test            # vitest across all packages
 bun run typecheck
-bun run lint       # biome
+bun run lint             # biome
+bun run codegen          # theme -> CSS
+bun run dev:workshop     # recipe showcase + multi-tenant demo
 ```
-
-There is no dev server in this repo right now. `apps/pilot`, `apps/playground` and `apps/shadcn-starter` were removed in slice 1a with no replacement consumer app; `apps/workshop` (slice 1b) is what restores one.
 
 ## Status
 
-Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md). A large automated test suite covers the packages (run `bun run test` for the current count). Packages are versioned at `0.0.0` and not yet published.
+Pre-v1, actively built in public slices. The foundation (factory, theme, codegen, 14 adapted layout blocks, vocabulary rails) is stable. `@soribashi/ui` has two recipes across two of the four authoring categories, with the full three-tier verification story described above wired into CI. See [STATUS.md](./STATUS.md) for the detailed record and what's deliberately still ahead (more recipes, npm publishing). Packages are versioned at `0.0.0` and not yet published.
 
 ## Manifesto
 
-For the full story -- what was imagined, what was built, and why -- see [MANIFESTO.md](./MANIFESTO.md).
+For the full story, what was imagined, what was built, and why, see [MANIFESTO.md](./MANIFESTO.md).
 
 ## Attribution
 
