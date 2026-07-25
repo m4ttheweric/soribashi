@@ -11,16 +11,15 @@ name: Visual baselines
 # pushed), the same regeneration can be run locally in a container that
 # matches this job's OS and the repo's pinned Playwright version
 # (package.json's `@playwright/test`, currently 1.59.1) so browser rendering
-# matches what CI would produce, then only the `*-chromium-linux.png` files
-# copied out and committed:
+# matches what CI would produce. Run this command locally, then copy only the
+# `*-chromium-linux.png` files out and commit them:
 #
 #   docker run --rm -v "$PWD":/work -w /work \
 #     mcr.microsoft.com/playwright:v1.59.1-noble \
-#     bash -c "curl -fsSL https://bun.sh/install | bash && \
+#     bash -c "apt-get update -qq && apt-get install -y -qq unzip >/dev/null && \
+#       curl -fsSL https://bun.sh/install | bash >/dev/null 2>&1 && \
 #       ~/.bun/bin/bun install --frozen-lockfile && \
 #       ~/.bun/bin/bun run test:visual -- --update"
-#
-# (See the Task 8 report for the exact command actually run and its output.)
 
 on:
   workflow_dispatch:
