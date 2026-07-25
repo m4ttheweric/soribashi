@@ -16,9 +16,10 @@ import { RESKIN_FIXTURES } from './reskin-fixtures.tsx';
  * here by rendering each recipe's fixture twice: once under the library's
  * own `uiTheme`, once under a second, garish theme ("themeB") scoped to a
  * `.reskin-b` wrapper, asserting that at least one of
- * background-color/color/border-radius differs on the recipe's representative
- * slot. The only thing that changes between the two renders is which theme's
- * CSS custom properties are in scope; no recipe source is touched.
+ * background-color/color/border-radius/gap/padding differs on the recipe's
+ * representative slot. The only thing that changes between the two renders is
+ * which theme's CSS custom properties are in scope; no recipe source is
+ * touched.
  *
  * Full colour coverage matches the shade list `packages/codegen/test/
  * validate-theme.test.ts` uses to satisfy createTheme's default semantic
@@ -81,11 +82,19 @@ interface SlotSnapshot {
   backgroundColor: string;
   color: string;
   borderRadius: string;
+  gap: string;
+  padding: string;
 }
 
 function snapshot(el: HTMLElement): SlotSnapshot {
   const cs = getComputedStyle(el);
-  return { backgroundColor: cs.backgroundColor, color: cs.color, borderRadius: cs.borderRadius };
+  return {
+    backgroundColor: cs.backgroundColor,
+    color: cs.color,
+    borderRadius: cs.borderRadius,
+    gap: cs.gap,
+    padding: cs.padding,
+  };
 }
 
 describe('reskin guard', () => {
@@ -141,11 +150,13 @@ describe.each(Object.keys(RESKIN_FIXTURES))('%s theme-only re-skin', (name) => {
     const changed =
       base.backgroundColor !== reskin.backgroundColor ||
       base.color !== reskin.color ||
-      base.borderRadius !== reskin.borderRadius;
+      base.borderRadius !== reskin.borderRadius ||
+      base.gap !== reskin.gap ||
+      base.padding !== reskin.padding;
 
     expect(
       changed,
-      `expected at least one of backgroundColor/color/borderRadius to differ for "${name}" between the base theme and themeB.\nbase:   ${JSON.stringify(base)}\nreskin: ${JSON.stringify(reskin)}`,
+      `expected at least one of backgroundColor/color/borderRadius/gap/padding to differ for "${name}" between the base theme and themeB.\nbase:   ${JSON.stringify(base)}\nreskin: ${JSON.stringify(reskin)}`,
     ).toBe(true);
   });
 });

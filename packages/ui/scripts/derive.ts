@@ -64,6 +64,7 @@ const THEME_VAR_PREFIXES = [
   'surface',
   'border',
   'accent',
+  'heading',
 ] as const;
 
 const THEME_VAR_RE = new RegExp(`^--(?:${THEME_VAR_PREFIXES.join('|')})(?:-|$)`);

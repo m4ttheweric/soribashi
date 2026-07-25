@@ -1,5 +1,6 @@
 import { SoribashiProvider } from '@soribashi/core';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import type { ReactNode } from 'react';
+import { afterAll, beforeAll, describe, expect, it, test, vi } from 'vitest';
 // `vitest-browser-react`'s main entry (`import ... from 'vitest-browser-react'`)
 // registers a global `beforeEach(() => cleanup())` as a side effect of import
 // (see its index.js), which unmounts every previously-rendered root before
@@ -13,8 +14,10 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 // already ran); importing `/pure` did not.
 import { render } from 'vitest-browser-react/pure';
 import { Button } from '../recipes/Button/Button.tsx';
+import { Popover } from '../recipes/Popover/Popover.tsx';
 import { uiTheme, uiVocabulary } from '../theme.ts';
 import { contrastRatio } from './contrast.ts';
+import { SMALL_COVERAGE_NAMES } from './matrix-classification.ts';
 
 const INTENTS = uiVocabulary.intent.values;
 const VARIANTS = uiVocabulary.variant.values;
@@ -228,5 +231,113 @@ describe('Button contrast matrix (WCAG AA >= 4.5:1)', () => {
         assertIntentClearsAA(intent);
       },
     );
+  });
+});
+
+/**
+ * Cells for recipes classified `'covered'` in matrix-classification.ts that
+ * have no intent x variant x size grid of their own (no vocabulary axes to
+ * cross), proven instead by one named fg/bg pair each. `Object.keys` of this
+ * record MUST equal matrix-classification.ts's `SMALL_COVERAGE_NAMES`
+ * (asserted below) so the node-tier guard (matrix-guard.test.ts, which
+ * cannot import this browser-tier file) and this file's actual rendered
+ * cells cannot silently drift apart.
+ */
+interface SmallCoverageEntry {
+  /** Mounts the scenario; the element to measure carries className 'matrix-target'. */
+  render: () => ReactNode;
+  /** What fg/bg pair this proves, folded into every assertion's failure message. */
+  description: string;
+}
+
+const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
+  Popover: {
+    render: () => (
+      <Popover.Root open onOpenChange={() => {}}>
+        <Popover.Trigger>Open</Popover.Trigger>
+        <Popover.Content classNames={{ popup: 'matrix-target' }}>
+          <Popover.Title>Title</Popover.Title>
+          <Popover.Description>
+            Sample popover body copy, read for contrast against the popup surface.
+          </Popover.Description>
+        </Popover.Content>
+      </Popover.Root>
+    ),
+    description: 'popup text on popup surface',
+  },
+};
+
+describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
+  it("SMALL_COVERAGE's keys match matrix-classification.ts's SMALL_COVERAGE_NAMES", () => {
+    // Sorted on both sides: this is a set-equality check, not an order pin.
+    expect(Object.keys(SMALL_COVERAGE).sort()).toEqual([...SMALL_COVERAGE_NAMES].sort());
+  });
+
+  describe.each(Object.entries(SMALL_COVERAGE))('%s', (name, entry) => {
+    // Popover portals to <body> by default (no `container` prop threaded
+    // through here, unlike reskin.test.tsx/Popover.test.tsx): this whole file
+    // renders under a single theme, so escaping the local mount point costs
+    // nothing. That means the dark-scheme toggle below has to land on
+    // `document.body` (an ancestor of both the local mount and the portal
+    // target), not on a locally-scoped container the way the Button grid
+    // above does; the Button grid never portals, so a local container
+    // ancestor is enough for it.
+    let mountEl: HTMLDivElement;
+    let screen: Awaited<ReturnType<typeof render>>;
+    let target: HTMLElement;
+
+    beforeAll(async () => {
+      mountEl = document.createElement('div');
+      document.body.appendChild(mountEl);
+      screen = await render(
+        <SoribashiProvider theme={uiTheme}>{entry.render()}</SoribashiProvider>,
+        {
+          container: mountEl,
+        },
+      );
+      target = await vi.waitUntil(() => document.querySelector<HTMLElement>('.matrix-target'), {
+        timeout: 2000,
+        interval: 20,
+      });
+    });
+
+    afterAll(async () => {
+      document.body.classList.remove('dark');
+      await screen.unmount();
+      mountEl.remove();
+    });
+
+    // No no-transition stylesheet here (unlike the Button grid's beforeAll):
+    // Popover.module.css's `.popup` only transitions `opacity`/`transform`
+    // (its enter/exit animation), never `background-color`/`color`, so the
+    // colours this cell measures are never mid-interpolation regardless of
+    // when the `dark` class is toggled.
+    function assertClearsAA() {
+      const cs = getComputedStyle(target);
+      const fg = toRgbString(cs.color);
+      const bg = toRgbString(cs.backgroundColor);
+      const backdrop = resolveCanvasColor(document.body);
+      const ratio = contrastRatio(fg, bg, backdrop);
+      expect(
+        ratio,
+        `${name} (${entry.description}): fg=${fg} bg=${bg} backdrop=${backdrop} ratio=${ratio.toFixed(3)}`,
+      ).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    }
+
+    it(`${entry.description}: light scheme clears AA`, () => {
+      assertClearsAA();
+    });
+
+    it(`${entry.description}: dark scheme clears AA`, () => {
+      document.body.classList.add('dark');
+      // Forces a synchronous style recalc before reading, same rationale as
+      // the Button grid's dark describe block above.
+      void document.body.offsetHeight;
+      try {
+        assertClearsAA();
+      } finally {
+        document.body.classList.remove('dark');
+      }
+    });
   });
 });
