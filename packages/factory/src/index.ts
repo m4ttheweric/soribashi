@@ -3,7 +3,6 @@
 export type { VocabularyOverride } from '@soribashi/theme';
 export { autoVars } from './auto-vars.ts';
 export type { ClassValue } from './cn.ts';
-// Utilities
 export { cn, configureClassNameMerge } from './cn.ts';
 // Vocab-aware builder factory. `makeBuilders` + `registerTheme` are the
 // cycle-safe split (type-only theme in builders.ts, value registration at app
@@ -11,7 +10,6 @@ export { cn, configureClassNameMerge } from './cn.ts';
 export { createSoribashiBuilders, makeBuilders, registerTheme } from './create-builders.ts';
 export { createVarsResolver } from './create-vars-resolver.ts';
 export type { DefineComponentConfig } from './define-component.tsx';
-// Daily-use authoring API
 export { defineComponent } from './define-component.tsx';
 export type {
   DefineCompoundConfig,
@@ -33,7 +31,6 @@ export type {
 } from './define-polymorphic-component.tsx';
 export { definePolymorphicComponent } from './define-polymorphic-component.tsx';
 export type { FactoryComponent } from './factory.tsx';
-// Lower-level escape hatches
 export { factory } from './factory.tsx';
 export { genericComponent } from './generic-component.tsx';
 export { hashStyleProps } from './hash-style-props.ts';
@@ -44,18 +41,15 @@ export type { InlineStylesProps } from './inline-styles/InlineStyles.tsx';
 export { InlineStyles } from './inline-styles/InlineStyles.tsx';
 export { polymorphicComponent } from './polymorphic-component.tsx';
 export type { SoribashiProviderProps } from './provider/provider.tsx';
-// Provider
 export { SoribashiProvider } from './provider/provider.tsx';
 export { useTheme } from './provider/use-theme.ts';
 export type { SlotProps } from './slot.tsx';
 
 // asChild slot-merging primitive
 export { Slot } from './slot.tsx';
-// Theme integration
 export type { ThemeComponentEntry } from './theme-component-entry.ts';
 export { isThemeComponentEntry } from './theme-component-entry.ts';
 export type { ComponentExtendConfig } from './types/component-extend.ts';
-// Types
 export type {
   Attributes,
   ClassNames,

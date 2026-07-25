@@ -1,6 +1,5 @@
 // @soribashi/core — public barrel package
 
-// Layout blocks
 export {
   AspectRatio,
   Box,
@@ -31,8 +30,6 @@ export type {
   StylesApiProps,
   VocabularyOverride,
 } from '@soribashi/factory';
-// Authoring API
-// Provider
 export {
   autoVars,
   cn,
@@ -61,7 +58,6 @@ export type {
   ThemeTokens,
   Vocabulary,
 } from '@soribashi/theme';
-// Theme
 export {
   composeTheme,
   createTheme,
