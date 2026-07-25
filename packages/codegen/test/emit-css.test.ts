@@ -32,6 +32,18 @@ describe('emitCss', () => {
     expect(emitCss(theme)).not.toContain('--__hsl-');
   });
 
+  it('emits oklch colour values verbatim', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'oklch(0.62 0.19 259)' } },
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+    });
+    expect(emitCss(theme)).toContain('--color-primary-500: oklch(0.62 0.19 259);');
+  });
+
   it('emits radius, spacing, and fontSize tokens', () => {
     const theme = createTheme({
       tokens: {

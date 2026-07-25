@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { defaultDarkTokens, defaultTokens } from '../src/tokens/index.ts';
 
+// Default token colours are oklch(L C H); L is already a perceptual
+// lightness fraction in [0, 1]. Scale to a percentage so the existing
+// thresholds below (written against HSL's L%) stay meaningful.
+function oklchLightnessPercent(value: string): number {
+  return Number(/oklch\(\s*([\d.]+)/.exec(value)?.[1]) * 100;
+}
+
 describe('defaultTokens', () => {
   it('includes a primary color scale with 50–900 shades', () => {
     expect(defaultTokens.colors.primary).toBeDefined();
@@ -90,14 +97,14 @@ describe('default scales satisfy the default intent resolver contract', () => {
 
   it('warning foreground is a dark value (white is unreadable on amber 500)', () => {
     const fg = defaultTokens.colors.warning?.foreground ?? '';
-    const lightness = Number(/(\d+(?:\.\d+)?)%\)$/.exec(fg)?.[1]);
+    const lightness = oklchLightnessPercent(fg);
     expect(lightness).toBeLessThan(40);
   });
 
   it('non-warning foregrounds are white for the 500 backgrounds', () => {
     for (const intent of DEFAULT_INTENTS) {
       if (intent === 'warning') continue;
-      expect(defaultTokens.colors[intent]?.foreground).toBe('hsl(0 0% 100%)');
+      expect(defaultTokens.colors[intent]?.foreground).toBe('oklch(1 0 0)');
     }
   });
 });
@@ -135,13 +142,13 @@ describe('defaultDarkTokens: complete neutral inversion', () => {
 
   it('dark neutral foreground flips dark for the light dark-mode 500 background', () => {
     const fg = defaultDarkTokens.colors?.neutral?.foreground ?? '';
-    const lightness = Number(/(\d+(?:\.\d+)?)%\)$/.exec(fg)?.[1]);
+    const lightness = oklchLightnessPercent(fg);
     expect(lightness).toBeLessThan(30);
   });
 
   it('border.default pairing resolves dark in dark mode (dark neutral.200 is a dark value)', () => {
     const border = defaultDarkTokens.colors?.neutral?.['200'] ?? '';
-    const lightness = Number(/(\d+(?:\.\d+)?)%\)$/.exec(border)?.[1]);
+    const lightness = oklchLightnessPercent(border);
     expect(lightness).toBeLessThan(40);
   });
 });
