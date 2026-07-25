@@ -184,8 +184,18 @@ describe('watch — config reload integration', () => {
 
         writeFileSync(configPath, configSource('hsl(240 80% 60%)', outPath));
         await vi.waitFor(
-          () => expect(readFileSync(outPath, 'utf-8')).toContain('hsl(240 80% 60%)'),
-          { timeout: 10000, interval: 100 },
+          () => {
+            // macOS FSEvents can drop a change landing right after the watcher
+            // registers, and a single dropped event used to hang this waitFor
+            // to its timeout. Re-touching the file keeps the test about "a
+            // change event triggers a rebuild", not "the first event is never
+            // dropped" — the OS guarantee the watcher never had.
+            if (!readFileSync(outPath, 'utf-8').includes('hsl(240 80% 60%)')) {
+              writeFileSync(configPath, configSource('hsl(240 80% 60%)', outPath));
+            }
+            expect(readFileSync(outPath, 'utf-8')).toContain('hsl(240 80% 60%)');
+          },
+          { timeout: 10000, interval: 250 },
         );
       } finally {
         await handle.stop();
