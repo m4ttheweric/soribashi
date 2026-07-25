@@ -23,6 +23,28 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 
+    // Explicit under TypeScript 7: with no "types" array, TS 5.x auto-discovered
+    // @types/node by walking up node_modules/@types from wherever tsconfig.json
+    // was resolved, so per-package `tsc --noEmit` runs (cwd inside packages/*)
+    // picked up the hoisted root @types/node ambient globals (process, Buffer,
+    // node:fs, ...) with no config needed. Under TS 7.0.2 that walk-up no
+    // longer resolves the ambient globals for a per-package tsconfig.json (even
+    // one with its own local node_modules/@types/node, e.g. packages/codegen) —
+    // only the root-rooted aggregate `tsc -p tsconfig.json` happened to still
+    // work, because tsconfig.json itself lives at the repo root. Declaring
+    // "node" here restores the same ambient globals for every package's own
+    // `bun run typecheck`, not just the root gate. Safe to scope to just
+    // "node": nothing else in this repo relies on ambient/global "types"
+    // discovery — @types/react resolves via normal `import` module resolution,
+    // and @testing-library/jest-dom's matchers are wired via an explicit
+    // `import '@testing-library/jest-dom/vitest'` side effect, not the ambient
+    // "types" mechanism, so neither is affected by scoping this list down.
+    // If a future dependency needs its own ambient/global types (rather than
+    // types resolved through a normal `import`), add its package name to this
+    // array. Do not delete the array and fall back on auto-discovery, since
+    // that's the exact behavior this comment documents as unreliable under TS 7.
+    "types": ["node"],
+
     // Declarations are never emitted in this repo — every package sets
     // `"types": "./src/index.ts"` (consumed as source) and all tsc runs are
     // `--noEmit`. Leaving `declaration: true` only triggered TS2742 nameability
