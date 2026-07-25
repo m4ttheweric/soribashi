@@ -73,7 +73,7 @@ export function SelectDemo() {
         </div>
       </section>
 
-      <section className="max-w-[24rem] space-y-6">
+      <section className="max-w-sm space-y-6">
         <h3 className="text-sm font-medium text-(--text-muted)">Wrapped in Field</h3>
 
         <FieldGroup>

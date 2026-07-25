@@ -19,13 +19,17 @@ import { Select } from '../recipes/Select/Select.tsx';
  * reaches: FieldSet, FieldLegend, FieldTitle, and orientation="responsive".
  * Responsive only reflows against a FieldGroup container, so the two column
  * widths below are the point of that section, not decoration.
+ *
+ * The narrow column stays a raw `w-[18rem]` on purpose: it is calibrated to sit
+ * below Field's `@md/field-group` breakpoint (28rem). `w-2xs` is the same value
+ * but hides why that number was chosen.
  */
 export function FieldDemo() {
   return (
     <div className="space-y-10">
       <h2 className="font-semibold text-lg">Field</h2>
 
-      <section className="max-w-[28rem] space-y-4">
+      <section className="max-w-md space-y-4">
         <h3 className="font-medium text-(--text-muted) text-sm">Vertical (default)</h3>
         <FieldGroup>
           <Field>
@@ -50,7 +54,7 @@ export function FieldDemo() {
         </FieldGroup>
       </section>
 
-      <section className="max-w-[28rem] space-y-4">
+      <section className="max-w-md space-y-4">
         <h3 className="font-medium text-(--text-muted) text-sm">Horizontal, with FieldContent</h3>
         <FieldGroup>
           <Field orientation="horizontal">
@@ -115,7 +119,7 @@ export function FieldDemo() {
         </div>
       </section>
 
-      <section className="max-w-[28rem] space-y-4">
+      <section className="max-w-md space-y-4">
         <h3 className="font-medium text-(--text-muted) text-sm">FieldSet and FieldLegend</h3>
         <FieldSet>
           <FieldLegend>Preferences</FieldLegend>
