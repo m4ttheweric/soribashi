@@ -1,0 +1,51 @@
+@layer soribashi.recipes {
+  .popup {
+    box-sizing: border-box;
+    max-inline-size: var(--breakpoint-xs);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--surface-default);
+    color: var(--text-default);
+    box-shadow: var(--shadow-md);
+    transform-origin: var(--transform-origin);
+    transition:
+      opacity 150ms,
+      transform 150ms;
+
+    /* Base UI stamps these while the element enters/exits; combined with
+       @starting-style below they give a pure-CSS enter and exit animation. */
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    @starting-style {
+      &[data-open] {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+    }
+  }
+
+  .arrow {
+    display: flex;
+    color: var(--surface-default);
+  }
+
+  .title {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .description {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .close {
+    cursor: pointer;
+  }
+}
