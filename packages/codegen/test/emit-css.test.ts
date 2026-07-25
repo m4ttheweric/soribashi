@@ -18,68 +18,18 @@ describe('emitCss', () => {
     expect(css).toContain(':root {');
     expect(css).toContain('--color-primary-50: hsl(0 0% 95%);');
     expect(css).toContain('--color-primary-500: hsl(0 0% 50%);');
-    // Bare-component companion vars enable Tailwind's <alpha-value> pattern
-    // (and direct alpha use like `hsl(var(--__hsl-color-primary-500) / 0.5)`).
-    expect(css).toContain('--__hsl-color-primary-50: 0 0% 95%;');
-    expect(css).toContain('--__hsl-color-primary-500: 0 0% 50%;');
   });
 
-  it('omits the --__hsl- companion var for non-hsl color values', () => {
+  it('emits no --__hsl- companion variables', () => {
     const theme = createTheme({
       tokens: {
-        colors: {
-          brand: {
-            primary: '#ff0000',
-            secondary: 'rgb(0 255 0)',
-            tertiary: 'currentColor',
-          },
-        },
+        colors: { primary: { '500': 'hsl(217 91% 60%)' } },
         radius: {},
         spacing: {},
         fontSize: {},
       },
     });
-
-    const css = emitCss(theme);
-    expect(css).toContain('--color-brand-primary: #ff0000;');
-    expect(css).toContain('--color-brand-secondary: rgb(0 255 0);');
-    expect(css).toContain('--color-brand-tertiary: currentColor;');
-    // Non-hsl values can't usefully participate in Tailwind's alpha-value
-    // pattern, so the --__hsl- companion is omitted.
-    expect(css).not.toContain('--__hsl-color-brand-primary');
-    expect(css).not.toContain('--__hsl-color-brand-secondary');
-    expect(css).not.toContain('--__hsl-color-brand-tertiary');
-  });
-
-  it('skips --__hsl- companion vars when emitCompanionHsl=false', () => {
-    const theme = createTheme({
-      tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {},
-        spacing: {},
-        fontSize: {},
-      },
-    });
-
-    const css = emitCss(theme, { emitCompanionHsl: false });
-    expect(css).toContain('--color-primary-500: hsl(0 0% 50%);');
-    expect(css).not.toContain('--__hsl-color-primary-500');
-  });
-
-  it('emits --__hsl- companion vars when emitCompanionHsl=true (default)', () => {
-    const theme = createTheme({
-      tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {},
-        spacing: {},
-        fontSize: {},
-      },
-    });
-
-    const cssDefault = emitCss(theme);
-    const cssExplicit = emitCss(theme, { emitCompanionHsl: true });
-    expect(cssDefault).toContain('--__hsl-color-primary-500: 0 0% 50%;');
-    expect(cssExplicit).toContain('--__hsl-color-primary-500: 0 0% 50%;');
+    expect(emitCss(theme)).not.toContain('--__hsl-');
   });
 
   it('emits radius, spacing, and fontSize tokens', () => {

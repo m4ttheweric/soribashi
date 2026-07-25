@@ -4,7 +4,6 @@ import type {
   SemanticSurfaceValue,
   ThemeTokens,
 } from '@soribashi/theme';
-import { stripHslWrapper } from './hsl.ts';
 import { removeDefaultVariables } from './remove-default-variables.ts';
 import type { EmitCssOptions } from './types.ts';
 
@@ -19,14 +18,9 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   const additions = opts.cssVariablesResolver
     ? opts.cssVariablesResolver(effectiveTheme)
     : undefined;
-  // 'auto' is treated as `true` at this layer; build.ts resolves 'auto' to a
-  // concrete boolean before calling emitCss based on the Tailwind output mode.
-  const emitCompanion = opts.emitCompanionHsl !== false;
 
   if (opts.removeDefaultVariables) {
-    const removed =
-      countEmittedTokenVars(theme, emitCompanion) -
-      countEmittedTokenVars(effectiveTheme, emitCompanion);
+    const removed = countEmittedTokenVars(theme) - countEmittedTokenVars(effectiveTheme);
     if (removed > 0) {
       // Nothing in soribashi ships a baseline stylesheet (no equivalent of
       // @mantine/core/styles.css), so deduped output is broken unless the
@@ -41,8 +35,8 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
 
   // :root block
   lines.push(`${effectiveTheme.scope} {`);
-  emitTokenLines(lines, effectiveTheme.tokens, emitCompanion);
-  emitSemanticLines(lines, effectiveTheme, emitCompanion);
+  emitTokenLines(lines, effectiveTheme.tokens);
+  emitSemanticLines(lines, effectiveTheme);
   if (additions?.root) {
     for (const [key, value] of Object.entries(additions.root)) {
       lines.push(`  ${key}: ${value};`);
@@ -55,7 +49,7 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   // section as an empty object, so a key-count check on theme.dark would emit
   // an empty block.
   const darkLines: string[] = [];
-  emitDarkTokenLines(darkLines, effectiveTheme.dark, emitCompanion);
+  emitDarkTokenLines(darkLines, effectiveTheme.dark);
   const hasDarkAdditions = !!additions?.dark && Object.keys(additions.dark).length > 0;
   if (darkLines.length > 0 || hasDarkAdditions) {
     lines.push('');
@@ -70,7 +64,7 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
     // Re-declaring the same var() references here forces them to
     // re-substitute against the flipped dark tokens at this scope, which is
     // required for wrapper-scoped (non-:root) dark mode to actually flip.
-    emitSemanticLines(lines, effectiveTheme, emitCompanion);
+    emitSemanticLines(lines, effectiveTheme);
     if (additions?.dark) {
       for (const [key, value] of Object.entries(additions.dark)) {
         lines.push(`  ${key}: ${value};`);
@@ -104,23 +98,17 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
   return `${lines.join('\n')}\n`;
 }
 
-function countEmittedTokenVars(theme: ResolvedTheme, emitCompanion: boolean): number {
+function countEmittedTokenVars(theme: ResolvedTheme): number {
   const scratch: string[] = [];
-  emitTokenLines(scratch, theme.tokens, emitCompanion);
-  emitDarkTokenLines(scratch, theme.dark, emitCompanion);
+  emitTokenLines(scratch, theme.tokens);
+  emitDarkTokenLines(scratch, theme.dark);
   return scratch.length;
 }
 
-function emitTokenLines(lines: string[], tokens: ThemeTokens, emitCompanion: boolean): void {
+function emitTokenLines(lines: string[], tokens: ThemeTokens): void {
   for (const [family, scale] of Object.entries(tokens.colors).sort(byKey)) {
     for (const [shade, value] of Object.entries(scale).sort(byKey)) {
       lines.push(`  --color-${family}-${shade}: ${value};`);
-      if (emitCompanion) {
-        const bare = stripHslWrapper(value);
-        if (bare !== null) {
-          lines.push(`  --__hsl-color-${family}-${shade}: ${bare};`);
-        }
-      }
     }
   }
 
@@ -188,22 +176,12 @@ function emitTokenLines(lines: string[], tokens: ThemeTokens, emitCompanion: boo
   }
 }
 
-function emitDarkTokenLines(
-  lines: string[],
-  dark: PartialThemeTokens,
-  emitCompanion: boolean,
-): void {
+function emitDarkTokenLines(lines: string[], dark: PartialThemeTokens): void {
   if (dark.colors) {
     for (const [family, scale] of Object.entries(dark.colors).sort(byKey)) {
       for (const [shade, value] of Object.entries(scale ?? {}).sort(byKey)) {
         if (value !== undefined) {
           lines.push(`  --color-${family}-${shade}: ${value};`);
-          if (emitCompanion) {
-            const bare = stripHslWrapper(value);
-            if (bare !== null) {
-              lines.push(`  --__hsl-color-${family}-${shade}: ${bare};`);
-            }
-          }
         }
       }
     }
@@ -284,7 +262,7 @@ function emitDarkTokenLines(
   }
 }
 
-function emitSemanticLines(lines: string[], theme: ResolvedTheme, emitCompanion: boolean): void {
+function emitSemanticLines(lines: string[], theme: ResolvedTheme): void {
   for (const [key, ref] of Object.entries(theme.semanticTokens.text).sort(byKey)) {
     lines.push(`  --text-${key}: ${semanticToVar(ref)};`);
   }
@@ -292,20 +270,8 @@ function emitSemanticLines(lines: string[], theme: ResolvedTheme, emitCompanion:
   for (const [key, raw] of Object.entries(theme.semanticTokens.surface).sort(byKey)) {
     const pair = resolveSurfacePair(raw);
     lines.push(`  --surface-${key}: ${semanticToVar(pair.value)};`);
-    if (emitCompanion) {
-      const bare = resolveSemanticHsl(pair.value, theme);
-      if (bare !== null) {
-        lines.push(`  --__hsl-surface-${key}: ${bare};`);
-      }
-    }
     if (pair.foreground !== undefined) {
       lines.push(`  --surface-${key}-foreground: ${semanticToVar(pair.foreground)};`);
-      if (emitCompanion) {
-        const bare = resolveSemanticHsl(pair.foreground, theme);
-        if (bare !== null) {
-          lines.push(`  --__hsl-surface-${key}-foreground: ${bare};`);
-        }
-      }
     }
   }
 
@@ -333,39 +299,6 @@ function resolveSurfacePair(raw: SemanticSurfaceValue): SurfacePair {
     value: raw.value,
     foreground: raw.foreground,
   };
-}
-
-/**
- * Resolves a semantic reference dot-path (e.g. `colors.neutral.500`) to a
- * `var(--__hsl-color-*)` reference for the underlying token's HSL companion.
- *
- * Returns `null` if the reference doesn't target a color token (e.g. radius),
- * or if the underlying token isn't an HSL value (so no `--__hsl-color-*`
- * companion was emitted for it).
- *
- * Emitting a var() reference rather than a literal HSL string ensures dark-mode
- * overrides cascade correctly: the `.dark` block already overrides
- * `--__hsl-color-*` (Wave 1 dual-emit), and `emitSemanticLines` is re-invoked
- * inside that dark block (see the comment above the dark block in `emitCss`),
- * so the `--__hsl-surface-*` companions re-substitute against the flipped
- * dark values at that scope instead of relying on automatic inheritance.
- *
- * Used to emit `--__hsl-surface-{name}` Tailwind alpha companions alongside
- * the canonical `--surface-{name}: var(--color-*)` vars.
- */
-function resolveSemanticHsl(ref: string, theme: ResolvedTheme): string | null {
-  const parts = ref.split('.');
-  if (parts[0] === 'colors' && parts.length === 3) {
-    const family = parts[1]!;
-    const shade = parts[2]!;
-    const value = (theme.tokens.colors as Record<string, Record<string, string>>)[family]?.[shade];
-    if (value === undefined) return null;
-    // Only emit the companion if the underlying token is HSL (otherwise there's
-    // no --__hsl-color-* var to reference).
-    if (stripHslWrapper(value) === null) return null;
-    return `var(--__hsl-color-${family}-${shade})`;
-  }
-  return null;
 }
 
 function semanticToVar(ref: string): string {

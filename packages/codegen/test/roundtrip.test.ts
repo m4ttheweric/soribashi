@@ -30,7 +30,7 @@ describe('token roundtrip integration', () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it('a new color family added to the theme appears in both theme.css and tailwind config', async () => {
+  it('a new color family added to the theme appears in both theme.css and the tailwind theme.css', async () => {
     const theme = createTheme({
       tokens: {
         colors: {
@@ -49,12 +49,12 @@ describe('token roundtrip integration', () => {
     });
 
     const cssPath = join(tempDir, 'theme.css');
-    const tailwindPath = join(tempDir, 'tailwind.config.generated.js');
+    const themeCssPath = join(tempDir, 'theme.tailwind.css');
     await build({
       theme,
       output: {
         css: cssPath,
-        tailwind: { mode: 'v3', configPath: tailwindPath },
+        tailwind: { mode: 'v4', themeCssPath },
       },
     });
 
@@ -63,9 +63,8 @@ describe('token roundtrip integration', () => {
     expect(css).toContain('--color-brand-500: hsl(160 84% 39%);');
     expect(css).toContain('--color-brand-900: hsl(160 84% 12%);');
 
-    const tw = readFileSync(tailwindPath, 'utf-8');
-    expect(tw).toContain('brand:');
-    expect(tw).toContain("'500': 'hsl(var(--__hsl-color-brand-500) / <alpha-value>)'");
+    const tw = readFileSync(themeCssPath, 'utf-8');
+    expect(tw).toContain('--color-brand-500: hsl(160 84% 39%);');
   });
 
   it('a removed color family disappears from outputs', async () => {

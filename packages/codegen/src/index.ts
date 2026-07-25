@@ -5,8 +5,6 @@ export { build } from './build.ts';
 export type { CliOptions } from './cli.ts';
 export { runCli } from './cli.ts';
 export { emitCss } from './emit-css.ts';
-export type { EmitTailwindV3Options } from './emit-tailwind-v3.ts';
-export { emitTailwindV3 } from './emit-tailwind-v3.ts';
 export type { EmitTailwindV4Options, SpacingUtilitiesMode } from './emit-tailwind-v4.ts';
 export { emitTailwindV4 } from './emit-tailwind-v4.ts';
 export { loadConfig } from './load-config.ts';
