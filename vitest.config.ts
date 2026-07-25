@@ -10,6 +10,8 @@ export default defineConfig({
       './packages/codegen/vitest.config.ts',
       './packages/factory/vitest.config.ts',
       './packages/blocks/vitest.config.ts',
+      './packages/ui/vitest.config.ts',
+      './packages/ui/vitest.browser.config.ts',
     ],
   },
 });
