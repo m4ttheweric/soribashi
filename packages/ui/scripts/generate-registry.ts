@@ -1,11 +1,16 @@
 #!/usr/bin/env bun
 /**
- * Writes packages/ui/registry/{button,popover,soribashi-init,registry}.json
- * from buildManifest()'s output. Thin writer over derivation, same shape as
- * generate-manifest.ts: the builder functions below are exported so the
- * tier 1 drift test (packages/ui/test/manifest-drift.test.ts) can rebuild
- * the same content in memory and compare it to what is committed, without
- * duplicating a second copy of these template strings anywhere.
+ * Writes packages/ui/registry/{<recipe-name>,soribashi-init,registry}.json
+ * from buildManifest()'s output: one registry item file per manifest recipe,
+ * derived by iterating `manifest.recipes` rather than naming individual
+ * recipes, so a new recipe gets a registry item automatically the next time
+ * this runs (the RECIPE_DESCRIPTIONS guard below still fails loudly if the
+ * new recipe has no description registered). Thin writer over derivation,
+ * same shape as generate-manifest.ts: the builder functions below are
+ * exported so the tier 1 drift test (packages/ui/test/manifest-drift.test.ts)
+ * can rebuild the same content in memory and compare it to what is
+ * committed, without duplicating a second copy of these template strings
+ * anywhere.
  *
  * Field names follow the live schema at
  * https://ui.shadcn.com/schema/registry-item.json and
@@ -211,35 +216,31 @@ function buildRegistryIndex(items: RegistryItem[]): RegistryIndex {
 
 export interface RegistryArtifacts {
   manifest: Manifest;
-  button: RegistryItem;
-  popover: RegistryItem;
+  /** One registry item per manifest recipe, in manifest order (sorted by recipe name). */
+  items: RegistryItem[];
   init: RegistryItem;
   index: RegistryIndex;
 }
 
 export async function buildRegistryArtifacts(): Promise<RegistryArtifacts> {
   const manifest = await buildManifest();
-  const buttonEntry = manifest.recipes.find((r) => r.name === 'Button');
-  const popoverEntry = manifest.recipes.find((r) => r.name === 'Popover');
-  if (!buttonEntry || !popoverEntry) {
-    throw new Error(
-      '[generate-registry] Expected the derived manifest to contain both Button and Popover.',
-    );
-  }
-
-  const button = buildRecipeRegistryItem(buttonEntry);
-  const popover = buildRecipeRegistryItem(popoverEntry);
+  const items = manifest.recipes.map((entry) => buildRecipeRegistryItem(entry));
   const init = buildSoribashiInitItem(manifest.vocabulary);
-  const index = buildRegistryIndex([button, popover, init]);
+  const index = buildRegistryIndex([...items, init]);
 
-  return { manifest, button, popover, init, index };
+  return { manifest, items, init, index };
 }
 
 async function main(): Promise<void> {
-  const { button, popover, init, index } = await buildRegistryArtifacts();
+  const { items, init, index } = await buildRegistryArtifacts();
   mkdirSync(REGISTRY_DIR, { recursive: true });
-  writeFileSync(join(REGISTRY_DIR, 'button.json'), toJsonFile(button, 'button.json'), 'utf-8');
-  writeFileSync(join(REGISTRY_DIR, 'popover.json'), toJsonFile(popover, 'popover.json'), 'utf-8');
+  for (const item of items) {
+    writeFileSync(
+      join(REGISTRY_DIR, `${item.name}.json`),
+      toJsonFile(item, `${item.name}.json`),
+      'utf-8',
+    );
+  }
   writeFileSync(
     join(REGISTRY_DIR, 'soribashi-init.json'),
     toJsonFile(init, 'soribashi-init.json'),
@@ -247,7 +248,7 @@ async function main(): Promise<void> {
   );
   writeFileSync(join(REGISTRY_DIR, 'registry.json'), toJsonFile(index, 'registry.json'), 'utf-8');
   console.log(
-    '[generate-registry] wrote registry/button.json, registry/popover.json, ' +
+    `[generate-registry] wrote ${items.map((i) => `registry/${i.name}.json`).join(', ')}, ` +
       'registry/soribashi-init.json, registry/registry.json',
   );
 }

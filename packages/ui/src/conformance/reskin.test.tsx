@@ -91,11 +91,19 @@ function snapshot(el: HTMLElement): SlotSnapshot {
 describe('reskin guard', () => {
   it('every barrel export carrying recipeMeta has a RESKIN_FIXTURES entry', () => {
     const missing: string[] = [];
+    let recipeCount = 0;
     for (const value of Object.values(barrel)) {
       const meta = getRecipeMeta(value);
       if (!meta) continue;
+      recipeCount += 1;
       if (!(meta.name in RESKIN_FIXTURES)) missing.push(meta.name);
     }
+    // Floor: if the barrel ever stopped exporting any recipeMeta-carrying
+    // component, the loop above would find nothing to check and this guard
+    // would pass vacuously. Guard against that silently-toothless state.
+    expect(recipeCount, 'expected at least one recipeMeta-carrying barrel export').toBeGreaterThan(
+      0,
+    );
     expect(
       missing,
       `Missing reskin-fixtures.tsx entries for: ${missing.join(', ')}. Add a RESKIN_FIXTURES[name] fixture in packages/ui/src/conformance/reskin-fixtures.tsx.`,

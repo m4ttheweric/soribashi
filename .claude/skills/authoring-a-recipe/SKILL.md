@@ -69,6 +69,8 @@ Every colour-bearing or interactive recipe needs, at minimum:
 
 Run `bun run generate:ui` and commit the regenerated `packages/ui/manifest.json` and `packages/ui/registry/*.json` alongside the recipe. `packages/ui/test/manifest-drift.test.ts` (local) and the `codegen-drift` CI job both rebuild the manifest and registry the same way and fail on any diff against what is committed. There is no partial-credit path here: a new or changed recipe without a regenerated manifest/registry fails CI even if every other gate is green.
 
+A new recipe also needs a `RECIPE_DESCRIPTIONS` entry for its name in `packages/ui/scripts/generate-registry.ts`; the generator fails loudly, by design, without one.
+
 ## 8. Traps
 
 - Always `bun run test`. Plain `bun test` invokes Bun's own test runner, not vitest, and will not run this package's suites.
