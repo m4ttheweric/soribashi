@@ -1,0 +1,51 @@
+name: Visual baselines
+
+# Regenerates the visual-regression baselines under
+# packages/ui/src/recipes/*/__screenshots__ and uploads them as a downloadable
+# artifact. This workflow never commits or pushes: a human downloads the
+# artifact, reviews every changed PNG, and commits the ones that are
+# intentional. The `visual` job in ci.yml is what actually enforces the
+# baselines (it always compares, never updates).
+#
+# If this workflow can't be dispatched (e.g. a branch that has never been
+# pushed), the same regeneration can be run locally in a container that
+# matches this job's OS and the repo's pinned Playwright version
+# (package.json's `@playwright/test`, currently 1.59.1) so browser rendering
+# matches what CI would produce, then only the `*-chromium-linux.png` files
+# copied out and committed:
+#
+#   docker run --rm -v "$PWD":/work -w /work \
+#     mcr.microsoft.com/playwright:v1.59.1-noble \
+#     bash -c "curl -fsSL https://bun.sh/install | bash && \
+#       ~/.bun/bin/bun install --frozen-lockfile && \
+#       ~/.bun/bin/bun run test:visual -- --update"
+#
+# (See the Task 8 report for the exact command actually run and its output.)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-baselines:
+    name: Regenerate visual baselines
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      # `--` forwards `--update` through the `test:visual` script to the
+      # underlying `vitest run --config packages/ui/vitest.visual.config.ts`
+      # invocation (verified locally: `bun run test:visual -- --update` runs
+      # as `... vitest.visual.config.ts --update`, no reordering needed).
+      # `--update` sets Vitest's snapshot `updateSnapshot` to `"all"`, the one
+      # setting that (re)writes a missing or mismatching reference instead of
+      # failing the test on it.
+      - run: bun run test:visual -- --update
+      - name: Summarize baseline changes
+        run: git diff --stat -- 'packages/ui/src/**/__screenshots__'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines
+          path: packages/ui/src/**/__screenshots__
+          if-no-files-found: error

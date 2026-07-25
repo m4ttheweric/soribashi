@@ -42,3 +42,23 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium
       - run: bun run test:browser
+
+  visual:
+    name: Visual regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      # Compares against the committed Linux baselines
+      # (packages/ui/src/recipes/*/__screenshots__/*-chromium-linux.png) and never
+      # updates them. No `--update` flag is passed, and GitHub Actions sets `CI=true`
+      # for every job by default; Vitest's snapshot resolution
+      # (vitest/dist/chunks/coverage.*.js: `updateSnapshot: ... isCI && !UPDATE_SNAPSHOT
+      # ? "none" : ...`) reads that to default `updateSnapshot` to `"none"` here, which
+      # is what makes a missing baseline FAIL instead of silently creating one (verified
+      # locally: `CI=true bun run test:visual` against a deleted baseline reports "No
+      # existing reference screenshot found." and writes nothing to the committed
+      # __screenshots__ path, only to the gitignored .vitest-attachments scratch dir).
+      - run: bun run test:visual

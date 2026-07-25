@@ -33,6 +33,13 @@ npm-debug.log*
 bun-debug.log*
 test/dist
 
-# Visual baselines are CI-generated Linux artifacts; local-platform baselines are advisory noise
-packages/ui/src/**/__screenshots__/*-darwin.png
-packages/ui/src/**/__screenshots__/*-win32.png
+# Visual baselines are CI-generated Linux artifacts; local-platform baselines are advisory
+# noise. Vitest nests each baseline one level deeper than this pattern originally assumed
+# (`__screenshots__/<test-file>/<name>-<browser>-<platform>.png`, confirmed against the
+# installed v4.1.10's actual output), hence the `**/` before the filename glob.
+packages/ui/src/**/__screenshots__/**/*-darwin.png
+packages/ui/src/**/__screenshots__/**/*-win32.png
+
+# Vitest's own scratch dir for toMatchScreenshot mismatch/missing-reference debug images
+# (never the committed baselines themselves, see above).
+packages/ui/.vitest-attachments/
