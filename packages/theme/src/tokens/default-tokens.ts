@@ -16,7 +16,11 @@ export const defaultTokens: ThemeTokens = {
       '200': 'oklch(0.8807 0.058 253.59)',
       '300': 'oklch(0.8043 0.0976 252.31)',
       '400': 'oklch(0.7157 0.1425 254.45)',
-      '500': 'oklch(0.6261 0.1859 259.6)',
+      // Darkened from oklch(0.6261 0.1859 259.6): the original only cleared
+      // 3.64:1 against the white `filled`-variant foreground, below WCAG AA's
+      // 4.5:1 text minimum (found by packages/ui/src/a11y/contrast-matrix.test.tsx).
+      // Same hue/chroma, lower L; now clears ~4.56:1.
+      '500': 'oklch(0.57 0.1859 259.6)',
       '600': 'oklch(0.5449 0.2154 262.74)',
       '700': 'oklch(0.4896 0.2153 264.27)',
       '800': 'oklch(0.4226 0.181 265.65)',
@@ -45,7 +49,11 @@ export const defaultTokens: ThemeTokens = {
       '200': 'oklch(0.9246 0.0811 155.98)',
       '300': 'oklch(0.8712 0.137 154.59)',
       '400': 'oklch(0.7205 0.192 149.49)',
-      '500': 'oklch(0.623 0.1688 149.18)',
+      // Darkened from oklch(0.623 0.1688 149.18): the original only cleared
+      // 3.33:1 against the white `filled`-variant foreground, below WCAG AA's
+      // 4.5:1 text minimum (found by packages/ui/src/a11y/contrast-matrix.test.tsx).
+      // Same hue/chroma, lower L; now clears ~4.60:1.
+      '500': 'oklch(0.5423 0.1688 149.18)',
       '600': 'oklch(0.5248 0.1373 149.83)',
       '700': 'oklch(0.4458 0.1087 150.91)',
       '800': 'oklch(0.3909 0.0908 151.96)',
@@ -59,9 +67,18 @@ export const defaultTokens: ThemeTokens = {
       '200': 'oklch(0.8386 0.0869 19.05)',
       '300': 'oklch(0.8098 0.1025 19.54)',
       '400': 'oklch(0.7123 0.1656 22.18)',
-      '500': 'oklch(0.6356 0.2082 25.38)',
+      // Darkened from oklch(0.6356 0.2082 25.38): the original only cleared
+      // 3.78:1 against the white `filled`-variant foreground, below WCAG AA's
+      // 4.5:1 text minimum (found by packages/ui/src/a11y/contrast-matrix.test.tsx).
+      // Same hue/chroma, lower L; now clears ~4.57:1.
+      '500': 'oklch(0.5885 0.2082 25.38)',
       '600': 'oklch(0.5786 0.2137 27.17)',
-      '700': 'oklch(0.5079 0.1918 27.56)',
+      // Darkened from oklch(0.5079 0.1918 27.56): `subtle`'s text-on-tint
+      // pairing (this shade on the `100` background) only cleared 4.38:1,
+      // below AA's 4.5:1 (found by contrast-matrix.test.tsx). Same
+      // hue/chroma, lower L; now clears ~4.59:1 (and improves `outline`/
+      // `ghost`, which already passed using this same shade on canvas).
+      '700': 'oklch(0.4966 0.1918 27.56)',
       '800': 'oklch(0.441 0.1603 26.89)',
       '900': 'oklch(0.3996 0.1348 25.77)',
       '950': 'oklch(0.2526 0.0866 26)',
@@ -74,8 +91,29 @@ export const defaultTokens: ThemeTokens = {
       '300': 'oklch(0.8416 0.1719 92.57)',
       '400': 'oklch(0.8231 0.1679 92.79)',
       '500': 'oklch(0.7697 0.1645 70.61)',
-      '600': 'oklch(0.6688 0.1588 57.96)',
-      '700': 'oklch(0.5542 0.1447 49.16)',
+      // Darkened from oklch(0.6688 0.1588 57.96) for light mode ONLY (see the
+      // matching defaultDarkTokens.warning['600'] override below, which
+      // restores this exact original value for dark): `link`'s
+      // text-on-canvas pairing (this shade, transparent background) only
+      // cleared 3.02:1 in light mode, below AA's 4.5:1 (found by
+      // contrast-matrix.test.tsx). Same hue/chroma, lower L; now clears
+      // ~4.65:1 against the light canvas. Unlike every other fix in this
+      // file, this one COULD NOT be a single scheme-invariant value: this
+      // shade already cleared AA in dark mode (5.66:1) using the ORIGINAL
+      // lighter value (light text reads fine against the dark canvas), so
+      // darkening it as one shared value to fix light would have flipped
+      // that passing dark combination to failing. A light-dark split avoids
+      // the tradeoff entirely: dark keeps its already-correct value, light
+      // gets a new one, at the cost of being the one shade in this pass
+      // that needed a new defaultDarkTokens entry rather than reusing the
+      // family's existing one.
+      '600': 'oklch(0.5595 0.1588 57.96)',
+      // Darkened from oklch(0.5542 0.1447 49.16): `subtle`'s text-on-tint
+      // pairing (this shade on the `100` background) only cleared 4.06:1,
+      // below AA's 4.5:1 (found by contrast-matrix.test.tsx). Same
+      // hue/chroma, lower L; now clears ~4.57:1 (and improves `outline`/
+      // `ghost`, which already passed using this same shade on canvas).
+      '700': 'oklch(0.525 0.1447 49.16)',
       '800': 'oklch(0.4706 0.1236 46.53)',
       '900': 'oklch(0.4096 0.1037 46.31)',
       '950': 'oklch(0.284 0.0633 53.89)',
@@ -88,8 +126,28 @@ export const defaultTokens: ThemeTokens = {
       '200': 'oklch(0.9146 0.0805 204.72)',
       '300': 'oklch(0.8644 0.115 207.1)',
       '400': 'oklch(0.7964 0.1343 211.78)',
-      '500': 'oklch(0.6776 0.1481 238.1)',
-      '600': 'oklch(0.5863 0.1366 241.18)',
+      // Darkened from oklch(0.6776 0.1481 238.1): the original only cleared
+      // 2.86:1 against the white `filled`-variant foreground, below WCAG AA's
+      // 4.5:1 text minimum (found by packages/ui/src/a11y/contrast-matrix.test.tsx).
+      // Same hue/chroma, lower L; now clears ~4.60:1.
+      '500': 'oklch(0.5504 0.1481 238.1)',
+      // Darkened from oklch(0.5863 0.1366 241.18): `link`'s text-on-canvas
+      // pairing (this shade, transparent background) only cleared 3.93:1 in
+      // light mode, below AA's 4.5:1 (found by contrast-matrix.test.tsx).
+      // Same hue/chroma, lower L; now clears ~4.70:1 against the light
+      // canvas. Dark mode's `link` (this shade against the dark canvas) was
+      // already failing before this change (3.93:1 -> ~3.64:1, unrelated to
+      // the fix above) and stays failing after it: darkening moves it
+      // further from AA, not into a regression, since it never passed dark
+      // to begin with.
+      //
+      // Unlike `warning`'s `600` (left untouched, see the failure table in
+      // the task report): that one DID pass in dark (5.66:1) before any
+      // change, so darkening it to fix light would have flipped a
+      // currently-passing dark combination to failing, a real regression a
+      // single scheme-invariant value can't avoid without a light-dark()
+      // split, which is out of this fix's value-level scope.
+      '600': 'oklch(0.5424 0.1366 241.18)',
       '700': 'oklch(0.4996 0.1179 242.21)',
       '800': 'oklch(0.438 0.0988 240.83)',
       '900': 'oklch(0.392 0.0844 240.76)',
@@ -177,14 +235,20 @@ export const defaultTokens: ThemeTokens = {
  * light values (e.g. a near-white border.default) in dark mode.
  *
  * The intent scales (success/warning/danger/info) deliberately have no dark
- * story yet; their 500 anchors read acceptably on dark surfaces.
+ * story yet; their 500 anchors read acceptably on dark surfaces. The single
+ * exception is `warning['600']`: a light-mode-only AA contrast fix (see the
+ * comment on `defaultTokens.colors.warning['600']` above) needed dark to
+ * keep its pre-fix value, so that one shade got an explicit override here
+ * purely to stay unchanged, not a real "warning now has a dark ramp" story.
  */
 export const defaultDarkTokens: PartialThemeTokens = {
   colors: {
     primary: {
       '50': 'oklch(0.2463 0.0867 259.27)',
       '100': 'oklch(0.2941 0.1092 259.92)',
-      '500': 'oklch(0.6261 0.1859 259.6)',
+      // Mirrors the light-mode `500` fix above (same value in both schemes,
+      // as before): oklch(0.6261 0.1859 259.6) -> oklch(0.57 0.1859 259.6).
+      '500': 'oklch(0.57 0.1859 259.6)',
       '900': 'oklch(0.9716 0.0136 255.03)',
     },
     neutral: {
@@ -202,6 +266,13 @@ export const defaultDarkTokens: PartialThemeTokens = {
       '950': 'oklch(1 0 0)',
       // The inverted 500 is light, so filled-neutral text flips dark.
       foreground: 'oklch(0.2064 0.0388 265.55)',
+    },
+    warning: {
+      // Restores the light-mode `600`'s pre-fix value (see
+      // defaultTokens.colors.warning['600']'s comment): this shade already
+      // cleared AA in dark mode with this value, so dark keeps it unchanged
+      // while light gets a darker one.
+      '600': 'oklch(0.6688 0.1588 57.96)',
     },
   },
 };
