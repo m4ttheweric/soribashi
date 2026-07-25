@@ -1,0 +1,67 @@
+{
+  "vocabulary": {
+    "size": ["xs", "sm", "md", "lg", "xl"],
+    "intent": ["primary", "neutral", "success", "warning", "danger", "info"],
+    "variant": ["filled", "outline", "subtle", "ghost", "link"]
+  },
+  "recipes": [
+    {
+      "name": "Button",
+      "category": 1,
+      "builder": "definePolymorphicComponent",
+      "slots": ["root", "label"],
+      "vocabularyAxes": ["size", "intent", "variant"],
+      "variants": ["filled", "outline", "subtle", "ghost", "link"],
+      "defaults": {
+        "intent": "primary",
+        "variant": "filled",
+        "size": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/Button/Button.tsx",
+        "packages/ui/src/recipes/Button/Button.module.css",
+        "packages/ui/src/recipes/Button/Button.test.tsx",
+        "packages/ui/src/recipes/Button/Button.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--font-weight-medium",
+        "--radius-md",
+        "--spacing-md",
+        "--spacing-xs"
+      ],
+      "baseUi": false
+    },
+    {
+      "name": "Popover",
+      "category": 2,
+      "builder": "defineCompound",
+      "slots": ["root", "trigger", "content", "title", "description", "close"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {},
+      "files": [
+        "packages/ui/src/recipes/Popover/Popover.tsx",
+        "packages/ui/src/recipes/Popover/Popover.module.css",
+        "packages/ui/src/recipes/Popover/Popover.test.tsx",
+        "packages/ui/src/recipes/Popover/Popover.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--border-default",
+        "--breakpoint-xs",
+        "--font-size-md",
+        "--font-size-sm",
+        "--font-weight-semibold",
+        "--radius-lg",
+        "--shadow-md",
+        "--spacing-lg",
+        "--surface-default",
+        "--text-default",
+        "--text-muted"
+      ],
+      "baseUi": true
+    }
+  ]
+}

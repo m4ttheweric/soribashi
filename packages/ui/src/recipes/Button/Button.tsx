@@ -2,6 +2,16 @@ import { autoVars, definePolymorphicComponent } from '@soribashi/core';
 import type { ReactNode } from 'react';
 import classes from './Button.module.css';
 
+/**
+ * Authoring category from the recipe conversion playbook's four categories
+ * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
+ * 1 = pure styled primitive (§ 2.1, Wave 1, this recipe is the pilot).
+ * Read by packages/ui/scripts/derive.ts to build the agent-facing manifest;
+ * not itself derived, since it records an authoring decision, not a fact
+ * recoverable from RecipeMeta or the CSS.
+ */
+export const recipeCategory = 1 as const;
+
 const BUTTON_VARIANTS = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
 
 /**

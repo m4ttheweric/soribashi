@@ -18,7 +18,8 @@
     "codegen": "bun run packages/codegen/bin/soribashi.ts build",
     "codegen:watch": "bun run packages/codegen/bin/soribashi.ts watch",
     "codegen:tenants": "bun run apps/workshop/scripts/codegen-tenants.ts",
-    "dev:workshop": "bun run --cwd apps/workshop dev"
+    "dev:workshop": "bun run --cwd apps/workshop dev",
+    "generate:ui": "bun run packages/ui/scripts/generate-manifest.ts && bun run packages/ui/scripts/generate-registry.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2",

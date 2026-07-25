@@ -4,6 +4,17 @@ import type { ReactNode, Ref } from 'react';
 import classes from './Popover.module.css';
 
 /**
+ * Authoring category from the recipe conversion playbook's four categories
+ * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
+ * 2 = transient overlay compound (§ 2.2, Wave 2's Tooltip pattern: Base UI
+ * owns open/close lifecycle, the recipe owns styling + slot wiring). Read by
+ * packages/ui/scripts/derive.ts to build the agent-facing manifest; not
+ * itself derived, since it records an authoring decision, not a fact
+ * recoverable from RecipeMeta or the CSS.
+ */
+export const recipeCategory = 2 as const;
+
+/**
  * The full declared slot set (spec: root, trigger, positioner, popup, arrow,
  * title, description, close). `root`, `trigger`, and `positioner` have no
  * rules in Popover.module.css today (Base UI owns their box model/position),
