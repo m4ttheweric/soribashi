@@ -90,7 +90,7 @@ export const buttonTheme = Button.extend({
 - **Vocabulary, not magic strings.** `defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'])` produces a typed tuple backed by Zod. Compile-time inference and runtime validation from a single declaration.
 - **One function, one component.** `defineComponent`, `definePolymorphicComponent`, `defineCompound`, or `defineGenericComponent` -- pick the builder that fits. Each replaces Mantine's five-type-alias ceremony with a single config object.
 - **Codegen closes the loop.** `soribashi build` generates CSS custom properties and a Tailwind config from your theme. You cannot reference a token that does not exist.
-- **Substrate-agnostic.** CSS Modules, Tailwind v3/v4, or plain class names. Mix and match across components.
+- **Substrate-agnostic.** CSS Modules, Tailwind v4, or plain class names. Mix and match across components.
 - **`.extend()` without forking.** Theme-level customization of any component -- override defaults, inject classes, add vocabulary -- without touching the component source.
 
 ## Four builders for four shapes
@@ -108,7 +108,7 @@ export const buttonTheme = Button.extend({
 |---|---|
 | `@soribashi/factory` | `defineComponent`, `definePolymorphicComponent`, `defineCompound`, `defineGenericComponent`, `useProps`, `useStyles`, `makeBuilders` |
 | `@soribashi/theme` | `createTheme`, `defineVocabulary`, `composeTheme`, intent resolver, default tokens |
-| `@soribashi/codegen` | Theme to CSS variables + Tailwind v3/v4 config. CLI: `soribashi build` / `soribashi watch` |
+| `@soribashi/codegen` | Theme to CSS variables + Tailwind v4 config. CLI: `soribashi build` / `soribashi watch` |
 | `@soribashi/blocks` | 14 layout primitives: Box, Stack, Group, Flex, Grid, Grid.Col, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title |
 | `@soribashi/core` | Public barrel re-exporting all of the above |
 
@@ -127,7 +127,7 @@ There is no dev server in this repo right now. `apps/pilot`, `apps/playground` a
 
 ## Status
 
-Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md). 980+ tests across packages. Packages are versioned at `0.0.0` and not yet published.
+Pre-v1. The foundation is stable: factory, theme, codegen, 14 adapted layout blocks, and vocabulary rails. Four component categories have been piloted (Button, Tooltip, Tabs, Select) with a [transferable conversion playbook](docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md). A large automated test suite covers the packages (run `bun run test` for the current count). Packages are versioned at `0.0.0` and not yet published.
 
 ## Manifesto
 
