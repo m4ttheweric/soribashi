@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@soribashi/blocks": "workspace:*",
+    "@soribashi/codegen": "workspace:*",
     "@soribashi/core": "workspace:*",
     "@soribashi/ui": "workspace:*",
     "react": "^19.2",

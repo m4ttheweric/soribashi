@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
 import './generated/theme.css';
+import './generated/tenants.css';
 import './styles.css';
 
 const container = document.getElementById('root');
