@@ -16,7 +16,12 @@ import { z } from 'zod';
  */
 export interface Vocabulary<T extends string = string> {
   readonly __vocab: true;
-  readonly schema: z.ZodEnum<[T, ...T[]]>;
+  // Mirrors Zod 4's own `ToEnum<T>` shape (zod/v4/core/util.d.ts): each member
+  // maps to ITS OWN literal, e.g. `{ compact: 'compact'; standard: 'standard' }`.
+  // `Record<T, T>` looks similar but is wrong — it maps every key to the whole
+  // union `T`, which is a real widening (confirmed via an IsExact probe against
+  // the actual `z.enum(values)` return type). Do not re-approximate this.
+  readonly schema: z.ZodEnum<{ [K in T]: K }>;
   readonly values: readonly T[];
   /** Phantom type — never set at runtime. Use `typeof vocab['type']` for type extraction. */
   readonly type?: T;
@@ -40,7 +45,7 @@ export function defineVocabulary<const T extends string>(
 ): Vocabulary<T> {
   return {
     __vocab: true,
-    schema: z.enum(values as unknown as [T, ...T[]]),
+    schema: z.enum(values),
     values,
   };
 }
