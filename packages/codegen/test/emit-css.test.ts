@@ -247,7 +247,10 @@ describe('emitCss', () => {
     expect(emitCss(theme)).toBe(emitCss(theme));
   });
 
-  it('begins with auto-generated header comment', () => {
+  it('begins with the biome-ignore-all suppression, then the auto-generated header comment, when utilities are on (default)', () => {
+    // The biome-ignore-all suppression (see emit-css.ts's SUPPRESS_IMPORTANT_LINT_LINE)
+    // must be the very first line of the file to take effect, so it precedes
+    // the header when utilities are enabled.
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -258,6 +261,22 @@ describe('emitCss', () => {
     });
 
     const css = emitCss(theme);
+    const lines = css.split('\n');
+    expect(lines[0]).toMatch(/biome-ignore-all/);
+    expect(lines[1]).toMatch(/auto-generated/i);
+  });
+
+  it('begins with the auto-generated header comment when utilities are off (nothing to suppress)', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+    });
+
+    const css = emitCss(theme, { utilities: false });
     expect(css.split('\n')[0]).toMatch(/auto-generated/i);
   });
 
@@ -625,6 +644,25 @@ describe('emitCss visibility utilities (EmitCssOptions.utilities)', () => {
     const css = emitCss(theme, { utilities: false });
     expect(css).not.toContain('@layer soribashi.utilities');
     expect(css).not.toMatch(/\.sb-[a-z-]/);
+  });
+
+  it('emits a file-top biome-ignore-all suppression for noImportantStyles when utilities are on', () => {
+    // The utility classes' !important is a spec requirement (see
+    // emit-visibility.ts), not an accident, so the generated file suppresses
+    // biome's noImportantStyles lint rule for itself rather than growing the
+    // repo's warning baseline by 20 (one per !important declaration). Must be
+    // the file-wide `biome-ignore-all` form (not a block-level `biome-ignore`
+    // before @layer, which does not propagate into nested rules) and must sit
+    // at the very top of the file to take effect.
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme);
+    expect(css.startsWith('/* biome-ignore-all lint/complexity/noImportantStyles:')).toBe(true);
+  });
+
+  it('does NOT emit the biome-ignore-all suppression when utilities are off (nothing to suppress)', () => {
+    const theme = createTheme({ tokens: defaultTokens });
+    const css = emitCss(theme, { utilities: false });
+    expect(css).not.toContain('biome-ignore-all');
   });
 
   it('emitCss(theme, { utilities: false }) still declares the layer in the order (so a later opt-in stays valid)', () => {
