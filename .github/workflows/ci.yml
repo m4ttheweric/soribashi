@@ -21,10 +21,6 @@ jobs:
   codegen-drift:
     name: Codegen drift
     runs-on: ubuntu-latest
-    # Known red: the root soribashi.config.ts was deleted with the apps in
-    # slice 1a, so "bun run codegen" exits 1 with "No config found". Keep
-    # non-blocking until slice 1b's apps/workshop restores a config for it.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

@@ -1,0 +1,60 @@
+/*
+ * Minimal, unlayered app chrome. Left unlayered on purpose: consumer styles
+ * beat layered soribashi.tokens/soribashi.recipes rules regardless of
+ * specificity, so nothing here needs to fight the cascade to win.
+ */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+}
+
+.workshop-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.workshop-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 14rem;
+  flex-shrink: 0;
+  padding: 1rem;
+  background: var(--surface-raised);
+  border-right: 1px solid var(--border-default);
+}
+
+.workshop-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.workshop-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.workshop-sidebar button {
+  text-align: left;
+}
+
+.workshop-nav-active {
+  font-weight: 600;
+}
+
+.workshop-main {
+  flex: 1;
+  overflow: auto;
+  padding: 2rem;
+  background: var(--surface-canvas);
+  color: var(--text-default);
+}
