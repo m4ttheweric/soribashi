@@ -59,9 +59,14 @@ describe('defaultIntentResolver', () => {
       expect(result.color).toBe('var(--color-primary-700)');
     });
 
-    it('uses intent-200 as a ramp-lookup hover, not a derived color-mix (deliberate, see resolver doc comment)', () => {
+    it('derives hover via color-mix at 94% weight toward black', () => {
       const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
-      expect(result.hover).toBe('var(--color-primary-200)');
+      expect(result.hover).toBe(`color-mix(in oklab, ${result.background} 94%, black)`);
+    });
+
+    it('derives active via color-mix at 88% weight toward black', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
+      expect(result.active).toBe(`color-mix(in oklab, ${result.background} 88%, black)`);
     });
   });
 

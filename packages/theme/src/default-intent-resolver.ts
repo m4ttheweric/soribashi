@@ -48,18 +48,16 @@ function deriveState(background: string, weight: number): string {
  * `--color-{intent}-{shade}` variable. Custom scales that cannot satisfy the
  * contract need a custom `IntentResolver` instead.
  *
- * `filled` derives its `hover`/`active` from `background` via `deriveState`
- * (see above). The other variants keep ramp-shade lookups for their hover
- * behaviour: their `background` is `transparent`, so deriving from it would
- * flatten a deliberate "wash appears on hover" effect (outline, ghost) or a
- * deliberate no-op (link, which intentionally never grows a background) into
- * a no-op `color-mix(transparent, ...)` for all of them.
+ * `filled` and `subtle` derive their `hover`/`active` from `background` via
+ * `deriveState` (see above). The other variants keep ramp-shade lookups for
+ * their hover behaviour: their `background` is `transparent`, so deriving from
+ * it would flatten a deliberate "wash appears on hover" effect (outline, ghost)
+ * or a deliberate no-op (link, which intentionally never grows a background)
+ * into a no-op `color-mix(transparent, ...)` for all of them.
  *
- * `subtle`'s `background` (`100`) is solid, not `transparent`, so `hover:
- * v('200')` COULD derive the same way `filled` does. Left as a ramp lookup
- * deliberately, not an oversight: picking a mix weight against a light
- * background is a visual design call, not a mechanical substitution, and is
- * tracked as a follow-up rather than decided here.
+ * `subtle`'s weights (94% hover, 88% active) are a starting point chosen to
+ * sit near the old ramp deltas (v('100') to v('200')/v('300')) and are tunable
+ * by design review.
  *
  * Reference: based on Mantine's `defaultVariantColorsResolver`. The variant
  * set is adapted to soribashi's `filled | outline | subtle | ghost | link`.
@@ -89,11 +87,13 @@ export const defaultIntentResolver: IntentResolver = ({ intent, variant }) => {
   }
 
   if (variant === 'subtle') {
+    const background = v('100');
     return {
-      background: v('100'),
+      background,
       color: v('700'),
       border: 'transparent',
-      hover: v('200'),
+      hover: deriveState(background, 94),
+      active: deriveState(background, 88),
     };
   }
 
