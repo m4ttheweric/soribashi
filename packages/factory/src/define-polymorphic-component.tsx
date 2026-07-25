@@ -5,6 +5,7 @@ import { buildDataAttrs } from './data-attrs.ts';
 import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
+import { attachRecipeMeta } from './recipe-meta.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
@@ -160,6 +161,14 @@ export function definePolymorphicComponent<
   });
 
   Component.displayName = config.name;
+  attachRecipeMeta(Component, {
+    builder: 'definePolymorphicComponent',
+    name: config.name,
+    slots: config.selectors,
+    vocabularyAxes: config.vocabularyAxes ?? [],
+    variants: config.variants ?? [],
+    defaults: config.defaults ?? {},
+  });
   (Component as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Component as any).classes = config.classes;
   (Component as any).withProps = makeWithProps(Component as any);

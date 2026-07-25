@@ -43,6 +43,8 @@ export { polymorphicComponent } from './polymorphic-component.tsx';
 export type { SoribashiProviderProps } from './provider/provider.tsx';
 export { SoribashiProvider } from './provider/provider.tsx';
 export { useTheme } from './provider/use-theme.ts';
+export type { RecipeMeta } from './recipe-meta.ts';
+export { getRecipeMeta } from './recipe-meta.ts';
 export type { SlotProps } from './slot.tsx';
 
 // asChild slot-merging primitive

@@ -16,6 +16,7 @@ import { useProps } from './hooks/use-props.ts';
 import { useStyles } from './hooks/use-styles.ts';
 import { makeExtendEntry } from './make-extend-entry.ts';
 import { useTheme } from './provider/use-theme.ts';
+import { attachRecipeMeta } from './recipe-meta.ts';
 import type { ThemeComponentEntry } from './theme-component-entry.ts';
 import type { ComponentExtendConfig } from './types/component-extend.ts';
 import type { FactoryPayload } from './types/factory-payload.ts';
@@ -527,6 +528,14 @@ export function defineCompound<
   });
 
   Root.displayName = config.name;
+  attachRecipeMeta(Root, {
+    builder: 'defineCompound',
+    name: config.name,
+    slots: Object.keys(config.parts),
+    vocabularyAxes: config.vocabularyAxes ?? [],
+    variants: config.variants ?? [],
+    defaults: config.defaults ?? {},
+  });
   (Root as any).__vocabularyAxes = config.vocabularyAxes ?? [];
   (Root as any).classes = config.classes;
   (Root as any).withProps = makeWithProps(Root as any);
