@@ -2,6 +2,7 @@ import { SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import { formatViolations, runAxe } from '../../a11y/axe.ts';
 import { uiTheme } from '../../theme.ts';
 import { Popover } from './Popover.tsx';
 
@@ -190,5 +191,31 @@ describe('Popover (browser)', () => {
     const trigger = screen.getByRole('button', { name: 'Open' }).element();
     expect(trigger.tagName).toBe('BUTTON');
     expect(screen.container.querySelector('[data-testid="leaked-render"]')).toBeNull();
+  });
+
+  it('has zero axe violations for an open popover with title, description, and close', async () => {
+    // `container` re-anchors the portal locally (see the classNames/container
+    // test above) so axe gets a single local subtree covering the popup's
+    // showcase content instead of having to sweep all of document.body.
+    const localContainer = document.createElement('div');
+    document.body.appendChild(localContainer);
+
+    const screen = await wrap(
+      <Popover.Root open onOpenChange={() => {}}>
+        <Popover.Trigger>Open</Popover.Trigger>
+        <Popover.Content container={localContainer}>
+          <Popover.Title>Popover title</Popover.Title>
+          <Popover.Description>A short description of what this popover shows.</Popover.Description>
+          <Popover.Close>Dismiss</Popover.Close>
+        </Popover.Content>
+      </Popover.Root>,
+    );
+
+    await expect.element(screen.getByRole('dialog')).toBeVisible();
+
+    const results = await runAxe(localContainer);
+    expect(results.violations, formatViolations(results.violations)).toEqual([]);
+
+    localContainer.remove();
   });
 });

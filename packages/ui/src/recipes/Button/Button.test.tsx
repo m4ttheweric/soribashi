@@ -1,7 +1,8 @@
 import { createTheme, SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { uiTheme } from '../../theme.ts';
+import { formatViolations, runAxe } from '../../a11y/axe.ts';
+import { uiTheme, uiVocabulary } from '../../theme.ts';
 import { Button } from './Button.tsx';
 
 // `render` from vitest-browser-react resolves a Promise<RenderResult>
@@ -67,5 +68,39 @@ describe('Button (browser)', () => {
     );
     const el = screen.getByRole('button', { name: 'Tiny' }).element();
     expect(getComputedStyle(el).blockSize).toBe('28px');
+  });
+
+  it('has zero axe violations across its showcase states (intent x variant, sizes, disabled)', async () => {
+    // Mirrors apps/workshop/src/pages/ButtonPage.tsx's showcase sections so
+    // the axe case exercises the same combinations a person would actually
+    // see, sourced from uiVocabulary rather than hand-copied value lists.
+    const intents = uiVocabulary.intent.values;
+    const variants = uiVocabulary.variant.values;
+    const sizes = uiVocabulary.size.values;
+
+    const screen = await wrap(
+      <div>
+        {intents.map((intent) =>
+          variants.map((variant) => (
+            <Button key={`${intent}-${variant}`} intent={intent} variant={variant}>
+              {intent}
+            </Button>
+          )),
+        )}
+        {sizes.map((size) => (
+          <Button key={size} size={size}>
+            {size}
+          </Button>
+        ))}
+        {variants.map((variant) => (
+          <Button key={`disabled-${variant}`} variant={variant} disabled>
+            {variant}
+          </Button>
+        ))}
+      </div>,
+    );
+
+    const results = await runAxe(screen.container);
+    expect(results.violations, formatViolations(results.violations)).toEqual([]);
   });
 });
