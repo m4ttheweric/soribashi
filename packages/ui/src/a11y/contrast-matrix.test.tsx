@@ -27,13 +27,11 @@ const MIN_CONTRAST = 4.5;
 // scope, and that axe-core itself exempts from color-contrast) isn't part
 // of the 6 x 5 x 5 grid at all. Every combination that IS in the grid is a
 // real, in-scope, enabled control, so a failure here is a genuine WCAG AA
-// gap, not something to allowlist away. As of this writing, dark scheme
-// still has real, un-allowlisted, un-fixed gaps across most non-neutral
-// intents' `outline`/`ghost`/`link`/`subtle` text (see the task report's
-// full triage table): fixing them needs new dark-specific text colors per
-// intent, which is a design decision beyond a value-level token nudge and
-// was deliberately left for follow-up rather than allowlisted or
-// threshold-loosened here.
+// gap, not something to allowlist away. Both light and dark scheme clear
+// the whole matrix (300/300 cells across both schemes) since the dark
+// token derivation commits (ed313f4, f50938d) gave every non-neutral
+// intent its own dark-specific text shades; there is no known gap left
+// to track here.
 
 function testId(intent: string, variant: string, size: string): string {
   return `${intent}-${variant}-${size}`;
