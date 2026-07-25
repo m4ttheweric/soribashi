@@ -42,4 +42,14 @@ describe('emitCss light-dark', () => {
     const darkBlock = css.slice(css.indexOf('color-scheme: dark'));
     expect(darkBlock).not.toContain('--color-neutral-50:');
   });
+
+  it('declares color-scheme: light on the root block, so dark mode has something to flip away from', () => {
+    // Nothing asserted this before: deleting the `color-scheme: light;` line
+    // in emit-css.ts's :root block failed no test, and its only symptom is
+    // dark mode silently never engaging (the UA has no light declaration to
+    // override, so it falls back to guessing from the OS/embedder default).
+    const css = emitCss(theme);
+    const rootBlock = css.slice(css.indexOf(':root {'), css.indexOf('.dark {'));
+    expect(rootBlock).toContain('color-scheme: light;');
+  });
 });

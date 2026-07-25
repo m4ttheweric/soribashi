@@ -1,4 +1,4 @@
-import type { HeadingTokens, ResolvedTheme } from '@soribashi/theme';
+import type { ResolvedTheme } from '@soribashi/theme';
 
 // Segments of a CSS custom property name; anything outside this set (spaces,
 // dots, colons, ...) breaks the emitted `--color-{family}-{shade}` vars.
@@ -22,12 +22,14 @@ const NAMESPACES: Record<string, { arity: number; form: string }> = {
  * Checks that every semanticTokens reference resolves to an existing token
  * (unknown namespaces, wrong arity, missing color families/shades, and missing
  * radius/spacing/fontSize keys all error), that color family/shade names
- * are safe to embed in CSS custom property names, and that every `dark`
- * override has a light counterpart (see `validateDarkOverrides` — emitCss
- * pairs light+dark into a single `light-dark()` declaration per token, so a
- * dark-only key has nothing to pair with and would otherwise be silently
- * dropped rather than emitted anywhere). All problems are collected and
- * thrown together as one actionable error.
+ * are safe to embed in CSS custom property names, and that `dark` overrides
+ * are well-formed (see `validateDarkOverrides`): a colour override must have
+ * a light counterpart to pair against (emitCss's pairing logic walks light
+ * and looks up a matching dark entry, so a colour that exists only in `dark`
+ * would be silently dropped from the emitted CSS entirely), and a non-colour
+ * family may not appear in `dark` at all, because light-dark() is a `<color>`
+ * production and cannot legally hold a length/number/keyword value. All
+ * problems are collected and thrown together as one actionable error.
  */
 export function validateTheme(theme: ResolvedTheme): void {
   const errors: string[] = [];
@@ -94,13 +96,27 @@ function validateColorNames(
 }
 
 /**
- * Confirms every value `dark` provides has a light counterpart declared in
- * `tokens`. emitCss's pairing logic (`pairValue` in emit-css.ts) walks the
- * LIGHT token keys and looks up a matching dark override — it never walks
- * `dark` directly — so a key that exists only in `dark` is never visited and
- * silently produces no CSS in either scheme. The model here is "light
- * declares the token, dark overrides it"; a dark-only key is a theme
- * authoring error, not a case codegen should carry a second code path for.
+ * Validates `dark`. Two independent rules apply, one for colours and one for
+ * everything else, because light-dark() (what emitCss pairs light+dark into)
+ * is a `<color>` production and nothing else.
+ *
+ * Colours: every `dark.colors` value must have a light counterpart declared
+ * in `tokens.colors`. emitCss's pairing logic (`pairValue` in emit-css.ts)
+ * walks the LIGHT token keys and looks up a matching dark override; it never
+ * walks `dark` directly, so a shade that exists only in `dark.colors` is
+ * never visited and silently produces no CSS in either scheme. The model
+ * here is "light declares the token, dark overrides it"; a dark-only colour
+ * is a theme authoring error, not a case codegen should carry a second code
+ * path for.
+ *
+ * Everything else (radius, spacing, fontSize, fontFamily, fontWeight,
+ * lineHeight, shadow, breakpoint, zIndex, heading): `dark` may not override
+ * these AT ALL, regardless of whether a light counterpart exists. Pairing
+ * one of these into `light-dark(light, dark)` is invalid CSS at
+ * computed-value time (light-dark() only accepts colours), so the token
+ * would resolve to nothing in both schemes rather than just being dropped
+ * from one. See emit-css.ts's pairValue() doc comment for the browser-verified
+ * behaviour.
  */
 function validateDarkOverrides(theme: ResolvedTheme, errors: string[]): void {
   const { tokens, dark } = theme;
@@ -116,55 +132,55 @@ function validateDarkOverrides(theme: ResolvedTheme, errors: string[]): void {
     }
   }
 
-  validateDarkScalarFamily(dark.radius, tokens.radius, 'radius', errors);
-  validateDarkScalarFamily(dark.spacing, tokens.spacing, 'spacing', errors);
-  validateDarkScalarFamily(dark.fontSize, tokens.fontSize, 'fontSize', errors);
-  validateDarkScalarFamily(dark.fontFamily, tokens.fontFamily, 'fontFamily', errors);
-  validateDarkScalarFamily(dark.fontWeight, tokens.fontWeight, 'fontWeight', errors);
-  validateDarkScalarFamily(dark.lineHeight, tokens.lineHeight, 'lineHeight', errors);
-  validateDarkScalarFamily(dark.shadow, tokens.shadow, 'shadow', errors);
-  validateDarkScalarFamily(dark.breakpoint, tokens.breakpoint, 'breakpoint', errors);
-  validateDarkScalarFamily(dark.zIndex, tokens.zIndex, 'zIndex', errors);
+  rejectNonColourDarkFamily(dark.radius, 'radius', errors);
+  rejectNonColourDarkFamily(dark.spacing, 'spacing', errors);
+  rejectNonColourDarkFamily(dark.fontSize, 'fontSize', errors);
+  rejectNonColourDarkFamily(dark.fontFamily, 'fontFamily', errors);
+  rejectNonColourDarkFamily(dark.fontWeight, 'fontWeight', errors);
+  rejectNonColourDarkFamily(dark.lineHeight, 'lineHeight', errors);
+  rejectNonColourDarkFamily(dark.shadow, 'shadow', errors);
+  rejectNonColourDarkFamily(dark.breakpoint, 'breakpoint', errors);
+  rejectNonColourDarkFamily(dark.zIndex, 'zIndex', errors);
 
   if (dark.heading) {
-    if (dark.heading.textWrap !== undefined && tokens.heading?.textWrap === undefined) {
-      errors.push(darkOrphanMessage('heading.textWrap'));
+    if (dark.heading.textWrap !== undefined) {
+      errors.push(nonColourDarkMessage('heading.textWrap'));
     }
     if (dark.heading.sizes) {
       for (const [order, size] of Object.entries(dark.heading.sizes)) {
         if (!size) continue;
-        const lightSize = tokens.heading?.sizes?.[order as keyof HeadingTokens['sizes']];
-        if (size.fontSize !== undefined && lightSize?.fontSize === undefined) {
-          errors.push(darkOrphanMessage(`heading.sizes.${order}.fontSize`));
+        if (size.fontSize !== undefined) {
+          errors.push(nonColourDarkMessage(`heading.sizes.${order}.fontSize`));
         }
-        if (size.fontWeight !== undefined && lightSize?.fontWeight === undefined) {
-          errors.push(darkOrphanMessage(`heading.sizes.${order}.fontWeight`));
+        if (size.fontWeight !== undefined) {
+          errors.push(nonColourDarkMessage(`heading.sizes.${order}.fontWeight`));
         }
-        if (size.lineHeight !== undefined && lightSize?.lineHeight === undefined) {
-          errors.push(darkOrphanMessage(`heading.sizes.${order}.lineHeight`));
+        if (size.lineHeight !== undefined) {
+          errors.push(nonColourDarkMessage(`heading.sizes.${order}.lineHeight`));
         }
       }
     }
   }
 }
 
-function validateDarkScalarFamily(
+function rejectNonColourDarkFamily(
   darkFamily: Partial<Record<string, string | number>> | undefined,
-  lightFamily: Record<string, string | number> | undefined,
   name: string,
   errors: string[],
 ): void {
   if (!darkFamily) return;
   for (const [key, value] of Object.entries(darkFamily)) {
     if (value === undefined) continue;
-    if (lightFamily?.[key] === undefined) {
-      errors.push(darkOrphanMessage(`${name}.${key}`));
-    }
+    errors.push(nonColourDarkMessage(`${name}.${key}`));
   }
 }
 
 function darkOrphanMessage(path: string): string {
   return `dark.${path} overrides a token that tokens.${path} does not declare; dark may only override tokens that light declares`;
+}
+
+function nonColourDarkMessage(path: string): string {
+  return `dark.${path} overrides a non-colour token; light-dark() is a colour-only CSS function (it is a <color> production, invalid in a length/number/keyword property at computed-value time), so a dark override cannot be expressed for it. Only dark.colors.* may be overridden; remove dark.${path}.`;
 }
 
 function validateRef(ref: string, slot: string, theme: ResolvedTheme, errors: string[]): void {

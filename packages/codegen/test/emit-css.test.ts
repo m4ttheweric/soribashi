@@ -554,7 +554,15 @@ describe('emitCss zIndex tokens', () => {
     expect(css).toContain('--z-index-max: 9999;');
   });
 
-  it('emits dark zIndex overrides as a light-dark() pair in :root', () => {
+  it('ignores a dark zIndex override and emits the light value bare, never wrapped in light-dark()', () => {
+    // Was: "emits dark zIndex overrides as a light-dark() pair in :root",
+    // asserting `light-dark(200, 300)`. That locked in the CRITICAL bug this
+    // fix removes: light-dark() is a colour-only CSS function, so wrapping a
+    // z-index (a <number>) in it is invalid at computed-value time and the
+    // token resolves to `auto` in both schemes. zIndex.modal is now always
+    // bare; a valid theme cannot even construct this input, since
+    // validateTheme rejects a `dark.zIndex` entry outright (see
+    // validate-theme.ts).
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -567,6 +575,7 @@ describe('emitCss zIndex tokens', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('--z-index-modal: light-dark(200, 300);');
+    expect(css).toContain('--z-index-modal: 200;');
+    expect(css).not.toContain('light-dark(');
   });
 });

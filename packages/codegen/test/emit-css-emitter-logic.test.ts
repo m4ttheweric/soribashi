@@ -7,11 +7,19 @@
  * They complement the existing emit-css.test.ts (which tests the happy path
  * of each token type) by covering:
  *   - BUG-E-1: breakpoint tokens not emitted by emitTokenLines()
- *   - BUG-E-2: dark overrides for fontFamily, fontWeight, lineHeight,
- *              breakpoint, heading must thread through as light-dark() pairs
- *              (originally caught against the now-removed emitDarkTokenLines(),
- *              which silently dropped these families; superseded by Task 9's
- *              light-dark() collapse, see emit-css.ts)
+ *   - BUG-E-2: non-colour families (fontFamily, fontWeight, lineHeight,
+ *              breakpoint, heading) must NEVER thread a dark override
+ *              through as a light-dark() pair. This used to assert the
+ *              opposite (that they DID thread through as light-dark() pairs),
+ *              which was itself a bug: light-dark() is a colour-only CSS
+ *              function, so wrapping a length/number/keyword value in it is
+ *              invalid at computed-value time and the token resolves to
+ *              nothing in both schemes. See emit-css.ts's pairValue() doc
+ *              comment. validateTheme now rejects a `dark` entry for any of
+ *              these families outright (validate-theme.ts), so these cases
+ *              also cover emitCss's own defensive behaviour if it is ever
+ *              called directly (as these tests do) with a theme that skipped
+ *              validation.
  *   - Sort order: colors sorted family-then-shade alphabetically
  *   - Dark block emission: the .dark selector is now unconditional (it only
  *     flips color-scheme, so there is nothing to gate on theme.dark)
@@ -82,12 +90,16 @@ describe('emitCss — BUG-E-1: breakpoint emission', () => {
 });
 
 // ---------------------------------------------------------------------------
-// BUG-E-2: dark overrides must thread through emitTokenLines() as
-// light-dark() pairs for every PartialThemeTokens field
+// BUG-E-2 (inverted): non-colour families must NEVER thread a dark override
+// through emitTokenLines() as a light-dark() pair. light-dark() is a
+// colour-only CSS function; a valid theme cannot even construct this input
+// (validateTheme rejects a `dark` entry for any of these families), so these
+// cases exercise emitCss's own defensive bare-value behaviour when called
+// directly with a theme that skipped validation.
 // ---------------------------------------------------------------------------
 
-describe('emitCss — BUG-E-2: dark override completeness', () => {
-  it('dark fontFamily overrides are emitted as a light-dark() pair', () => {
+describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
+  it('ignores a dark fontFamily override and emits the light value bare', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -102,10 +114,11 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('--font-family-sans: light-dark(Inter, SystemFont);');
+    expect(css).toContain('--font-family-sans: Inter;');
+    expect(css).not.toContain('light-dark(');
   });
 
-  it('dark fontWeight overrides are emitted as a light-dark() pair', () => {
+  it('ignores a dark fontWeight override and emits the light value bare', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -120,10 +133,11 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('--font-weight-bold: light-dark(700, 600);');
+    expect(css).toContain('--font-weight-bold: 700;');
+    expect(css).not.toContain('light-dark(');
   });
 
-  it('dark lineHeight overrides are emitted as a light-dark() pair', () => {
+  it('ignores a dark lineHeight override and emits the light value bare', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -138,10 +152,11 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('--line-height-md: light-dark(1.55, 1.6);');
+    expect(css).toContain('--line-height-md: 1.55;');
+    expect(css).not.toContain('light-dark(');
   });
 
-  it('dark breakpoint overrides are emitted as a light-dark() pair', () => {
+  it('ignores a dark breakpoint override and emits the light value bare', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -156,10 +171,11 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('--breakpoint-md: light-dark(62em, 60em);');
+    expect(css).toContain('--breakpoint-md: 62em;');
+    expect(css).not.toContain('light-dark(');
   });
 
-  it('dark heading.textWrap override is emitted as a light-dark() pair', () => {
+  it('ignores a dark heading.textWrap override and emits the light value bare', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -194,10 +210,11 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('--heading-text-wrap: light-dark(wrap, balance);');
+    expect(css).toContain('--heading-text-wrap: wrap;');
+    expect(css).not.toContain('light-dark(');
   });
 
-  it('dark heading fontSize overrides are emitted as a light-dark() pair', () => {
+  it('ignores a dark heading fontSize override and emits the light value bare', () => {
     const theme = createTheme({
       tokens: {
         colors: {},
@@ -230,7 +247,8 @@ describe('emitCss — BUG-E-2: dark override completeness', () => {
     });
 
     const css = emitCss(theme);
-    expect(css).toContain('--heading-h1-font-size: light-dark(2rem, 1.875rem);');
+    expect(css).toContain('--heading-h1-font-size: 2rem;');
+    expect(css).not.toContain('light-dark(');
   });
 });
 
@@ -323,23 +341,6 @@ describe('emitCss — dark block emission', () => {
     // Wrapped one level deeper inside @layer soribashi.tokens { ... } now.
     expect(css).toContain('.dark {\n    color-scheme: dark;\n  }');
     expect(css).not.toContain('light-dark(');
-  });
-
-  it('dark block emitted when theme.dark has at least one color', () => {
-    const theme = createTheme({
-      tokens: {
-        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
-        radius: {},
-        spacing: {},
-        fontSize: {},
-      },
-      dark: {
-        colors: { primary: { '500': 'hsl(0 0% 80%)' } },
-      },
-    });
-
-    const css = emitCss(theme);
-    expect(css).toContain('.dark {');
   });
 
   it('dark block uses the configured darkMode.selector', () => {

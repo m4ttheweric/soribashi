@@ -16,14 +16,15 @@ import type { ResolvedTheme } from '@soribashi/theme';
  * Registration is what makes length tokens animatable, so transitioning
  * --sb-button-h becomes possible for the first time.
  *
- * TRAP FOR A FUTURE EDITOR: if a theme ever supplies a `dark` override for
- * radius/spacing/fontSize, `pairValue()` in emit-css.ts wraps the emitted
- * value in `light-dark(...)`, exactly like a colour token. Once that value is
- * registered here, the same freezing failure documented above for colours
- * applies to it too — light-dark() would resolve against the DECLARING
- * element (:root) instead of the consuming element, breaking a scoped `.dark`
- * wrapper for that token. No current theme does this and nothing here guards
- * against it; this comment exists so the risk is visible if one ever does.
+ * Dark overrides are colour-only, so this freezing failure is not reachable
+ * for the properties registered here. light-dark() is a <color> production;
+ * substituting it into a registered <length> property like --radius-md is
+ * invalid at computed-value time regardless of the @property freezing issue
+ * documented above. emit-css.ts's pairValue() is therefore only ever called
+ * for tokens.colors: radius/spacing/fontSize always emit their light value
+ * bare, and validate-theme.ts's validateDarkOverrides rejects a `dark` entry
+ * for any non-colour family outright. A registered non-colour property can
+ * never end up wrapped in light-dark(), so it can never freeze.
  */
 export function emitPropertyRegistrations(theme: ResolvedTheme): string[] {
   const blocks: string[] = [];

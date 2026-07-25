@@ -248,7 +248,14 @@ describe('validateTheme — dark overrides must have a light counterpart', () =>
     expect(() => validateTheme(theme)).not.toThrow();
   });
 
-  it('accepts normal dark overrides across every token family the pairing logic handles', () => {
+  it('rejects dark overrides for every non-colour family in one aggregated error, because light-dark() is colour-only', () => {
+    // Was: "accepts normal dark overrides across every token family the
+    // pairing logic handles" and asserted `.not.toThrow()`. That encoded the
+    // bug this fix removes: pairValue() used to wrap EVERY family in
+    // light-dark(), including radius/spacing/fontSize/etc, which is invalid
+    // CSS (light-dark() is a <color> production) and resolved to nothing in
+    // both schemes. Inverted: dark.colors is still legal and paired via
+    // light-dark(); every other family below must now be rejected.
     const theme = createTheme({
       tokens: {
         // createTheme's default semanticTokens reference every shade in
@@ -302,7 +309,34 @@ describe('validateTheme — dark overrides must have a light counterpart', () =>
       },
     });
 
-    expect(() => validateTheme(theme)).not.toThrow();
+    let message = '';
+    try {
+      validateTheme(theme);
+    } catch (err) {
+      message = err instanceof Error ? err.message : String(err);
+    }
+
+    // The colour override is legal (light declares both shades) and must not
+    // be blamed.
+    expect(message).not.toContain('dark.colors.neutral.50');
+    expect(message).not.toContain('dark.colors.neutral.0');
+
+    // Every non-colour family is rejected, one error per leaf, all naming
+    // the colour-only rationale.
+    expect(message).toContain('dark.radius.md');
+    expect(message).toContain('dark.spacing.md');
+    expect(message).toContain('dark.fontSize.md');
+    expect(message).toContain('dark.fontFamily.sans');
+    expect(message).toContain('dark.fontWeight.bold');
+    expect(message).toContain('dark.lineHeight.md');
+    expect(message).toContain('dark.shadow.md');
+    expect(message).toContain('dark.breakpoint.md');
+    expect(message).toContain('dark.zIndex.modal');
+    expect(message).toContain('dark.heading.textWrap');
+    expect(message).toContain('dark.heading.sizes.h1.fontSize');
+    expect(message).toContain('dark.heading.sizes.h1.fontWeight');
+    expect(message).toContain('dark.heading.sizes.h1.lineHeight');
+    expect(message).toMatch(/light-dark\(\) is a colour-only/);
   });
 
   it('rejects a dark color shade with no light counterpart, naming the path', () => {

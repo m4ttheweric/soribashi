@@ -93,8 +93,12 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
     }
   }
 
-  // Typed registrations for non-colour tokens. Colours are never registered —
+  // Typed registrations for non-colour tokens. Colours are never registered:
   // see emit-property.ts for why that would silently break scoped dark mode.
+  // Emitted after the :root/.dark rules that use these vars deliberately.
+  // @property registration is document-wide, not source-order dependent, so a
+  // rule earlier in the file can reference a custom property @property
+  // registers later without issue.
   const registrations = emitPropertyRegistrations(effectiveTheme);
   if (registrations.length > 0) {
     body.push('');
@@ -125,11 +129,24 @@ function countEmittedTokenVars(theme: ResolvedTheme): number {
 }
 
 /**
- * Pairs a light value with its dark override. Unregistered custom properties
- * substitute lazily, so light-dark() resolves against the color-scheme of the
- * element that USES the var, not the one that declares it. That is what lets a
- * single declaration serve a scoped dark wrapper, and it is why colour tokens
- * must never be registered via @property (see emit-property.ts).
+ * Pairs a light value with its dark override using light-dark(). COLOUR TOKENS
+ * ONLY: light-dark() is a <color> production (CSS Color 5), so substituting it
+ * into a length/number/keyword property is invalid at computed-value time, and
+ * the whole declaration resolves to nothing in BOTH schemes: worse than the
+ * old two-block output, where light mode at least worked. Confirmed in
+ * Chromium: `CSS.supports('color', 'light-dark(red, blue)')` is true, while
+ * `CSS.supports('border-radius', 'light-dark(1px, 2px)')` is false.
+ *
+ * Unregistered custom properties substitute lazily, so light-dark() resolves
+ * against the color-scheme of the element that USES the var, not the one that
+ * declares it. That is what lets a single declaration serve a scoped dark
+ * wrapper, and it is why colour tokens must never be registered via @property
+ * (see emit-property.ts).
+ *
+ * Every other token family below is emitted bare (light value only). Dark
+ * overrides for non-colour tokens are rejected by validateTheme
+ * (validate-theme.ts's validateDarkOverrides) before emitCss ever runs, so
+ * `dark` is only ever consulted here for `tokens.colors`.
  */
 function pairValue(light: string, dark: string | undefined): string {
   return dark === undefined ? light : `light-dark(${light}, ${dark})`;
@@ -144,77 +161,64 @@ function emitTokenLines(lines: string[], tokens: ThemeTokens, dark: PartialTheme
   }
 
   for (const [key, value] of Object.entries(tokens.radius).sort(byKey)) {
-    lines.push(`  --radius-${key}: ${pairValue(value, dark.radius?.[key])};`);
+    lines.push(`  --radius-${key}: ${value};`);
   }
 
   for (const [key, value] of Object.entries(tokens.spacing).sort(byKey)) {
-    lines.push(`  --spacing-${key}: ${pairValue(value, dark.spacing?.[key])};`);
+    lines.push(`  --spacing-${key}: ${value};`);
   }
 
   for (const [key, value] of Object.entries(tokens.fontSize).sort(byKey)) {
-    lines.push(`  --font-size-${key}: ${pairValue(value, dark.fontSize?.[key])};`);
+    lines.push(`  --font-size-${key}: ${value};`);
   }
 
   if (tokens.fontFamily) {
     for (const [key, value] of Object.entries(tokens.fontFamily).sort(byKey)) {
-      lines.push(`  --font-family-${key}: ${pairValue(value, dark.fontFamily?.[key])};`);
+      lines.push(`  --font-family-${key}: ${value};`);
     }
   }
 
   if (tokens.fontWeight) {
     for (const [key, value] of Object.entries(tokens.fontWeight).sort(byKey)) {
-      lines.push(`  --font-weight-${key}: ${pairValue(value, dark.fontWeight?.[key])};`);
+      lines.push(`  --font-weight-${key}: ${value};`);
     }
   }
 
   if (tokens.lineHeight) {
     for (const [key, value] of Object.entries(tokens.lineHeight).sort(byKey)) {
-      lines.push(`  --line-height-${key}: ${pairValue(value, dark.lineHeight?.[key])};`);
+      lines.push(`  --line-height-${key}: ${value};`);
     }
   }
 
   if (tokens.shadow) {
     for (const [key, value] of Object.entries(tokens.shadow).sort(byKey)) {
-      lines.push(`  --shadow-${key}: ${pairValue(value, dark.shadow?.[key])};`);
+      lines.push(`  --shadow-${key}: ${value};`);
     }
   }
 
   if (tokens.breakpoint) {
     for (const [key, value] of Object.entries(tokens.breakpoint).sort(byKey)) {
-      lines.push(`  --breakpoint-${key}: ${pairValue(value, dark.breakpoint?.[key])};`);
+      lines.push(`  --breakpoint-${key}: ${value};`);
     }
   }
 
   if (tokens.zIndex) {
     for (const [key, value] of Object.entries(tokens.zIndex).sort(byKey)) {
-      const darkValue = dark.zIndex?.[key];
-      lines.push(
-        `  --z-index-${key}: ${pairValue(String(value), darkValue === undefined ? undefined : String(darkValue))};`,
-      );
+      lines.push(`  --z-index-${key}: ${value};`);
     }
   }
 
   if (tokens.heading) {
-    const darkHeading = dark.heading;
     if (tokens.heading.textWrap !== undefined) {
-      lines.push(
-        `  --heading-text-wrap: ${pairValue(tokens.heading.textWrap, darkHeading?.textWrap)};`,
-      );
+      lines.push(`  --heading-text-wrap: ${tokens.heading.textWrap};`);
     }
     for (const [order, size] of Object.entries(tokens.heading.sizes).sort(byKey)) {
-      const darkSize = darkHeading?.sizes?.[order as keyof typeof tokens.heading.sizes];
-      lines.push(
-        `  --heading-${order}-font-size: ${pairValue(size.fontSize, darkSize?.fontSize)};`,
-      );
+      lines.push(`  --heading-${order}-font-size: ${size.fontSize};`);
       if (size.fontWeight !== undefined) {
-        lines.push(
-          `  --heading-${order}-font-weight: ${pairValue(size.fontWeight, darkSize?.fontWeight)};`,
-        );
+        lines.push(`  --heading-${order}-font-weight: ${size.fontWeight};`);
       }
       if (size.lineHeight !== undefined) {
-        lines.push(
-          `  --heading-${order}-line-height: ${pairValue(size.lineHeight, darkSize?.lineHeight)};`,
-        );
+        lines.push(`  --heading-${order}-line-height: ${size.lineHeight};`);
       }
     }
   }
