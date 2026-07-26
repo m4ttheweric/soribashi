@@ -2,7 +2,7 @@ import { createTheme, SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { uiTheme } from '../../theme.ts';
-import { Box } from './Box.tsx';
+import { Box, type BoxMod } from './Box.tsx';
 
 // `render` from vitest-browser-react resolves a Promise<RenderResult> (see
 // Button.test.tsx's identical note); `wrap` awaits it so callers get the
@@ -22,6 +22,30 @@ describe('Box (browser)', () => {
     const screen = await wrap(<Box mod={{ active: true }}>Modded</Box>);
     const el = screen.getByText('Modded').element();
     expect(el.getAttribute('data-active')).toBe('true');
+  });
+
+  it('mod as an array recurses through its items and drops a falsy entry', async () => {
+    // Exercises getBoxMod's array branch (recursing into each item, string
+    // and record forms both present) and its falsy-filtering (a
+    // `condition && 'literal'`-style entry, a common real-world conditional
+    // mod idiom, evaluates to the boolean `false` at runtime and must
+    // contribute no attribute at all). `false` sits outside BoxMod's own
+    // item union (string | Record<string, unknown>) -- the type only
+    // documents the two intentional forms -- so the array is cast the same
+    // way a caller relying on this documented defensive runtime behavior
+    // would have to.
+    const mod = ['active', { open: true }, false && 'never'] as unknown as BoxMod;
+    const screen = await wrap(<Box mod={mod}>Array mod</Box>);
+    const el = screen.getByText('Array mod').element();
+    expect(el.getAttribute('data-active')).toBe('true');
+    expect(el.getAttribute('data-open')).toBe('true');
+    // Nothing else got stamped for the falsy third entry: exactly the two
+    // data-* attributes above, no more.
+    const dataAttrNames = [...el.attributes]
+      .map((a) => a.name)
+      .filter((name) => name.startsWith('data-'))
+      .sort();
+    expect(dataAttrNames).toEqual(['data-active', 'data-open']);
   });
 
   it('accepts universal style props with zero recipe changes (bg/p resolve to computed background/padding)', async () => {

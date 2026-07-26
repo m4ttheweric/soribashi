@@ -6,6 +6,7 @@
  * has a stable class to attach data-attributes and merged styles to.
  */
 @layer soribashi.recipes {
+  /* biome-ignore lint/suspicious/noEmptyBlock: Box deliberately has no styling opinion; the class exists as the root hook for style props and the Styles API */
   .root {
   }
 }

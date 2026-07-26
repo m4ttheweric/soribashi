@@ -17,7 +17,7 @@
       "path": "registry/soribashi/Box/Box.module.css",
       "type": "registry:ui",
       "target": "components/soribashi/Box/Box.module.css",
-      "content": "/**\n * Box renders no CSS of its own: no colour, no spacing, no border, no font.\n * Everything visual comes from the universal style props (p, m, bg, c, fz,\n * ...) that definePolymorphicComponent resolves automatically, or from the\n * caller's own className/style. This rule exists only so getStyles('root')\n * has a stable class to attach data-attributes and merged styles to.\n */\n@layer soribashi.recipes {\n  .root {\n  }\n}\n"
+      "content": "/**\n * Box renders no CSS of its own: no colour, no spacing, no border, no font.\n * Everything visual comes from the universal style props (p, m, bg, c, fz,\n * ...) that definePolymorphicComponent resolves automatically, or from the\n * caller's own className/style. This rule exists only so getStyles('root')\n * has a stable class to attach data-attributes and merged styles to.\n */\n@layer soribashi.recipes {\n  /* biome-ignore lint/suspicious/noEmptyBlock: Box deliberately has no styling opinion; the class exists as the root hook for style props and the Styles API */\n  .root {\n  }\n}\n"
     }
   ]
 }
