@@ -50,31 +50,82 @@ describe('defaultIntentResolver', () => {
       expect(result.color).toBe('var(--color-primary-700)');
       expect(result.border).toBe('var(--color-primary-500)');
     });
+
+    // Wash formula: anchored on --surface-canvas rather than a near-canvas
+    // ramp shade (the old `v('50')`), so it stays visible for low-chroma
+    // scales (neutral) and composites identically in both colour schemes
+    // (opaque color-mix, unlike mixing toward transparent -- see
+    // deriveState's doc comment in the resolver for why that direction was
+    // rejected). 12% is the lighter of the two wash weights, tuned for
+    // hover-affordance visibility (ground-truthed empirically against a real
+    // Chromium color-mix, not just eyeballed).
+    it('hover is a 12% wash of intent-500 over the canvas, opaque', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'outline', theme });
+      expect(result.hover).toBe(
+        'color-mix(in oklab, var(--color-primary-500) 12%, var(--surface-canvas))',
+      );
+    });
+
+    it('keeps hoverColor at intent-800', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'outline', theme });
+      expect(result.hoverColor).toBe('var(--color-primary-800)');
+    });
   });
 
   describe('subtle variant', () => {
-    it('uses intent-100 background', () => {
+    // Wash formula, heavier weight than the hover wash (15% vs. 12%): this is
+    // a resting background, not a hover affordance, so it needs to read as a
+    // real chip colour at rest. 15% (not the ~18% starting point) is the
+    // empirically-verified ceiling that still clears the shared
+    // matrix-harness.tsx MIN_CONTRAST (4.5:1) floor for every intent x
+    // scheme's `700`-on-wash text pairing; see the resolver's doc comment
+    // and the wash-fix report for the ground-truth measurements (light's
+    // tightest margin is `info` at 18%: 4.508, essentially at the floor;
+    // dark's is `warning`). 15% keeps a >=0.19 margin in both schemes.
+    it('uses a 15% wash of intent-500 over the canvas as its background', () => {
       const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
-      expect(result.background).toBe('var(--color-primary-100)');
+      expect(result.background).toBe(
+        'color-mix(in oklab, var(--color-primary-500) 15%, var(--surface-canvas))',
+      );
       expect(result.color).toBe('var(--color-primary-700)');
     });
 
-    it('derives hover via color-mix at 94% weight toward black', () => {
+    it('derives hover via color-mix at 94% weight toward black, from the wash background', () => {
       const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
       expect(result.hover).toBe(`color-mix(in oklab, ${result.background} 94%, black)`);
     });
 
-    it('derives active via color-mix at 88% weight toward black', () => {
+    it('derives active via color-mix at 88% weight toward black, from the wash background', () => {
       const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
       expect(result.active).toBe(`color-mix(in oklab, ${result.background} 88%, black)`);
+    });
+
+    // Parameterization check, not a hardcoded-'primary' coincidence: the bug
+    // report's core complaint was neutral's near-zero-chroma ramp making a
+    // flat shade lookup converge on canvas. This formula's fix is that it
+    // never looks up a ramp shade for the background at all (`v('500')`
+    // mixed with the canvas, not `v('100')`), so a second intent proves the
+    // substitution is real, not incidentally correct for `primary`.
+    it('substitutes the intent name for a different intent (not hardcoded)', () => {
+      const result = defaultIntentResolver({ intent: 'danger', variant: 'subtle', theme });
+      expect(result.background).toBe(
+        'color-mix(in oklab, var(--color-danger-500) 15%, var(--surface-canvas))',
+      );
     });
   });
 
   describe('ghost variant', () => {
-    it('transparent until hover, then intent-50 background', () => {
+    it('transparent until hover, then a 12% wash of intent-500 over the canvas', () => {
       const result = defaultIntentResolver({ intent: 'primary', variant: 'ghost', theme });
       expect(result.background).toBe('transparent');
-      expect(result.hover).toBe('var(--color-primary-50)');
+      expect(result.hover).toBe(
+        'color-mix(in oklab, var(--color-primary-500) 12%, var(--surface-canvas))',
+      );
+    });
+
+    it('has no hoverColor override', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'ghost', theme });
+      expect(result.hoverColor).toBeUndefined();
     });
   });
 

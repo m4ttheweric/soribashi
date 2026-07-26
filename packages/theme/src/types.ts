@@ -169,10 +169,12 @@ export interface IntentResolverResult {
  * Maps `(intent, variant)` to concrete CSS values.
  *
  * Scale contract when using the DEFAULT resolver: every scale named by the
- * intent vocabulary must define shades `50`, `100`, `200`, `500`, `600`,
- * `700`, `800`, and `foreground` (text paired with the `500` background).
- * Themes whose scales cannot provide those shades must supply their own
- * resolver here.
+ * intent vocabulary must define shades `500`, `600`, `700`, `800`, and
+ * `foreground` (text paired with the `500` background). (`50`/`100`/`200` are
+ * NOT required: near-canvas washes are computed at render time from `500` and
+ * `--surface-canvas`, not looked up from the ramp -- see
+ * `default-intent-resolver.ts`'s `wash` helper.) Themes whose scales cannot
+ * provide those shades must supply their own resolver here.
  */
 export type IntentResolver = (input: IntentResolverInput) => IntentResolverResult;
 

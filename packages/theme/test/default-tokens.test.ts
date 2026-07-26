@@ -81,8 +81,12 @@ describe('defaultTokens', () => {
 
 // The default intent resolver hardcodes these shade lookups; if any default
 // scale misses one, out-of-the-box components reference an undefined CSS var.
+// `50`/`100`/`200` are deliberately absent: default-intent-resolver.ts's
+// `wash` helper computes near-canvas surfaces from `500` and
+// `--surface-canvas` at render time instead of looking up a ramp shade, so
+// the resolver never references those shades directly.
 const DEFAULT_INTENTS = ['primary', 'neutral', 'success', 'warning', 'danger', 'info'] as const;
-const RESOLVER_SHADES = ['50', '100', '200', '500', '600', '700', '800', 'foreground'] as const;
+const RESOLVER_SHADES = ['500', '600', '700', '800', 'foreground'] as const;
 
 describe('default scales satisfy the default intent resolver contract', () => {
   for (const intent of DEFAULT_INTENTS) {
