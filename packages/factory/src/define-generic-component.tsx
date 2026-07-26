@@ -142,6 +142,7 @@ export function defineGenericComponent<
     builder: 'defineGenericComponent',
     name: config.name,
     slots: config.selectors,
+    parts: [],
     vocabularyAxes: config.vocabularyAxes ?? [],
     variants: config.variants ?? [],
     defaults: config.defaults ?? {},

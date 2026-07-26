@@ -15,21 +15,27 @@ import classes from './Popover.module.css';
 export const recipeCategory = 2 as const;
 
 /**
- * The full declared slot set (spec: root, trigger, positioner, popup, arrow,
- * title, description, close). `root`, `trigger`, and `positioner` have no
- * rules in Popover.module.css today (Base UI owns their box model/position),
- * but getStyles() still wires them so a future `popoverTheme.extend({
- * classNames })` can target them.
+ * The full declared slot set. Declared as a const array rather than a bare
+ * type union so `defineCompound` can report it as RecipeMeta.slots: the
+ * union alone is compile-time only, and neither the parts map nor the CSS
+ * module can reconstruct it (`positioner` is neither a part nor a styled
+ * class, and `content` is a part but not a style slot). `root`, `trigger`,
+ * and `positioner` have no rules in Popover.module.css today (Base UI owns
+ * their box model and position) but getStyles() still wires them so a future
+ * `popoverTheme.extend({ classNames })` can target them.
  */
-type PopoverSlotKey =
-  | 'root'
-  | 'trigger'
-  | 'positioner'
-  | 'popup'
-  | 'arrow'
-  | 'title'
-  | 'description'
-  | 'close';
+const POPOVER_SLOT_KEYS = [
+  'root',
+  'trigger',
+  'positioner',
+  'popup',
+  'arrow',
+  'title',
+  'description',
+  'close',
+] as const;
+
+type PopoverSlotKey = (typeof POPOVER_SLOT_KEYS)[number];
 
 type Ctx<TProps> = PartRenderCtx<TProps, object, readonly [], PopoverSlotKey>;
 
@@ -85,6 +91,7 @@ function stripFrameworkKeys<
 const PopoverCompound = defineCompound({
   name: 'Popover',
   classes,
+  slotKeys: POPOVER_SLOT_KEYS,
   parts: {
     root: {
       // No DOM of its own: Base UI's Root is a context provider, so there is

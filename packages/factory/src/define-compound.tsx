@@ -171,6 +171,16 @@ export interface DefineCompoundConfig<
   vocabularyAxes?: TVocabAxes;
   variants?: TVariants;
   classes?: Partial<Record<string, string>>;
+  /**
+   * The recipe's stylable slot keys, declared as a const array that also
+   * feeds the recipe's slot-key type union:
+   *   const POPOVER_SLOT_KEYS = ['root', 'positioner', ...] as const;
+   *   type PopoverSlotKey = (typeof POPOVER_SLOT_KEYS)[number];
+   * Reported verbatim as RecipeMeta.slots. Omit it and slots fall back to
+   * the part names unioned with the CSS-module class keys, which is right
+   * only when every slot is either a part or a styled class.
+   */
+  slotKeys?: readonly string[];
   defaults?: Partial<
     ExtractPartProps<TParts['root']> & InjectedVocabularyProps<TVocabAxes> & VariantProp<TVariants>
   >;
@@ -541,10 +551,15 @@ export function defineCompound<
   });
 
   Root.displayName = config.name;
+  const partNames = Object.keys(config.parts);
   attachRecipeMeta(Root, {
     builder: 'defineCompound',
     name: config.name,
-    slots: Object.keys(config.parts),
+    slots: config.slotKeys ?? [
+      ...partNames,
+      ...Object.keys(config.classes ?? {}).filter((key) => !partNames.includes(key)),
+    ],
+    parts: partNames,
     vocabularyAxes: config.vocabularyAxes ?? [],
     variants: config.variants ?? [],
     defaults: config.defaults ?? {},

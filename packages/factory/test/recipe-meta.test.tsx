@@ -1,4 +1,5 @@
 // packages/factory/test/recipe-meta.test.tsx
+import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { defineComponent } from '../src/define-component.tsx';
 import { defineCompound } from '../src/define-compound.tsx';
@@ -19,6 +20,7 @@ describe('recipe metadata static', () => {
       builder: 'defineComponent',
       name: 'Probe',
       slots: ['root', 'label'],
+      parts: [],
       vocabularyAxes: ['size', 'intent', 'variant'],
       variants: ['filled', 'outline'],
       defaults: { variant: 'filled' },
@@ -54,6 +56,7 @@ describe('recipe metadata static', () => {
       builder: 'defineCompound',
       name: 'Foo',
       slots: ['root', 'item'],
+      parts: ['root', 'item'],
       vocabularyAxes: [],
       variants: [],
       defaults: {},
@@ -62,5 +65,43 @@ describe('recipe metadata static', () => {
 
   it('returns undefined for a plain component', () => {
     expect(getRecipeMeta(() => null)).toBeUndefined();
+  });
+
+  it('reports explicit slotKeys as slots and part names as parts', () => {
+    const Compound = defineCompound({
+      name: 'Fixture',
+      slotKeys: ['root', 'positioner', 'popup'] as const,
+      classes: { popup: 'popup-class' },
+      parts: {
+        root: { render: ({ children }: { children?: ReactNode }) => <div>{children}</div> },
+        content: { render: () => <div /> },
+      },
+    });
+    const meta = getRecipeMeta(Compound)!;
+    expect(meta.slots).toEqual(['root', 'positioner', 'popup']);
+    expect(meta.parts).toEqual(['root', 'content']);
+  });
+
+  it('falls back to parts union classes when slotKeys is absent', () => {
+    const Compound = defineCompound({
+      name: 'Fallback',
+      classes: { popup: 'popup-class' },
+      parts: {
+        root: { render: ({ children }: { children?: ReactNode }) => <div>{children}</div> },
+        content: { render: () => <div /> },
+      },
+    });
+    const meta = getRecipeMeta(Compound)!;
+    expect(meta.slots).toEqual(['root', 'content', 'popup']);
+    expect(meta.parts).toEqual(['root', 'content']);
+  });
+
+  it('reports an empty parts array for non-compound builders', () => {
+    const Component = defineComponent({
+      name: 'Plain',
+      selectors: ['root'] as const,
+      render: ({ getStyles }) => <div {...getStyles('root')} />,
+    });
+    expect(getRecipeMeta(Component)!.parts).toEqual([]);
   });
 });

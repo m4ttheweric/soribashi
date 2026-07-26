@@ -142,6 +142,7 @@ describe('buildManifest', () => {
     expect(button?.builder).toBe('definePolymorphicComponent');
     expect(button?.category).toBe(1);
     expect(button?.slots).toEqual(['root', 'label']);
+    expect(button?.parts).toEqual([]);
     expect(button?.vocabularyAxes).toEqual(['size', 'intent', 'variant']);
     expect(button?.variants).toEqual(['filled', 'outline', 'subtle', 'ghost', 'link']);
     expect(button?.defaults).toEqual({ intent: 'primary', variant: 'filled', size: 'md' });
@@ -163,7 +164,17 @@ describe('buildManifest', () => {
     expect(popover).toBeDefined();
     expect(popover?.builder).toBe('defineCompound');
     expect(popover?.category).toBe(2);
-    expect(popover?.slots).toEqual(['root', 'trigger', 'content', 'title', 'description', 'close']);
+    expect(popover?.slots).toEqual([
+      'root',
+      'trigger',
+      'positioner',
+      'popup',
+      'arrow',
+      'title',
+      'description',
+      'close',
+    ]);
+    expect(popover?.parts).toEqual(['root', 'trigger', 'content', 'title', 'description', 'close']);
     expect(popover?.vocabularyAxes).toEqual([]);
     expect(popover?.baseUi).toBe(true);
     expect(popover?.tokenDependencies).not.toContain('--transform-origin');

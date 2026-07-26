@@ -171,6 +171,7 @@ export function definePolymorphicComponent<
     builder: 'definePolymorphicComponent',
     name: config.name,
     slots: config.selectors,
+    parts: [],
     vocabularyAxes: config.vocabularyAxes ?? [],
     variants: config.variants ?? [],
     defaults: config.defaults ?? {},

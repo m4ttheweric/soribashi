@@ -10,6 +10,7 @@
       "category": 1,
       "builder": "defineComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {
@@ -29,6 +30,7 @@
       "category": 1,
       "builder": "definePolymorphicComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {},
@@ -46,6 +48,7 @@
       "category": 1,
       "builder": "definePolymorphicComponent",
       "slots": ["root", "label"],
+      "parts": [],
       "vocabularyAxes": ["size", "intent", "variant"],
       "variants": ["filled", "outline", "subtle", "ghost", "link"],
       "defaults": {
@@ -75,6 +78,7 @@
       "category": 1,
       "builder": "defineComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {
@@ -94,6 +98,7 @@
       "category": 1,
       "builder": "defineComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": ["size"],
       "variants": [],
       "defaults": {
@@ -114,6 +119,7 @@
       "category": 1,
       "builder": "defineComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {
@@ -133,6 +139,7 @@
       "category": 1,
       "builder": "defineComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {
@@ -157,6 +164,7 @@
       "category": 1,
       "builder": "definePolymorphicComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {
@@ -176,7 +184,8 @@
       "name": "Popover",
       "category": 2,
       "builder": "defineCompound",
-      "slots": ["root", "trigger", "content", "title", "description", "close"],
+      "slots": ["root", "trigger", "positioner", "popup", "arrow", "title", "description", "close"],
+      "parts": ["root", "trigger", "content", "title", "description", "close"],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {},
@@ -206,6 +215,7 @@
       "category": 1,
       "builder": "defineComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {
@@ -227,6 +237,7 @@
       "category": 1,
       "builder": "definePolymorphicComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": ["size"],
       "variants": [],
       "defaults": {
@@ -246,6 +257,7 @@
       "category": 1,
       "builder": "defineComponent",
       "slots": ["root"],
+      "parts": [],
       "vocabularyAxes": [],
       "variants": [],
       "defaults": {

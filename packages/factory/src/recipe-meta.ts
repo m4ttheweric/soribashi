@@ -6,16 +6,21 @@ export interface RecipeMeta {
     | 'defineGenericComponent';
   name: string;
   /**
-   * For single components (`defineComponent` / `definePolymorphicComponent` /
-   * `defineGenericComponent`), the recipe's style-slot selectors
-   * (`classNames`/`styles`/`getStyles` targets). For compounds
-   * (`defineCompound`), this carries PART names, not style-slot keys: the
-   * stylable slot keys a compound recipe actually exposes are a superset
-   * defined by its `classes`/`getStyles` usage, and that superset is not
-   * currently captured at runtime. A runtime slot-key source on
-   * `defineCompound` is future work.
+   * The recipe's stylable slot keys: every valid `classNames`/`styles`/
+   * `getStyles` target. Means the same thing for all four builders. For the
+   * three single-component builders it is `config.selectors`. For
+   * `defineCompound` it is `config.slotKeys` when declared (the recipe's own
+   * const array, which also feeds its slot-key type union), falling back to
+   * the part names unioned with the CSS-module class keys.
    */
   slots: readonly string[];
+  /**
+   * Compound PART names (the public sub-components). Empty for the three
+   * single-component builders. Distinct from `slots`: a part need not be a
+   * style slot (Popover's `content` composes three Base UI elements), and a
+   * style slot need not be a part (Popover's `positioner`).
+   */
+  parts: readonly string[];
   vocabularyAxes: readonly string[];
   variants: readonly string[];
   defaults: Readonly<Record<string, unknown>>;
@@ -36,6 +41,7 @@ export function attachRecipeMeta<T extends object>(component: T, meta: RecipeMet
     value: Object.freeze({
       ...meta,
       slots: Object.freeze([...meta.slots]),
+      parts: Object.freeze([...meta.parts]),
       vocabularyAxes: Object.freeze([...meta.vocabularyAxes]),
       variants: Object.freeze([...meta.variants]),
       defaults: Object.freeze({ ...meta.defaults }),

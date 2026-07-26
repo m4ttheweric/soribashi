@@ -25,6 +25,8 @@ export interface ManifestEntry {
   category: 1 | 2 | 3 | 4;
   builder: string;
   slots: readonly string[];
+  /** Compound part names; empty for the three single-component builders. */
+  parts: readonly string[];
   vocabularyAxes: readonly string[];
   variants: readonly string[];
   defaults: Record<string, unknown>;
@@ -140,6 +142,7 @@ async function buildManifestEntry(meta: RecipeMeta): Promise<ManifestEntry> {
     category: category as 1 | 2 | 3 | 4,
     builder: meta.builder,
     slots: meta.slots,
+    parts: meta.parts,
     vocabularyAxes: meta.vocabularyAxes,
     variants: meta.variants,
     defaults: { ...meta.defaults },
