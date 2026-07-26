@@ -7,7 +7,7 @@ Soribashi adapts code from the following open-source projects. Their full licens
 ## Mantine
 
 - **Project:** https://github.com/mantinedev/mantine
-- **Used in:** `packages/blocks/`, `packages/factory/src/inline-styles/`, `packages/factory/src/use-random-class-name.ts`, `packages/factory/src/hash-style-props.ts`
+- **Used in:** `packages/factory/src/style-props/` (extraction, parsing, and per-property resolvers), `packages/factory/src/inline-styles/`, `packages/factory/src/use-random-class-name.ts`, `packages/factory/src/hash-style-props.ts`, `packages/factory/src/create-safe-context.ts`. (The former `packages/blocks/` package these files originated in was deleted this slice; the Mantine-derived machinery moved into `packages/factory` and now backs every `@soribashi/ui` layout recipe instead of a standalone blocks package.)
 - **Validated against commit:** `63dafbbf` on the master branch (2026-04-25).
 - **Attribution:** every adapted source file in soribashi includes a header comment pointing to the original Mantine source path.
 

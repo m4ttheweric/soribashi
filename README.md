@@ -29,9 +29,9 @@ Every token the theme declares is emitted exactly once by codegen; recipes are s
 
 ## `@soribashi/ui` and the workshop
 
-`@soribashi/ui` is the library we built with the rails above: currently `Button` (a category-1 styled primitive) and `Popover` (a category-2 overlay compound over Base UI). Every recipe lives at `packages/ui/src/recipes/<Name>/` as exactly four files, the component, its stylesheet, a browser-tier test, a visual-tier test, and every one of them is required to be fully re-themeable: change the theme, not the recipe, and the component's whole look changes with it.
+`@soribashi/ui` is the library we built with the rails above: twelve recipes today, `AspectRatio`, `Box`, `Button`, `Center`, `Container`, `Grid`, `Group`, `Paper`, `Popover`, `Stack`, `Text`, and `Title`, eleven of them category-1 styled primitives and `Popover` a category-2 overlay compound over Base UI. Ten of the twelve are layout recipes: `Box`'s own style-prop surface (`m`/`p`/`bg`/`fz`/`fw`/...) and the four visibility props (`hiddenFrom`/`visibleFrom`/`lightHidden`/`darkHidden`) arrive on every recipe for free, resolved by the builders themselves, not hand-wired per recipe. `@soribashi/core`, the public barrel, exports only the framework, the four builders, the theme contract, the style-prop and visibility machinery, never a component; every component lives downstream, in `@soribashi/ui`. Every recipe lives at `packages/ui/src/recipes/<Name>/` as exactly four files, the component, its stylesheet, a browser-tier test, a visual-tier test, and every one of them is required to be fully re-themeable: change the theme, not the recipe, and the component's whole look changes with it.
 
-`bun run dev:workshop` starts a small React app (`apps/workshop`) that renders both recipes across their full intent x variant x size surface, in light and dark, plus a token reference page and the multi-tenant demo described above. It's the fastest way to actually look at what the theme produces.
+`bun run dev:workshop` starts a small React app (`apps/workshop`) that renders every recipe across its full intent x variant x size surface, in light and dark, plus a token reference page and the multi-tenant demo described above. It's the fastest way to actually look at what the theme produces.
 
 ## Vendoring it
 
@@ -56,7 +56,7 @@ Two conformance gates back the "re-themeable" claim mechanically, not just by te
 - **No hardcoded values.** Every recipe's stylesheet is scanned for any colour or length literal that didn't come from a `var(...)` reference (a short allowlist covers `0`/`1px`/`2px`/`100%` and unitless/time values). A recipe can't quietly reach for a raw hex value and still claim to be theme-driven.
 - **Theme-only re-skin.** Every recipe is rendered twice, once under its real theme, once under a second, deliberately garish theme scoped to a wrapper class, with zero changes to the recipe's source in between. The test asserts the computed background, foreground, or radius actually changed. This is what makes "fully re-skinnable through the theme alone" a checked fact about this repo rather than a claim about the design.
 
-Layered on top: a WCAG AA contrast matrix (>= 4.5:1) checked across every intent x variant x size combination, in both light and dark scheme, for Button today (150 combinations; the authoring skill requires the same matrix membership of every future colour-bearing recipe, so Popover picks it up when that coverage is written); and a visual oracle whose baselines are generated exclusively by CI (a `workflow_dispatch` job, or the pinned Docker command it documents), never committed from a local machine, because Vitest suffixes baseline filenames by platform and a darwin screenshot is not the same file as the Linux one CI actually compares against.
+Layered on top: a WCAG AA contrast matrix (>= 4.5:1) checked across every intent x variant x size combination, in both light and dark scheme, for Button's full grid (150 combinations) plus a smaller rendered-cell coverage for every other colour-bearing recipe (Paper, Popover, Text, Title); every recipe, colour-bearing or not, is classified `'covered'` or `{ exempt: '<reason>' }` in a guard the authoring skill requires every new recipe to join, so a recipe can't quietly ship with no contrast story either way. And a visual oracle whose baselines are generated exclusively by CI (a `workflow_dispatch` job, or the pinned Docker command it documents), never committed from a local machine, because Vitest suffixes baseline filenames by platform and a darwin screenshot is not the same file as the Linux one CI actually compares against.
 
 ## Agentic artifacts
 
@@ -80,7 +80,7 @@ bun run dev:workshop     # recipe showcase + multi-tenant demo
 
 ## Status
 
-Pre-v1, actively built in public slices. The foundation (factory, theme, codegen, 14 adapted layout blocks, vocabulary rails) is stable. `@soribashi/ui` has two recipes across two of the four authoring categories, with the full three-tier verification story described above wired into CI. See [STATUS.md](./STATUS.md) for the detailed record and what's deliberately still ahead (more recipes, npm publishing). Packages are versioned at `0.0.0` and not yet published.
+Pre-v1, actively built in public slices. The foundation (factory, theme, codegen, vocabulary rails) is stable and framework-only: `@soribashi/core` exports no components. `@soribashi/ui` has twelve recipes across two of the four authoring categories, ten of them native layout recipes carrying universal style props, with the full three-tier verification story described above wired into CI. See [STATUS.md](./STATUS.md) for the detailed record and what's deliberately still ahead (more recipes, npm publishing). Packages are versioned at `0.0.0` and not yet published.
 
 ## Manifesto
 
@@ -88,7 +88,7 @@ For the full story, what was imagined, what was built, and why, see [MANIFESTO.m
 
 ## Attribution
 
-Soribashi adapts patterns from [Mantine](https://mantine.dev) (MIT). Factory, blocks, and style-props machinery are derived from Mantine's open-source code. Every adapted source file carries a header comment pointing to the original. See [THIRD-PARTY-LICENSES.md](./THIRD-PARTY-LICENSES.md).
+Soribashi adapts patterns from [Mantine](https://mantine.dev) (MIT). The factory's style-props machinery (extraction, parsing, per-property resolvers) is derived from Mantine's open-source code. Every adapted source file carries a header comment pointing to the original. See [THIRD-PARTY-LICENSES.md](./THIRD-PARTY-LICENSES.md).
 
 ## License
 

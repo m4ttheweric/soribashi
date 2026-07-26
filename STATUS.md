@@ -1,6 +1,43 @@
 # Soribashi: Implementation Status
 
-> **Current as of 2026-07-25.** Slice 1b (below) landed `@soribashi/ui`, the first real, verified, vendorable component library built on the soribashi foundation. It sits above the recipe-pilot record (2026-07-01) and the v1 Mantine-adaptation foundation record (2026-04-25), both kept unchanged further down this file.
+> **Current as of 2026-07-25.** Slice 2 (below) is the current top record: ten native layout recipes, universal style props, and the deletion of `@soribashi/blocks` and its Playwright parity tier. It sits above the slice 1b record, the recipe-pilot record (2026-07-01), and the v1 Mantine-adaptation foundation record (2026-04-25), all kept unchanged further down this file.
+
+## Slice 2: layout recipes, universal style props, and the deletion of blocks (2026-07-25)
+
+Slice 1b (below) shipped `@soribashi/ui` with two recipes, Button and Popover, and restored `@soribashi/blocks`' Playwright browser-parity fixtures alongside the workshop app just to have something for `apps/workshop` to point codegen at. That left two parallel component surfaces: a real, three-tier-verified `@soribashi/ui` recipe pair, and a 14-primitive Mantine-adapted blocks package with its own, separate Playwright parity tier. Slice 2 closes that split: the blocks package's style-prop engine moves into `@soribashi/factory` where every builder resolves it the same way, ten of blocks' 14 layout shapes come back as native `@soribashi/ui` recipes (Grid's new `cols`/`minChildWidth` prop absorbs what Grid.Col and SimpleGrid did; `Flex` and `Space` did not get a new-recipe port this slice), and `@soribashi/blocks` plus the parity tier that verified it are deleted outright. `@soribashi/core` now exports the framework only, no components.
+
+Branch `feat/slice-2-layout`, 17 commits ahead of `main` (merge-base `140e2315`), 11 numbered tasks executed in strict order plus this closing task.
+
+### What landed
+
+- **The style-prop engine moved from blocks into factory.** `extractStyleProps`/`parseStyleProps`/`STYLE_PROPS_DATA` and their per-property resolvers now live under `packages/factory/src/style-props/`, called from exactly one place, `packages/factory/src/style-props/use-style-props.tsx`'s `useStyleProps` hook, itself called from inside all four builders (`defineComponent`, `definePolymorphicComponent`, `defineGenericComponent`, `defineCompound`'s Root part). A recipe never calls the extraction functions itself; the Box-style props (`m`/`p`/`bg`/`fz`/`fw`/...) and the four visibility props (`hiddenFrom`/`visibleFrom`/`lightHidden`/`darkHidden`) arrive on every recipe for free.
+- **Visibility utilities now come from codegen, not a hardcoded stylesheet.** `emitCss` gained a `soribashi.utilities` cascade layer that generates `.sb-hidden-from-*`, `.sb-visible-from-*`, `.sb-light-hidden`, and `.sb-dark-hidden` straight from the theme's own breakpoint tokens and dark-mode selector, closing a `2xl`/`3xl` gap the old hardcoded `blocks/src/Box/visibility.css` never covered.
+- **Ten native layout recipes in `@soribashi/ui`:** `Box`, `Stack`, `Group`, `Center`, `AspectRatio`, `Grid`, `Container`, `Paper`, `Text`, `Title`, alongside the existing `Button` and `Popover` (twelve recipes total). Each is the same fixed four-file layout as Button and Popover, each declares `recipeCategory` (eleven are category 1, Popover stays category 2), and two of them (`Button`'s `BUTTON_HEIGHTS`, `Container`'s `CONTAINER_WIDTHS`) establish the dimension-record pattern for a size-keyed CSS variable that isn't a spacing/radius/font-size token.
+- **The contrast matrix grew a classification guard.** `packages/ui/src/a11y/matrix-classification.ts`'s `MATRIX_CLASSIFICATION` map now requires every recipe, colour-bearing or not, to declare itself `'covered'` (Button's full grid, or a `SMALL_COVERAGE` cell for Paper/Popover/Text/Title) or `{ exempt: '<reason>' }` (the seven geometry-only layout recipes), guarded by name in `matrix-guard.test.ts`. Adding that coverage surfaced a real AA failure and a controller ruling: Text's `dimmed` state (`--text-muted`, then `colors.neutral.500`) measured 4.490:1 against `--surface-canvas` and 4.288:1 against `--surface-raised` in light scheme, both below the 4.5:1 floor. `text.muted` was remapped to `colors.neutral.600`; every muted/dimmed cell was re-measured in both schemes afterward, and the lowest of them (dimmed text on `--surface-raised`, light scheme) came in at 6.810:1, comfortably clear.
+- **`@soribashi/blocks` and its Playwright browser-parity tier are deleted.** Nothing in `packages/ui` or `packages/factory` imports `@soribashi/blocks`; the package, `tests/browser-parity`, and the root `test:browser` script are gone. `@soribashi/core` no longer depends on it and exports framework primitives only (builders, hooks, theme/style-prop utilities, types), never a component.
+- **Registry smoke now covers a layout recipe.** `bun run smoke:registry` vendors `button` and `stack` together through the real `shadcn` CLI in one throwaway project, generalizing the bundle-marker check to a recipe-name-prefixed custom property (`--sb-button-h`, `--sb-stack-gap`) instead of a same-named CSS Modules class, since both recipes declare a `.root` selector.
+- **Linux visual baselines.** Every new visual scenario got a committed `*-chromium-linux.png`, generated via the pinned Docker command in `.github/workflows/visual-baselines.yml` (`mcr.microsoft.com/playwright:v1.59.1-noble`); see the gate state below for counts.
+- **The authoring skill (`.claude/skills/authoring-a-recipe/SKILL.md`) and this repo's prose are current with the above.** Style props and visibility props arriving free, `mod` being Box-only, the dimension-record pattern, the generic-params trap, the `MATRIX_CLASSIFICATION`/`RESKIN_FIXTURES` registration obligations, and the collapse to three test tiers are all documented there now.
+
+### Gate state (2026-07-25, branch `feat/slice-2-layout`, fresh full run at the end of this task)
+
+- `bun run test`: 1190 tests passed across 106 files.
+- `bun run typecheck`: clean.
+- `bun run lint`: 0 errors, 441 baseline warnings (pre-existing `noExplicitAny`, not part of this slice's scope).
+- `bun run test:visual`: 16/16 tests passed across 12 files (darwin baselines locally; advisory only, per the skill). Linux baselines: 16 committed `*-chromium-linux.png` files match the 16 darwin baselines one for one; 10 are new (AspectRatio, Box, Center, Container, Grid, Group, Paper, Stack, Text, Title), Popover's 2 existing baselines changed (the `text.muted` remap legitimately shifted the description colour), and Button's 4 existing baselines are confirmed byte-identical to the prior commit.
+- `bun run smoke:registry`: PASS (`button` and `stack` vendored together via the real `shadcn` CLI).
+
+### Deliberately future (not yet done)
+
+- **Three `as any` casts for `stylePropsStyle`** in `define-component.tsx`/`define-polymorphic-component.tsx`/`define-generic-component.tsx`. `defineCompound`'s `CSSProperties | null` pattern is the fix; not applied to the other three builders this slice.
+- **Group has no grow-formula test at `n=1`/`n=0` children.** The grow-distribution math is covered at typical child counts; the edge counts are untested.
+- **`fw`'s identity resolver silently no-ops an invalid token-key string** instead of erroring (`packages/factory/src/style-props/style-props-data.ts`). A real font-weight token resolver, rather than `String(v)` passthrough, would close that DX trap.
+- **Registry smoke's scratch `pkg.dependencies` hardcodes `@soribashi/core`** rather than deriving the dependency list from `item.dependencies`. Works today because every registry item currently only needs `@soribashi/core`; would silently under-declare if that stopped being true.
+- **The contrast matrix's light-scheme measurement relies on declaration order** (a pre-existing fragility inherited, not introduced, this slice): Popover's `SMALL_COVERAGE` cell measures the title's `--text-default`, not the description's `--text-muted`.
+- **Publishing.** Unchanged from slice 1b: packages are still `version: 0.0.0`, `private: true`, unpublished; `smoke:registry` vendors against a local, in-repo copy rather than a real `bun add`.
+- **More components.** Categories 3 (persistent compound, e.g. Tabs) and 4 (generic/form, e.g. Select) are proven at the framework level from the earlier recipe-pilot work but still have no `@soribashi/ui` recipe. Within category 1 itself, `Flex` and `Space` (two of the old blocks package's 14 primitives) did not get a new-recipe port this slice; no decision has been made on whether they're still wanted.
+
+---
 
 ## Slice 1b: `@soribashi/ui`, the workshop, and the verification story (2026-07-25)
 
@@ -9,7 +46,7 @@ Slice 1a (2026-07-24, its own record lives in `docs/superpowers/sessions/`) rebu
 ### What landed
 
 - **Two recipes in `@soribashi/ui`.** `Button` (category 1, pure styled primitive, `definePolymorphicComponent`) and `Popover` (category 2, transient overlay compound, `defineCompound` over `@base-ui/react`'s `Popover`). Each is the fixed four-file layout: `<Name>.tsx`, `<Name>.module.css`, `<Name>.test.tsx`, `<Name>.visual.test.tsx`, at `packages/ui/src/recipes/<Name>/`. Every recipe declares `export const recipeCategory` so the manifest derivation can classify it without guessing.
-- **`apps/workshop`.** A restored consumer app (`bun run dev:workshop`): a showcase page per recipe across its full intent x variant x size surface in light and dark, a token reference page, and a multi-tenant theming demo (two brand themes, each scoped to its own class selector, one with an extra `.dark` wrapper proving scoped dark mode works independent of any other subtree on the same page). Browser-parity fixtures were restored alongside it; the `browser` CI job (`tests/browser-parity`, 46 Playwright computed-style tests over the 14 blocks) is un-gated again.
+- **`apps/workshop`.** A restored consumer app (`bun run dev:workshop`): a showcase page per recipe across its full intent x variant x size surface in light and dark, a token reference page, and a multi-tenant theming demo (two brand themes, each scoped to its own class selector, one with an extra `.dark` wrapper proving scoped dark mode works independent of any other subtree on the same page). Browser-parity fixtures were restored alongside it; the `browser` CI job (`tests/browser-parity`, 46 Playwright computed-style tests over the 14 blocks) was un-gated again at this point. (Superseded by slice 2, below: `@soribashi/blocks` and this Playwright parity tier were both deleted; the layout shapes it tested moved into `@soribashi/ui` as native recipes verified by the same three-tier story as every other recipe.)
 - **Three verification tiers**, wired into `packages/ui`'s own vitest configs: tier 1 logic (Node, `vitest.config.ts`), tier 2 browser (real Chromium via `@vitest/browser-playwright`, `vitest.browser.config.ts`, render/interaction/accessibility per recipe), tier 3 visual (`vitest.visual.config.ts`, screenshot baselines, run via `bun run test:visual`). Tiers 1 and 2 run under the root `bun run test`; tier 3 is separate because its baselines are platform-sensitive (see below).
 - **Two conformance gates.** `packages/ui/test/no-hardcoded-values.test.ts` scans every recipe stylesheet for colour or length literals that didn't arrive via `var(...)` (short allowlist: `0`/`1px`/`2px`/`100%`, unitless/time values). `packages/ui/src/conformance/reskin.test.tsx` renders every recipe under a second, deliberately garish theme with zero recipe-source changes and asserts the computed background/foreground/radius actually moved; a recipe without a matching `RESKIN_FIXTURES` entry fails the guard by name.
 - **A WCAG AA contrast matrix.** `packages/ui/src/a11y/contrast-matrix.test.tsx` checks >= 4.5:1 across every intent x variant x size combination (6 x 5 x 5 = 150 combinations for Button), in both light and dark scheme, using a canvas-based colour normalizer (this theme's `oklch()`/`light-dark()` tokens don't reliably serialize to `rgb()` via `getComputedStyle` on the pinned Chromium build). The matrix passes 300/300 cells across both schemes.
@@ -35,8 +72,8 @@ Slice 1a (2026-07-24, its own record lives in `docs/superpowers/sessions/`) rebu
 - **`subtle`'s dark-mode appearance changed** for success/danger/warning/info (light chip to dark tinted chip, matching primary); review against the committed dark baseline PNG.
 - **Tenant themes brand only their light primaries**; tenant dark ramps fall back to the default blue; branding them is future design.
 - **The `ui` theme emits no `--accent-*` tokens**; Button's focus ring rides a var fallback; decide whether accent becomes a real semantic family.
-- **Popover has no contrast-ratio coverage of its own yet**; add popup fg/bg assertions when the matrix generalizes beyond Button.
-- **Compound slot metadata needs a runtime source on `defineCompound`** before slice 2's compounds (see `packages/factory/src/recipe-meta.ts`'s `slots` doc comment).
+- ~~Popover has no contrast-ratio coverage of its own yet~~ resolved in slice 2: Popover has a `SMALL_COVERAGE` cell in the contrast matrix now.
+- **Compound slot metadata needs a runtime source on `defineCompound`** before any future slice adds another compound (see `packages/factory/src/recipe-meta.ts`'s `slots` doc comment). Slice 2 did not add a compound (its ten new recipes are all category 1 or, for Popover, already-existing category 2), so this is still open.
 - **`defineCompound` does not strip Base UI's `render` prop itself**; recipes do it manually; framework hardening candidate.
 - **Spec sections 6.1/6.2 promised `@property` registration of recipe-local `--sb-*` vars**; not implemented this slice (set inline, never registered); recorded here as a deliberate narrowing.
 - **First real push contingency:** if the visual CI job fails with only text-metric diffs, dispatch `visual-baselines.yml` on real Actions and recommit (Docker-generated baselines may differ from ubuntu-latest fonts).
@@ -84,7 +121,7 @@ All four authoring categories are proven; next is the ~20-component conversion s
 | `@soribashi/theme` | 82 |
 | `@soribashi/codegen` | 137 |
 | `@soribashi/factory` | 473 |
-| `@soribashi/blocks` | 244 |
+| `@soribashi/blocks` | 244 (package deleted in slice 2; see that section) |
 | `apps/pilot` | 86 |
 
 Typecheck clean. (The 785-total figure in the v1 record below predates the pilot + hygiene work and the per-package growth since.)
@@ -150,7 +187,7 @@ Real behavioral bugs found and fixed via TDD across the audit:
   - **V1: CSS structural diff:** parser-based audit script (`packages/blocks/scripts/css-parity-audit.ts`) + parity test with allowlist. Found 28 IDENTICAL / 1 TOKEN_DIFF / 5 DECL_DIFF / 5 MISSING / 5 EXTRA across 14 blocks; fixed missing `--grid-column-gap`/`--grid-row-gap` defaults on `.sb-Grid-root` and missing `[dir="rtl"]` override on Text `truncate='start'`.
   - **V2: Factory parity:** enumerated 42 decision branches in `useStyles` + `useProps`; wrote 74 parity tests (one per branch); 41/42 confirmed equivalent to Mantine. Fixed US-29: `undefined` CSS-variable values were not filtered from the merged style object (would have rendered the literal string "undefined" to DOM).
   - **V3: Codegen variable parity:** mapped 64/64 canonical Mantine vars to soribashi equivalents (100%); documented 288 intentional gaps (mostly Mantine's pre-computed color-variant vars which soribashi computes at render time via the intent resolver). Fixed silent `--breakpoint-*` emission gap that would have broken `visibility.css` at runtime.
-  - **V4: Browser-parity smoke:** 46 Playwright computed-style tests across all 14 blocks; surfaced and led to fixing a systemic bug across 13 blocks where consumer's inline `style` prop overwrote `vars()` output (test: `packages/blocks/test/Box/wrapper-style-merge.test.tsx`).
+  - **V4: Browser-parity smoke:** 46 Playwright computed-style tests across all 14 blocks; surfaced and led to fixing a systemic bug across 13 blocks where consumer's inline `style` prop overwrote `vars()` output (test: `packages/blocks/test/Box/wrapper-style-merge.test.tsx`). (This suite and the `@soribashi/blocks` package it covered were deleted in slice 2, below; the file path is historical.)
 
 ### Deferred (acknowledged, not yet implemented)
 

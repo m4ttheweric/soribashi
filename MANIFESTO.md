@@ -41,11 +41,15 @@ Five packages, implemented plan-first and audited against Mantine `63dafbbf`:
 
 - **`@soribashi/codegen`** -- The enforcement layer. Reads a `soribashi.config.ts`, emits CSS custom properties and a Tailwind v3 or v4 config. The generated artifacts are committed to the repo, inspectable, and diffable. If a token changes in the theme, codegen updates the generated files. If someone references a token that does not exist, the build fails.
 
-- **`@soribashi/blocks`** -- 14 layout primitives adapted from Mantine with full feature parity: Box (with responsive `StyleProp<T>`), Stack, Group, Flex, Grid + Grid.Col, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title. MIT-attributed. Audited across three validation passes -- CSS structural diff, factory parity, codegen variable parity, and browser-computed-style smoke tests. 11 real bugs caught and fixed during the audit.
+- **`@soribashi/blocks`** (since removed; see "What's true now" below) -- at v1, 14 layout primitives adapted from Mantine with full feature parity: Box (with responsive `StyleProp<T>`), Stack, Group, Flex, Grid + Grid.Col, SimpleGrid, Container, Center, AspectRatio, Space, Paper, Text, Title. MIT-attributed. Audited across three validation passes -- CSS structural diff, factory parity, codegen variable parity, and browser-computed-style smoke tests. 11 real bugs caught and fixed during the audit.
 
 - **`@soribashi/core`** -- Public barrel. One import path for consumers.
 
 785 tests at v1 completion. Three full audit passes against Mantine's source. A playground app demonstrating the theme lab (6 intents x 5 variants matrix, 3 sizes, loading/disabled states) and the blocks.
+
+### What's true now
+
+`@soribashi/blocks` and the Playwright parity tier described above no longer exist. The style-props machinery they depended on (extraction, parsing, per-property resolvers) moved into `@soribashi/factory`, where every one of the four builders resolves it the same way; ten of the fourteen layout shapes moved to `@soribashi/ui` as native recipes (`Box`, `Stack`, `Group`, `Center`, `AspectRatio`, `Grid`, `Container`, `Paper`, `Text`, `Title`), verified the same three-tier way as every other `@soribashi/ui` recipe rather than by a separate parity suite; `Flex` and `Space` did not get a new-recipe port. `@soribashi/core` exports the framework only, no components; every component a consumer touches lives in `@soribashi/ui`. See STATUS.md's slice 2 record for the full account.
 
 ### The recipe pilots (Waves 1-4)
 

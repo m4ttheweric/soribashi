@@ -19,7 +19,7 @@ bun run smoke:registry  # end-to-end shadcn-CLI install smoke check against the 
 
 ## Orientation
 
-- `STATUS.md` is the implementation status record (slice 1b top section, post-v1 record, v1 foundation record).
+- `STATUS.md` is the implementation status record (slice 2 top section, slice 1b record, post-v1 record, v1 foundation record).
 - The recipe conversion playbook lives at `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`; it defines the four authoring categories and the conversion sweep.
 - `.claude/skills/authoring-a-recipe/SKILL.md` is the agent-facing authoring path for a `packages/ui` recipe: four-file layout, builder selection, CSS rules, test-tier expectations, and the traps.
 

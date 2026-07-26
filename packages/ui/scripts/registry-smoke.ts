@@ -423,10 +423,10 @@ function runViteBuild(scratchDir: string): void {
  * a local CSS Module class name (e.g. `.root`) was the original,
  * single-item version of this check, but it does not generalize once more
  * than one SMOKE_ITEM shares a selector name, which Button and Stack both
- * do (each declares only `.root`). Vite CSS Modules hashes each occurrence
- * to a distinct string, but a same-named-selector search against the
- * *combined* built CSS of several items can only ever find the first
- * occurrence in the concatenated text, which is not necessarily the item
+ * do (both declare `.root` among their selectors). Vite CSS Modules hashes
+ * each occurrence to a distinct string, but a same-named-selector search
+ * against the *combined* built CSS of several items can only ever find the
+ * first occurrence in the concatenated text, which is not necessarily the item
  * being checked; that would silently validate the wrong recipe's survival,
  * not prove anything about the one under test. Every SMOKE_ITEM recipe with
  * a size/dimension-driven var instead prefixes its custom property with its
