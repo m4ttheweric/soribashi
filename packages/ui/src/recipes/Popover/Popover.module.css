@@ -7,6 +7,8 @@
     border-radius: var(--radius-lg);
     background: var(--surface-default);
     color: var(--text-default);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
     box-shadow: var(--shadow-md);
     transform-origin: var(--transform-origin);
     transition:
