@@ -76,6 +76,12 @@
       "description": "Compound popover built on Base UI, themed through the soribashi vocabulary rails."
     },
     {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "Generic single-select built on Base UI, with custom item accessors and optional grouping."
+    },
+    {
       "name": "stack",
       "type": "registry:ui",
       "title": "Stack",

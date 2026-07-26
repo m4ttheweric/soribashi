@@ -1,0 +1,137 @@
+@layer soribashi.recipes {
+  .trigger {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xs);
+    min-inline-size: var(--breakpoint-xs);
+    block-size: var(--sb-select-trigger-height);
+    padding-inline: var(--spacing-sm);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: var(--surface-default);
+    color: var(--text-default);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition:
+      border-color 150ms,
+      background-color 150ms;
+
+    &:hover {
+      border-color: var(--border-strong, var(--border-default));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-primary, var(--border-default));
+      outline-offset: 2px;
+    }
+
+    &[data-disabled] {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  .icon {
+    display: inline-flex;
+    color: var(--text-muted);
+    transition: transform 150ms;
+
+    .trigger[data-popup-open] & {
+      transform: rotate(180deg);
+    }
+  }
+
+  .positioner {
+    /* `50` is a bare unitless number, exempt from the var()-only rule the
+       same way opacity/line-height/font-weight are (see the authoring
+       skill's CSS-rules section). No `--z-index-*` theme token is
+       referenced here: `defaultTokens`/`defaultDarkTokens` declare no
+       `zIndex` entries (ThemeTokens.zIndex is optional and undeclared by
+       default), and token-existence.test.ts fails a manifest recipe that
+       depends on a token the theme never emits. */
+    z-index: 50;
+  }
+
+  .popup {
+    box-sizing: border-box;
+    min-inline-size: var(--breakpoint-xs);
+    max-block-size: var(--breakpoint-xs);
+    overflow-y: auto;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-default);
+    color: var(--text-default);
+    box-shadow: var(--shadow-md);
+    transform-origin: var(--transform-origin);
+    transition:
+      opacity 150ms,
+      transform 150ms;
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    @starting-style {
+      &[data-open] {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+    }
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .groupLabel {
+    padding-block: var(--spacing-xs);
+    padding-inline: var(--spacing-sm);
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .item {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding-block: var(--spacing-xs);
+    padding-inline: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    color: var(--text-default);
+    cursor: pointer;
+    transition: background-color 150ms;
+
+    &[data-highlighted] {
+      background: var(--surface-raised);
+    }
+
+    &[data-disabled] {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  .itemIndicator {
+    display: inline-flex;
+    inline-size: var(--font-size-sm);
+    color: var(--accent-primary, var(--text-default));
+  }
+
+  .itemText {
+    flex: 1;
+  }
+}

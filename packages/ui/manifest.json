@@ -301,6 +301,56 @@
       "baseUi": true
     },
     {
+      "name": "Select",
+      "category": 4,
+      "builder": "defineGenericComponent",
+      "slots": [
+        "root",
+        "trigger",
+        "icon",
+        "positioner",
+        "popup",
+        "list",
+        "group",
+        "groupLabel",
+        "item",
+        "itemText",
+        "itemIndicator"
+      ],
+      "parts": [],
+      "vocabularyAxes": ["size"],
+      "variants": [],
+      "defaults": {
+        "size": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/Select/Select.tsx",
+        "packages/ui/src/recipes/Select/Select.module.css",
+        "packages/ui/src/recipes/Select/Select.test.tsx",
+        "packages/ui/src/recipes/Select/Select.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--border-default",
+        "--border-strong",
+        "--breakpoint-xs",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--font-size-xs",
+        "--font-weight-semibold",
+        "--radius-md",
+        "--radius-sm",
+        "--shadow-md",
+        "--spacing-sm",
+        "--spacing-xs",
+        "--surface-default",
+        "--surface-raised",
+        "--text-default",
+        "--text-muted"
+      ],
+      "baseUi": true
+    },
+    {
       "name": "Stack",
       "category": 1,
       "builder": "defineComponent",

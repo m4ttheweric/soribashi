@@ -11,6 +11,7 @@ import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
+import { Select } from '../recipes/Select/Select.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
@@ -100,6 +101,18 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
         <Popover.Title>Title</Popover.Title>
       </Popover.Content>
     </Popover.Root>
+  ),
+
+  Select: (scopeEl) => (
+    <Select
+      items={[
+        { label: 'A', value: 'a' },
+        { label: 'B', value: 'b' },
+      ]}
+      defaultOpen
+      container={scopeEl}
+      classNames={{ popup: 'reskin-target' }}
+    />
   ),
 
   Stack: () => (

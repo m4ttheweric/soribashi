@@ -10,6 +10,7 @@ export { Grid, gridTheme } from './recipes/Grid/Grid.tsx';
 export { Group, groupTheme } from './recipes/Group/Group.tsx';
 export { Paper, paperTheme } from './recipes/Paper/Paper.tsx';
 export { Popover, popoverTheme } from './recipes/Popover/Popover.tsx';
+export { Select, selectTheme } from './recipes/Select/Select.tsx';
 export { Stack, stackTheme } from './recipes/Stack/Stack.tsx';
 export { Tabs, tabsTheme } from './recipes/Tabs/Tabs.tsx';
 export { Text, textTheme } from './recipes/Text/Text.tsx';

@@ -117,7 +117,7 @@ describe('extractTokenDependencies', () => {
 });
 
 describe('buildManifest', () => {
-  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Grid, Group, Paper, Popover, Stack, Tabs, Text, and Title', async () => {
+  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Grid, Group, Paper, Popover, Select, Stack, Tabs, Text, and Title', async () => {
     const manifest = await buildManifest();
     expect(manifest.recipes.map((r) => r.name)).toEqual([
       'Alert',
@@ -132,6 +132,7 @@ describe('buildManifest', () => {
       'Group',
       'Paper',
       'Popover',
+      'Select',
       'Stack',
       'Tabs',
       'Text',

@@ -19,6 +19,7 @@ import { Button } from '../recipes/Button/Button.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
+import { Select } from '../recipes/Select/Select.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
@@ -234,6 +235,59 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         backdropClass: 'matrix-target',
         description:
           'Popover: description text (--text-muted) on popup surface (--surface-default)',
+      },
+    ],
+  },
+
+  // State established at mount only (`defaultOpen` + `defaultValue`), never
+  // by interaction: this entry mounts once and is read twice (light, then
+  // dark), and an interaction inside one scheme's `it` would leak into or be
+  // missing from the other (see SmallCoverageEntry's doc comment above).
+  // `defaultValue="selected"` combined with `defaultOpen` gives a real
+  // `data-highlighted` item at mount with no interaction needed (Base UI
+  // highlights the currently-selected item by default when the popup opens;
+  // confirmed with a throwaway probe render before writing this rather than
+  // assumed), which is what the highlighted-item cell below needs.
+  // `classNames.item` applies the SAME class to every item (the Styles API
+  // has no per-instance-item override), so the highlighted vs. unhighlighted
+  // cells are distinguished by appending a `[data-highlighted]` /
+  // `:not([data-highlighted])` attribute selector onto that one shared class
+  // in `targetClass` rather than needing two different classNames.
+  Select: {
+    render: () => (
+      <Select
+        items={[
+          { label: 'Selected', value: 'selected' },
+          { label: 'Other', value: 'other' },
+        ]}
+        defaultOpen
+        defaultValue="selected"
+        classNames={{
+          trigger: 'matrix-target-select-trigger',
+          popup: 'matrix-target-select-popup',
+          item: 'matrix-target-select-item',
+        }}
+      />
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-select-trigger',
+        description: 'Select: trigger text on trigger surface',
+      },
+      {
+        targetClass: 'matrix-target-select-item[data-highlighted]',
+        description: 'Select: highlighted item text on highlighted item background',
+      },
+      {
+        // The unhighlighted item's own background is transparent
+        // (Select.module.css's base `.item` rule paints one only under
+        // `[data-highlighted]`), so it visually sits on `.popup`'s own
+        // `background: var(--surface-default)` (the `matrix-target-select-popup`
+        // class above); `backdropClass` points there, matching Popover's
+        // description-on-popup cell.
+        targetClass: 'matrix-target-select-item:not([data-highlighted])',
+        backdropClass: 'matrix-target-select-popup',
+        description: 'Select: unhighlighted item text on popup surface',
       },
     ],
   },
