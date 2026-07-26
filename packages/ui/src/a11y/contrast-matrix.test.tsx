@@ -488,3 +488,66 @@ describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
     });
   });
 });
+
+/**
+ * Tripwire for the shared `primary`/`filled` pairing's near-floor contrast
+ * margin (open question 4 of the 2026-07-26 whole-branch review).
+ *
+ * `colors.primary['500']` (`packages/theme/src/tokens/default-tokens.ts`) was
+ * already hand-darkened once to clear the 4.5:1 AA floor and now measures
+ * 4.5617:1 -- 0.0617 of margin. Button, Alert and Badge's full contrast
+ * grids above all ride this same pairing (Alert/Badge via the theme's shared
+ * `defaultIntentResolver`, not their own colour choices), plus Checkbox's
+ * small-coverage cells resolve through the identical `filled` branch. So a
+ * single future nudge to `primary.500` fails four assertion sites/three full
+ * grids at once, each showing dozens of red cells with nothing pointing at
+ * the shared root cause.
+ *
+ * This test pins the exact pairing and its known-tightest measured value, so
+ * a token change that erodes the margin fails here first, with a message
+ * that names the token directly, before the grids above turn red with no
+ * diagnosis. It intentionally duplicates one cell the Button grid already
+ * covers -- that duplication is the point, not a mistake.
+ */
+describe('primary/filled contrast tripwire (near-floor margin)', () => {
+  it('pins the shared primary/filled pairing at its known-tightest measured ratio', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const removeNoTransitionStyle = installNoTransitionStyle();
+    container.classList.add(NO_TRANSITION_CLASS);
+
+    const screen = await render(
+      <SoribashiProvider theme={uiTheme}>
+        <Button
+          intent="primary"
+          variant="filled"
+          attributes={{ root: { 'data-testid': 'tripwire' } }}
+        >
+          primary
+        </Button>
+      </SoribashiProvider>,
+      { container },
+    );
+
+    const el = container.querySelector<HTMLElement>('[data-testid="tripwire"]');
+    if (!el) throw new Error('primary/filled tripwire: target element did not render');
+    const cs = getComputedStyle(el);
+    const fg = toRgbString(cs.color);
+    const bg = toRgbString(cs.backgroundColor);
+    const backdrop = resolveCanvasColor(container);
+    const ratio = contrastRatio(fg, bg, backdrop);
+
+    // If this fails, `colors.primary['500']` (default-tokens.ts) moved. Do
+    // not just bump this number back to green -- re-check the margin against
+    // MIN_CONTRAST (4.5) and update the comment there too.
+    expect(ratio, `fg=${fg} bg=${bg} backdrop=${backdrop} ratio=${ratio.toFixed(4)}`).toBeCloseTo(
+      4.5617,
+      3,
+    );
+    expect(ratio).toBeGreaterThanOrEqual(MIN_CONTRAST);
+
+    await screen.unmount();
+    container.remove();
+    removeNoTransitionStyle();
+  });
+});
