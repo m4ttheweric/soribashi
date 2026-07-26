@@ -36,6 +36,8 @@ export interface ManifestEntry {
   tokenDependencies: string[];
   /** Whether the recipe imports @base-ui/react. */
   baseUi: boolean;
+  /** Registry-item names of sibling recipes this recipe's .tsx imports (empty for most). */
+  registryDependencies: string[];
 }
 
 export interface Manifest {
@@ -90,6 +92,24 @@ export function extractTokenDependencies(css: string): string[] {
     if (name && THEME_VAR_RE.test(name)) {
       found.add(name);
     }
+  }
+  return [...found].sort();
+}
+
+/**
+ * Recipe names this recipe's .tsx imports from sibling recipe directories
+ * (the mandated cross-recipe form '../<Name>/...'), lowercased to
+ * registry-item names, sorted and deduped. The uppercase first letter is
+ * what distinguishes a sibling recipe directory from '../../builders.ts'
+ * and relative non-recipe paths.
+ */
+export function extractRecipeDependencies(tsxSource: string): string[] {
+  const found = new Set<string>();
+  const re = /from\s+'\.\.\/([A-Z][A-Za-z0-9]*)\//g;
+  let match: RegExpExecArray | null;
+  // biome-ignore lint/suspicious/noAssignInExpressions: standard exec-loop idiom
+  while ((match = re.exec(tsxSource)) !== null) {
+    found.add(match[1]!.toLowerCase());
   }
   return [...found].sort();
 }
@@ -149,6 +169,7 @@ async function buildManifestEntry(meta: RecipeMeta): Promise<ManifestEntry> {
     files: [tsxPath, cssPath, testPath, visualTestPath].map(toRepoRelative),
     tokenDependencies: extractTokenDependencies(cssSource),
     baseUi: tsxSource.includes("from '@base-ui/react"),
+    registryDependencies: extractRecipeDependencies(tsxSource),
   };
 }
 

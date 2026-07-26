@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildManifest, extractTokenDependencies } from '../scripts/derive.ts';
+import {
+  buildManifest,
+  extractRecipeDependencies,
+  extractTokenDependencies,
+} from '../scripts/derive.ts';
 
 describe('extractTokenDependencies', () => {
   it('extracts a single theme-prefixed var() reference', () => {
@@ -114,6 +118,39 @@ describe('extractTokenDependencies', () => {
   it('returns an empty array for CSS with no var() references', () => {
     expect(extractTokenDependencies('.root { display: flex; }')).toEqual([]);
   });
+});
+
+describe('extractRecipeDependencies', () => {
+  it('detects a sibling recipe import and lowercases it to the registry-item name', () => {
+    const src = `import { Field } from '../Field/Field.tsx';\n`;
+    expect(extractRecipeDependencies(src)).toEqual(['field']);
+  });
+
+  it('ignores same-directory, package, and builders imports', () => {
+    const src = [
+      `import classes from './TextInput.module.css';`,
+      `import { autoVars } from '@soribashi/core';`,
+      `import { defineComponent } from '../../builders.ts';`,
+      `import { Input } from '@base-ui/react/input';`,
+    ].join('\n');
+    expect(extractRecipeDependencies(src)).toEqual([]);
+  });
+
+  it('dedupes and sorts multiple imports from sibling recipes', () => {
+    const src = [
+      `import { Field, FieldAnatomyContext } from '../Field/Field.tsx';`,
+      `import type { FieldProps } from '../Field/Field.tsx';`,
+      `import { Badge } from '../Badge/Badge.tsx';`,
+    ].join('\n');
+    expect(extractRecipeDependencies(src)).toEqual(['badge', 'field']);
+  });
+});
+
+it('derives registryDependencies: [] for every current recipe', async () => {
+  const manifest = await buildManifest();
+  for (const recipe of manifest.recipes) {
+    expect(recipe.registryDependencies, recipe.name).toEqual([]);
+  }
 });
 
 describe('buildManifest', () => {

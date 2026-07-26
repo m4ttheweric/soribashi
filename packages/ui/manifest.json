@@ -36,7 +36,8 @@
         "--spacing-sm",
         "--spacing-xs"
       ],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "AspectRatio",
@@ -56,7 +57,8 @@
         "packages/ui/src/recipes/AspectRatio/AspectRatio.visual.test.tsx"
       ],
       "tokenDependencies": [],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Badge",
@@ -84,7 +86,8 @@
         "--radius-full",
         "--spacing-xs"
       ],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Box",
@@ -102,7 +105,8 @@
         "packages/ui/src/recipes/Box/Box.visual.test.tsx"
       ],
       "tokenDependencies": [],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Button",
@@ -132,7 +136,8 @@
         "--spacing-md",
         "--spacing-xs"
       ],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Center",
@@ -152,7 +157,8 @@
         "packages/ui/src/recipes/Center/Center.visual.test.tsx"
       ],
       "tokenDependencies": [],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Checkbox",
@@ -181,7 +187,8 @@
         "--spacing-xs",
         "--text-default"
       ],
-      "baseUi": true
+      "baseUi": true,
+      "registryDependencies": []
     },
     {
       "name": "Container",
@@ -202,7 +209,8 @@
         "packages/ui/src/recipes/Container/Container.visual.test.tsx"
       ],
       "tokenDependencies": ["--spacing-md"],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Grid",
@@ -222,7 +230,8 @@
         "packages/ui/src/recipes/Grid/Grid.visual.test.tsx"
       ],
       "tokenDependencies": [],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Group",
@@ -247,7 +256,8 @@
         "packages/ui/src/recipes/Group/Group.visual.test.tsx"
       ],
       "tokenDependencies": [],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Paper",
@@ -268,7 +278,8 @@
         "packages/ui/src/recipes/Paper/Paper.visual.test.tsx"
       ],
       "tokenDependencies": ["--border-default", "--surface-raised", "--text-default"],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Popover",
@@ -299,7 +310,8 @@
         "--text-default",
         "--text-muted"
       ],
-      "baseUi": true
+      "baseUi": true,
+      "registryDependencies": []
     },
     {
       "name": "Select",
@@ -349,7 +361,8 @@
         "--text-default",
         "--text-muted"
       ],
-      "baseUi": true
+      "baseUi": true,
+      "registryDependencies": []
     },
     {
       "name": "Stack",
@@ -371,7 +384,8 @@
         "packages/ui/src/recipes/Stack/Stack.visual.test.tsx"
       ],
       "tokenDependencies": [],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Tabs",
@@ -406,7 +420,8 @@
         "--text-default",
         "--text-muted"
       ],
-      "baseUi": true
+      "baseUi": true,
+      "registryDependencies": []
     },
     {
       "name": "Text",
@@ -426,7 +441,8 @@
         "packages/ui/src/recipes/Text/Text.visual.test.tsx"
       ],
       "tokenDependencies": ["--text-default", "--text-muted"],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     },
     {
       "name": "Title",
@@ -468,7 +484,8 @@
         "--heading-text-wrap",
         "--text-default"
       ],
-      "baseUi": false
+      "baseUi": false,
+      "registryDependencies": []
     }
   ]
 }

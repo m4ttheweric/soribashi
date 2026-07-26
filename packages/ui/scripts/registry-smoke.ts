@@ -87,7 +87,7 @@ import {
 } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildScratchDependencies } from './scratch-deps.ts';
 
@@ -481,14 +481,6 @@ async function vendorItems(scratchDir: string, items: RegistryItem[]): Promise<V
   return { path: 'manual', reason: cli.reason };
 }
 
-/** `button` -> `Button`, `aspect-ratio` -> `AspectRatio`: PascalCase of a SMOKE_ITEMS name, matching the recipe's own exported component name. */
-function pascalCase(name: string): string {
-  return name
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-}
-
 /**
  * Renders Button and Checkbox inside Stack so a single mount proves all
  * three SMOKE_ITEMS together, the way a consumer installing a layout recipe
@@ -507,7 +499,8 @@ async function writeAppEntry(scratchDir: string, items: RegistryItem[]): Promise
     if (!tsxFile) {
       throw new Error(`[registry-smoke] Registry item "${item.name}" has no .tsx file to import.`);
     }
-    return `import { ${pascalCase(item.name)} } from './${tsxFile.target}';`;
+    const componentName = basename(tsxFile.target, '.tsx');
+    return `import { ${componentName} } from './${tsxFile.target}';`;
   });
 
   const mainTsx = `import { createRoot } from 'react-dom/client';

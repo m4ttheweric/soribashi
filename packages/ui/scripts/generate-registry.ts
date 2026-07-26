@@ -145,7 +145,7 @@ function buildRecipeRegistryItem(entry: ManifestEntry): RegistryItem {
     title: entry.name,
     description,
     dependencies,
-    registryDependencies: [],
+    registryDependencies: entry.registryDependencies,
     files: [
       {
         path: `registry/soribashi/${entry.name}/${entry.name}.tsx`,
