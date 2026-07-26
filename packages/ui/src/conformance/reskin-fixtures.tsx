@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
+import { AspectRatio } from '../recipes/AspectRatio/AspectRatio.tsx';
 import { Box } from '../recipes/Box/Box.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
+import { Center } from '../recipes/Center/Center.tsx';
+import { Group } from '../recipes/Group/Group.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
 
@@ -27,6 +30,12 @@ import { Stack } from '../recipes/Stack/Stack.tsx';
  *      already differ for some unrelated reason).
  */
 export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode> = {
+  AspectRatio: () => (
+    <AspectRatio className="reskin-target" p="md" ratio={16 / 9}>
+      x
+    </AspectRatio>
+  ),
+
   Box: () => (
     <Box className="reskin-target" bg="surface.raised" p="md">
       x
@@ -34,6 +43,19 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
   ),
 
   Button: () => <Button classNames={{ root: 'reskin-target' }}>x</Button>,
+
+  Center: () => (
+    <Center className="reskin-target" p="md">
+      x
+    </Center>
+  ),
+
+  Group: () => (
+    <Group className="reskin-target" gap="md">
+      <div>a</div>
+      <div>b</div>
+    </Group>
+  ),
 
   Popover: (scopeEl) => (
     <Popover.Root open onOpenChange={() => {}}>

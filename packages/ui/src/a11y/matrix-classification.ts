@@ -21,8 +21,11 @@ export type MatrixClassification = 'covered' | { exempt: string };
 
 /** EVERY manifest recipe must appear here; the guard fails by name otherwise. */
 export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
+  AspectRatio: { exempt: 'geometry only' },
   Box: { exempt: 'no colour of its own; style-prop colours are consumer input' },
   Button: 'covered',
+  Center: { exempt: 'geometry only' },
+  Group: { exempt: 'geometry only' },
   Popover: 'covered',
   Stack: { exempt: 'geometry only' },
 };

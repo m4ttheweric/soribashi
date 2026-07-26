@@ -4,6 +4,12 @@
   "homepage": "https://github.com/soribashi/soribashi",
   "items": [
     {
+      "name": "aspectratio",
+      "type": "registry:ui",
+      "title": "AspectRatio",
+      "description": "Locks a fixed width/height ratio for its content."
+    },
+    {
       "name": "box",
       "type": "registry:ui",
       "title": "Box",
@@ -14,6 +20,18 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "Polymorphic button riding the soribashi vocabulary rails."
+    },
+    {
+      "name": "center",
+      "type": "registry:ui",
+      "title": "Center",
+      "description": "Centers its content on both axes, flex or inline-flex."
+    },
+    {
+      "name": "group",
+      "type": "registry:ui",
+      "title": "Group",
+      "description": "Horizontal flex row with theme-spacing gap and optional even growth."
     },
     {
       "name": "popover",

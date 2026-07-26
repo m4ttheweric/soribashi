@@ -1,0 +1,14 @@
+@layer soribashi.recipes {
+  .root {
+    display: flex;
+    flex-direction: row;
+    gap: var(--sb-group-gap);
+    flex-wrap: var(--sb-group-wrap);
+    justify-content: var(--sb-group-justify);
+    align-items: var(--sb-group-align);
+  }
+  .root[data-grow] > * {
+    flex-grow: 1;
+    max-width: var(--sb-group-child-w, 100%);
+  }
+}

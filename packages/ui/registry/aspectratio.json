@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "aspectratio",
+  "type": "registry:ui",
+  "title": "AspectRatio",
+  "description": "Locks a fixed width/height ratio for its content.",
+  "dependencies": ["@soribashi/core"],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/soribashi/AspectRatio/AspectRatio.tsx",
+      "type": "registry:ui",
+      "target": "components/soribashi/AspectRatio/AspectRatio.tsx",
+      "content": "import { defineComponent } from '@soribashi/core';\nimport type { ReactNode } from 'react';\nimport classes from './AspectRatio.module.css';\n\nexport const recipeCategory = 1 as const;\n\nexport interface AspectRatioProps {\n  /** width / height CSS aspect-ratio @default 1 */\n  ratio?: number;\n  children?: ReactNode;\n}\n\nexport const AspectRatio = defineComponent<AspectRatioProps>({\n  name: 'AspectRatio',\n  selectors: ['root'] as const,\n  classes,\n  defaults: { ratio: 1 },\n  vars: (_theme, props) => ({\n    root: {\n      '--sb-ratio': String((props as AspectRatioProps).ratio ?? 1),\n    },\n  }),\n  render: ({ props, getStyles, ref }) => {\n    const {\n      ratio: _ratio,\n      children,\n      classNames: _cn,\n      styles: _st,\n      vars: _v,\n      attributes: _at,\n      unstyled: _un,\n      ...rest\n    } = props as AspectRatioProps & Record<string, unknown>;\n    return (\n      <div ref={ref as React.Ref<HTMLDivElement>} {...rest} {...getStyles('root')}>\n        {children}\n      </div>\n    );\n  },\n});\n\nexport const aspectRatioTheme = AspectRatio.extend({});\n"
+    },
+    {
+      "path": "registry/soribashi/AspectRatio/AspectRatio.module.css",
+      "type": "registry:ui",
+      "target": "components/soribashi/AspectRatio/AspectRatio.module.css",
+      "content": "@layer soribashi.recipes {\n  .root {\n    aspect-ratio: var(--sb-ratio);\n    max-width: 100%;\n  }\n  .root > :where(img, video) {\n    width: 100%;\n    height: 100%;\n    object-fit: cover;\n  }\n}\n"
+    }
+  ]
+}

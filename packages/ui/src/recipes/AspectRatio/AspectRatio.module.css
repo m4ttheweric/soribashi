@@ -1,0 +1,11 @@
+@layer soribashi.recipes {
+  .root {
+    aspect-ratio: var(--sb-ratio);
+    max-width: 100%;
+  }
+  .root > :where(img, video) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

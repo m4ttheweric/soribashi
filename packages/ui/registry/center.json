@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "center",
+  "type": "registry:ui",
+  "title": "Center",
+  "description": "Centers its content on both axes, flex or inline-flex.",
+  "dependencies": ["@soribashi/core"],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/soribashi/Center/Center.tsx",
+      "type": "registry:ui",
+      "target": "components/soribashi/Center/Center.tsx",
+      "content": "import { defineComponent } from '@soribashi/core';\nimport type { ReactNode } from 'react';\nimport classes from './Center.module.css';\n\nexport const recipeCategory = 1 as const;\n\nexport interface CenterProps {\n  /** Renders `display: inline-flex` instead of `display: flex` @default false */\n  inline?: boolean;\n  children?: ReactNode;\n}\n\n/**\n * Centers its content on both axes. `inline`/`display` are the only prop\n * that vary between renders, and both are structural (not theme values), so\n * Center.module.css needs no recipe-local vars at all: no `vars` config key\n * here, matching Box's implicit no-vars precedent (definePolymorphicComponent's\n * default autoVars call is also a no-op, since Center declares no variants).\n */\nexport const Center = defineComponent<CenterProps>({\n  name: 'Center',\n  selectors: ['root'] as const,\n  classes,\n  defaults: { inline: false },\n  render: ({ props, getStyles, ref }) => {\n    const {\n      inline,\n      children,\n      classNames: _cn,\n      styles: _st,\n      vars: _v,\n      attributes: _at,\n      unstyled: _un,\n      ...rest\n    } = props as CenterProps & Record<string, unknown>;\n    return (\n      <div\n        ref={ref as React.Ref<HTMLDivElement>}\n        {...rest}\n        data-inline={inline ? 'true' : undefined}\n        {...getStyles('root')}\n      >\n        {children}\n      </div>\n    );\n  },\n});\n\nexport const centerTheme = Center.extend({});\n"
+    },
+    {
+      "path": "registry/soribashi/Center/Center.module.css",
+      "type": "registry:ui",
+      "target": "components/soribashi/Center/Center.module.css",
+      "content": "@layer soribashi.recipes {\n  .root {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n  .root[data-inline] {\n    display: inline-flex;\n  }\n}\n"
+    }
+  ]
+}

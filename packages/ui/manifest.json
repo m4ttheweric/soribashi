@@ -6,6 +6,25 @@
   },
   "recipes": [
     {
+      "name": "AspectRatio",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "ratio": 1
+      },
+      "files": [
+        "packages/ui/src/recipes/AspectRatio/AspectRatio.tsx",
+        "packages/ui/src/recipes/AspectRatio/AspectRatio.module.css",
+        "packages/ui/src/recipes/AspectRatio/AspectRatio.test.tsx",
+        "packages/ui/src/recipes/AspectRatio/AspectRatio.visual.test.tsx"
+      ],
+      "tokenDependencies": [],
+      "baseUi": false
+    },
+    {
       "name": "Box",
       "category": 1,
       "builder": "definePolymorphicComponent",
@@ -49,6 +68,49 @@
         "--spacing-md",
         "--spacing-xs"
       ],
+      "baseUi": false
+    },
+    {
+      "name": "Center",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "inline": false
+      },
+      "files": [
+        "packages/ui/src/recipes/Center/Center.tsx",
+        "packages/ui/src/recipes/Center/Center.module.css",
+        "packages/ui/src/recipes/Center/Center.test.tsx",
+        "packages/ui/src/recipes/Center/Center.visual.test.tsx"
+      ],
+      "tokenDependencies": [],
+      "baseUi": false
+    },
+    {
+      "name": "Group",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "gap": "md",
+        "wrap": "wrap",
+        "justify": "flex-start",
+        "align": "center",
+        "grow": false,
+        "preventGrowOverflow": true
+      },
+      "files": [
+        "packages/ui/src/recipes/Group/Group.tsx",
+        "packages/ui/src/recipes/Group/Group.module.css",
+        "packages/ui/src/recipes/Group/Group.test.tsx",
+        "packages/ui/src/recipes/Group/Group.visual.test.tsx"
+      ],
+      "tokenDependencies": [],
       "baseUi": false
     },
     {

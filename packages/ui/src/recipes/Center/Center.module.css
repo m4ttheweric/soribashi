@@ -1,0 +1,10 @@
+@layer soribashi.recipes {
+  .root {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .root[data-inline] {
+    display: inline-flex;
+  }
+}
