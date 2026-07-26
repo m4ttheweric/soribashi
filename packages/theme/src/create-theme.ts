@@ -18,7 +18,17 @@ import type {
 
 const DEFAULT_TEXT: Record<string, string> = {
   default: 'colors.neutral.900',
-  muted: 'colors.neutral.500',
+  // Controller ruling (slice-2-layout task 8): previously 'colors.neutral.500'.
+  // packages/ui's contrast matrix (Text's SMALL_COVERAGE cells, dimmed state,
+  // light scheme) measured neutral.500 at 4.490:1 against surface.canvas and
+  // 4.288:1 against surface.raised, both below the 4.5:1 AA floor for normal
+  // text. Rule encoded here: text.muted must clear AA (>= 4.5:1) against BOTH
+  // surface.canvas and surface.raised, in both colour schemes, since a
+  // muted-text recipe (e.g. Text with `dimmed`) can render on either surface.
+  // neutral.600 clears both (re-measured after this change; see the task 8
+  // report for the exact ratios). The raw neutral.500 swatch is left
+  // untouched for non-text uses; only this semantic reference moves.
+  muted: 'colors.neutral.600',
   disabled: 'colors.neutral.400',
 };
 

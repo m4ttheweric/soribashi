@@ -9,6 +9,9 @@ import { build } from '../src/build.ts';
 // default semanticTokens now merge per-key (empty slots no longer blank
 // them). Give every fixture the neutral shades those defaults reference so
 // each test stays focused on its own behavior.
+// '600' added alongside the others: createTheme's DEFAULT_TEXT.muted now
+// references colors.neutral.600 (slice-2-layout task 8's AA ruling), so any
+// fixture theme that doesn't override text.muted needs that shade too.
 const neutral = {
   '0': 'hsl(0 0% 100%)',
   '50': 'hsl(210 40% 98%)',
@@ -16,6 +19,7 @@ const neutral = {
   '200': 'hsl(214 32% 91%)',
   '400': 'hsl(215 20% 65%)',
   '500': 'hsl(215 16% 47%)',
+  '600': 'hsl(215 18% 35%)',
   '900': 'hsl(222 47% 11%)',
 };
 

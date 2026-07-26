@@ -30,7 +30,11 @@ describe('createTheme: semanticTokens per-key merge over defaults', () => {
     });
 
     expect(theme.semanticTokens.text.default).toBe('colors.gray.900');
-    expect(theme.semanticTokens.text.muted).toBe('colors.neutral.500');
+    // neutral.600 per the controller ruling in create-theme.ts's DEFAULT_TEXT
+    // (slice-2-layout task 8): text.muted must clear AA against both
+    // surface.canvas and surface.raised, in both schemes; neutral.500 fell
+    // short in light scheme (4.490:1 / 4.288:1 against a 4.5:1 floor).
+    expect(theme.semanticTokens.text.muted).toBe('colors.neutral.600');
     expect(theme.semanticTokens.text.disabled).toBe('colors.neutral.400');
   });
 

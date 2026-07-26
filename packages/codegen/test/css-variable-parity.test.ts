@@ -475,7 +475,7 @@ function buildCanonicalList(): ParityEntry[] {
     soribashiVar: '--text-muted',
     status: 'mapped',
     notes:
-      'Mantine --mantine-color-dimmed (gray-6/dark-2) → soribashi --text-muted (semantic.text.muted → colors.neutral.500). Emitted by emitSemanticLines().',
+      'Mantine --mantine-color-dimmed (gray-6/dark-2) → soribashi --text-muted (semantic.text.muted → colors.neutral.600 as of the slice-2-layout task 8 AA ruling; was colors.neutral.500). Emitted by emitSemanticLines().',
   });
 
   // disabled states

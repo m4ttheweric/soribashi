@@ -9,6 +9,8 @@ import { validateTheme } from '../src/validate-theme.ts';
 
 // createTheme's default semanticTokens merge per-key under any overrides, so
 // the fixture palette must cover every neutral shade those defaults reference.
+// '600' added for DEFAULT_TEXT.muted's slice-2-layout task 8 AA ruling
+// (previously referenced '500'; see create-theme.ts's DEFAULT_TEXT comment).
 const neutral = {
   '0': 'hsl(0 0% 100%)',
   '50': 'hsl(210 40% 98%)',
@@ -16,6 +18,7 @@ const neutral = {
   '200': 'hsl(214 32% 91%)',
   '400': 'hsl(215 20% 65%)',
   '500': 'hsl(215 16% 47%)',
+  '600': 'hsl(215 18% 35%)',
   '900': 'hsl(222 47% 11%)',
 };
 
