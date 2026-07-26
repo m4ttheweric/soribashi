@@ -7,6 +7,7 @@ import { Button } from '../recipes/Button/Button.tsx';
 import { Center } from '../recipes/Center/Center.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Container } from '../recipes/Container/Container.tsx';
+import { Field } from '../recipes/Field/Field.tsx';
 import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
@@ -77,6 +78,13 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
   ),
 
   Container: () => <Container className="reskin-target">x</Container>,
+
+  Field: () => (
+    <Field.Root>
+      <Field.Label classNames={{ label: 'reskin-target' }}>Label</Field.Label>
+      <Field.Description>Description</Field.Description>
+    </Field.Root>
+  ),
 
   Grid: () => (
     <Grid className="reskin-target" spacing="md">

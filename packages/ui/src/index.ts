@@ -6,6 +6,7 @@ export { Button, buttonTheme } from './recipes/Button/Button.tsx';
 export { Center, centerTheme } from './recipes/Center/Center.tsx';
 export { Checkbox, checkboxTheme } from './recipes/Checkbox/Checkbox.tsx';
 export { Container, containerTheme } from './recipes/Container/Container.tsx';
+export { Field, fieldTheme } from './recipes/Field/Field.tsx';
 export { Grid, gridTheme } from './recipes/Grid/Grid.tsx';
 export { Group, groupTheme } from './recipes/Group/Group.tsx';
 export { Paper, paperTheme } from './recipes/Paper/Paper.tsx';

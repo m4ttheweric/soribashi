@@ -52,6 +52,12 @@
       "description": "Centers and caps content width at a theme-driven size, or fluid."
     },
     {
+      "name": "field",
+      "type": "registry:ui",
+      "title": "Field",
+      "description": "Compound form-field anatomy (label, description, error) built on Base UI, composed internally by the form controls."
+    },
+    {
       "name": "grid",
       "type": "registry:ui",
       "title": "Grid",

@@ -29,6 +29,10 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Center: { exempt: 'geometry only' },
   Checkbox: 'covered',
   Container: { exempt: 'geometry only' },
+  Field: {
+    exempt:
+      'colour-via: TextInput and Textarea SMALL_COVERAGE cells render Field label/description/error parts and measure their computed colours on their real backdrops',
+  },
   Grid: { exempt: 'geometry only' },
   Group: { exempt: 'geometry only' },
   Paper: 'covered',

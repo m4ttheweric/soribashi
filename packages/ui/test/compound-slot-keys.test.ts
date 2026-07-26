@@ -30,9 +30,18 @@ describe('compound slot keys', () => {
 
   describe.each(COMPOUNDS.map((r) => [r.name, r] as const))('%s', (name, recipe) => {
     it("every getStyles({ part: '<key>' }) literal is a declared slot key", () => {
+      // No `used.length > 0` floor here: Popover/Tabs happen to have a slot
+      // with no corresponding public part (positioner, indicator), which is
+      // exactly when a part needs to reach across to a sibling slot via
+      // `getStyles({ part })`. That's incidental to those two recipes'
+      // shapes, not a requirement of defineCompound itself. Field is a
+      // counter-example that's still perfectly valid: every declared slot
+      // key has a 1:1 public part that only ever styles its own slot (a bare
+      // `getStyles()`), so it has zero `part:` literals and nothing here to
+      // check -- the `undeclared` assertion below is then vacuously `[]`,
+      // which is the correct (not skipped) result for that shape.
       const source = recipeSource(name, '.tsx');
       const used = [...source.matchAll(/part:\s*'([a-zA-Z0-9_-]+)'/g)].map((m) => m[1]!);
-      expect(used.length, `no part: literals found in ${name}.tsx`).toBeGreaterThan(0);
       const undeclared = [...new Set(used)].filter((key) => !recipe.slots.includes(key));
       expect(
         undeclared,

@@ -213,6 +213,33 @@
       "registryDependencies": []
     },
     {
+      "name": "Field",
+      "category": 4,
+      "builder": "defineCompound",
+      "slots": ["root", "label", "description", "error"],
+      "parts": ["root", "label", "description", "error"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {},
+      "files": [
+        "packages/ui/src/recipes/Field/Field.tsx",
+        "packages/ui/src/recipes/Field/Field.module.css",
+        "packages/ui/src/recipes/Field/Field.test.tsx",
+        "packages/ui/src/recipes/Field/Field.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--color-danger-600",
+        "--font-size-sm",
+        "--font-size-xs",
+        "--font-weight-medium",
+        "--spacing-xs",
+        "--text-default",
+        "--text-muted"
+      ],
+      "baseUi": true,
+      "registryDependencies": []
+    },
+    {
       "name": "Grid",
       "category": 1,
       "builder": "defineComponent",
