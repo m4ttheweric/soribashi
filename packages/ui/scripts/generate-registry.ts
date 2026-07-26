@@ -91,8 +91,11 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Container: 'Centers and caps content width at a theme-driven size, or fluid.',
   Grid: 'CSS grid with a fixed or responsive column count, or auto-fit min-width columns.',
   Group: 'Horizontal flex row with theme-spacing gap and optional even growth.',
+  Paper: 'A surface: raised background, themed radius/shadow, optional border.',
   Popover: 'Compound popover built on Base UI, themed through the soribashi vocabulary rails.',
   Stack: 'Vertical flex stack with theme-spacing gap.',
+  Text: 'Polymorphic body text riding the size vocabulary, with dimmed and truncate modifiers.',
+  Title: 'Semantic h1-h6 heading with theme heading tokens per order.',
 };
 
 function buildRecipeRegistryItem(entry: ManifestEntry): RegistryItem {

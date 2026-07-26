@@ -14,7 +14,10 @@ import { afterAll, beforeAll, describe, expect, it, test, vi } from 'vitest';
 // already ran); importing `/pure` did not.
 import { render } from 'vitest-browser-react/pure';
 import { Button } from '../recipes/Button/Button.tsx';
+import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
+import { Text } from '../recipes/Text/Text.tsx';
+import { Title } from '../recipes/Title/Title.tsx';
 import { uiTheme, uiVocabulary } from '../theme.ts';
 import { contrastRatio } from './contrast.ts';
 import { SMALL_COVERAGE_NAMES } from './matrix-classification.ts';
@@ -235,22 +238,58 @@ describe('Button contrast matrix (WCAG AA >= 4.5:1)', () => {
 });
 
 /**
- * Cells for recipes classified `'covered'` in matrix-classification.ts that
- * have no intent x variant x size grid of their own (no vocabulary axes to
- * cross), proven instead by one named fg/bg pair each. `Object.keys` of this
- * record MUST equal matrix-classification.ts's `SMALL_COVERAGE_NAMES`
- * (asserted below) so the node-tier guard (matrix-guard.test.ts, which
- * cannot import this browser-tier file) and this file's actual rendered
- * cells cannot silently drift apart.
+ * One fg/bg pair a `SmallCoverageEntry` proves. `targetClass` selects the
+ * element to measure (its own `className`, unique within the entry's
+ * `render()`, mirroring the original Popover entry's single 'matrix-target'
+ * class). `backdropClass`, when present, selects a different element (an
+ * enclosing opaque surface, e.g. a Paper root) whose own computed
+ * background-color is this cell's real visual backdrop -- needed whenever
+ * the measured element's own background is transparent AND the element it
+ * visually sits on is not the page canvas (Text/Title nested inside Paper).
+ * When absent, the live-resolved canvas colour is used, matching the Button
+ * grid's ghost/link/outline handling; that's a no-op whenever the target's
+ * own background is opaque (Popover's popup, Paper's root), since
+ * contrastRatio ignores `backdrop` for an alpha-1 bg.
  */
-interface SmallCoverageEntry {
-  /** Mounts the scenario; the element to measure carries className 'matrix-target'. */
-  render: () => ReactNode;
-  /** What fg/bg pair this proves, folded into every assertion's failure message. */
+interface SmallCoverageCell {
+  targetClass: string;
+  backdropClass?: string;
+  /** What fg/bg pair this cell proves, folded into every assertion's failure message. */
   description: string;
 }
 
+/**
+ * Cells for recipes classified `'covered'` in matrix-classification.ts that
+ * have no intent x variant x size grid of their own (no vocabulary axes to
+ * cross). `Object.keys` of this record MUST equal matrix-classification.ts's
+ * `SMALL_COVERAGE_NAMES` (asserted below) so the node-tier guard
+ * (matrix-guard.test.ts, which cannot import this browser-tier file) and
+ * this file's actual rendered cells cannot silently drift apart. One entry
+ * per recipe name; an entry may prove more than one cell (Text/Title each
+ * need canvas AND Paper-surface readings), so `cells` is a list rather than
+ * a single description the way the original Popover-only shape had it.
+ */
+interface SmallCoverageEntry {
+  /** Mounts every cell this entry proves; see each cell's targetClass/backdropClass. */
+  render: () => ReactNode;
+  cells: readonly SmallCoverageCell[];
+}
+
 const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
+  Paper: {
+    render: () => (
+      <Paper classNames={{ root: 'matrix-target-paper-default' }}>
+        Sample paper body copy, read for contrast against the raised surface.
+      </Paper>
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-paper-default',
+        description: 'Paper: default text on --surface-raised',
+      },
+    ],
+  },
+
   Popover: {
     render: () => (
       <Popover.Root open onOpenChange={() => {}}>
@@ -263,7 +302,56 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         </Popover.Content>
       </Popover.Root>
     ),
-    description: 'popup text on popup surface',
+    cells: [{ targetClass: 'matrix-target', description: 'popup text on popup surface' }],
+  },
+
+  Text: {
+    render: () => (
+      <>
+        <Text classNames={{ root: 'matrix-target-text-default' }}>
+          Sample paragraph copy, read for contrast against the canvas surface.
+        </Text>
+        <Text dimmed classNames={{ root: 'matrix-target-text-dimmed-canvas' }}>
+          Sample dimmed paragraph copy, read for contrast against the canvas surface.
+        </Text>
+        <Paper classNames={{ root: 'matrix-target-text-dimmed-paper-backdrop' }}>
+          <Text dimmed classNames={{ root: 'matrix-target-text-dimmed-paper' }}>
+            Sample dimmed paragraph copy, read for contrast against the Paper surface.
+          </Text>
+        </Paper>
+      </>
+    ),
+    cells: [
+      { targetClass: 'matrix-target-text-default', description: 'Text: default text on canvas' },
+      {
+        targetClass: 'matrix-target-text-dimmed-canvas',
+        description: 'Text: dimmed text on canvas',
+      },
+      {
+        targetClass: 'matrix-target-text-dimmed-paper',
+        backdropClass: 'matrix-target-text-dimmed-paper-backdrop',
+        description: 'Text: dimmed text on Paper surface',
+      },
+    ],
+  },
+
+  Title: {
+    render: () => (
+      <>
+        <Title classNames={{ root: 'matrix-target-title-default' }}>Sample heading</Title>
+        <Paper classNames={{ root: 'matrix-target-title-paper-backdrop' }}>
+          <Title classNames={{ root: 'matrix-target-title-paper' }}>Sample heading</Title>
+        </Paper>
+      </>
+    ),
+    cells: [
+      { targetClass: 'matrix-target-title-default', description: 'Title: default text on canvas' },
+      {
+        targetClass: 'matrix-target-title-paper',
+        backdropClass: 'matrix-target-title-paper-backdrop',
+        description: 'Title: default text on Paper surface',
+      },
+    ],
   },
 };
 
@@ -284,7 +372,6 @@ describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
     // ancestor is enough for it.
     let mountEl: HTMLDivElement;
     let screen: Awaited<ReturnType<typeof render>>;
-    let target: HTMLElement;
 
     beforeAll(async () => {
       mountEl = document.createElement('div');
@@ -295,10 +382,16 @@ describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
           container: mountEl,
         },
       );
-      target = await vi.waitUntil(() => document.querySelector<HTMLElement>('.matrix-target'), {
-        timeout: 2000,
-        interval: 20,
-      });
+      // Waits for every cell's target (handles Popover's async portal mount;
+      // a no-op wait for the others, whose targets exist synchronously).
+      await Promise.all(
+        entry.cells.map((cell) =>
+          vi.waitUntil(() => document.querySelector<HTMLElement>(`.${cell.targetClass}`), {
+            timeout: 2000,
+            interval: 20,
+          }),
+        ),
+      );
     });
 
     afterAll(async () => {
@@ -308,33 +401,43 @@ describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
     });
 
     // No no-transition stylesheet here (unlike the Button grid's beforeAll):
-    // Popover.module.css's `.popup` only transitions `opacity`/`transform`
-    // (its enter/exit animation), never `background-color`/`color`, so the
-    // colours this cell measures are never mid-interpolation regardless of
-    // when the `dark` class is toggled.
-    function assertClearsAA() {
+    // none of Popover.module.css/Paper.module.css/Text.module.css/Title.module.css
+    // transition background-color/color (Popover's `.popup` only transitions
+    // opacity/transform, its enter/exit animation), so the colours this cell
+    // measures are never mid-interpolation regardless of when the `dark`
+    // class is toggled.
+    function assertCellClearsAA(cell: SmallCoverageCell) {
+      const target = document.querySelector<HTMLElement>(`.${cell.targetClass}`);
+      if (!target) {
+        throw new Error(`small-coverage: no element found for target class "${cell.targetClass}"`);
+      }
       const cs = getComputedStyle(target);
       const fg = toRgbString(cs.color);
       const bg = toRgbString(cs.backgroundColor);
-      const backdrop = resolveCanvasColor(document.body);
+      const backdropEl = cell.backdropClass
+        ? document.querySelector<HTMLElement>(`.${cell.backdropClass}`)
+        : null;
+      const backdrop = backdropEl
+        ? toRgbString(getComputedStyle(backdropEl).backgroundColor)
+        : resolveCanvasColor(document.body);
       const ratio = contrastRatio(fg, bg, backdrop);
       expect(
         ratio,
-        `${name} (${entry.description}): fg=${fg} bg=${bg} backdrop=${backdrop} ratio=${ratio.toFixed(3)}`,
+        `${name} (${cell.description}): fg=${fg} bg=${bg} backdrop=${backdrop} ratio=${ratio.toFixed(3)}`,
       ).toBeGreaterThanOrEqual(MIN_CONTRAST);
     }
 
-    it(`${entry.description}: light scheme clears AA`, () => {
-      assertClearsAA();
+    it.each(entry.cells)('$description: light scheme clears AA', (cell) => {
+      assertCellClearsAA(cell);
     });
 
-    it(`${entry.description}: dark scheme clears AA`, () => {
+    it.each(entry.cells)('$description: dark scheme clears AA', (cell) => {
       document.body.classList.add('dark');
       // Forces a synchronous style recalc before reading, same rationale as
       // the Button grid's dark describe block above.
       void document.body.offsetHeight;
       try {
-        assertClearsAA();
+        assertCellClearsAA(cell);
       } finally {
         document.body.classList.remove('dark');
       }

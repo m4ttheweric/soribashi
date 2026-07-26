@@ -153,6 +153,26 @@
       "baseUi": false
     },
     {
+      "name": "Paper",
+      "category": 1,
+      "builder": "definePolymorphicComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "radius": "md",
+        "withBorder": false
+      },
+      "files": [
+        "packages/ui/src/recipes/Paper/Paper.tsx",
+        "packages/ui/src/recipes/Paper/Paper.module.css",
+        "packages/ui/src/recipes/Paper/Paper.test.tsx",
+        "packages/ui/src/recipes/Paper/Paper.visual.test.tsx"
+      ],
+      "tokenDependencies": ["--border-default", "--surface-raised", "--text-default"],
+      "baseUi": false
+    },
+    {
       "name": "Popover",
       "category": 2,
       "builder": "defineCompound",
@@ -200,6 +220,66 @@
         "packages/ui/src/recipes/Stack/Stack.visual.test.tsx"
       ],
       "tokenDependencies": [],
+      "baseUi": false
+    },
+    {
+      "name": "Text",
+      "category": 1,
+      "builder": "definePolymorphicComponent",
+      "slots": ["root"],
+      "vocabularyAxes": ["size"],
+      "variants": [],
+      "defaults": {
+        "size": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/Text/Text.tsx",
+        "packages/ui/src/recipes/Text/Text.module.css",
+        "packages/ui/src/recipes/Text/Text.test.tsx",
+        "packages/ui/src/recipes/Text/Text.visual.test.tsx"
+      ],
+      "tokenDependencies": ["--text-default", "--text-muted"],
+      "baseUi": false
+    },
+    {
+      "name": "Title",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "order": 1
+      },
+      "files": [
+        "packages/ui/src/recipes/Title/Title.tsx",
+        "packages/ui/src/recipes/Title/Title.module.css",
+        "packages/ui/src/recipes/Title/Title.test.tsx",
+        "packages/ui/src/recipes/Title/Title.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--font-family-heading",
+        "--heading-h1-font-size",
+        "--heading-h1-font-weight",
+        "--heading-h1-line-height",
+        "--heading-h2-font-size",
+        "--heading-h2-font-weight",
+        "--heading-h2-line-height",
+        "--heading-h3-font-size",
+        "--heading-h3-font-weight",
+        "--heading-h3-line-height",
+        "--heading-h4-font-size",
+        "--heading-h4-font-weight",
+        "--heading-h4-line-height",
+        "--heading-h5-font-size",
+        "--heading-h5-font-weight",
+        "--heading-h5-line-height",
+        "--heading-h6-font-size",
+        "--heading-h6-font-weight",
+        "--heading-h6-line-height",
+        "--heading-text-wrap",
+        "--text-default"
+      ],
       "baseUi": false
     }
   ]

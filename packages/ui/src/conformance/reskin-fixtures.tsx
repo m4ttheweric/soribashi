@@ -6,8 +6,11 @@ import { Center } from '../recipes/Center/Center.tsx';
 import { Container } from '../recipes/Container/Container.tsx';
 import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
+import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
+import { Text } from '../recipes/Text/Text.tsx';
+import { Title } from '../recipes/Title/Title.tsx';
 
 /**
  * One minimal, force-visible rendering per recipe, keyed by the recipe's
@@ -68,6 +71,8 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
     </Group>
   ),
 
+  Paper: () => <Paper className="reskin-target">x</Paper>,
+
   Popover: (scopeEl) => (
     <Popover.Root open onOpenChange={() => {}}>
       <Popover.Trigger>Open</Popover.Trigger>
@@ -83,4 +88,8 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
       <div>b</div>
     </Stack>
   ),
+
+  Text: () => <Text className="reskin-target">x</Text>,
+
+  Title: () => <Title className="reskin-target">x</Title>,
 };

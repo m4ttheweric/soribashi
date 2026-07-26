@@ -1,0 +1,16 @@
+@layer soribashi.recipes {
+  .root {
+    color: var(--text-default);
+    font-size: var(--sb-text-fz);
+    line-height: var(--sb-text-lh);
+    margin: 0;
+  }
+  .root[data-dimmed] {
+    color: var(--text-muted);
+  }
+  .root[data-truncate] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

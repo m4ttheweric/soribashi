@@ -1,0 +1,38 @@
+@layer soribashi.recipes {
+  .root {
+    color: var(--text-default);
+    font-family: var(--font-family-heading);
+    text-wrap: var(--heading-text-wrap, wrap);
+    margin: 0;
+  }
+  .root[data-order="1"] {
+    font-size: var(--heading-h1-font-size);
+    font-weight: var(--heading-h1-font-weight);
+    line-height: var(--heading-h1-line-height);
+  }
+  .root[data-order="2"] {
+    font-size: var(--heading-h2-font-size);
+    font-weight: var(--heading-h2-font-weight);
+    line-height: var(--heading-h2-line-height);
+  }
+  .root[data-order="3"] {
+    font-size: var(--heading-h3-font-size);
+    font-weight: var(--heading-h3-font-weight);
+    line-height: var(--heading-h3-line-height);
+  }
+  .root[data-order="4"] {
+    font-size: var(--heading-h4-font-size);
+    font-weight: var(--heading-h4-font-weight);
+    line-height: var(--heading-h4-line-height);
+  }
+  .root[data-order="5"] {
+    font-size: var(--heading-h5-font-size);
+    font-weight: var(--heading-h5-font-weight);
+    line-height: var(--heading-h5-line-height);
+  }
+  .root[data-order="6"] {
+    font-size: var(--heading-h6-font-size);
+    font-weight: var(--heading-h6-font-weight);
+    line-height: var(--heading-h6-line-height);
+  }
+}

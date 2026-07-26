@@ -46,6 +46,12 @@
       "description": "Horizontal flex row with theme-spacing gap and optional even growth."
     },
     {
+      "name": "paper",
+      "type": "registry:ui",
+      "title": "Paper",
+      "description": "A surface: raised background, themed radius/shadow, optional border."
+    },
+    {
       "name": "popover",
       "type": "registry:ui",
       "title": "Popover",
@@ -56,6 +62,18 @@
       "type": "registry:ui",
       "title": "Stack",
       "description": "Vertical flex stack with theme-spacing gap."
+    },
+    {
+      "name": "text",
+      "type": "registry:ui",
+      "title": "Text",
+      "description": "Polymorphic body text riding the size vocabulary, with dimmed and truncate modifiers."
+    },
+    {
+      "name": "title",
+      "type": "registry:ui",
+      "title": "Title",
+      "description": "Semantic h1-h6 heading with theme heading tokens per order."
     },
     {
       "name": "soribashi-init",

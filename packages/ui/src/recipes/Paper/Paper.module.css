@@ -1,0 +1,11 @@
+@layer soribashi.recipes {
+  .root {
+    background-color: var(--surface-raised);
+    color: var(--text-default);
+    border-radius: var(--sb-paper-radius);
+    box-shadow: var(--sb-paper-shadow, none);
+  }
+  .root[data-with-border] {
+    border: 1px solid var(--border-default);
+  }
+}
