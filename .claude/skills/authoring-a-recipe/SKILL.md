@@ -7,16 +7,18 @@ description: Use when adding or modifying a component recipe in packages/ui
 
 Instructions for adding or changing a component recipe under `packages/ui/src/recipes/`. Follow every section; the gates described in section 8 and 9 fail loudly, by design, when a step is skipped.
 
-## 1. The four-file layout
+## 1. The four-file layout, plus room for a helper module
 
-Every recipe is exactly four files in `packages/ui/src/recipes/<Name>/`, same names every time, no exceptions:
+Every recipe has exactly these four files in `packages/ui/src/recipes/<Name>/`, same names every time:
 
 - `<Name>.tsx`: the recipe itself.
 - `<Name>.module.css`: the recipe's stylesheet.
 - `<Name>.test.tsx`: browser tier, render, interaction, and a11y assertions.
 - `<Name>.visual.test.tsx`: visual tier, screenshot baselines.
 
-Do not add a fifth file to the recipe directory, and do not split one of the four across additional files. `packages/ui/scripts/derive.ts` reads exactly these four paths per recipe name when it builds the agent-facing manifest; a missing or renamed file breaks derivation.
+`packages/ui/scripts/derive.ts` reads exactly these four fixed paths per recipe name when it builds the agent-facing manifest (`derive.ts:118-120`); a missing or renamed one of these four breaks derivation, and none of them may be split across additional files.
+
+A recipe MAY carry additional helper modules beyond these four when it genuinely needs one: `packages/ui/src/recipes/Select/` ships `items.ts` (pure item-resolution logic, no JSX) and `items.test.ts` (its Node-tier unit tests) alongside the four fixed files, because that resolution logic is substantial enough, and independent enough of rendering, to warrant its own module and its own fast (non-browser) test tier. This is not something `derive.ts` or any other gate can see or enforce either way — it reads only the four fixed paths — so the discipline is: reach for a helper module only when a real seam like Select's exists (non-JSX logic with its own test surface), not as a place to shrink an oversized `<Name>.tsx` for its own sake.
 
 ## 2. Builder selection
 
@@ -52,30 +54,23 @@ export const recipeCategory = 1 as const;
 
 Today's recipes are mixed: about half carry this full comment and half are a bare `export const recipeCategory = N as const;` line, an artifact of the layout sweep landing fast. That split is not a second sanctioned style; it is not yet cleaned up. Write the full comment on every new or touched recipe rather than matching whichever bare neighbour happens to be closest.
 
-**Generic-params trap.** When a recipe declares `vocabularyAxes`, spell out every type parameter the builder call takes; do not let them be inferred. `defineComponent` needs all four (`TOwnProps, TSelectors, TVariants, TVocabAxes`):
+**Known limitation: `size`/`intent` are bare `string` on every recipe today, regardless of generic params.** An earlier version of this section claimed that spelling out a builder call's generic params explicitly (rather than leaving them to inference) was what preserved vocabulary-axis narrowing. A type probe run against all seventeen recipes disproved that: explicit generic params make **zero difference**. The actual mechanism is this package-wide, foundational gap, documented here rather than fixed (fixing it is future work — see below):
+
+- `InjectedVocabularyProps` (`packages/factory/src/types/vocabulary-axes.ts`) types every opted-in axis as bare `string`. This is what every recipe in `packages/ui` gets, because every recipe imports its builder (`defineComponent`, `definePolymorphicComponent`, `defineCompound`, `defineGenericComponent`) directly from `@soribashi/core`.
+- The literal-union narrowing you might expect (`size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'`) exists only on `ThemedVocabularyProps`, which is produced solely by wrapping a builder through `makeBuilders<TTheme>()` / `createSoribashiBuilders(theme)` (`packages/factory/src/types/themed-builders.ts`). **No recipe in `packages/ui` calls either function.** So today, `size` and `intent` are bare `string` on every recipe that declares them, Select's hand-declared `SelectSize` type being the sole exception (Select narrows `size` itself, independent of the builder, by declaring its own type rather than accepting the injected one).
+- `variant` is different, and narrows correctly on every recipe that declares a `variants` tuple, with or without explicit generic params: it comes from the recipe's own tuple via `VariantProp<TVariants>` (same file), which is independent of the theme-wrapper path entirely.
+
+**The real trap is dropping `as const` from a `variants` tuple**, not omitting generic params. `VariantProp<TVariants>` collapses to `unknown` (an intersection no-op, so `variant` accepts anything) exactly when `TVariants[number]` has widened to plain `string` — which is exactly what happens if a `variants` tuple loses its `as const`:
 
 ```ts
-export const Container = defineComponent<
-  ContainerProps,
-  readonly ['root'],
-  readonly [],
-  readonly ['size']
->({ /* ... */ });
+const VARIANTS = ['filled', 'outline']; // no `as const`: widens to string[]
+// ...
+variants: VARIANTS, // TVariants[number] is now `string`; VariantProp<TVariants> is `unknown`
 ```
 
-`definePolymorphicComponent` needs all five (`TOwnProps, TDefaultAs, TSelectors, TVariants, TVocabAxes`):
+With that widening, `<MyRecipe variant="nope" />` compiles silently, with no error pointing at the cause. Every recipe in this package declares its `variants` tuple with `as const` today (e.g. `const ALERT_VARIANTS = ['filled', 'outline', 'subtle'] as const;`); keep doing that. This is the actual thing to get right, not the generic-params ritual the previous version of this section taught.
 
-```ts
-export const Text = definePolymorphicComponent<
-  TextProps,
-  'p',
-  readonly ['root'],
-  readonly [],
-  readonly ['size']
->({ /* ... */ });
-```
-
-Leaving these to inference has been observed to silently drop the vocabulary-axis typing: the recipe still compiles, but `size`/`intent`/`variant` narrowing quietly disappears from the prop surface, with no error pointing at the cause. Container pins the four-param form and Text pins the five-param form; follow whichever one matches the builder any time a recipe opts into `vocabularyAxes`.
+Generic params are still worth spelling out explicitly for other reasons (readability, and `defineGenericComponent` specifically has no automatic vocabulary-axis composition at all — see Select.test.tsx's compile-time pin on `SelectSignature`), but doing so does not, by itself, produce any narrowing that inference wouldn't already give you.
 
 ## 3. The two invariants
 
@@ -93,7 +88,7 @@ A recipe under `packages/ui` is a consumer, not the framework: it is where a voc
 - The only literals exempt from that rule: the length allowlist `0`, `1px`, `2px`, `100%`; unitless numbers (`opacity`, `line-height`, `font-weight`, `z-index`); and time values (`ms`/`s`) for transitions. `transparent`, `currentColor`, and `inherit` are the only allowed named-colour keywords; `white` and every other named colour, every hex literal, and every colour function (`rgb`, `rgba`, `hsl`, `hsla`, `oklch`, `oklab`, `lab`, `lch`, `color()`) outside a `var()` is a violation.
 - This is mechanically enforced: `packages/ui/test/no-hardcoded-values.test.ts` scans every `.module.css` under `src/recipes/` and fails on any literal it finds. Write to the rule from the start rather than discovering it at test time.
 - Emitted theme token names a recipe's stylesheet may depend on: `--color-*`, `--radius-*`, `--spacing-*`, `--font-size-*`, `--font-family-*`, `--font-weight-*`, `--line-height-*`, `--shadow-*`, `--breakpoint-*`, `--z-index-*`, `--text-*`, `--surface-*`, `--border-*`, `--accent-*`. A recipe's own local vars (`--sb-*`) and its `autoVars`-derived vars (see next bullet) never collide with this list, so they need no separate exclusion.
-- If the recipe declares `variants` and the rendered instance has both `intent` and `variant` set, the builder's `autoVars` call gives the recipe, for free, on `root`: `--{lowercased-name}-bg`, `-color`, `-border`, and (when the intent resolver provides them) `-hover`, `-active`, `-hover-color`. Reach for these vars in the CSS (`var(--button-bg)`, `var(--button-hover, var(--button-bg))`) rather than re-deriving colour logic in the recipe.
+- If the recipe declares `variants` and the rendered instance has both `intent` and `variant` set, `defineComponent`/`definePolymorphicComponent`/`defineGenericComponent`'s automatic `autoVars` fallback gives the recipe, for free, on `root`: `--{lowercased-name}-bg`, `-color`, `-border`, and (when the intent resolver provides them) `-hover`, `-active`, `-hover-color`. Reach for these vars in the CSS (`var(--button-bg)`, `var(--button-hover, var(--button-bg))`) rather than re-deriving colour logic in the recipe. **`defineCompound` does not call `autoVars` at all** — it is not imported in `define-compound.tsx`, and a compound's `varsResolver` is `config.vars` or `undefined`, with no fallback. A compound that declares `variants` (Tabs does) gets none of these vars automatically; if a compound needs them, its own `vars` resolver has to call `autoVars` explicitly, the same way Button/Badge do for the single-component builders (see the Traps section below).
 
 ## 5. Style props and visibility props arrive free
 
@@ -133,7 +128,7 @@ Both live in the recipe, not the framework, because `@soribashi/ui` is a consume
 
 ## 7. Data attributes `getStyles('root')` already emits
 
-`getStyles('root')` (or the compound equivalent, see section 10) already stamps `data-variant`, `data-intent`, and `data-size` onto the element whenever the corresponding prop is set. Never hand-emit these attributes yourself. Vocabulary axis props (`size`/`intent`/`variant`) are not stripped from `props` by the builder before render, so destructure them out in the render body and do not spread them onto the DOM element as raw attributes; they're already represented via the `data-*` attributes `getStyles` produced.
+`getStyles('root')` (or the compound equivalent, see section 10) already stamps `data-variant`, `data-intent`, and `data-size` onto the element, gated on the recipe's own declared config rather than on prop presence alone: `data-intent`/`data-size` are emitted only when the recipe opted that axis into `vocabularyAxes` (`buildDataAttrs`, `packages/factory/src/data-attrs.ts:16-24`), and `data-variant` is emitted when the recipe's builder-config `variants` tuple is non-empty OR `'variant'` is in `vocabularyAxes` (see section 13 for the exact OR condition). Never hand-emit these attributes yourself. Vocabulary axis props (`size`/`intent`/`variant`) are not stripped from `props` by the builder before render, so destructure them out in the render body and do not spread them onto the DOM element as raw attributes; they're already represented via the `data-*` attributes `getStyles` produced. This applies to `defineCompound` too: it does not strip vocabulary-axis props from a part's `props` before render either, so every part's render body needs the same destructure, not just single-component recipes' (see Tabs.tsx's root part for the worked example after this was missed once).
 
 `mod` is Box-only. Box's shorthand `mod` prop, and the `getBoxMod` conversion behind it, live entirely in `Box.tsx`; it is not framework machinery, and no other recipe receives, forwards, or should reach for a `mod` prop. Every other recipe that needs a boolean or enum reflected onto the DOM as a `data-*` attribute stamps it by hand in its own render body instead: `data-with-border` (Paper), `data-grow` (Group), `data-fluid` (Container), `data-inline` (Center), `data-order` (Title), and so on. Treat hand-stamping as the established pattern outside Box, not a workaround; do not invent a framework-level mod-like helper to avoid it.
 
@@ -165,10 +160,11 @@ A new or changed recipe carries registration obligations beyond its own four fil
 - `light-dark()` is colour-only. It is a `<color>` production (CSS Color 5); substituting it into a registered `<length>` custom property (`--radius-md`, `--spacing-md`, `--font-size-md`) is invalid at computed-value time. Never propose a `light-dark()` dark override for a non-colour token.
 - Never register colour tokens with `@property`. Registration makes the custom property's value computed at the declaring element, which freezes `light-dark()` to that element's `color-scheme` and silently breaks scoped, multi-tenant dark mode. Only non-colour tokens (`radius`, `spacing`, `font-size`) are registered.
 - `inherits` is always `true` on every `@property` registration. `inherits: false` would stop a descendant from picking up an ancestor's scoped token override (the mechanism `createTheme({ scope })` and the multi-tenant demo rely on), falling back to the registered `initial-value` instead.
-- A recipe-supplied `vars` resolver REPLACES the builder's automatic `autoVars` call; it does not layer on top of it (`config.vars ? config.vars(...) : autoVars(...)`, mutually exclusive). A recipe that needs both the auto-derived `--{name}-bg/-color/-border/...` vars AND its own custom var (e.g. a size-driven dimension var) must invoke `autoVars` itself inside its `vars` resolver and merge the result in. See Button's `vars` function for the pattern. None of the ten layout recipes needs this merge: none of them declares `variants`, so a recipe with no `vars` key at all gets an automatic `autoVars` fallback that's a no-op, and a recipe that does declare its own `vars` resolver has no auto-derived `-bg/-color/-border` vars to preserve in the first place. Button is the only recipe today with both `variants` and a custom dimension var, which is exactly why it's the one that needs the merge-in pattern.
+- A recipe-supplied `vars` resolver REPLACES the builder's automatic `autoVars` call; it does not layer on top of it (`config.vars ? config.vars(...) : autoVars(...)`, mutually exclusive, and only on the three single-component builders — `defineCompound` has no automatic fallback at all, see section 4 above). A recipe that needs both the auto-derived `--{name}-bg/-color/-border/...` vars AND its own custom var (e.g. a size-driven dimension var) must invoke `autoVars` itself inside its `vars` resolver and merge the result in. See Button's `vars` function for the pattern. None of the ten layout recipes needs this merge: none of them declares `variants`, so a recipe with no `vars` key at all gets an automatic `autoVars` fallback that's a no-op, and a recipe that does declare its own `vars` resolver has no auto-derived `-bg/-color/-border` vars to preserve in the first place. Button and Badge are the two recipes today that genuinely need the merge-in pattern (both declare `variants` AND a custom dimension var — Badge's `--sb-badge-h`); follow their `vars` function as the pattern. Alert's own `vars` resolver also explicitly re-invokes `autoVars` even though it has no extra dimension var to merge in, which is functionally identical to the automatic fallback it would get by omitting `vars` entirely — worth knowing so you don't copy that redundancy into a new recipe that has nothing to merge either.
 - `vitest-browser-react`'s `render` is async: it resolves a `Promise<RenderResult>`. Always `await render(...)`; a missing `await` produces a `RenderResult`-shaped promise, not the rendered screen, and every subsequent `screen.getByRole(...)` call breaks in confusing ways.
 - Compound `getStyles` takes an options object, never a bare string. A part styling its own slot calls `getStyles()` with no arguments; a part reaching across to style a sibling slot calls `getStyles({ part: 'siblingSlotName' })`. There is no bare-string form (`getStyles('root')` is `defineComponent`/`definePolymorphic`/`defineGeneric`'s API, not `defineCompound`'s).
 - `defineCompound` does NOT strip Base UI's `render` prop from a part's prop surface. Every part that wraps a Base UI primitive must both `Omit<BaseUiPartProps, 'render'>` in its TypeScript prop type AND strip `render` in its destructure at runtime (see Popover's `stripFrameworkKeys`, which strips `render` alongside the Styles API's own `classNames`/`styles`/`vars`/`attributes`/`unstyled` keys). `as` is the only public polymorphism surface soribashi compound parts expose; never let Base UI's `render` leak through as a second, undocumented one.
+- `defineCompound` also does NOT strip vocabulary-axis props (`size`/`intent`/`variant`) from a part's `props` before render, the same gap section 7's rule warns about for single-component recipes. A part with a real DOM root that spreads its remaining `props` onto that element (after stripping only the Styles API's own framework keys) leaks the raw attribute (`variant="line"`) onto the DOM if it doesn't also destructure the vocabulary axes out first. Tabs' root part hit exactly this (fixed by destructuring `variant`/`size`/`intent` alongside the framework keys); Popover's root has no DOM of its own so the leak was structurally impossible there, which is why no earlier compound surfaced it. Any future compound with both a real DOM root and a vocabulary axis needs the same destructure.
 
 ## 11. Slots vs parts on compounds, and the const-array `slotKeys` convention
 

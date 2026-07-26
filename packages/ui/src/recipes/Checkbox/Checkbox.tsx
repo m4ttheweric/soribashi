@@ -115,13 +115,17 @@ function DashMark() {
  * rather than declared on `CheckboxProps` directly (vocabulary axis props
  * come from the builder, not the recipe's own prop type): `defineComponent`
  * composes `InjectedVocabularyProps<TVocabAxes>` into the public type for
- * free, the same mechanism Alert/Badge get, so `Checkbox`'s `size`/`intent`
- * are narrowable by a themed `makeBuilders<TTheme>()` wrapper the same way
- * theirs are, unlike a hand-declared `string` prop would be. Checkbox
- * declares NO variant axis: a checkbox has exactly one visual treatment per
+ * free, the same mechanism Alert/Badge get. That type is bare `string` for
+ * both axes today, same as theirs (see the authoring skill's "known
+ * limitation" section): the literal-union narrowing only exists behind
+ * `makeBuilders<TTheme>()`/`createSoribashiBuilders(theme)`, which no recipe
+ * in this package calls. Select's hand-declared `SelectSize`, not this
+ * mechanism, is the only narrowed `size` in the package. Checkbox declares
+ * NO variant axis: a checkbox has exactly one visual treatment per
  * intent/size, so there is nothing for a `variant` tuple to select between.
  * All four generic params are supplied explicitly (TOwnProps, TSelectors,
- * TVariants, TVocabAxes) per the skill's generic-params trap.
+ * TVariants, TVocabAxes) for readability; it makes no difference to
+ * narrowing either way.
  */
 export const Checkbox = defineComponent<
   CheckboxProps,
