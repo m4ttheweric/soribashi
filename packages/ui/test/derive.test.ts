@@ -146,15 +146,25 @@ describe('extractRecipeDependencies', () => {
   });
 });
 
-it('derives registryDependencies: [] for every current recipe', async () => {
+it('derives registryDependencies: [] for every current recipe except TextInput (-> field)', async () => {
+  // Task 3 landed this as an all-[] degenerate case (no recipe imported a
+  // sibling recipe yet). TextInput (Task 5) is the first real, non-empty
+  // instance: its render imports `Field` via '../Field/Field.tsx', so
+  // extractRecipeDependencies picks it up. Every OTHER recipe stays
+  // degenerate, so this keeps asserting that blanket case for everything but
+  // the one recipe that has grown a real dependency.
   const manifest = await buildManifest();
   for (const recipe of manifest.recipes) {
-    expect(recipe.registryDependencies, recipe.name).toEqual([]);
+    if (recipe.name === 'TextInput') {
+      expect(recipe.registryDependencies, recipe.name).toEqual(['field']);
+    } else {
+      expect(recipe.registryDependencies, recipe.name).toEqual([]);
+    }
   }
 });
 
 describe('buildManifest', () => {
-  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Field, Grid, Group, Paper, Popover, Select, Stack, Tabs, Text, and Title', async () => {
+  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Field, Grid, Group, Paper, Popover, Select, Stack, Tabs, Text, TextInput, and Title', async () => {
     const manifest = await buildManifest();
     expect(manifest.recipes.map((r) => r.name)).toEqual([
       'Alert',
@@ -174,6 +184,7 @@ describe('buildManifest', () => {
       'Stack',
       'Tabs',
       'Text',
+      'TextInput',
       'Title',
     ]);
   });

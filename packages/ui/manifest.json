@@ -472,6 +472,38 @@
       "registryDependencies": []
     },
     {
+      "name": "TextInput",
+      "category": 4,
+      "builder": "defineComponent",
+      "slots": ["root", "label", "description", "error", "input"],
+      "parts": [],
+      "vocabularyAxes": ["size"],
+      "variants": [],
+      "defaults": {
+        "size": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/TextInput/TextInput.tsx",
+        "packages/ui/src/recipes/TextInput/TextInput.module.css",
+        "packages/ui/src/recipes/TextInput/TextInput.test.tsx",
+        "packages/ui/src/recipes/TextInput/TextInput.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--border-default",
+        "--border-strong",
+        "--color-danger-600",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--radius-sm",
+        "--spacing-sm",
+        "--surface-default",
+        "--text-default"
+      ],
+      "baseUi": true,
+      "registryDependencies": ["field"]
+    },
+    {
       "name": "Title",
       "category": 1,
       "builder": "defineComponent",

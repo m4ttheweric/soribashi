@@ -41,6 +41,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Stack: { exempt: 'geometry only' },
   Tabs: 'covered',
   Text: 'covered',
+  TextInput: 'covered',
   Title: 'covered',
 };
 
@@ -57,5 +58,6 @@ export const SMALL_COVERAGE_NAMES: readonly string[] = [
   'Select',
   'Tabs',
   'Text',
+  'TextInput',
   'Title',
 ];

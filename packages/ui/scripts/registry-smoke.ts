@@ -48,6 +48,29 @@
  * items; `checkbox` is rendered for real by writeAppEntry below, so the
  * bundle-marker assertion is real evidence this time, not a pass-by-omission.
  *
+ * This ALSO now proves the first real cross-recipe `registryDependencies`
+ * chain: `textinput` declares `registryDependencies: ["field"]` (Task 3's
+ * derivation), so this script vendors and builds `field` as TextInput's
+ * dependency, never listed in SMOKE_ITEMS itself. Task 3's probes (see
+ * .superpowers/sdd/2026-07-26-slice-4-components/task-3-report.md, "Probe
+ * record") established that the shadcn CLI resolves a BARE-NAME
+ * `registryDependencies` entry REMOTELY against the hosted shadcn registry,
+ * and hard-fails the WHOLE `add` (exit 1, zero files written, even for the
+ * requesting item) the instant that lookup 404s -- confirmed even when the
+ * dependency's own file is separately, explicitly listed on the same CLI
+ * invocation (Probe C). The committed `registry/textinput.json` correctly
+ * keeps the bare name `"field"` (that is the right form for the eventual
+ * published-registry story), so this script rewrites its OWN SCRATCH COPY of
+ * that field to the relative-path form the CLI resolves LOCALLY instead
+ * (Probe B2: `"./registry/<name>.json"` succeeds, exit 0, and the CLI vendors
+ * the dependency's files itself as part of the same invocation) -- see
+ * `scratchRegistryDependencies`'s own doc comment for the full justification,
+ * which mirrors `vendorSourcePackage`'s identical rewrite of `workspace:*` to
+ * `file:` immediately below: the committed form targets the publish story,
+ * the scratch copy is a local-file install, a materially different
+ * resolution context that gets a materially different form of the same
+ * field.
+ *
  * The copy (rather than `workspaces` pointed straight at this repo's real
  * packages/core etc.) is load-bearing, not incidental: `workspace:*`
  * dependencies only resolve inside an actual bun workspace, and bun's
@@ -97,15 +120,23 @@ const THEME_CSS_PATH = join(REPO_ROOT, 'apps', 'workshop', 'src', 'generated', '
 const MANIFEST_PATH = join(REPO_ROOT, 'packages', 'ui', 'manifest.json');
 
 /**
- * The registry items this check installs, one per authoring category it
- * wants proof for: `button` (a leaf primitive), `stack` (a layout recipe),
- * and `checkbox` (a Base UI-backed form control, the first SMOKE_ITEM with
- * an external npm dependency to resolve). Add a name here to extend
- * coverage; a name with no matching registry/<name>.json fails loudly in
- * readRegistryItem, not silently.
+ * The registry items this check installs and asserts bundle markers for, one
+ * per authoring category (plus, as of `textinput`, one per dependency-chain
+ * shape) it wants proof for: `button` (a leaf primitive), `stack` (a layout
+ * recipe), `checkbox` (a Base UI-backed form control with an external npm
+ * dependency to resolve), and `textinput` (the first SMOKE_ITEM with a
+ * non-empty `registryDependencies` -- see the module doc comment's
+ * cross-recipe-chain paragraph). This is the ASSERTED list: bundle markers
+ * (assertBundleHasRecipeMarkers) are checked for these items only, and
+ * writeAppEntry imports/renders exactly these. `field` (textinput's
+ * dependency) deliberately does NOT appear here: it has no `--sb-field-*` var
+ * to assert a marker for, and its own proof is structural (the vendored
+ * TextInput.tsx's `'../Field/Field.tsx'` import resolves and the build
+ * succeeds), not a bundle-marker check -- see resolveDependencyClosure. Add a
+ * name here to extend ASSERTED coverage; a name with no matching
+ * registry/<name>.json fails loudly in readRegistryItem, not silently.
  */
-const SMOKE_ITEMS = ['button', 'stack', 'checkbox'] as const;
-type SmokeItemName = (typeof SMOKE_ITEMS)[number];
+const SMOKE_ITEMS = ['button', 'stack', 'checkbox', 'textinput'] as const;
 
 interface RegistryFile {
   path: string;
@@ -117,6 +148,7 @@ interface RegistryFile {
 interface RegistryItem {
   name: string;
   dependencies: string[];
+  registryDependencies: string[];
   files: RegistryFile[];
 }
 
@@ -124,24 +156,65 @@ function log(message: string): void {
   console.log(`[registry-smoke] ${message}`);
 }
 
-function registryItemPath(name: SmokeItemName): string {
+/**
+ * Not restricted to `SmokeItemName`: `resolveDependencyClosure` also looks up
+ * names that only ever appear inside another item's `registryDependencies`
+ * (e.g. `field`, never itself a SMOKE_ITEMS entry), so this accepts any
+ * registry item name.
+ */
+function registryItemPath(name: string): string {
   return join(REPO_ROOT, 'packages', 'ui', 'registry', `${name}.json`);
 }
 
 /**
- * Loud-failure requirement: a SMOKE_ITEMS entry with no matching registry
- * file must fail with a message that says exactly which entry and which
- * path, and how to fix it, not a bare ENOENT.
+ * Loud-failure requirement: a name with no matching registry file must fail
+ * with a message that says exactly which name and which path, and how to fix
+ * it, not a bare ENOENT. Used both for SMOKE_ITEMS entries directly and for
+ * names discovered transitively via `registryDependencies`.
  */
-function readRegistryItem(name: SmokeItemName): RegistryItem {
+function readRegistryItem(name: string): RegistryItem {
   const path = registryItemPath(name);
   if (!existsSync(path)) {
     throw new Error(
-      `[registry-smoke] SMOKE_ITEMS entry "${name}" has no matching registry file at ${path}. ` +
+      `[registry-smoke] "${name}" has no matching registry file at ${path}. ` +
         'Run: bun run generate:ui',
     );
   }
   return JSON.parse(readFileSync(path, 'utf-8')) as RegistryItem;
+}
+
+/**
+ * Computes the registryDependencies closure of SMOKE_ITEMS: SMOKE_ITEMS
+ * itself, plus, transitively, every name reachable through each item's own
+ * `registryDependencies` field. A work-queue loop rather than a fixed
+ * one-level lookup, so a future two-hop chain (a control depending on a
+ * compound that itself depends on something else) is not silently
+ * under-vendored the day this needs to grow past one level. Today this
+ * equals SMOKE_ITEMS plus `field` (textinput's sole dependency).
+ *
+ * The closure feeds every vendoring concern that must ALSO cover a
+ * dependency, even though the dependency itself is never asserted or
+ * explicitly listed on the CLI invocation: the scratch registry/ copies
+ * (writeScaffold), `buildScratchDependencies` (field's `@base-ui/react` dep
+ * must flow into the scratch project's own package.json), `tryCliVendor`'s
+ * file-verification loop (proving field's files actually landed, via the
+ * CLI's OWN local dependency resolution -- see scratchRegistryDependencies),
+ * and `manualVendor`'s fallback loop (so the fallback path produces field's
+ * files too, not just the CLI path).
+ */
+function resolveDependencyClosure(names: readonly string[]): RegistryItem[] {
+  const closure = new Map<string, RegistryItem>();
+  const queue = [...names];
+  while (queue.length > 0) {
+    const name = queue.shift()!;
+    if (closure.has(name)) continue;
+    const item = readRegistryItem(name);
+    closure.set(name, item);
+    for (const dep of item.registryDependencies) {
+      if (!closure.has(dep)) queue.push(dep);
+    }
+  }
+  return [...closure.values()];
 }
 
 function makeScratchDir(): string {
@@ -244,11 +317,55 @@ export const { defineComponent, definePolymorphicComponent, defineCompound, defi
 }
 
 /**
+ * Rewrites a registry item's `registryDependencies` bare names to the
+ * relative-path form the shadcn CLI resolves LOCALLY, for the SCRATCH COPY
+ * only. Justified by, and mirroring, `vendorSourcePackage`'s identical
+ * `workspace:*` -> `file:` rewrite above: the committed `registry/<name>.json`
+ * targets the publish story (a real consumer's own registry resolving a
+ * bare name against a real hosted registry, which this package does not have
+ * yet), while the scratch project is a local-file install, a materially
+ * different resolution context that needs a materially different form of the
+ * same field. Justified empirically, not by inference: Task 3's probes
+ * (task-3-report.md, "Probe record") showed a bare name is resolved REMOTELY
+ * against the hosted shadcn registry and hard-fails the WHOLE `add` (exit 1,
+ * zero files, even for the requesting item) when that lookup 404s -- even
+ * when the dependency's own file is separately listed on the same CLI
+ * invocation (Probe C) -- while the relative-path form
+ * `"./registry/<name>.json"` resolves LOCALLY and succeeds (exit 0), with the
+ * CLI vendoring the dependency's own files as part of the same invocation
+ * (Probe B2). Fails loudly, per this script's own convention, if a named
+ * dependency has no local registry file in this run's dependency closure to
+ * point at, rather than silently emitting a path that would 404.
+ */
+function scratchRegistryDependencies(
+  item: RegistryItem,
+  availableNames: ReadonlySet<string>,
+): string[] {
+  return item.registryDependencies.map((dep) => {
+    if (!availableNames.has(dep)) {
+      throw new Error(
+        `[registry-smoke] registry item "${item.name}" declares registryDependencies dependency ` +
+          `"${dep}", which has no local registry/${dep}.json in this run's dependency closure ` +
+          '(resolveDependencyClosure). Add it there, or fix the item.',
+      );
+    }
+    return `./registry/${dep}.json`;
+  });
+}
+
+/**
  * A minimal Vite + React 19 project. `@soribashi/core` and its
  * `workspace:*` dependencies (@soribashi/factory, @soribashi/theme) are
  * vendored into a scratch-local `vendor/` workspace (see
  * vendorSourcePackage) and linked in via `file:`, per the module-level
  * doc comment's caveat about what this can and cannot prove.
+ *
+ * `items` here is the FULL dependency closure of SMOKE_ITEMS (see
+ * resolveDependencyClosure), not SMOKE_ITEMS alone: a dependency like `field`
+ * needs its own scratch registry/ copy and its own external deps
+ * (`@base-ui/react`) folded into the scratch project's package.json, even
+ * though it is never itself asserted or explicitly listed on the CLI
+ * invocation.
  */
 async function writeScaffold(scratchDir: string, items: RegistryItem[]): Promise<void> {
   for (const name of ['core', 'factory', 'theme']) {
@@ -265,10 +382,10 @@ async function writeScaffold(scratchDir: string, items: RegistryItem[]): Promise
     version: '0.0.0',
     type: 'module',
     scripts: { build: 'vite build' },
-    // Derived from each SMOKE_ITEMS entry's own `dependencies` (see
-    // buildScratchDependencies), rather than hardcoded, so a SMOKE_ITEM
-    // needing an external package beyond @soribashi/core (e.g. a Base UI
-    // item's `@base-ui/react`) gets that package pinned to the range
+    // Derived from every closure item's own `dependencies` (see
+    // buildScratchDependencies), rather than hardcoded, so an item needing an
+    // external package beyond @soribashi/core (e.g. a Base UI item's
+    // `@base-ui/react`) gets that package pinned to the range
     // packages/ui/package.json itself uses, not left to whatever the shadcn
     // CLI resolves. @soribashi/core is the only soribashi package that also
     // gets a top-level entry here, since that is what the vendored
@@ -365,12 +482,23 @@ export default defineConfig({
   await writeFile(join(scratchDir, 'index.html'), indexHtml, 'utf-8');
   await writeFile(join(scratchDir, 'src', 'index.css'), '', 'utf-8');
   // The CLI is invoked as `add ./registry/<name>.json`, a local-file item
-  // address per SMOKE_ITEM, so each one needs its own copy inside the
-  // scratch project.
-  for (const name of SMOKE_ITEMS) {
+  // address, so every closure item (SMOKE_ITEMS plus any transitive
+  // registryDependencies, e.g. `field`) needs its own copy inside the
+  // scratch project -- `field` is never named on the CLI invocation itself,
+  // but it must still be sitting there locally for `textinput`'s rewritten
+  // relative-path dependency (see scratchRegistryDependencies) to resolve
+  // against. Each copy's `registryDependencies` is rewritten to the
+  // relative-path form for this scratch project's own local resolution;
+  // every other field is passed through unchanged.
+  const closureNames = new Set(items.map((item) => item.name));
+  for (const item of items) {
+    const scratchItem = {
+      ...item,
+      registryDependencies: scratchRegistryDependencies(item, closureNames),
+    };
     await writeFile(
-      join(scratchDir, 'registry', `${name}.json`),
-      readFileSync(registryItemPath(name), 'utf-8'),
+      join(scratchDir, 'registry', `${item.name}.json`),
+      `${JSON.stringify(scratchItem, null, 2)}\n`,
       'utf-8',
     );
   }
@@ -396,13 +524,27 @@ interface VendorResult {
 }
 
 /**
- * Drives the real `shadcn` CLI with every SMOKE_ITEM in a single `add`
- * invocation, the way a developer installing several recipes at once would.
+ * Drives the real `shadcn` CLI with every SMOKE_ITEM (the ASSERTED list) in
+ * a single `add` invocation, the way a developer installing several recipes
+ * at once would. `field` is deliberately NOT named on the command line: per
+ * Task 3's Probe C, explicitly co-listing a dependency's file does not
+ * change how the CLI handles a bare name in another item's
+ * `registryDependencies` -- what actually makes this work is the scratch
+ * copy's rewritten relative-path dependency (scratchRegistryDependencies),
+ * which the CLI follows and resolves LOCALLY on its own. `closureItems`
+ * (SMOKE_ITEMS plus every transitive dependency, e.g. `field`) is what the
+ * post-install file-verification loop checks against, so this proves that
+ * local dependency resolution actually happened -- field's files landing is
+ * PART of what this check exists to prove, not an assumption it makes.
  * Returns ok: false (never throws) on any failure so the caller can fall
  * back to the manual resolver; the specific failure is logged either way.
  */
-function tryCliVendor(scratchDir: string, items: RegistryItem[]): { ok: boolean; reason?: string } {
-  const registryArgs = items.map((item) => `./registry/${item.name}.json`);
+function tryCliVendor(
+  scratchDir: string,
+  smokeItems: RegistryItem[],
+  closureItems: RegistryItem[],
+): { ok: boolean; reason?: string } {
+  const registryArgs = smokeItems.map((item) => `./registry/${item.name}.json`);
   log(
     `attempting to vendor via: bunx shadcn@latest add ${registryArgs.join(' ')} --yes --overwrite`,
   );
@@ -427,7 +569,7 @@ function tryCliVendor(scratchDir: string, items: RegistryItem[]): { ok: boolean;
     };
   }
 
-  for (const item of items) {
+  for (const item of closureItems) {
     for (const file of item.files) {
       const candidates = candidateVendoredPaths(scratchDir, file.target);
       const written = candidates.find((p) => existsSync(p));
@@ -453,10 +595,12 @@ function tryCliVendor(scratchDir: string, items: RegistryItem[]): { ok: boolean;
 }
 
 /**
- * Fallback resolver: writes each item's files[] entry's `content` to its
- * `target`, using the same src/-rooted convention the CLI resolved to (see
- * candidateVendoredPaths), so main.tsx's imports below work identically
- * regardless of which path was taken.
+ * Fallback resolver: writes each closure item's files[] entry's `content` to
+ * its `target`, using the same src/-rooted convention the CLI resolved to
+ * (see candidateVendoredPaths), so main.tsx's imports below work identically
+ * regardless of which path was taken. Takes the full dependency closure (not
+ * just SMOKE_ITEMS), so a `field`-shaped dependency lands via this fallback
+ * path too, not only via the CLI's own local resolution.
  */
 async function manualVendor(scratchDir: string, items: RegistryItem[]): Promise<void> {
   for (const item of items) {
@@ -469,29 +613,40 @@ async function manualVendor(scratchDir: string, items: RegistryItem[]): Promise<
   }
 }
 
-async function vendorItems(scratchDir: string, items: RegistryItem[]): Promise<VendorResult> {
-  const cli = tryCliVendor(scratchDir, items);
+async function vendorItems(
+  scratchDir: string,
+  smokeItems: RegistryItem[],
+  closureItems: RegistryItem[],
+): Promise<VendorResult> {
+  const cli = tryCliVendor(scratchDir, smokeItems, closureItems);
   if (cli.ok) {
     log('vendored via: the real shadcn CLI');
     return { path: 'cli' };
   }
   log(`CLI vendoring failed, falling back to the manual resolver. Reason: ${cli.reason}`);
-  await manualVendor(scratchDir, items);
+  await manualVendor(scratchDir, closureItems);
   log('vendored via: the manual resolver (fallback)');
   return { path: 'manual', reason: cli.reason };
 }
 
 /**
- * Renders Button and Checkbox inside Stack so a single mount proves all
- * three SMOKE_ITEMS together, the way a consumer installing a layout recipe
- * alongside leaf recipes actually uses them. Checkbox is genuinely rendered
- * here, not merely imported: an unrendered import is tree-shaken before
- * module resolution (see the module doc comment's Popover history), so
- * actually mounting it is what makes the build require `@base-ui/react` to
- * resolve at all. This composition is written by hand (not derived from
- * SMOKE_ITEMS generically): which recipes nest inside which is an authoring
- * decision, not something recoverable from the registry item alone. Adding
- * a fourth SMOKE_ITEM needs this JSX updated too.
+ * Renders Button, Checkbox, and TextInput inside Stack so a single mount
+ * proves all four SMOKE_ITEMS together, the way a consumer installing a
+ * layout recipe alongside leaf recipes actually uses them. `items` here is
+ * SMOKE_ITEMS (the ASSERTED list), not the dependency closure: `field`
+ * arrives transitively through the vendored TextInput.tsx's own
+ * `'../Field/Field.tsx'` import, and is never imported or rendered directly
+ * here -- its proof is structural (that import resolving and the build
+ * succeeding), not a bundle marker (see the module doc comment and
+ * SMOKE_ITEMS' own doc comment). Checkbox and TextInput are genuinely
+ * rendered here, not merely imported: an unrendered import is tree-shaken
+ * before module resolution (see the module doc comment's Popover history),
+ * so actually mounting them is what makes the build require `@base-ui/react`
+ * (and, for TextInput, `field`) to resolve at all. This composition is
+ * written by hand (not derived from SMOKE_ITEMS generically): which recipes
+ * nest inside which is an authoring decision, not something recoverable from
+ * the registry item alone. Adding a fifth SMOKE_ITEM needs this JSX updated
+ * too.
  */
 async function writeAppEntry(scratchDir: string, items: RegistryItem[]): Promise<void> {
   const importLines = items.map((item) => {
@@ -513,6 +668,7 @@ if (el) {
     <Stack>
       <Button intent="primary">Smoke</Button>
       <Checkbox label="smoke" />
+      <TextInput label="smoke" />
     </Stack>,
   );
 }
@@ -629,16 +785,25 @@ async function main(): Promise<void> {
   );
   log(`SMOKE_ITEMS: ${SMOKE_ITEMS.join(', ')}`);
 
-  const items = SMOKE_ITEMS.map((name) => readRegistryItem(name));
+  const smokeItems = SMOKE_ITEMS.map((name) => readRegistryItem(name));
+  const closureItems = resolveDependencyClosure(SMOKE_ITEMS);
+  const closureOnlyNames = closureItems
+    .map((item) => item.name)
+    .filter((name) => !(SMOKE_ITEMS as readonly string[]).includes(name));
+  if (closureOnlyNames.length > 0) {
+    log(
+      `dependency closure adds: ${closureOnlyNames.join(', ')} (not asserted, not on the CLI invocation)`,
+    );
+  }
   const scratchDir = makeScratchDir();
 
   try {
-    await writeScaffold(scratchDir, items);
-    const vendored = await vendorItems(scratchDir, items);
-    await writeAppEntry(scratchDir, items);
+    await writeScaffold(scratchDir, closureItems);
+    const vendored = await vendorItems(scratchDir, smokeItems, closureItems);
+    await writeAppEntry(scratchDir, smokeItems);
     runBunInstall(scratchDir);
     runViteBuild(scratchDir);
-    await assertBundleHasRecipeMarkers(scratchDir, items);
+    await assertBundleHasRecipeMarkers(scratchDir, smokeItems);
     log(`PASS (vendoring path: ${vendored.path})`);
   } finally {
     rmSync(scratchDir, { recursive: true, force: true });

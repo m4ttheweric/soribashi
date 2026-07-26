@@ -15,5 +15,6 @@ export { Select, selectTheme } from './recipes/Select/Select.tsx';
 export { Stack, stackTheme } from './recipes/Stack/Stack.tsx';
 export { Tabs, tabsTheme } from './recipes/Tabs/Tabs.tsx';
 export { Text, textTheme } from './recipes/Text/Text.tsx';
+export { TextInput, textInputTheme } from './recipes/TextInput/TextInput.tsx';
 export { Title, titleTheme } from './recipes/Title/Title.tsx';
 export { uiTheme, uiVocabulary } from './theme.ts';

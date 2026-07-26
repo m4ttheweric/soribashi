@@ -16,6 +16,7 @@ import { Select } from '../recipes/Select/Select.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
+import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
 
 /**
@@ -142,6 +143,8 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
   ),
 
   Text: () => <Text className="reskin-target">x</Text>,
+
+  TextInput: () => <TextInput label="x" classNames={{ input: 'reskin-target' }} />,
 
   Title: () => <Title className="reskin-target">x</Title>,
 };

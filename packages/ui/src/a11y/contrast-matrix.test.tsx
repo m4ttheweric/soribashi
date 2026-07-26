@@ -22,6 +22,7 @@ import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
+import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
 import { uiTheme, uiVocabulary } from '../theme.ts';
 import { SMALL_COVERAGE_NAMES } from './matrix-classification.ts';
@@ -361,6 +362,51 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         targetClass: 'matrix-target-text-dimmed-paper',
         backdropClass: 'matrix-target-text-dimmed-paper-backdrop',
         description: 'Text: dimmed text on Paper surface',
+      },
+    ],
+  },
+
+  // State established at mount only (`defaultValue`), never by interaction:
+  // this entry mounts once and is read twice (light, then dark), and an
+  // interaction inside one scheme's `it` would leak into or be missing from
+  // the other (see SmallCoverageEntry's doc comment above). Also the
+  // colour-contrast half of Field.tsx's own `{ exempt: 'colour-via: ...' }`
+  // classification (matrix-classification.ts): Field itself renders no
+  // colour-bearing cells of its own, so its label/description/error parts'
+  // real, rendered contrast is proven here, through the control that
+  // actually composes them.
+  TextInput: {
+    render: () => (
+      <TextInput
+        label="Label"
+        description="Hint"
+        error="Required"
+        defaultValue="Sample"
+        classNames={{
+          input: 'matrix-target-textinput-input',
+          label: 'matrix-target-textinput-label',
+          error: 'matrix-target-textinput-error',
+        }}
+      />
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-textinput-input',
+        description: 'TextInput: input value text on the input surface',
+      },
+      {
+        // Field.module.css's `.label` rule sets only `color`, no background
+        // of its own, so it visually sits directly on the page canvas (no
+        // enclosing opaque surface here) -- matching Checkbox's/Tabs' own
+        // no-backdrop cells.
+        targetClass: 'matrix-target-textinput-label',
+        description: 'TextInput: label text on canvas',
+      },
+      {
+        // Same rationale: Field.module.css's `.error` rule sets only
+        // `color`, so the error text visually sits on the page canvas too.
+        targetClass: 'matrix-target-textinput-error',
+        description: 'TextInput: error text on canvas',
       },
     ],
   },

@@ -106,6 +106,12 @@
       "description": "Polymorphic body text riding the size vocabulary, with dimmed and truncate modifiers."
     },
     {
+      "name": "textinput",
+      "type": "registry:ui",
+      "title": "TextInput",
+      "description": "A text input on the Field anatomy: label, description, and error as convenience props or hand-composed."
+    },
+    {
       "name": "title",
       "type": "registry:ui",
       "title": "Title",
