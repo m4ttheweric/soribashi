@@ -1,0 +1,155 @@
+@layer soribashi.recipes {
+  .root {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    font-family: var(--font-family-sans);
+
+    &[data-orientation="vertical"] {
+      flex-direction: row;
+    }
+  }
+
+  .list {
+    display: flex;
+    position: relative;
+    gap: var(--spacing-xs);
+
+    &[data-orientation="vertical"] {
+      flex-direction: column;
+    }
+  }
+
+  .root[data-variant="line"] > .list {
+    border-block-end: 1px solid var(--border-default);
+
+    &[data-orientation="vertical"] {
+      border-block-end: none;
+      border-inline-end: 1px solid var(--border-default);
+    }
+  }
+
+  .root[data-variant="enclosed"] > .list {
+    gap: 0;
+    border-block-end: 1px solid var(--border-default);
+  }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: var(--spacing-xs);
+    padding-inline: var(--spacing-md);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+
+    /*
+     * Deliberately no `background-color`/`color`/`border-color` transition
+     * here (unlike Button's `.root`): this element is a contrast-matrix
+     * measurement target (see contrast-matrix.test.tsx's Tabs SMALL_COVERAGE
+     * entry), and that harness reads computed colour immediately after a
+     * synchronous `dark` class toggle with no per-entry no-transition
+     * wrapper of its own (unlike the Button grid's own beforeAll, see
+     * matrix-harness.tsx). A colour transition here would be read
+     * mid-interpolation instead of settled, exactly the trap
+     * Popover/Paper/Text/Title/Checkbox's stylesheets already avoid by
+     * transitioning no colour property at all.
+     */
+
+    &:hover {
+      color: var(--text-default);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--accent-primary, var(--text-default));
+      outline-offset: 2px;
+    }
+    &[data-disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+
+  .root[data-variant="line"] .tab {
+    border-radius: 0;
+  }
+
+  .root[data-variant="line"] .tab[data-active] {
+    color: var(--text-default);
+  }
+
+  .root[data-variant="pill"] .tab {
+    border-radius: var(--radius-md);
+  }
+
+  .root[data-variant="pill"] .tab[data-active] {
+    background: var(--surface-raised);
+    color: var(--text-default);
+  }
+
+  .root[data-variant="enclosed"] .tab {
+    margin-block-end: -1px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+
+  .root[data-variant="enclosed"] .tab[data-active] {
+    background: var(--surface-default);
+    border-color: var(--border-default);
+    border-block-end-color: var(--surface-default);
+    color: var(--text-default);
+  }
+
+  .panel {
+    padding-block: var(--spacing-md);
+    color: var(--text-default);
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-primary, var(--text-default));
+      outline-offset: 2px;
+    }
+  }
+
+  /*
+   * The sliding underline, positioned entirely off Base UI's own
+   * `Tabs.Indicator` runtime custom properties (--active-tab-left/-width/...,
+   * see TabsIndicatorCssVars): no theme-prefixed token is involved in the
+   * positioning math itself, only in the painted colour. Only meaningful for
+   * variant="line" (an underline makes no visual sense once pill/enclosed
+   * already paint the selected tab's own background), so it is hidden
+   * outright for the other two variants regardless of Base UI's own
+   * `hidden` attribute toggling.
+   */
+  .indicator {
+    display: none;
+  }
+
+  .root[data-variant="line"] .indicator:not([hidden]) {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    display: block;
+    inline-size: var(--active-tab-width);
+    block-size: 2px;
+    background: var(--accent-primary, var(--text-default));
+    transform: translateX(var(--active-tab-left));
+    transition:
+      transform 150ms,
+      width 150ms;
+  }
+
+  .root[data-variant="line"][data-orientation="vertical"] .indicator:not([hidden]) {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+    inline-size: 2px;
+    block-size: var(--active-tab-height);
+    transform: translateY(var(--active-tab-top));
+  }
+}

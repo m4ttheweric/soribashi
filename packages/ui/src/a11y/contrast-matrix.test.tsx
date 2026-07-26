@@ -19,6 +19,7 @@ import { Button } from '../recipes/Button/Button.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
+import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
 import { uiTheme, uiVocabulary } from '../theme.ts';
@@ -231,6 +232,49 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         backdropClass: 'matrix-target',
         description:
           'Popover: description text (--text-muted) on popup surface (--surface-default)',
+      },
+    ],
+  },
+
+  // State established at mount only (`defaultValue`), never by interaction:
+  // this entry mounts once and is read twice (light, then dark), and an
+  // interaction inside one scheme's `it` would leak into or be missing from
+  // the other (see SmallCoverageEntry's doc comment above). `variant="pill"`
+  // is chosen deliberately over the default `variant="line"`: pill's
+  // selected tab paints its own opaque `--surface-raised` background
+  // (Tabs.module.css's `.root[data-variant="pill"] .tab[data-active]`
+  // rule), giving a self-contained fg/bg pair with no backdrop needed,
+  // whereas line's selected tab stays background-transparent and would only
+  // re-measure the same canvas backdrop the unselected cell below already
+  // covers.
+  Tabs: {
+    render: () => (
+      <Tabs.Root defaultValue="a" variant="pill">
+        <Tabs.List>
+          <Tabs.Tab value="a" classNames={{ tab: 'matrix-target-tabs-selected' }}>
+            Selected
+          </Tabs.Tab>
+          <Tabs.Tab value="b" classNames={{ tab: 'matrix-target-tabs-unselected' }}>
+            Unselected
+          </Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="a">Panel A</Tabs.Panel>
+        <Tabs.Panel value="b">Panel B</Tabs.Panel>
+      </Tabs.Root>
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-tabs-selected',
+        description: 'Tabs: selected tab text on --surface-raised (pill variant)',
+      },
+      {
+        // The unselected tab's own background is transparent (Tabs.module.css's
+        // base `.tab` rule sets `background: transparent`), and it visually
+        // sits directly on the page canvas (`.list` paints no background of
+        // its own either), so no `backdropClass` is needed here -- matching
+        // Checkbox's/Paper's no-backdrop entries above.
+        targetClass: 'matrix-target-tabs-unselected',
+        description: 'Tabs: unselected tab text (--text-muted) on canvas',
       },
     ],
   },

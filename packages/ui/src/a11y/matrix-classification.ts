@@ -34,6 +34,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Paper: 'covered',
   Popover: 'covered',
   Stack: { exempt: 'geometry only' },
+  Tabs: 'covered',
   Text: 'covered',
   Title: 'covered',
 };
@@ -48,6 +49,7 @@ export const SMALL_COVERAGE_NAMES: readonly string[] = [
   'Checkbox',
   'Paper',
   'Popover',
+  'Tabs',
   'Text',
   'Title',
 ];

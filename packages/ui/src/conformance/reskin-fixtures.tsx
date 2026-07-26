@@ -12,6 +12,7 @@ import { Group } from '../recipes/Group/Group.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
+import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
 
@@ -106,6 +107,17 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
       <div>a</div>
       <div>b</div>
     </Stack>
+  ),
+
+  Tabs: () => (
+    <Tabs.Root defaultValue="a" classNames={{ tab: 'reskin-target' }}>
+      <Tabs.List>
+        <Tabs.Tab value="a">A</Tabs.Tab>
+        <Tabs.Tab value="b">B</Tabs.Tab>
+      </Tabs.List>
+      <Tabs.Panel value="a">Panel A</Tabs.Panel>
+      <Tabs.Panel value="b">Panel B</Tabs.Panel>
+    </Tabs.Root>
   ),
 
   Text: () => <Text className="reskin-target">x</Text>,

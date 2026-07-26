@@ -323,6 +323,41 @@
       "baseUi": false
     },
     {
+      "name": "Tabs",
+      "category": 3,
+      "builder": "defineCompound",
+      "slots": ["root", "list", "tab", "panel", "indicator"],
+      "parts": ["root", "list", "tab", "panel"],
+      "vocabularyAxes": ["variant"],
+      "variants": ["line", "pill", "enclosed"],
+      "defaults": {
+        "variant": "line"
+      },
+      "files": [
+        "packages/ui/src/recipes/Tabs/Tabs.tsx",
+        "packages/ui/src/recipes/Tabs/Tabs.module.css",
+        "packages/ui/src/recipes/Tabs/Tabs.test.tsx",
+        "packages/ui/src/recipes/Tabs/Tabs.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--border-default",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--font-weight-medium",
+        "--radius-md",
+        "--radius-sm",
+        "--spacing-md",
+        "--spacing-sm",
+        "--spacing-xs",
+        "--surface-default",
+        "--surface-raised",
+        "--text-default",
+        "--text-muted"
+      ],
+      "baseUi": true
+    },
+    {
       "name": "Text",
       "category": 1,
       "builder": "definePolymorphicComponent",

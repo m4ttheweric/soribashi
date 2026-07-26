@@ -97,6 +97,7 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Paper: 'A surface: raised background, themed radius/shadow, optional border.',
   Popover: 'Compound popover built on Base UI, themed through the soribashi vocabulary rails.',
   Stack: 'Vertical flex stack with theme-spacing gap.',
+  Tabs: 'Compound tabs built on Base UI, with line/pill/enclosed variants riding the soribashi vocabulary rails.',
   Text: 'Polymorphic body text riding the size vocabulary, with dimmed and truncate modifiers.',
   Title: 'Semantic h1-h6 heading with theme heading tokens per order.',
 };

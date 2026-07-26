@@ -82,6 +82,12 @@
       "description": "Vertical flex stack with theme-spacing gap."
     },
     {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Compound tabs built on Base UI, with line/pill/enclosed variants riding the soribashi vocabulary rails."
+    },
+    {
       "name": "text",
       "type": "registry:ui",
       "title": "Text",

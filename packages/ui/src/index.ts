@@ -11,6 +11,7 @@ export { Group, groupTheme } from './recipes/Group/Group.tsx';
 export { Paper, paperTheme } from './recipes/Paper/Paper.tsx';
 export { Popover, popoverTheme } from './recipes/Popover/Popover.tsx';
 export { Stack, stackTheme } from './recipes/Stack/Stack.tsx';
+export { Tabs, tabsTheme } from './recipes/Tabs/Tabs.tsx';
 export { Text, textTheme } from './recipes/Text/Text.tsx';
 export { Title, titleTheme } from './recipes/Title/Title.tsx';
 export { uiTheme, uiVocabulary } from './theme.ts';
