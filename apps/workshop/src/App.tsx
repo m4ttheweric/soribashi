@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import { useState } from 'react';
 import { ButtonPage } from './pages/ButtonPage.tsx';
+import { LayoutPage } from './pages/LayoutPage.tsx';
 import { PopoverPage } from './pages/PopoverPage.tsx';
 import { TenantsPage } from './pages/TenantsPage.tsx';
 import { Tokens } from './pages/Tokens.tsx';
@@ -15,6 +16,7 @@ const PAGES: Record<string, ComponentType> = {
   button: ButtonPage,
   popover: PopoverPage,
   tenants: TenantsPage,
+  layout: LayoutPage,
 };
 
 function pageLabel(key: string): string {

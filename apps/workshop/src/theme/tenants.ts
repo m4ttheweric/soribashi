@@ -15,7 +15,10 @@ const tenantVocabulary = {
 const tenantSemanticTokens = {
   text: {
     default: 'colors.neutral.900',
-    muted: 'colors.neutral.500',
+    // neutral.600, not neutral.500: same AA ruling as packages/theme's
+    // DEFAULT_TEXT.muted (Task 8), so the tenant demo doesn't keep
+    // reproducing the light-scheme contrast gap that ruling fixed elsewhere.
+    muted: 'colors.neutral.600',
     disabled: 'colors.neutral.400',
   },
   surface: {

@@ -1,21 +1,5 @@
 // @soribashi/core — public barrel package
 
-export {
-  AspectRatio,
-  Box,
-  Center,
-  Container,
-  Flex,
-  Grid,
-  Group,
-  Paper,
-  SimpleGrid,
-  Space,
-  Stack,
-  Text,
-  Title,
-} from '@soribashi/blocks';
-
 export type {
   BoxStyleProps,
   ComponentExtendConfig,

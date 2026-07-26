@@ -9,7 +9,6 @@ bun run test            # vitest across all packages
 bun run typecheck       # tsc -p tsconfig.json --noEmit
 bun run lint            # biome check .
 bun run codegen         # theme -> CSS/Tailwind config
-bun run test:browser    # Playwright parity suite
 bun run dev:workshop    # apps/workshop dev server (recipe showcase + multi-tenant demo)
 bun run test:visual     # visual-regression tier (Chromium, compares against committed baselines)
 bun run generate:ui     # regenerate packages/ui/manifest.json and registry/*.json from the recipes

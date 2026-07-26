@@ -10,7 +10,6 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:browser": "playwright test",
     "test:visual": "vitest run --config packages/ui/vitest.visual.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "biome check .",

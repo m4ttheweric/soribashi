@@ -144,7 +144,7 @@
     --heading-h6-line-height: 1.5;
     --text-default: var(--color-neutral-900);
     --text-disabled: var(--color-neutral-400);
-    --text-muted: var(--color-neutral-500);
+    --text-muted: var(--color-neutral-600);
     --surface-canvas: var(--color-neutral-50);
     --surface-default: var(--color-neutral-0);
     --surface-overlay: var(--color-neutral-900);
@@ -405,7 +405,7 @@
     --heading-h6-line-height: 1.5;
     --text-default: var(--color-neutral-900);
     --text-disabled: var(--color-neutral-400);
-    --text-muted: var(--color-neutral-500);
+    --text-muted: var(--color-neutral-600);
     --surface-canvas: var(--color-neutral-50);
     --surface-default: var(--color-neutral-0);
     --surface-overlay: var(--color-neutral-900);

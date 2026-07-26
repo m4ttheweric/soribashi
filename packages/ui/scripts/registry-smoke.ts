@@ -9,14 +9,14 @@
  * into it, install real dependencies, and build.
  *
  * What this DOES prove: the vendored Button.tsx/Button.module.css resolve
- * against @soribashi/core (and its workspace-internal deps: factory, theme,
- * blocks), compile under Vite/React 19, and the resulting bundle contains a
+ * against @soribashi/core (and its workspace-internal deps: factory,
+ * theme), compile under Vite/React 19, and the resulting bundle contains a
  * class name that came from Button.module.css.
  *
  * What this CANNOT prove yet: resolution of @soribashi/core from the real
  * npm registry. It is `private: true` and unpublished, so this script
- * copies @soribashi/core, @soribashi/factory, @soribashi/theme, and
- * @soribashi/blocks (core's own `workspace:*` dependencies) into the
+ * copies @soribashi/core, @soribashi/factory, and @soribashi/theme
+ * (core's own `workspace:*` dependencies) into the
  * scratch project as a self-contained `vendor/` workspace and links against
  * those copies. That is a materially different resolution path than `bun
  * add @soribashi/core` against the public registry, which is exactly what a
@@ -123,13 +123,13 @@ function vendorSourcePackage(name: string, scratchDir: string): void {
 
 /**
  * A minimal Vite + React 19 project. `@soribashi/core` and its
- * `workspace:*` dependencies (@soribashi/factory, @soribashi/theme,
- * @soribashi/blocks) are vendored into a scratch-local `vendor/` workspace
- * (see vendorSourcePackage) and linked in via `file:`, per the module-level
+ * `workspace:*` dependencies (@soribashi/factory, @soribashi/theme) are
+ * vendored into a scratch-local `vendor/` workspace (see
+ * vendorSourcePackage) and linked in via `file:`, per the module-level
  * doc comment's caveat about what this can and cannot prove.
  */
 async function writeScaffold(scratchDir: string): Promise<void> {
-  for (const name of ['core', 'factory', 'theme', 'blocks']) {
+  for (const name of ['core', 'factory', 'theme']) {
     vendorSourcePackage(name, scratchDir);
   }
 
@@ -149,14 +149,13 @@ async function writeScaffold(scratchDir: string): Promise<void> {
       vite: '^8',
     },
     // Relative, entirely inside the scratch dir: `@soribashi/core`'s own
-    // `workspace:*` dependencies on factory/theme/blocks resolve against
-    // these siblings once they are all workspace members together.
+    // `workspace:*` dependencies on factory/theme resolve against these
+    // siblings once they are all workspace members together.
     // @soribashi/core is the only one that also needs a top-level
     // `dependencies` entry above, since that is what the vendored Button.tsx
     // (which imports `from '@soribashi/core'`) needs hoisted into this
-    // project's own node_modules; factory/theme/blocks only need to be
-    // resolvable from inside vendor/core, which workspace membership alone
-    // provides.
+    // project's own node_modules; factory/theme only need to be resolvable
+    // from inside vendor/core, which workspace membership alone provides.
     workspaces: ['vendor/*'],
   };
 
@@ -438,7 +437,7 @@ async function assertBundleHasButtonClass(scratchDir: string): Promise<void> {
 async function main(): Promise<void> {
   log(
     'NOTE: this proves the registry item resolves and builds via a workspace file: link to ' +
-      '@soribashi/core (and its factory/theme/blocks workspace deps), not via published-npm ' +
+      '@soribashi/core (and its factory/theme workspace deps), not via published-npm ' +
       'resolution, since @soribashi/core is not published. That is a real gap this check cannot ' +
       'close until publishing exists.',
   );
