@@ -296,13 +296,29 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         <Popover.Trigger>Open</Popover.Trigger>
         <Popover.Content classNames={{ popup: 'matrix-target' }}>
           <Popover.Title>Title</Popover.Title>
-          <Popover.Description>
+          <Popover.Description classNames={{ description: 'matrix-target-description' }}>
             Sample popover body copy, read for contrast against the popup surface.
           </Popover.Description>
         </Popover.Content>
       </Popover.Root>
     ),
-    cells: [{ targetClass: 'matrix-target', description: 'popup text on popup surface' }],
+    cells: [
+      { targetClass: 'matrix-target', description: 'popup text on popup surface' },
+      // Popover.module.css's `.description` sets only `color: var(--text-muted)`,
+      // no background of its own, so it visually sits on `.popup`'s own
+      // `background: var(--surface-default)` (the `matrix-target` class
+      // above); `backdropClass` points there since the description's own
+      // computed background-color is transparent. This pair (--text-muted
+      // on --surface-default) is otherwise unmeasured anywhere else in this
+      // file: the Text entry's dimmed cells (also --text-muted) only cover
+      // canvas and Paper's --surface-raised backdrops.
+      {
+        targetClass: 'matrix-target-description',
+        backdropClass: 'matrix-target',
+        description:
+          'Popover: description text (--text-muted) on popup surface (--surface-default)',
+      },
+    ],
   },
 
   Text: {

@@ -29,9 +29,9 @@ import type { ResolvedTheme } from '@soribashi/theme';
  * that utility silently stops working whenever dedup is enabled.
  *
  * Adapted from: packages/blocks/src/Box/visibility.css (itself adapted from
- * @mantine/core's global.css). That file remains in place until slice-2's
- * task 9 deletes the blocks package; identical duplicate rules across the
- * two sources are harmless.
+ * @mantine/core's global.css). That file existed alongside this one, with
+ * harmless identical duplicate rules across the two sources, until
+ * slice-2's task 9 deleted the blocks package.
  * License: MIT, see THIRD-PARTY-LICENSES.md at repo root
  */
 export function emitVisibilityUtilities(theme: ResolvedTheme): string[] {

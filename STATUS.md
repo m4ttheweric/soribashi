@@ -6,7 +6,7 @@
 
 Slice 1b (below) shipped `@soribashi/ui` with two recipes, Button and Popover, and restored `@soribashi/blocks`' Playwright browser-parity fixtures alongside the workshop app just to have something for `apps/workshop` to point codegen at. That left two parallel component surfaces: a real, three-tier-verified `@soribashi/ui` recipe pair, and a 14-primitive Mantine-adapted blocks package with its own, separate Playwright parity tier. Slice 2 closes that split: the blocks package's style-prop engine moves into `@soribashi/factory` where every builder resolves it the same way, ten of blocks' 14 layout shapes come back as native `@soribashi/ui` recipes (Grid's new `cols`/`minChildWidth` prop absorbs what Grid.Col and SimpleGrid did; `Flex` and `Space` did not get a new-recipe port this slice), and `@soribashi/blocks` plus the parity tier that verified it are deleted outright. `@soribashi/core` now exports the framework only, no components.
 
-Branch `feat/slice-2-layout`, 17 commits ahead of `main` (merge-base `140e2315`), 11 numbered tasks executed in strict order plus this closing task.
+Branch `feat/slice-2-layout`, 20 commits ahead of `main` (merge-base `140e2315`), 11 numbered tasks executed in strict order plus this closing task and a whole-branch-review fix wave.
 
 ### What landed
 
