@@ -220,4 +220,24 @@ describe('Tabs (browser)', () => {
     const results = await runAxe(screen.container);
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
   });
+
+  it('stamps data-variant on the root and never leaks the raw variant attribute', async () => {
+    // The ONE deliberate attribute-level assertion in the package: the
+    // requirement here IS the absence of a raw `variant` HTML attribute
+    // (defineCompound does not strip vocabulary-axis props from a DOM-rooted
+    // compound's rest; Tabs.tsx strips them by hand, and this pins that).
+    // data-variant presence is asserted alongside so a future "fix" that
+    // strips BOTH ways fails here too.
+    const screen = await wrap(
+      <Tabs.Root defaultValue="a" variant="line" classNames={{ root: 'probe-raw-attr' }}>
+        <Tabs.List>
+          <Tabs.Tab value="a">A</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="a">Panel</Tabs.Panel>
+      </Tabs.Root>,
+    );
+    const root = screen.container.querySelector('.probe-raw-attr')!;
+    expect(root.getAttribute('data-variant')).toBe('line');
+    expect(root.hasAttribute('variant')).toBe(false);
+  });
 });
