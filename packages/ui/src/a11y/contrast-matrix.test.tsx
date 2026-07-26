@@ -16,6 +16,7 @@ import { render } from 'vitest-browser-react/pure';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
+import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
@@ -143,6 +144,52 @@ interface SmallCoverageEntry {
 }
 
 const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
+  // State established at mount only (defaultChecked/indeterminate), never by
+  // interaction: this entry mounts once and is read twice (light, then
+  // dark), and an interaction inside one scheme's `it` would leak into or be
+  // missing from the other (see SmallCoverageEntry's doc comment above).
+  // Each cell measures the checkmark's own colour (fg, via currentColor)
+  // against the control's checked background (bg): the indicator element
+  // itself has no background of its own (Checkbox.module.css's `.indicator`
+  // rule sets none), so `backdropClass` points at the sibling `.control`
+  // element that actually paints the checked fill.
+  Checkbox: {
+    render: () => (
+      <>
+        <Checkbox
+          defaultChecked
+          intent="primary"
+          label="Checked"
+          classNames={{
+            control: 'matrix-target-checkbox-control',
+            indicator: 'matrix-target-checkbox-indicator',
+          }}
+        />
+        <Checkbox
+          indeterminate
+          intent="primary"
+          label="Indeterminate"
+          classNames={{
+            control: 'matrix-target-checkbox-indeterminate-control',
+            indicator: 'matrix-target-checkbox-indeterminate-indicator',
+          }}
+        />
+      </>
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-checkbox-indicator',
+        backdropClass: 'matrix-target-checkbox-control',
+        description: 'Checkbox: checked indicator mark on control background',
+      },
+      {
+        targetClass: 'matrix-target-checkbox-indeterminate-indicator',
+        backdropClass: 'matrix-target-checkbox-indeterminate-control',
+        description: 'Checkbox: indeterminate indicator mark on control background',
+      },
+    ],
+  },
+
   Paper: {
     render: () => (
       <Paper classNames={{ root: 'matrix-target-paper-default' }}>

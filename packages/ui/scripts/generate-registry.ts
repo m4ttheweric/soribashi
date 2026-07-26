@@ -90,6 +90,7 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Box: 'The polymorphic primitive: element choice, style props, nothing else.',
   Button: 'Polymorphic button riding the soribashi vocabulary rails.',
   Center: 'Centers its content on both axes, flex or inline-flex.',
+  Checkbox: 'A labelled checkbox control built on Base UI, with indeterminate support.',
   Container: 'Centers and caps content width at a theme-driven size, or fluid.',
   Grid: 'CSS grid with a fixed or responsive column count, or auto-fit min-width columns.',
   Group: 'Horizontal flex row with theme-spacing gap and optional even growth.',

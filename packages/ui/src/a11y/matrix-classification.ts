@@ -27,6 +27,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Box: { exempt: 'no colour of its own; style-prop colours are consumer input' },
   Button: 'covered',
   Center: { exempt: 'geometry only' },
+  Checkbox: 'covered',
   Container: { exempt: 'geometry only' },
   Grid: { exempt: 'geometry only' },
   Group: { exempt: 'geometry only' },
@@ -43,4 +44,10 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
  * grid) or a name in this list; matrix-guard.test.ts enforces that pairing
  * without importing contrast-matrix.test.tsx itself.
  */
-export const SMALL_COVERAGE_NAMES: readonly string[] = ['Paper', 'Popover', 'Text', 'Title'];
+export const SMALL_COVERAGE_NAMES: readonly string[] = [
+  'Checkbox',
+  'Paper',
+  'Popover',
+  'Text',
+  'Title',
+];

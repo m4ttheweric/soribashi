@@ -4,6 +4,7 @@ export { Badge, badgeTheme } from './recipes/Badge/Badge.tsx';
 export { Box, boxTheme } from './recipes/Box/Box.tsx';
 export { Button, buttonTheme } from './recipes/Button/Button.tsx';
 export { Center, centerTheme } from './recipes/Center/Center.tsx';
+export { Checkbox, checkboxTheme } from './recipes/Checkbox/Checkbox.tsx';
 export { Container, containerTheme } from './recipes/Container/Container.tsx';
 export { Grid, gridTheme } from './recipes/Grid/Grid.tsx';
 export { Group, groupTheme } from './recipes/Group/Group.tsx';

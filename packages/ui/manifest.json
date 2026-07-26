@@ -155,6 +155,35 @@
       "baseUi": false
     },
     {
+      "name": "Checkbox",
+      "category": 4,
+      "builder": "defineGenericComponent",
+      "slots": ["root", "control", "indicator", "label"],
+      "parts": [],
+      "vocabularyAxes": ["size", "intent"],
+      "variants": [],
+      "defaults": {
+        "intent": "primary",
+        "size": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/Checkbox/Checkbox.tsx",
+        "packages/ui/src/recipes/Checkbox/Checkbox.module.css",
+        "packages/ui/src/recipes/Checkbox/Checkbox.test.tsx",
+        "packages/ui/src/recipes/Checkbox/Checkbox.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--border-default",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--radius-sm",
+        "--spacing-xs",
+        "--text-default"
+      ],
+      "baseUi": true
+    },
+    {
       "name": "Container",
       "category": 1,
       "builder": "defineComponent",

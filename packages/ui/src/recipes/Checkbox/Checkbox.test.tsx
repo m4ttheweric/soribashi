@@ -1,0 +1,139 @@
+import { SoribashiProvider } from '@soribashi/core';
+import { describe, expect, it, vi } from 'vitest';
+import { render } from 'vitest-browser-react';
+import { formatViolations, runAxe } from '../../a11y/axe.ts';
+import { uiTheme, uiVocabulary } from '../../theme.ts';
+import { Checkbox } from './Checkbox.tsx';
+
+// `render` from vitest-browser-react resolves a Promise<RenderResult>; `wrap`
+// awaits it so callers get the real result object (see Alert.test.tsx).
+const wrap = (ui: React.ReactNode) =>
+  render(<SoribashiProvider theme={uiTheme}>{ui}</SoribashiProvider>);
+
+describe('Checkbox (browser)', () => {
+  it('exposes role="checkbox"', async () => {
+    const screen = await wrap(<Checkbox label="Accept" />);
+    await expect.element(screen.getByRole('checkbox')).toBeInTheDocument();
+  });
+
+  it('toggles on click and reflects aria-checked (real interaction, not a passed prop)', async () => {
+    const screen = await wrap(<Checkbox label="Accept" />);
+    const control = screen.getByRole('checkbox');
+    await expect.element(control).toHaveAttribute('aria-checked', 'false');
+    await control.click();
+    await expect.element(control).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('toggles when the label text is clicked (association, not just proximity)', async () => {
+    const screen = await wrap(<Checkbox label="Accept" />);
+    await screen.getByText('Accept').click();
+    await expect.element(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('reports aria-checked="mixed" when indeterminate', async () => {
+    const screen = await wrap(<Checkbox label="Some" indeterminate />);
+    await expect.element(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'mixed');
+  });
+
+  it('does not toggle when disabled and does not call onCheckedChange', async () => {
+    const onCheckedChange = vi.fn();
+    const screen = await wrap(<Checkbox label="No" disabled onCheckedChange={onCheckedChange} />);
+    const control = screen.getByRole('checkbox');
+    await control.click({ force: true });
+    expect(onCheckedChange).not.toHaveBeenCalled();
+    await expect.element(control).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('calls onCheckedChange with the new value on a real click', async () => {
+    const onCheckedChange = vi.fn();
+    const screen = await wrap(<Checkbox label="Accept" onCheckedChange={onCheckedChange} />);
+    await screen.getByRole('checkbox').click();
+    expect(onCheckedChange).toHaveBeenCalledTimes(1);
+    expect(onCheckedChange).toHaveBeenCalledWith(true, expect.anything());
+  });
+
+  it('renders a visible indicator mark only once checked (computed, not emissive)', async () => {
+    const screen = await wrap(
+      <>
+        <Checkbox label="Unchecked" classNames={{ control: 'probe-unchecked' }} />
+        <Checkbox
+          label="Checked"
+          defaultChecked
+          classNames={{ control: 'probe-checked', indicator: 'probe-checked-indicator' }}
+        />
+      </>,
+    );
+
+    // Unchecked: Base UI's Indicator does not mount into the DOM at all
+    // (keepMounted defaults to false), so there is no indicator element to
+    // find under the unchecked control.
+    const uncheckedControl = screen.container.querySelector('.probe-unchecked');
+    expect(uncheckedControl?.querySelector('svg')).toBeNull();
+
+    // Checked: the indicator mounts, and its computed colour (the checkmark's
+    // stroke, via currentColor) is not the fully-transparent initial value.
+    const indicator = screen.container.querySelector<HTMLElement>('.probe-checked-indicator');
+    expect(indicator).not.toBeNull();
+    const color = getComputedStyle(indicator!).color;
+    expect(color).not.toBe('');
+    expect(color).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('changes the checked control background with intent (computed, not attribute)', async () => {
+    const screen = await wrap(
+      <>
+        <Checkbox
+          label="danger"
+          intent="danger"
+          defaultChecked
+          classNames={{ control: 'probe-danger' }}
+        />
+        <Checkbox
+          label="success"
+          intent="success"
+          defaultChecked
+          classNames={{ control: 'probe-success' }}
+        />
+      </>,
+    );
+    const danger = getComputedStyle(
+      screen.container.querySelector('.probe-danger')!,
+    ).backgroundColor;
+    const success = getComputedStyle(
+      screen.container.querySelector('.probe-success')!,
+    ).backgroundColor;
+    expect(danger).not.toBe(success);
+  });
+
+  it('accepts style props from the builder with no recipe wiring', async () => {
+    const screen = await wrap(<Checkbox label="x" classNames={{ root: 'probe-sp' }} m="xl" />);
+    const margin = getComputedStyle(screen.container.querySelector('.probe-sp')!).margin;
+    expect(margin).not.toBe('0px');
+  });
+
+  it('has zero axe violations across its showcase states (intent x size, checked/unchecked/indeterminate/disabled)', async () => {
+    const intents = uiVocabulary.intent.values;
+    const sizes = uiVocabulary.size.values;
+
+    const screen = await wrap(
+      <div>
+        {intents.map((intent) =>
+          sizes.map((size) => (
+            <Checkbox
+              key={`${intent}-${size}`}
+              intent={intent}
+              size={size}
+              label={`${intent}-${size}`}
+            />
+          )),
+        )}
+        <Checkbox label="checked" defaultChecked />
+        <Checkbox label="indeterminate" indeterminate />
+        <Checkbox label="disabled" disabled />
+      </div>,
+    );
+
+    const results = await runAxe(screen.container);
+    expect(results.violations, formatViolations(results.violations)).toEqual([]);
+  });
+});

@@ -40,6 +40,12 @@
       "description": "Centers its content on both axes, flex or inline-flex."
     },
     {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "A labelled checkbox control built on Base UI, with indeterminate support."
+    },
+    {
       "name": "container",
       "type": "registry:ui",
       "title": "Container",

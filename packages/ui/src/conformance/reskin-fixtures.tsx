@@ -5,6 +5,7 @@ import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Box } from '../recipes/Box/Box.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Center } from '../recipes/Center/Center.tsx';
+import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Container } from '../recipes/Container/Container.tsx';
 import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
@@ -67,6 +68,10 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
     <Center className="reskin-target" p="md">
       x
     </Center>
+  ),
+
+  Checkbox: () => (
+    <Checkbox classNames={{ control: 'reskin-target' }} intent="primary" defaultChecked label="x" />
   ),
 
   Container: () => <Container className="reskin-target">x</Container>,

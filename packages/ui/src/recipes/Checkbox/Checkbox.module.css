@@ -1,0 +1,53 @@
+@layer soribashi.recipes {
+  .root {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
+    color: var(--text-default, inherit);
+    cursor: pointer;
+
+    &:has([data-disabled]) {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  .control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    inline-size: var(--sb-checkbox-size);
+    block-size: var(--sb-checkbox-size);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--sb-checkbox-checked-color);
+    outline-offset: 2px;
+
+    &[data-checked],
+    &[data-indeterminate] {
+      background: var(--sb-checkbox-checked-bg);
+      border-color: var(--sb-checkbox-checked-bg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-primary, var(--sb-checkbox-checked-bg));
+    }
+  }
+
+  .indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 100%;
+    block-size: 100%;
+    color: currentColor;
+  }
+
+  .label {
+    user-select: none;
+  }
+}
