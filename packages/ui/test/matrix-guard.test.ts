@@ -17,9 +17,11 @@ const COLOR_TOKEN_RE = /--(color|text|surface|accent)-/;
  * their own in contrast-matrix.test.tsx, rather than a `SMALL_COVERAGE`
  * entry. Button was the only one until Alert (Task 4): Alert renders visible
  * background colour across its own three-variant tuple, so it earns the same
- * full-grid treatment rather than a handful of SMALL_COVERAGE cells.
+ * full-grid treatment rather than a handful of SMALL_COVERAGE cells. Badge
+ * (Task 5) is the same shape as Alert: its own colour, no SMALL_COVERAGE
+ * cell to hand-pick.
  */
-const FULL_GRID_NAMES = ['Button', 'Alert'];
+const FULL_GRID_NAMES = ['Button', 'Alert', 'Badge'];
 
 describe('contrast matrix classification guard', () => {
   it('every manifest recipe has a MATRIX_CLASSIFICATION entry', async () => {

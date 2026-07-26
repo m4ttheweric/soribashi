@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { AspectRatio } from '../recipes/AspectRatio/AspectRatio.tsx';
+import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Box } from '../recipes/Box/Box.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Center } from '../recipes/Center/Center.tsx';
@@ -46,6 +47,12 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
     <AspectRatio className="reskin-target" p="md" ratio={16 / 9}>
       x
     </AspectRatio>
+  ),
+
+  Badge: () => (
+    <Badge classNames={{ root: 'reskin-target' }} intent="primary" variant="filled">
+      x
+    </Badge>
   ),
 
   Box: () => (

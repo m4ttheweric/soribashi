@@ -23,6 +23,7 @@ export type MatrixClassification = 'covered' | { exempt: string };
 export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Alert: 'covered',
   AspectRatio: { exempt: 'geometry only' },
+  Badge: 'covered',
   Box: { exempt: 'no colour of its own; style-prop colours are consumer input' },
   Button: 'covered',
   Center: { exempt: 'geometry only' },

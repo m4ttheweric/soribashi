@@ -86,6 +86,7 @@ function readRepoFile(repoRelativePath: string): string {
 const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Alert: 'A single-element alert surface with icon, title, body, and close slots.',
   AspectRatio: 'Locks a fixed width/height ratio for its content.',
+  Badge: 'A small, colour-bearing polymorphic tag riding the soribashi vocabulary rails.',
   Box: 'The polymorphic primitive: element choice, style props, nothing else.',
   Button: 'Polymorphic button riding the soribashi vocabulary rails.',
   Center: 'Centers its content on both axes, flex or inline-flex.',

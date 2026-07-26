@@ -59,6 +59,34 @@
       "baseUi": false
     },
     {
+      "name": "Badge",
+      "category": 1,
+      "builder": "definePolymorphicComponent",
+      "slots": ["root"],
+      "parts": [],
+      "vocabularyAxes": ["size", "intent", "variant"],
+      "variants": ["filled", "outline", "subtle"],
+      "defaults": {
+        "intent": "primary",
+        "variant": "filled",
+        "size": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/Badge/Badge.tsx",
+        "packages/ui/src/recipes/Badge/Badge.module.css",
+        "packages/ui/src/recipes/Badge/Badge.test.tsx",
+        "packages/ui/src/recipes/Badge/Badge.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--font-family-sans",
+        "--font-size-xs",
+        "--font-weight-medium",
+        "--radius-full",
+        "--spacing-xs"
+      ],
+      "baseUi": false
+    },
+    {
       "name": "Box",
       "category": 1,
       "builder": "definePolymorphicComponent",

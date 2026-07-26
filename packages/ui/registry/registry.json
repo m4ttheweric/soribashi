@@ -16,6 +16,12 @@
       "description": "Locks a fixed width/height ratio for its content."
     },
     {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "A small, colour-bearing polymorphic tag riding the soribashi vocabulary rails."
+    },
+    {
       "name": "box",
       "type": "registry:ui",
       "title": "Box",

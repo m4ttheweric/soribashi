@@ -14,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 // already ran); importing `/pure` did not.
 import { render } from 'vitest-browser-react/pure';
 import { Alert } from '../recipes/Alert/Alert.tsx';
+import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
@@ -78,6 +79,21 @@ describeColourGrid({
     >
       Sample body copy for {intent}.
     </Alert>
+  ),
+});
+
+// Badge has no size axis (colour does not vary by size for this recipe, the
+// same as Alert), so `sizes` is omitted: 6 intents x 3 variants x 2 schemes
+// = 36 cells, per the task brief. Its own three-variant tuple mirrors the
+// builder config in Badge.tsx (ghost/link excluded, same rationale as Alert).
+describeColourGrid({
+  name: 'Badge',
+  intents: INTENTS,
+  variants: ['filled', 'outline', 'subtle'] as const,
+  renderCell: (intent, variant, testId) => (
+    <Badge intent={intent} variant={variant} attributes={{ root: { 'data-testid': testId } }}>
+      {intent}
+    </Badge>
   ),
 });
 
