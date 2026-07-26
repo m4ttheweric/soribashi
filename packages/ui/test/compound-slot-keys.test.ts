@@ -15,7 +15,10 @@ import manifest from '../manifest.json' with { type: 'json' };
 const REPO_ROOT = join(import.meta.dirname, '..', '..', '..');
 
 function recipeSource(name: string, ext: string): string {
-  return readFileSync(join(REPO_ROOT, 'packages', 'ui', 'src', 'recipes', name, `${name}${ext}`), 'utf-8');
+  return readFileSync(
+    join(REPO_ROOT, 'packages', 'ui', 'src', 'recipes', name, `${name}${ext}`),
+    'utf-8',
+  );
 }
 
 const COMPOUNDS = manifest.recipes.filter((r) => r.builder === 'defineCompound');
