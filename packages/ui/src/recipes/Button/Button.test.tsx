@@ -1,7 +1,13 @@
 import { createTheme, SoribashiProvider } from '@soribashi/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
+import {
+  installNoTransitionStyle,
+  NO_TRANSITION_CLASS,
+  resolveCanvasColor,
+  toRgbString,
+} from '../../a11y/matrix-harness.tsx';
 import { uiTheme, uiVocabulary } from '../../theme.ts';
 import { Button } from './Button.tsx';
 
@@ -112,5 +118,47 @@ describe('Button (browser)', () => {
 
     const results = await runAxe(screen.container);
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
+  });
+
+  it('paints a hover wash on a neutral ghost button that is distinct from the canvas (real pointer hover)', async () => {
+    // Transitions disabled before hovering, same mechanism
+    // matrix-harness.tsx installs for the grid and small-coverage contrast
+    // reads: Button's background-color transition (Button.module.css)
+    // interpolates only the alpha channel while holding the target RGB
+    // constant (empirically confirmed against this Chromium build), so a
+    // value read mid-transition differs from BOTH the rest-state (alpha 0)
+    // and the settled hover colour purely by alpha, satisfying a loose
+    // "not equal to either" poll on the very first sample regardless of
+    // whether the settled colour is actually distinct from canvas. That
+    // makes an un-stabilized poll pass even when the wash regresses to
+    // canvas. Disabling the transition removes the race without touching
+    // whether `:hover` matches, since a real pointer hover, not a class
+    // toggle, is still what drives it.
+    const removeNoTransitionStyle = installNoTransitionStyle();
+    try {
+      const screen = await wrap(
+        <Button intent="neutral" variant="ghost" classNames={{ root: 'probe-wash' }}>
+          Ghost
+        </Button>,
+      );
+      const root = screen.container.querySelector('.probe-wash') as HTMLElement;
+      root.classList.add(NO_TRANSITION_CLASS);
+      const canvas = toRgbString(resolveCanvasColor(root));
+
+      await screen.getByRole('button').hover();
+
+      // Poll rather than assert once: even with transitions disabled, this
+      // still waits out any async gap between the pointer event and the
+      // browser applying `:hover`, rather than assuming it is synchronous.
+      await vi.waitFor(() => {
+        const hovered = getComputedStyle(root).backgroundColor;
+        // Not transparent (the rest-state ghost background) ...
+        expect(toRgbString(hovered)).not.toBe(toRgbString('rgba(0, 0, 0, 0)'));
+        // ... and not the canvas colour itself: the wash must be VISIBLE.
+        expect(toRgbString(hovered)).not.toBe(canvas);
+      });
+    } finally {
+      removeNoTransitionStyle();
+    }
   });
 });
