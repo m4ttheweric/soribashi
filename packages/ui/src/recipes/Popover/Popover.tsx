@@ -1,6 +1,7 @@
 import { Popover as BasePopover } from '@base-ui/react/popover';
-import { defineCompound, type PartRenderCtx } from '@soribashi/core';
+import type { PartRenderCtx } from '@soribashi/core';
 import type { ReactNode, Ref } from 'react';
+import { defineCompound } from '../../builders.ts';
 import classes from './Popover.module.css';
 
 /**

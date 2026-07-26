@@ -1,6 +1,5 @@
 import {
   defaultTokens,
-  defineComponent,
   getSpacing,
   InlineStyles,
   isDev,
@@ -9,6 +8,7 @@ import {
   useTheme,
 } from '@soribashi/core';
 import type { ReactNode } from 'react';
+import { defineComponent } from '../../builders.ts';
 import classes from './Grid.module.css';
 
 export const recipeCategory = 1 as const;

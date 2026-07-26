@@ -1,10 +1,7 @@
 import { Select as BaseSelect } from '@base-ui/react/select';
-import {
-  defineGenericComponent,
-  type StylesApiProps,
-  type UniversalStyleProps,
-} from '@soribashi/core';
+import type { StylesApiProps, UniversalStyleProps } from '@soribashi/core';
 import type { ReactElement, ReactNode, Ref } from 'react';
+import { defineGenericComponent } from '../../builders.ts';
 import type { uiVocabulary } from '../../theme.ts';
 import { type ResolvedSelectItem, resolveSelectItems, type SelectAccessors } from './items.ts';
 import classes from './Select.module.css';

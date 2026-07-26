@@ -94,6 +94,7 @@ import { buildScratchDependencies } from './scratch-deps.ts';
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, '..', '..', '..');
 const THEME_CSS_PATH = join(REPO_ROOT, 'apps', 'workshop', 'src', 'generated', 'theme.css');
+const MANIFEST_PATH = join(REPO_ROOT, 'packages', 'ui', 'manifest.json');
 
 /**
  * The registry items this check installs, one per authoring category it
@@ -211,6 +212,38 @@ function vendorSourcePackage(name: string, scratchDir: string): void {
 }
 
 /**
+ * Builds the consumer-side builders module a vendoring consumer would author
+ * for themselves: a theme declaration plus `makeBuilders<typeof theme>()`.
+ * The vocabulary values are interpolated from the committed manifest (see
+ * `MANIFEST_PATH`) rather than hardcoded, the same no-drift move
+ * `buildInitThemeTs` in generate-registry.ts makes, so this scaffold can
+ * never fall out of step with packages/ui/src/theme.ts's actual uiVocabulary
+ * declaration.
+ */
+function buildConsumerBuildersTs(vocabulary: Record<string, string[]>): string {
+  const axisLines = Object.entries(vocabulary)
+    .map(
+      ([axis, values]) =>
+        `  ${axis}: defineVocabulary([${values.map((v) => `'${v}'`).join(', ')}] as const),`,
+    )
+    .join('\n');
+  return `// Consumer-side builders module: a vendoring consumer owns their theme,
+// and typed builders derive from it. Written by the smoke scaffold; a real
+// consumer authors the equivalent (values are their own vocabulary).
+import { createTheme, defaultDarkTokens, defaultTokens, defineVocabulary, makeBuilders } from '@soribashi/core';
+
+const vocabulary = {
+${axisLines}
+};
+
+const theme = createTheme({ name: 'smoke-consumer', tokens: defaultTokens, dark: defaultDarkTokens, vocabulary });
+
+export const { defineComponent, definePolymorphicComponent, defineCompound, defineGenericComponent } =
+  makeBuilders<typeof theme>();
+`;
+}
+
+/**
  * A minimal Vite + React 19 project. `@soribashi/core` and its
  * `workspace:*` dependencies (@soribashi/factory, @soribashi/theme) are
  * vendored into a scratch-local `vendor/` workspace (see
@@ -307,6 +340,15 @@ export default defineConfig({
 `;
 
   await mkdir(join(scratchDir, 'src'), { recursive: true });
+  const manifestVocabulary = (
+    JSON.parse(readFileSync(MANIFEST_PATH, 'utf-8')) as { vocabulary: Record<string, string[]> }
+  ).vocabulary;
+  await mkdir(join(scratchDir, 'src', 'components', 'soribashi'), { recursive: true });
+  await writeFile(
+    join(scratchDir, 'src', 'components', 'soribashi', 'builders.ts'),
+    buildConsumerBuildersTs(manifestVocabulary),
+    'utf-8',
+  );
   await mkdir(join(scratchDir, 'registry'), { recursive: true });
   await writeFile(join(scratchDir, 'package.json'), `${JSON.stringify(pkg, null, 2)}\n`, 'utf-8');
   await writeFile(

@@ -1,5 +1,5 @@
-import { defineComponent } from '@soribashi/core';
 import type { ReactNode } from 'react';
+import { defineComponent } from '../../builders.ts';
 import classes from './Container.module.css';
 
 export const recipeCategory = 1 as const;

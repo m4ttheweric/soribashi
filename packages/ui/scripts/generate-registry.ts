@@ -104,6 +104,20 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Title: 'Semantic h1-h6 heading with theme heading tokens per order.',
 };
 
+/**
+ * A recipe's in-repo builders import ('../../builders.ts' from
+ * src/recipes/<Name>/) cannot resolve at the vendored layout, where the
+ * consumer-side builders module sits at components/soribashi/builders.ts,
+ * one directory up from the recipe file. A RELATIVE specifier is chosen over
+ * a tsconfig-alias form deliberately: it resolves under any bundler with no
+ * alias configuration, on both the CLI and manual-vendor smoke paths.
+ * A consumer owns this module because they own their theme; typed builders
+ * derive from it (see registry-smoke.ts's scaffold for the canonical shape).
+ */
+function rewriteBuildersImport(tsxSource: string): string {
+  return tsxSource.replace("from '../../builders.ts'", "from '../builders.ts'");
+}
+
 function buildRecipeRegistryItem(entry: ManifestEntry): RegistryItem {
   const description = RECIPE_DESCRIPTIONS[entry.name];
   if (!description) {
@@ -137,7 +151,7 @@ function buildRecipeRegistryItem(entry: ManifestEntry): RegistryItem {
         path: `registry/soribashi/${entry.name}/${entry.name}.tsx`,
         type: 'registry:ui',
         target: `components/soribashi/${entry.name}/${entry.name}.tsx`,
-        content: readRepoFile(tsxRepoPath),
+        content: rewriteBuildersImport(readRepoFile(tsxRepoPath)),
       },
       {
         path: `registry/soribashi/${entry.name}/${entry.name}.module.css`,

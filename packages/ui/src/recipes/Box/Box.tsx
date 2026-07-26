@@ -1,4 +1,4 @@
-import { definePolymorphicComponent } from '@soribashi/core';
+import { definePolymorphicComponent } from '../../builders.ts';
 import classes from './Box.module.css';
 
 /**

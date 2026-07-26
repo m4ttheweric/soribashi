@@ -1,5 +1,6 @@
-import { autoVars, defineComponent } from '@soribashi/core';
+import { autoVars } from '@soribashi/core';
 import type { MouseEventHandler, ReactNode } from 'react';
+import { defineComponent } from '../../builders.ts';
 import classes from './Alert.module.css';
 
 /**

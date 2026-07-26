@@ -1,6 +1,6 @@
 import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
-import { defineComponent } from '@soribashi/core';
 import type { ReactNode, Ref } from 'react';
+import { defineComponent } from '../../builders.ts';
 import classes from './Checkbox.module.css';
 
 /**

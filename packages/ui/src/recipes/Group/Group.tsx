@@ -1,6 +1,7 @@
-import { defineComponent, getSpacing } from '@soribashi/core';
+import { getSpacing } from '@soribashi/core';
 import type { CSSProperties, ReactNode } from 'react';
 import { Children } from 'react';
+import { defineComponent } from '../../builders.ts';
 import classes from './Group.module.css';
 
 export const recipeCategory = 1 as const;

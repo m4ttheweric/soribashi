@@ -1,6 +1,7 @@
 import { Tabs as BaseTabs } from '@base-ui/react/tabs';
-import { defineCompound, type PartRenderCtx, type PolymorphicPartRenderCtx } from '@soribashi/core';
+import type { PartRenderCtx, PolymorphicPartRenderCtx } from '@soribashi/core';
 import { createElement, type ElementType, type Ref } from 'react';
+import { defineCompound } from '../../builders.ts';
 import classes from './Tabs.module.css';
 
 /**

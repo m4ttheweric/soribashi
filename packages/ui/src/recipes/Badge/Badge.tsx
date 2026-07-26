@@ -1,5 +1,6 @@
-import { autoVars, definePolymorphicComponent } from '@soribashi/core';
+import { autoVars } from '@soribashi/core';
 import type { ReactNode } from 'react';
+import { definePolymorphicComponent } from '../../builders.ts';
 import classes from './Badge.module.css';
 
 /**

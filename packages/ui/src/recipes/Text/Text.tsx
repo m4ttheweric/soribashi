@@ -1,5 +1,6 @@
-import { definePolymorphicComponent, getFontSize, getLineHeight } from '@soribashi/core';
+import { getFontSize, getLineHeight } from '@soribashi/core';
 import type { ReactNode } from 'react';
+import { definePolymorphicComponent } from '../../builders.ts';
 import classes from './Text.module.css';
 
 /**

@@ -1,5 +1,6 @@
-import { definePolymorphicComponent, getRadius, getShadow } from '@soribashi/core';
+import { getRadius, getShadow } from '@soribashi/core';
 import type { ReactNode } from 'react';
+import { definePolymorphicComponent } from '../../builders.ts';
 import classes from './Paper.module.css';
 
 /**

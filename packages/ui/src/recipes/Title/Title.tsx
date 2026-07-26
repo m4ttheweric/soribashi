@@ -1,6 +1,6 @@
-import { defineComponent } from '@soribashi/core';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
+import { defineComponent } from '../../builders.ts';
 import classes from './Title.module.css';
 
 /**
