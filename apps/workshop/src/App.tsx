@@ -1,8 +1,13 @@
 import type { ComponentType } from 'react';
 import { useState } from 'react';
+import { AlertPage } from './pages/AlertPage.tsx';
+import { BadgePage } from './pages/BadgePage.tsx';
 import { ButtonPage } from './pages/ButtonPage.tsx';
+import { CheckboxPage } from './pages/CheckboxPage.tsx';
 import { LayoutPage } from './pages/LayoutPage.tsx';
 import { PopoverPage } from './pages/PopoverPage.tsx';
+import { SelectPage } from './pages/SelectPage.tsx';
+import { TabsPage } from './pages/TabsPage.tsx';
 import { TenantsPage } from './pages/TenantsPage.tsx';
 import { Tokens } from './pages/Tokens.tsx';
 
@@ -14,6 +19,11 @@ import { Tokens } from './pages/Tokens.tsx';
 const PAGES: Record<string, ComponentType> = {
   tokens: Tokens,
   button: ButtonPage,
+  alert: AlertPage,
+  badge: BadgePage,
+  checkbox: CheckboxPage,
+  tabs: TabsPage,
+  select: SelectPage,
   popover: PopoverPage,
   tenants: TenantsPage,
   layout: LayoutPage,
