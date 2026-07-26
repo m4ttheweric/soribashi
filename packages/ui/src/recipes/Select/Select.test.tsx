@@ -1,4 +1,4 @@
-import { SoribashiProvider } from '@soribashi/core';
+import { createTheme, SoribashiProvider } from '@soribashi/core';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
@@ -224,6 +224,49 @@ describe('Select (browser)', () => {
 
     removeNoTransitionStyle();
     localContainer.remove();
+  });
+
+  it('threads a size default through Recipe.extend (invariant 1)', async () => {
+    // Same shape as Badge.test.tsx's identically-named case: register
+    // Select.extend({ defaultProps: { size: 'xl' } }) in a locally-composed
+    // theme, and assert its rendered (unset-size) computed trigger height
+    // equals an explicit size="xl" Select's computed trigger height rendered
+    // under the plain uiTheme. If .extend({ defaultProps }) stopped
+    // threading, `Big` would fall back to Select's own built-in default
+    // size ('md'), and this equality would fail rather than matching by
+    // coincidence: 'md' and 'xl' resolve to different
+    // SELECT_TRIGGER_HEIGHTS entries. Select hand-declares `size` (see the
+    // SelectSize/generic-params comments above) rather than getting it via
+    // `vocabularyAxes` injection the way Alert/Checkbox do, but
+    // `Recipe.extend()`'s runtime threading is independent of that typing
+    // mechanism, so the same pattern applies.
+    const Big = Select.extend({ defaultProps: { size: 'xl' } });
+    const extendedTheme = createTheme({
+      extends: uiTheme,
+      components: [Big],
+    });
+
+    const extendedScreen = await render(
+      <SoribashiProvider theme={extendedTheme}>
+        <Select items={FRUITS} placeholder="Pick" classNames={{ trigger: 'probe-extended' }} />
+      </SoribashiProvider>,
+    );
+    const explicitScreen = await wrap(
+      <Select
+        items={FRUITS}
+        placeholder="Pick"
+        size="xl"
+        classNames={{ trigger: 'probe-explicit-xl' }}
+      />,
+    );
+
+    const extendedHeight = getComputedStyle(
+      extendedScreen.container.querySelector('.probe-extended')!,
+    ).height;
+    const explicitHeight = getComputedStyle(
+      explicitScreen.container.querySelector('.probe-explicit-xl')!,
+    ).height;
+    expect(extendedHeight).toBe(explicitHeight);
   });
 
   it('accepts style props on Root, strips them, and applies no margin anywhere (Root has no DOM of its own)', async () => {

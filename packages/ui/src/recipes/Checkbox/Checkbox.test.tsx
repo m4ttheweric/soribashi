@@ -1,4 +1,4 @@
-import { SoribashiProvider } from '@soribashi/core';
+import { createTheme, SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
@@ -144,6 +144,40 @@ describe('Checkbox (browser)', () => {
       screen.container.querySelector('.probe-success')!,
     ).backgroundColor;
     expect(danger).not.toBe(success);
+  });
+
+  it('threads a size default through Recipe.extend (invariant 1)', async () => {
+    // Same shape as Badge.test.tsx's identically-named case: register
+    // Checkbox.extend({ defaultProps: { size: 'xl' } }) in a
+    // locally-composed theme, and assert its rendered (unset-size)
+    // computed control height equals an explicit size="xl" Checkbox's
+    // computed control height rendered under the plain uiTheme. If
+    // .extend({ defaultProps }) stopped threading, `Big` would fall back to
+    // Checkbox's own built-in default size ('md'), and this equality would
+    // fail rather than matching by coincidence: 'md' and 'xl' resolve to
+    // different CHECKBOX_SIZES entries.
+    const Big = Checkbox.extend({ defaultProps: { size: 'xl' } });
+    const extendedTheme = createTheme({
+      extends: uiTheme,
+      components: [Big],
+    });
+
+    const extendedScreen = await render(
+      <SoribashiProvider theme={extendedTheme}>
+        <Checkbox label="Big" classNames={{ control: 'probe-extended' }} />
+      </SoribashiProvider>,
+    );
+    const explicitScreen = await wrap(
+      <Checkbox label="Big" size="xl" classNames={{ control: 'probe-explicit-xl' }} />,
+    );
+
+    const extendedHeight = getComputedStyle(
+      extendedScreen.container.querySelector('.probe-extended')!,
+    ).height;
+    const explicitHeight = getComputedStyle(
+      explicitScreen.container.querySelector('.probe-explicit-xl')!,
+    ).height;
+    expect(extendedHeight).toBe(explicitHeight);
   });
 
   it('accepts style props from the builder with no recipe wiring', async () => {

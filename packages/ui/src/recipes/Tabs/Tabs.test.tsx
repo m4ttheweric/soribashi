@@ -1,4 +1,4 @@
-import { SoribashiProvider } from '@soribashi/core';
+import { createTheme, SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
@@ -143,6 +143,57 @@ describe('Tabs (browser)', () => {
     const lineBg = getComputedStyle(lineSelectedTab).backgroundColor;
 
     expect(pillBg).not.toBe(lineBg);
+  });
+
+  it('threads a variant default through Recipe.extend (invariant 1)', async () => {
+    // Same shape as Badge.test.tsx's identically-named case: register
+    // Tabs.extend({ defaultProps: { variant: 'pill' } }) in a
+    // locally-composed theme, and assert the selected tab's rendered
+    // (unset-variant) computed background equals an explicit variant="pill"
+    // Tabs' computed background rendered under the plain uiTheme. If
+    // .extend({ defaultProps }) stopped threading, `Pill` would fall back to
+    // Tabs' own built-in default variant ('line'), and this equality would
+    // fail rather than matching by coincidence: 'line' and 'pill' resolve to
+    // different selected-tab backgrounds (see the data-variant case above).
+    const Pill = Tabs.extend({ defaultProps: { variant: 'pill' } });
+    const extendedTheme = createTheme({
+      extends: uiTheme,
+      components: [Pill],
+    });
+
+    const extendedScreen = await render(
+      <SoribashiProvider theme={extendedTheme}>
+        <Tabs.Root defaultValue="a">
+          <Tabs.List>
+            <Tabs.Tab value="a">Tab A</Tabs.Tab>
+            <Tabs.Tab value="b">Tab B</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="a">Panel A</Tabs.Panel>
+          <Tabs.Panel value="b">Panel B</Tabs.Panel>
+        </Tabs.Root>
+      </SoribashiProvider>,
+    );
+    const explicitScreen = await wrap(
+      <Tabs.Root defaultValue="a" variant="pill">
+        <Tabs.List>
+          <Tabs.Tab value="a">Tab A</Tabs.Tab>
+          <Tabs.Tab value="b">Tab B</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="a">Panel A</Tabs.Panel>
+        <Tabs.Panel value="b">Panel B</Tabs.Panel>
+      </Tabs.Root>,
+    );
+
+    const extendedTab = extendedScreen.container.querySelector(
+      '[role="tab"][data-active]',
+    ) as HTMLElement;
+    const explicitTab = explicitScreen.container.querySelector(
+      '[role="tab"][data-active]',
+    ) as HTMLElement;
+
+    const extendedBg = getComputedStyle(extendedTab).backgroundColor;
+    const explicitBg = getComputedStyle(explicitTab).backgroundColor;
+    expect(extendedBg).toBe(explicitBg);
   });
 
   it('renders a Tab polymorphically as an anchor', async () => {

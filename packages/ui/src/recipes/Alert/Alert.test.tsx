@@ -1,4 +1,4 @@
-import { SoribashiProvider } from '@soribashi/core';
+import { createTheme, SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
@@ -57,6 +57,44 @@ describe('Alert (browser)', () => {
       screen.container.querySelector('.probe-success')!,
     ).backgroundColor;
     expect(danger).not.toBe(success);
+  });
+
+  it('threads a variant default through Recipe.extend (invariant 1)', async () => {
+    // Same shape as Badge.test.tsx's identically-named case: register
+    // Alert.extend({ defaultProps: { variant: 'outline' } }) in a
+    // locally-composed theme, and assert its rendered (unset-variant)
+    // computed background equals an explicit variant="outline" Alert's
+    // computed background rendered under the plain uiTheme. If
+    // .extend({ defaultProps }) stopped threading, `Outlined` would fall
+    // back to Alert's own built-in default variant ('subtle'), and this
+    // equality would fail rather than matching by coincidence: 'subtle' and
+    // 'outline' resolve to different backgrounds (see the intent case above).
+    const Outlined = Alert.extend({ defaultProps: { variant: 'outline' } });
+    const extendedTheme = createTheme({
+      extends: uiTheme,
+      components: [Outlined],
+    });
+
+    const extendedScreen = await render(
+      <SoribashiProvider theme={extendedTheme}>
+        <Alert title="t" classNames={{ root: 'probe-extended' }}>
+          b
+        </Alert>
+      </SoribashiProvider>,
+    );
+    const explicitScreen = await wrap(
+      <Alert title="t" variant="outline" classNames={{ root: 'probe-explicit-outline' }}>
+        b
+      </Alert>,
+    );
+
+    const extendedBg = getComputedStyle(
+      extendedScreen.container.querySelector('.probe-extended')!,
+    ).backgroundColor;
+    const explicitBg = getComputedStyle(
+      explicitScreen.container.querySelector('.probe-explicit-outline')!,
+    ).backgroundColor;
+    expect(extendedBg).toBe(explicitBg);
   });
 
   it('accepts style props from the builder with no recipe wiring', async () => {
