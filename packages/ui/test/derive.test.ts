@@ -117,9 +117,10 @@ describe('extractTokenDependencies', () => {
 });
 
 describe('buildManifest', () => {
-  it('returns entries for exactly AspectRatio, Box, Button, Center, Container, Grid, Group, Paper, Popover, Stack, Text, and Title', async () => {
+  it('returns entries for exactly Alert, AspectRatio, Box, Button, Center, Container, Grid, Group, Paper, Popover, Stack, Text, and Title', async () => {
     const manifest = await buildManifest();
     expect(manifest.recipes.map((r) => r.name)).toEqual([
+      'Alert',
       'AspectRatio',
       'Box',
       'Button',

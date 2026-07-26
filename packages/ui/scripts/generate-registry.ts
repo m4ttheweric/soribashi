@@ -84,6 +84,7 @@ function readRepoFile(repoRelativePath: string): string {
  * loudly rather than shipping a registry item with placeholder copy.
  */
 const RECIPE_DESCRIPTIONS: Record<string, string> = {
+  Alert: 'A single-element alert surface with icon, title, body, and close slots.',
   AspectRatio: 'Locks a fixed width/height ratio for its content.',
   Box: 'The polymorphic primitive: element choice, style props, nothing else.',
   Button: 'Polymorphic button riding the soribashi vocabulary rails.',

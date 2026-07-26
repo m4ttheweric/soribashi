@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Alert } from '../recipes/Alert/Alert.tsx';
 import { AspectRatio } from '../recipes/AspectRatio/AspectRatio.tsx';
 import { Box } from '../recipes/Box/Box.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
@@ -35,6 +36,12 @@ import { Title } from '../recipes/Title/Title.tsx';
  *      already differ for some unrelated reason).
  */
 export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode> = {
+  Alert: () => (
+    <Alert classNames={{ root: 'reskin-target' }} intent="info" variant="subtle">
+      x
+    </Alert>
+  ),
+
   AspectRatio: () => (
     <AspectRatio className="reskin-target" p="md" ratio={16 / 9}>
       x

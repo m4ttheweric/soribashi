@@ -1,3 +1,4 @@
+export { Alert, alertTheme } from './recipes/Alert/Alert.tsx';
 export { AspectRatio, aspectRatioTheme } from './recipes/AspectRatio/AspectRatio.tsx';
 export { Box, boxTheme } from './recipes/Box/Box.tsx';
 export { Button, buttonTheme } from './recipes/Button/Button.tsx';

@@ -12,6 +12,15 @@ import { MATRIX_CLASSIFICATION, SMALL_COVERAGE_NAMES } from '../src/a11y/matrix-
 
 const COLOR_TOKEN_RE = /--(color|text|surface|accent)-/;
 
+/**
+ * Recipes with a full intent x variant (x size) `describeColourGrid` call of
+ * their own in contrast-matrix.test.tsx, rather than a `SMALL_COVERAGE`
+ * entry. Button was the only one until Alert (Task 4): Alert renders visible
+ * background colour across its own three-variant tuple, so it earns the same
+ * full-grid treatment rather than a handful of SMALL_COVERAGE cells.
+ */
+const FULL_GRID_NAMES = ['Button', 'Alert'];
+
 describe('contrast matrix classification guard', () => {
   it('every manifest recipe has a MATRIX_CLASSIFICATION entry', async () => {
     const manifest = await buildManifest();
@@ -35,11 +44,11 @@ describe('contrast matrix classification guard', () => {
     ).toEqual([]);
   });
 
-  it("every 'covered' classification is 'Button' or a name in SMALL_COVERAGE_NAMES", () => {
+  it("every 'covered' classification is a full-grid recipe or a name in SMALL_COVERAGE_NAMES", () => {
     const invalid = Object.entries(MATRIX_CLASSIFICATION)
       .filter(([, classification]) => classification === 'covered')
       .map(([name]) => name)
-      .filter((name) => name !== 'Button' && !SMALL_COVERAGE_NAMES.includes(name));
+      .filter((name) => !FULL_GRID_NAMES.includes(name) && !SMALL_COVERAGE_NAMES.includes(name));
 
     expect(
       invalid,

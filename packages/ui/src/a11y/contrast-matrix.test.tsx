@@ -13,6 +13,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 // importing the main entry left `container` empty by the first `it` (cleanup
 // already ran); importing `/pure` did not.
 import { render } from 'vitest-browser-react/pure';
+import { Alert } from '../recipes/Alert/Alert.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
@@ -56,6 +57,27 @@ describeColourGrid({
     >
       {intent}
     </Button>
+  ),
+});
+
+// Alert has no size axis (colour does not vary by size for this recipe), so
+// `sizes` is omitted: 6 intents x 3 variants x 2 schemes = 36 cells. Its own
+// three-variant tuple (not uiVocabulary's five) is used directly, matching
+// the builder config in Alert.tsx (ghost/link are deliberately excluded
+// there, so there is no grid cell to render for them here either).
+describeColourGrid({
+  name: 'Alert',
+  intents: INTENTS,
+  variants: ['filled', 'outline', 'subtle'] as const,
+  renderCell: (intent, variant, testId) => (
+    <Alert
+      intent={intent}
+      variant={variant}
+      title={intent}
+      attributes={{ root: { 'data-testid': testId } }}
+    >
+      Sample body copy for {intent}.
+    </Alert>
   ),
 });
 

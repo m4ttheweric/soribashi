@@ -6,6 +6,39 @@
   },
   "recipes": [
     {
+      "name": "Alert",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root", "icon", "title", "body", "close"],
+      "parts": [],
+      "vocabularyAxes": ["intent", "variant"],
+      "variants": ["filled", "outline", "subtle"],
+      "defaults": {
+        "intent": "info",
+        "variant": "subtle"
+      },
+      "files": [
+        "packages/ui/src/recipes/Alert/Alert.tsx",
+        "packages/ui/src/recipes/Alert/Alert.module.css",
+        "packages/ui/src/recipes/Alert/Alert.test.tsx",
+        "packages/ui/src/recipes/Alert/Alert.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--font-weight-semibold",
+        "--line-height-md",
+        "--radius-md",
+        "--radius-sm",
+        "--spacing-lg",
+        "--spacing-md",
+        "--spacing-sm",
+        "--spacing-xs"
+      ],
+      "baseUi": false
+    },
+    {
       "name": "AspectRatio",
       "category": 1,
       "builder": "defineComponent",

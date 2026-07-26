@@ -4,6 +4,12 @@
   "homepage": "https://github.com/soribashi/soribashi",
   "items": [
     {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "A single-element alert surface with icon, title, body, and close slots."
+    },
+    {
       "name": "aspectratio",
       "type": "registry:ui",
       "title": "AspectRatio",
