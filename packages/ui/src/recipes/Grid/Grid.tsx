@@ -154,7 +154,21 @@ export const Grid = defineComponent<GridProps>({
       root['--sb-grid-min-child'] = getSpacing(p.minChildWidth) ?? String(p.minChildWidth);
     } else {
       const colsValue = hasCols ? p.cols! : 1;
-      root['--sb-grid-cols'] = String(resolveGridCols(colsValue, theme).base);
+      const resolved = resolveGridCols(colsValue, theme);
+      // A genuinely responsive cols value (at least one resolved media
+      // entry) must NOT set --sb-grid-cols here: this vars-resolver output
+      // becomes an inline style on the element, and an inline declaration
+      // beats any non-!important stylesheet rule, including the
+      // media-query overrides `render` injects via InlineStyles below. The
+      // base value rides in InlineStyles' own `styles` (the same
+      // class-scoped rule the media overrides live in) instead, so ordinary
+      // cascade rules (the media rule comes later in source order and wins
+      // at equal specificity) actually apply. Mirrors
+      // parse-style-props.ts's split: a responsive style prop's base value
+      // goes into the class rule, never inline.
+      if (resolved.media.length === 0) {
+        root['--sb-grid-cols'] = String(resolved.base);
+      }
     }
 
     return { root };
@@ -181,21 +195,24 @@ export const Grid = defineComponent<GridProps>({
     } = props as GridProps & Record<string, unknown>;
 
     const hasMinChild = minChildWidth !== undefined;
-    const media =
+    const resolved =
       !hasMinChild && cols !== undefined && typeof cols === 'object'
-        ? resolveGridCols(cols, theme).media
-        : [];
+        ? resolveGridCols(cols, theme)
+        : null;
+    const isResponsive = resolved !== null && resolved.media.length > 0;
 
-    const styleNode =
-      media.length > 0 ? (
-        <InlineStyles
-          selector={`.${cls}`}
-          styles={{}}
-          media={Object.fromEntries(
-            media.map((m) => [m.query, { '--sb-grid-cols': String(m.cols) }]),
-          )}
-        />
-      ) : null;
+    // Base AND media overrides live in the same class-scoped rule here (not
+    // split between an inline style and this stylesheet); see the matching
+    // comment in `vars` above for why that split is load-bearing.
+    const styleNode = isResponsive ? (
+      <InlineStyles
+        selector={`.${cls}`}
+        styles={{ '--sb-grid-cols': String(resolved.base) }}
+        media={Object.fromEntries(
+          resolved.media.map((m) => [m.query, { '--sb-grid-cols': String(m.cols) }]),
+        )}
+      />
+    ) : null;
 
     // `{...rest}` then `{...baseStyles}` last matches every other
     // packages/ui recipe's spread order (Stack/Group/Center/AspectRatio's

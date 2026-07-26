@@ -1,8 +1,16 @@
 import { createTheme, SoribashiProvider } from '@soribashi/core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { uiTheme } from '../../theme.ts';
 import { Grid, resolveGridCols } from './Grid.tsx';
+
+// The tester iframe's default viewport (measured empirically the same way
+// Button.visual.test.tsx's comment describes): 414x896, narrower than the
+// md breakpoint's 48rem/768px. The wide-viewport test below restores this
+// afterward so later tests in this file render at the same default other
+// suites assume.
+const DEFAULT_VIEWPORT = [414, 896] as const;
 
 // `render` from vitest-browser-react resolves a Promise<RenderResult> (see
 // Button.test.tsx's identical note); `wrap` awaits it so callers get the
@@ -33,8 +41,9 @@ describe('resolveGridCols', () => {
     // createTheme backfills an empty breakpoint map to defaultTokens'
     // (create-theme.ts's withBreakpointFallback), so the missing-value
     // fallback path must be exercised by stripping breakpoint back off the
-    // already-resolved theme, mirroring packages/blocks/test/Box/
-    // responsive-breakpoint-fallback.test.tsx's identical trick.
+    // already-resolved theme. Mirrors the semantics the deleted
+    // packages/blocks/test/Box/responsive-breakpoint-fallback.test.tsx
+    // pinned before @soribashi/blocks was removed from the repo.
     const resolved = createTheme({ tokens: { ...uiTheme.tokens, breakpoint: {} } });
     const { breakpoint: _backfilled, ...tokens } = resolved.tokens;
     const themeWithoutBreakpoints = { ...resolved, tokens };
@@ -101,10 +110,39 @@ describe('Grid (browser)', () => {
     expect(styleText).toContain('--sb-grid-cols: 4');
 
     const el = screen.getByTestId('grid').element();
-    // Base (non-responsive) value stays 1 until a media query overrides it.
+    // At the default (narrow, 414px) viewport neither media query matches,
+    // so the class rule's base declaration applies unchanged. The dedicated
+    // wide-viewport test below proves a media query actually overriding it.
     expect(getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length).toBe(1);
     // The injected per-instance class rides alongside the built-in root class.
     expect(el.className.split(' ').some((c: string) => c.startsWith('sb-'))).toBe(true);
+  });
+
+  it('a responsive cols object resolves the matching media override at a wide viewport', async () => {
+    // Regression coverage for the inline-vs-class-rule bug: `vars` used to
+    // set --sb-grid-cols inline regardless of responsiveness, and an inline
+    // declaration beats any non-!important stylesheet rule, so the media
+    // overrides below never actually took effect at any viewport width.
+    const screen = await wrap(
+      <Grid data-testid="grid" cols={{ base: 1, md: 2 }}>
+        <div>a</div>
+      </Grid>,
+    );
+    const el = screen.getByTestId('grid').element();
+    const trackCount = () =>
+      getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
+
+    // Default (narrow) viewport: below the md breakpoint, base applies.
+    expect(trackCount()).toBe(1);
+
+    // 900px is above the md breakpoint's 48rem/768px, so the media override
+    // must now take effect.
+    await page.viewport(900, 600);
+    expect(trackCount()).toBe(2);
+
+    // Restore the default viewport so later tests in this file aren't
+    // affected by this test's resize.
+    await page.viewport(...DEFAULT_VIEWPORT);
   });
 
   it('minChildWidth produces auto-fit behaviour: two children sit side by side at a wide width', async () => {
