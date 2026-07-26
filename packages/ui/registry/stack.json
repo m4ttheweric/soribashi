@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "stack",
+  "type": "registry:ui",
+  "title": "Stack",
+  "description": "Vertical flex stack with theme-spacing gap.",
+  "dependencies": ["@soribashi/core"],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/soribashi/Stack/Stack.tsx",
+      "type": "registry:ui",
+      "target": "components/soribashi/Stack/Stack.tsx",
+      "content": "import { defineComponent, getSpacing } from '@soribashi/core';\nimport type { CSSProperties, ReactNode } from 'react';\nimport classes from './Stack.module.css';\n\nexport const recipeCategory = 1 as const;\n\nexport interface StackProps {\n  /** Theme spacing key or any CSS gap value @default 'md' */\n  gap?: string | number;\n  /** align-items @default 'stretch' */\n  align?: CSSProperties['alignItems'];\n  /** justify-content @default 'flex-start' */\n  justify?: CSSProperties['justifyContent'];\n  children?: ReactNode;\n}\n\nexport const Stack = defineComponent<StackProps>({\n  name: 'Stack',\n  selectors: ['root'] as const,\n  classes,\n  defaults: { gap: 'md', align: 'stretch', justify: 'flex-start' },\n  vars: (_theme, props) => ({\n    root: {\n      '--sb-stack-gap': getSpacing((props as StackProps).gap) ?? '',\n      '--sb-stack-align': String((props as StackProps).align ?? 'stretch'),\n      '--sb-stack-justify': String((props as StackProps).justify ?? 'flex-start'),\n    },\n  }),\n  render: ({ props, getStyles, ref }) => {\n    const {\n      gap: _gap,\n      align: _align,\n      justify: _justify,\n      children,\n      classNames: _cn,\n      styles: _st,\n      vars: _v,\n      attributes: _at,\n      unstyled: _un,\n      ...rest\n    } = props as StackProps & Record<string, unknown>;\n    return (\n      <div ref={ref as React.Ref<HTMLDivElement>} {...rest} {...getStyles('root')}>\n        {children}\n      </div>\n    );\n  },\n});\n\nexport const stackTheme = Stack.extend({});\n"
+    },
+    {
+      "path": "registry/soribashi/Stack/Stack.module.css",
+      "type": "registry:ui",
+      "target": "components/soribashi/Stack/Stack.module.css",
+      "content": "@layer soribashi.recipes {\n  .root {\n    display: flex;\n    flex-direction: column;\n    gap: var(--sb-stack-gap);\n    align-items: var(--sb-stack-align);\n    justify-content: var(--sb-stack-justify);\n  }\n}\n"
+    }
+  ]
+}

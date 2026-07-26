@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
+import { Box } from '../recipes/Box/Box.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
+import { Stack } from '../recipes/Stack/Stack.tsx';
 
 /**
  * One minimal, force-visible rendering per recipe, keyed by the recipe's
@@ -25,6 +27,12 @@ import { Popover } from '../recipes/Popover/Popover.tsx';
  *      already differ for some unrelated reason).
  */
 export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode> = {
+  Box: () => (
+    <Box className="reskin-target" bg="surface.raised" p="md">
+      x
+    </Box>
+  ),
+
   Button: () => <Button classNames={{ root: 'reskin-target' }}>x</Button>,
 
   Popover: (scopeEl) => (
@@ -34,5 +42,12 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
         <Popover.Title>Title</Popover.Title>
       </Popover.Content>
     </Popover.Root>
+  ),
+
+  Stack: () => (
+    <Stack className="reskin-target" gap="md">
+      <div>a</div>
+      <div>b</div>
+    </Stack>
   ),
 };

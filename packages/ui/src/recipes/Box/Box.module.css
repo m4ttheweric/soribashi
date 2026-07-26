@@ -1,0 +1,11 @@
+/**
+ * Box renders no CSS of its own: no colour, no spacing, no border, no font.
+ * Everything visual comes from the universal style props (p, m, bg, c, fz,
+ * ...) that definePolymorphicComponent resolves automatically, or from the
+ * caller's own className/style. This rule exists only so getStyles('root')
+ * has a stable class to attach data-attributes and merged styles to.
+ */
+@layer soribashi.recipes {
+  .root {
+  }
+}

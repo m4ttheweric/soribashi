@@ -84,8 +84,10 @@ function readRepoFile(repoRelativePath: string): string {
  * loudly rather than shipping a registry item with placeholder copy.
  */
 const RECIPE_DESCRIPTIONS: Record<string, string> = {
+  Box: 'The polymorphic primitive: element choice, style props, nothing else.',
   Button: 'Polymorphic button riding the soribashi vocabulary rails.',
   Popover: 'Compound popover built on Base UI, themed through the soribashi vocabulary rails.',
+  Stack: 'Vertical flex stack with theme-spacing gap.',
 };
 
 function buildRecipeRegistryItem(entry: ManifestEntry): RegistryItem {

@@ -117,9 +117,9 @@ describe('extractTokenDependencies', () => {
 });
 
 describe('buildManifest', () => {
-  it('returns entries for exactly Button and Popover', async () => {
+  it('returns entries for exactly Box, Button, Popover, and Stack', async () => {
     const manifest = await buildManifest();
-    expect(manifest.recipes.map((r) => r.name)).toEqual(['Button', 'Popover']);
+    expect(manifest.recipes.map((r) => r.name)).toEqual(['Box', 'Button', 'Popover', 'Stack']);
   });
 
   it('derives Button with its expected slots, axes, variants, defaults, and category', async () => {

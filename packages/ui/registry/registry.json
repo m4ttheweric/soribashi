@@ -4,6 +4,12 @@
   "homepage": "https://github.com/soribashi/soribashi",
   "items": [
     {
+      "name": "box",
+      "type": "registry:ui",
+      "title": "Box",
+      "description": "The polymorphic primitive: element choice, style props, nothing else."
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
@@ -14,6 +20,12 @@
       "type": "registry:ui",
       "title": "Popover",
       "description": "Compound popover built on Base UI, themed through the soribashi vocabulary rails."
+    },
+    {
+      "name": "stack",
+      "type": "registry:ui",
+      "title": "Stack",
+      "description": "Vertical flex stack with theme-spacing gap."
     },
     {
       "name": "soribashi-init",

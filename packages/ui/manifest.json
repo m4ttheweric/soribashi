@@ -6,6 +6,23 @@
   },
   "recipes": [
     {
+      "name": "Box",
+      "category": 1,
+      "builder": "definePolymorphicComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {},
+      "files": [
+        "packages/ui/src/recipes/Box/Box.tsx",
+        "packages/ui/src/recipes/Box/Box.module.css",
+        "packages/ui/src/recipes/Box/Box.test.tsx",
+        "packages/ui/src/recipes/Box/Box.visual.test.tsx"
+      ],
+      "tokenDependencies": [],
+      "baseUi": false
+    },
+    {
       "name": "Button",
       "category": 1,
       "builder": "definePolymorphicComponent",
@@ -62,6 +79,27 @@
         "--text-muted"
       ],
       "baseUi": true
+    },
+    {
+      "name": "Stack",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "gap": "md",
+        "align": "stretch",
+        "justify": "flex-start"
+      },
+      "files": [
+        "packages/ui/src/recipes/Stack/Stack.tsx",
+        "packages/ui/src/recipes/Stack/Stack.module.css",
+        "packages/ui/src/recipes/Stack/Stack.test.tsx",
+        "packages/ui/src/recipes/Stack/Stack.visual.test.tsx"
+      ],
+      "tokenDependencies": [],
+      "baseUi": false
     }
   ]
 }
