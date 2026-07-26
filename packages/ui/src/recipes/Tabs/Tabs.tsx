@@ -115,8 +115,26 @@ const TabsCompound = defineCompound({
       // Unlike Popover's root (a context provider with no DOM of its own),
       // Base UI's TabsRoot renders a real `<div>`, so this part both
       // forwards props to it AND calls getStyles() for its own slot.
+      //
+      // `defineCompound` does not strip vocabulary-axis props from
+      // `props`/`sp.rest` before handing them to a part's render (unlike the
+      // three single-component builders' own `stripFrameworkKeys`-equivalent
+      // handling) -- SKILL.md's single-component authoring rule ("destructure
+      // vocabulary axis props out in the render body; never spread them onto
+      // the DOM element as raw attributes") applies here too, even though §10
+      // (compounds) does not repeat it. Without this, `variant` reached
+      // `BaseTabs.Root` and was forwarded onto the rendered `<div>` as a raw
+      // `variant="line"` attribute. `size`/`intent` are stripped defensively
+      // even though Tabs declares neither, so a future edit adding one of
+      // those axes does not reintroduce the same leak.
       render: ({ props, getStyles, ref }: Ctx<RootProps>) => {
-        const rest = stripFrameworkKeys(props);
+        const stripped = stripFrameworkKeys(props);
+        const {
+          variant: _variant,
+          size: _size,
+          intent: _intent,
+          ...rest
+        } = stripped as typeof stripped & Partial<Record<'variant' | 'size' | 'intent', unknown>>;
         return <BaseTabs.Root ref={ref as Ref<HTMLDivElement>} {...rest} {...getStyles()} />;
       },
     },
