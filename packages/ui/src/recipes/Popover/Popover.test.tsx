@@ -1,8 +1,9 @@
 import { SoribashiProvider } from '@soribashi/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
+import { installNoTransitionStyle, NO_TRANSITION_CLASS } from '../../a11y/matrix-harness.tsx';
 import { uiTheme } from '../../theme.ts';
 import { Popover } from './Popover.tsx';
 
@@ -226,8 +227,19 @@ describe('Popover (browser)', () => {
     // `container` re-anchors the portal locally (see the classNames/container
     // test above) so axe gets a single local subtree covering the popup's
     // showcase content instead of having to sweep all of document.body.
+    //
+    // Same exposure as Select.test.tsx's axe case (see that file's comment
+    // for the full mechanism): Popover.module.css's `.popup` has an
+    // identical opacity/transform enter transition AND the same
+    // `[data-starting-style]` mount-entry state Base UI clears on the next
+    // animation frame (`useTransitionStatus`), independent of the CSS
+    // transition. Disabling the transition alone is not enough -- the
+    // assertion has to poll for that frame to have fired, not sample once
+    // right after `toBeVisible()` resolves.
     const localContainer = document.createElement('div');
     document.body.appendChild(localContainer);
+    const removeNoTransitionStyle = installNoTransitionStyle();
+    localContainer.classList.add(NO_TRANSITION_CLASS);
 
     const screen = await wrap(
       <Popover.Root open onOpenChange={() => {}}>
@@ -240,11 +252,21 @@ describe('Popover (browser)', () => {
       </Popover.Root>,
     );
 
-    await expect.element(screen.getByRole('dialog')).toBeVisible();
+    const dialog = screen.getByRole('dialog');
+    await expect.element(dialog).toBeVisible();
+    const dialogEl = dialog.element() as HTMLElement;
+    await vi.waitFor(
+      () => {
+        expect(dialogEl.hasAttribute('data-starting-style')).toBe(false);
+        expect(getComputedStyle(dialogEl).opacity).toBe('1');
+      },
+      { timeout: 1000, interval: 10 },
+    );
 
     const results = await runAxe(localContainer);
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
 
+    removeNoTransitionStyle();
     localContainer.remove();
   });
 });

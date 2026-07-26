@@ -3,6 +3,7 @@ import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
+import { installNoTransitionStyle, NO_TRANSITION_CLASS } from '../../a11y/matrix-harness.tsx';
 import { uiTheme } from '../../theme.ts';
 import { Select } from './Select.tsx';
 
@@ -163,8 +164,35 @@ describe('Select (browser)', () => {
   });
 
   it('has zero axe violations for an open select with grouped items', async () => {
+    // The popup's enter transition (Select.module.css's `.popup`) is still
+    // running at the instant `toBeVisible()` resolves: axe-core would sample
+    // a mid-transition, partially-transparent surface, which axe-core skips
+    // for colour checks -- making the assertion below near-vacuous rather
+    // than a real check of the popup's colours.
+    //
+    // Two independent things have to happen before the popup is safe to
+    // measure, not one:
+    //
+    // 1. The CSS transition itself has to be disabled (the shared
+    //    `installNoTransitionStyle` mechanism, matrix-harness.tsx, built for
+    //    the contrast grids), so that once Base UI flips away from its
+    //    mount-entry state the popup jumps straight to its final opacity
+    //    instead of spending another 150ms animating toward it.
+    // 2. Base UI's own `[data-starting-style]` mount-entry state has to
+    //    actually clear. That flip is driven by `useTransitionStatus`
+    //    (`@base-ui/react/internals/useTransitionStatus.js`), which sets
+    //    `transitionStatus: 'starting'` synchronously on mount and clears it
+    //    on the *next animation frame* via `AnimationFrame.request` -- a real
+    //    frame boundary, independent of any CSS transition duration.
+    //    `toBeVisible()` does not wait on this: measured directly, disabling
+    //    the transition alone still left the popup at `opacity: 0` in a
+    //    reproducible fraction of runs, because the assertion ran before
+    //    that animation frame had fired. Polling for the settled state (not
+    //    asserting it once) is what actually closes the race.
     const localContainer = document.createElement('div');
     document.body.appendChild(localContainer);
+    const removeNoTransitionStyle = installNoTransitionStyle();
+    localContainer.classList.add(NO_TRANSITION_CLASS);
 
     const screen = await wrap(
       <Select
@@ -178,9 +206,23 @@ describe('Select (browser)', () => {
     await screen.getByRole('combobox').click();
     await expect.element(screen.getByRole('option', { name: 'Apple' })).toBeVisible();
 
+    // `Select.Popup` is the immediate parent of the `role="listbox"` element
+    // (Select.tsx's part tree: Popup > List) and is the element
+    // Select.module.css's `.popup` transition rule targets.
+    const popup = screen.getByRole('listbox').element().parentElement as HTMLElement;
+    expect(popup).not.toBeNull();
+    await vi.waitFor(
+      () => {
+        expect(popup.hasAttribute('data-starting-style')).toBe(false);
+        expect(getComputedStyle(popup).opacity).toBe('1');
+      },
+      { timeout: 1000, interval: 10 },
+    );
+
     const results = await runAxe(localContainer);
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
 
+    removeNoTransitionStyle();
     localContainer.remove();
   });
 
