@@ -976,9 +976,9 @@ Refactor-safe: renaming `.content` to `.bubble` in the module breaks the test at
 
 ### 2.5 Form control (Wave 4 — Select)
 
-Pattern for data-driven, generically-typed form controls that carry a floating dropdown, a reusable field wrapper, and a minimal state machine. Select is the pilot for this category. The same bottom-up composition (data model, engine hook, field wrapper, recipe) applies to future controls: Combobox, AutoComplete, MultiSelect as a standalone component.
+Pattern for form controls: components whose visual treatment and interaction are shaped by the demands of collecting and validating user input, rather than by pure presentation. Select is the pilot for this category, and its larger members (Select itself, and future controls like Combobox, AutoComplete, MultiSelect) are data-driven and generically-typed, carrying a floating dropdown, a reusable field wrapper, and a minimal state machine; the same bottom-up composition (data model, engine hook, field wrapper, recipe) applies across that group. Genericity, a floating dropdown, and a state machine characterize that group of larger members, though; they are not what defines category 4 itself. Checkbox belongs to this category too, and needs none of the three: it has no generic type parameter over an item type, no floating dropdown, and no state machine beyond a single boolean/mixed value, styled through a single `defineComponent` with four slots. It qualifies on the category's own name, "Form control": a checkbox is exactly that, a minimal one.
 
-**Examples in host:** Select (pilot).
+**Examples in host:** Select (pilot); Checkbox (`@soribashi/ui`, slice 3).
 
 #### Three-unit composition
 
