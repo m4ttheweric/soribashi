@@ -28,6 +28,18 @@
       "description": "Centers its content on both axes, flex or inline-flex."
     },
     {
+      "name": "container",
+      "type": "registry:ui",
+      "title": "Container",
+      "description": "Centers and caps content width at a theme-driven size, or fluid."
+    },
+    {
+      "name": "grid",
+      "type": "registry:ui",
+      "title": "Grid",
+      "description": "CSS grid with a fixed or responsive column count, or auto-fit min-width columns."
+    },
+    {
       "name": "group",
       "type": "registry:ui",
       "title": "Group",

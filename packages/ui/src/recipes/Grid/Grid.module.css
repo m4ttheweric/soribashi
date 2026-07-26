@@ -1,0 +1,11 @@
+@layer soribashi.recipes {
+  .root {
+    display: grid;
+    grid-template-columns: repeat(var(--sb-grid-cols), minmax(0, 1fr));
+    column-gap: var(--sb-grid-gap-x);
+    row-gap: var(--sb-grid-gap-y);
+  }
+  .root[data-min-child] {
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--sb-grid-min-child), 100%), 1fr));
+  }
+}

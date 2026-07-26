@@ -3,6 +3,8 @@ import { AspectRatio } from '../recipes/AspectRatio/AspectRatio.tsx';
 import { Box } from '../recipes/Box/Box.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Center } from '../recipes/Center/Center.tsx';
+import { Container } from '../recipes/Container/Container.tsx';
+import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
@@ -48,6 +50,15 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
     <Center className="reskin-target" p="md">
       x
     </Center>
+  ),
+
+  Container: () => <Container className="reskin-target">x</Container>,
+
+  Grid: () => (
+    <Grid className="reskin-target" spacing="md">
+      <div>a</div>
+      <div>b</div>
+    </Grid>
   ),
 
   Group: () => (

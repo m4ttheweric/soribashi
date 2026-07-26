@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "container",
+  "type": "registry:ui",
+  "title": "Container",
+  "description": "Centers and caps content width at a theme-driven size, or fluid.",
+  "dependencies": ["@soribashi/core"],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/soribashi/Container/Container.tsx",
+      "type": "registry:ui",
+      "target": "components/soribashi/Container/Container.tsx",
+      "content": "import { defineComponent } from '@soribashi/core';\nimport type { ReactNode } from 'react';\nimport classes from './Container.module.css';\n\nexport const recipeCategory = 1 as const;\n\n/**\n * Widths keyed on the ui theme's size vocabulary. Lives in the recipe (not\n * the framework) because @soribashi/ui is a consumer and owns these values;\n * a theme can still override per instance via Container.extend({ vars })\n * or Container.extend({ defaultProps: { size } }).\n */\nconst CONTAINER_WIDTHS: Record<string, string> = {\n  xs: '30rem',\n  sm: '40rem',\n  md: '48rem',\n  lg: '64rem',\n  xl: '80rem',\n};\n\nexport interface ContainerProps {\n  /** Removes the max-width cap, filling 100% of the available width @default false */\n  fluid?: boolean;\n  children?: ReactNode;\n}\n\n/**\n * `size` is injected by `vocabularyAxes: ['size']` rather than declared on\n * `ContainerProps` directly (Global Constraint: vocabulary axis props come\n * from the builder, not the recipe's own prop type); `getStyles('root')`\n * already stamps `data-size` from it, so Container adds nothing extra there.\n */\nexport const Container = defineComponent<\n  ContainerProps,\n  readonly ['root'],\n  readonly [],\n  readonly ['size']\n>({\n  name: 'Container',\n  vocabularyAxes: ['size'] as const,\n  selectors: ['root'] as const,\n  classes,\n  defaults: { size: 'md', fluid: false },\n  vars: (_theme, props) => {\n    const size = (props as { size?: string }).size ?? 'md';\n    return {\n      root: {\n        '--sb-container-w': CONTAINER_WIDTHS[size] ?? CONTAINER_WIDTHS.md!,\n      },\n    };\n  },\n  render: ({ props, getStyles, ref }) => {\n    const {\n      size: _size,\n      fluid,\n      children,\n      classNames: _cn,\n      styles: _st,\n      vars: _v,\n      attributes: _at,\n      unstyled: _un,\n      ...rest\n    } = props as ContainerProps & Record<string, unknown>;\n    return (\n      <div\n        ref={ref as React.Ref<HTMLDivElement>}\n        {...rest}\n        data-fluid={fluid ? 'true' : undefined}\n        {...getStyles('root')}\n      >\n        {children}\n      </div>\n    );\n  },\n});\n\nexport const containerTheme = Container.extend({});\n"
+    },
+    {
+      "path": "registry/soribashi/Container/Container.module.css",
+      "type": "registry:ui",
+      "target": "components/soribashi/Container/Container.module.css",
+      "content": "@layer soribashi.recipes {\n  .root {\n    margin-inline: auto;\n    max-width: var(--sb-container-w);\n    padding-inline: var(--spacing-md);\n    width: 100%;\n  }\n  .root[data-fluid] {\n    max-width: 100%;\n  }\n}\n"
+    }
+  ]
+}

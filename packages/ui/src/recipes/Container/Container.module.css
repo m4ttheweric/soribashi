@@ -1,0 +1,11 @@
+@layer soribashi.recipes {
+  .root {
+    margin-inline: auto;
+    max-width: var(--sb-container-w);
+    padding-inline: var(--spacing-md);
+    width: 100%;
+  }
+  .root[data-fluid] {
+    max-width: 100%;
+  }
+}

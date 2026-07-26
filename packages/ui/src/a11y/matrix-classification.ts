@@ -25,6 +25,8 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Box: { exempt: 'no colour of its own; style-prop colours are consumer input' },
   Button: 'covered',
   Center: { exempt: 'geometry only' },
+  Container: { exempt: 'geometry only' },
+  Grid: { exempt: 'geometry only' },
   Group: { exempt: 'geometry only' },
   Popover: 'covered',
   Stack: { exempt: 'geometry only' },

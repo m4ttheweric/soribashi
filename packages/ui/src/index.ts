@@ -2,6 +2,8 @@ export { AspectRatio, aspectRatioTheme } from './recipes/AspectRatio/AspectRatio
 export { Box, boxTheme } from './recipes/Box/Box.tsx';
 export { Button, buttonTheme } from './recipes/Button/Button.tsx';
 export { Center, centerTheme } from './recipes/Center/Center.tsx';
+export { Container, containerTheme } from './recipes/Container/Container.tsx';
+export { Grid, gridTheme } from './recipes/Grid/Grid.tsx';
 export { Group, groupTheme } from './recipes/Group/Group.tsx';
 export { Popover, popoverTheme } from './recipes/Popover/Popover.tsx';
 export { Stack, stackTheme } from './recipes/Stack/Stack.tsx';

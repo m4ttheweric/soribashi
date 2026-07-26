@@ -90,6 +90,45 @@
       "baseUi": false
     },
     {
+      "name": "Container",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "vocabularyAxes": ["size"],
+      "variants": [],
+      "defaults": {
+        "size": "md",
+        "fluid": false
+      },
+      "files": [
+        "packages/ui/src/recipes/Container/Container.tsx",
+        "packages/ui/src/recipes/Container/Container.module.css",
+        "packages/ui/src/recipes/Container/Container.test.tsx",
+        "packages/ui/src/recipes/Container/Container.visual.test.tsx"
+      ],
+      "tokenDependencies": ["--spacing-md"],
+      "baseUi": false
+    },
+    {
+      "name": "Grid",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "spacing": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/Grid/Grid.tsx",
+        "packages/ui/src/recipes/Grid/Grid.module.css",
+        "packages/ui/src/recipes/Grid/Grid.test.tsx",
+        "packages/ui/src/recipes/Grid/Grid.visual.test.tsx"
+      ],
+      "tokenDependencies": [],
+      "baseUi": false
+    },
+    {
       "name": "Group",
       "category": 1,
       "builder": "defineComponent",
