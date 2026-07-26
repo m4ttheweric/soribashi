@@ -51,19 +51,10 @@
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
-
-    /*
-     * Deliberately no `background-color`/`color`/`border-color` transition
-     * here (unlike Button's `.root`): this element is a contrast-matrix
-     * measurement target (see contrast-matrix.test.tsx's Tabs SMALL_COVERAGE
-     * entry), and that harness reads computed colour immediately after a
-     * synchronous `dark` class toggle with no per-entry no-transition
-     * wrapper of its own (unlike the Button grid's own beforeAll, see
-     * matrix-harness.tsx). A colour transition here would be read
-     * mid-interpolation instead of settled, exactly the trap
-     * Popover/Paper/Text/Title/Checkbox's stylesheets already avoid by
-     * transitioning no colour property at all.
-     */
+    transition:
+      background-color 120ms,
+      color 120ms,
+      border-color 120ms;
 
     &:hover {
       color: var(--text-default);

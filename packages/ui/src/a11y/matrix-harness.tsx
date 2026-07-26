@@ -14,6 +14,43 @@ export { contrastRatio };
 export const MIN_CONTRAST = 4.5;
 
 /**
+ * Class name a `<style>` tag (installed by `installNoTransitionStyle` below)
+ * keys off to force `transition: none !important` on itself and every
+ * descendant. Shared by `describeColourGrid`'s grid path AND
+ * contrast-matrix.test.tsx's small-coverage path (fix-round-1 finding: the
+ * two paths originally diverged, with only the grid path disabling
+ * transitions, which forced individual recipes — Tabs first — to instead
+ * strip their own colour transitions to dodge a mid-interpolation read after
+ * the shared `dark` class toggle. That is a workaround for this file's own
+ * gap, not a per-recipe CSS decision, and it made Tabs visually inconsistent
+ * with Button, whose `.root` transitions background-color/border-color/color
+ * on hover/active exactly the same way Tabs originally did, safely, because
+ * the grid path already disables transitions during measurement).
+ */
+export const NO_TRANSITION_CLASS = 'a11y-contrast-matrix-no-transition';
+
+/**
+ * Installs the `<style>` tag `NO_TRANSITION_CLASS` depends on, once, and
+ * returns a cleanup function that removes it. Idempotent to call multiple
+ * times across different suites in the same file (each call adds its own
+ * `<style>` tag; harmless duplication, since every tag declares the exact
+ * same rule under the exact same class name) — callers still own scoping
+ * WHERE the class itself gets added (a local grid container vs. a shared
+ * `document.body` when portalled content needs covering too, see
+ * contrast-matrix.test.tsx's small-coverage `beforeAll`), just not
+ * re-authoring the stylesheet text.
+ */
+export function installNoTransitionStyle(): () => void {
+  const style = document.createElement('style');
+  style.textContent = `
+    .${NO_TRANSITION_CLASS},
+    .${NO_TRANSITION_CLASS} * { transition: none !important; }
+  `;
+  document.head.appendChild(style);
+  return () => style.remove();
+}
+
+/**
  * Normalizes any getComputedStyle-serialized CSS color to an `rgb()`/
  * `rgba()` string, the only shape contrast.ts's `contrastRatio` accepts.
  *
@@ -147,19 +184,14 @@ export function describeColourGrid<
 
   describe(`${name} contrast matrix (WCAG AA >= ${MIN_CONTRAST}:1)`, () => {
     let container: HTMLDivElement;
-    let noTransitionStyle: HTMLStyleElement;
+    let removeNoTransitionStyle: () => void;
 
     beforeAll(async () => {
       container = document.createElement('div');
       document.body.appendChild(container);
 
-      noTransitionStyle = document.createElement('style');
-      noTransitionStyle.textContent = `
-        .a11y-contrast-matrix-no-transition,
-        .a11y-contrast-matrix-no-transition * { transition: none !important; }
-      `;
-      document.head.appendChild(noTransitionStyle);
-      container.classList.add('a11y-contrast-matrix-no-transition');
+      removeNoTransitionStyle = installNoTransitionStyle();
+      container.classList.add(NO_TRANSITION_CLASS);
 
       await render(
         <SoribashiProvider theme={uiTheme}>
@@ -185,7 +217,7 @@ export function describeColourGrid<
 
     afterAll(() => {
       container.remove();
-      noTransitionStyle.remove();
+      removeNoTransitionStyle();
     });
 
     /**

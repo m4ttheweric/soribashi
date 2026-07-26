@@ -27,7 +27,9 @@ import { SMALL_COVERAGE_NAMES } from './matrix-classification.ts';
 import {
   contrastRatio,
   describeColourGrid,
+  installNoTransitionStyle,
   MIN_CONTRAST,
+  NO_TRANSITION_CLASS,
   resolveCanvasColor,
   toRgbString,
 } from './matrix-harness.tsx';
@@ -346,8 +348,26 @@ describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
     // ancestor is enough for it.
     let mountEl: HTMLDivElement;
     let screen: Awaited<ReturnType<typeof render>>;
+    let removeNoTransitionStyle: () => void;
 
     beforeAll(async () => {
+      // Scoped to `document.body`, not `mountEl`: at least one entry
+      // (Popover) portals its measured element to `<body>` directly (no
+      // `container` prop threaded through here, see the comment above), so
+      // its target is a SIBLING of `mountEl`, not a descendant. `document.body`
+      // is the nearest common ancestor of both the local mount and any
+      // portal target (the same reason the `dark` class toggle below also
+      // lands on `document.body` rather than a locally-scoped container the
+      // way the Button grid does), so putting the no-transition class there
+      // is what makes it actually reach portalled content instead of
+      // silently no-op'ing for exactly the entries most likely to need it.
+      // Fix-round-1 finding: this harness previously had no no-transition
+      // mechanism of its own at all, which forced Tabs to instead strip its
+      // own colour transitions to dodge a mid-interpolation read (see
+      // `installNoTransitionStyle`'s doc comment in matrix-harness.tsx).
+      removeNoTransitionStyle = installNoTransitionStyle();
+      document.body.classList.add(NO_TRANSITION_CLASS);
+
       mountEl = document.createElement('div');
       document.body.appendChild(mountEl);
       screen = await render(
@@ -370,16 +390,12 @@ describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
 
     afterAll(async () => {
       document.body.classList.remove('dark');
+      document.body.classList.remove(NO_TRANSITION_CLASS);
+      removeNoTransitionStyle();
       await screen.unmount();
       mountEl.remove();
     });
 
-    // No no-transition stylesheet here (unlike the Button grid's beforeAll):
-    // none of Popover.module.css/Paper.module.css/Text.module.css/Title.module.css
-    // transition background-color/color (Popover's `.popup` only transitions
-    // opacity/transform, its enter/exit animation), so the colours this cell
-    // measures are never mid-interpolation regardless of when the `dark`
-    // class is toggled.
     function assertCellClearsAA(cell: SmallCoverageCell) {
       const target = document.querySelector<HTMLElement>(`.${cell.targetClass}`);
       if (!target) {
