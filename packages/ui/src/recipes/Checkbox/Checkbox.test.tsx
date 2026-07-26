@@ -79,6 +79,49 @@ describe('Checkbox (browser)', () => {
     expect(color).not.toBe('rgba(0, 0, 0, 0)');
   });
 
+  it('renders a visibly different indicator mark for indeterminate than for checked (computed display, not the same glyph)', async () => {
+    // Regression coverage for the fix: indeterminate used to render the same
+    // checkmark glyph as checked (ARIA was already correct via
+    // aria-checked="mixed", but a sighted user could not tell "some
+    // selected" from "all selected"). Both a checkmark and a dash SVG always
+    // mount inside the indicator; only one is shown per state via CSS. This
+    // asserts computed `display`, not which element happens to exist in the
+    // DOM, per the skill's behavioural-over-emissive-assertions rule.
+    const screen = await wrap(
+      <>
+        <Checkbox
+          label="Checked"
+          defaultChecked
+          classNames={{ indicator: 'probe-checked-glyph' }}
+        />
+        <Checkbox
+          label="Indeterminate"
+          indeterminate
+          classNames={{ indicator: 'probe-indeterminate-glyph' }}
+        />
+      </>,
+    );
+
+    const checkedSvgs = screen.container.querySelectorAll<SVGElement>(
+      '.probe-checked-glyph svg',
+    );
+    const indeterminateSvgs = screen.container.querySelectorAll<SVGElement>(
+      '.probe-indeterminate-glyph svg',
+    );
+    expect(checkedSvgs).toHaveLength(2);
+    expect(indeterminateSvgs).toHaveLength(2);
+
+    const visiblePath = (svgs: NodeListOf<SVGElement>) => {
+      const visible = Array.from(svgs).filter((svg) => getComputedStyle(svg).display !== 'none');
+      expect(visible).toHaveLength(1);
+      return visible[0]!.querySelector('path')!.getAttribute('d');
+    };
+
+    const checkedPath = visiblePath(checkedSvgs);
+    const indeterminatePath = visiblePath(indeterminateSvgs);
+    expect(checkedPath).not.toBe(indeterminatePath);
+  });
+
   it('changes the checked control background with intent (computed, not attribute)', async () => {
     const screen = await wrap(
       <>

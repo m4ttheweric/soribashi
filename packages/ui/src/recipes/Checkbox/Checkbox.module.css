@@ -47,6 +47,20 @@
     color: currentColor;
   }
 
+  /*
+   * Checked renders CheckMark, indeterminate renders DashMark: the two
+   * states must be visually distinguishable to a sighted user even though
+   * both already carry correct ARIA (`aria-checked="mixed"` for
+   * indeterminate). Both SVGs always mount; only one is shown per state.
+   */
+  .indicator:not([data-indeterminate]) .dash {
+    display: none;
+  }
+
+  .indicator[data-indeterminate] .check {
+    display: none;
+  }
+
   .label {
     user-select: none;
   }

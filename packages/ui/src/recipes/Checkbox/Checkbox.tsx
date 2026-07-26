@@ -66,10 +66,18 @@ export interface CheckboxProps
 }
 
 const CHECK_PATH = 'M3.5 7.5 6 10l6-7';
+// A horizontal bar, not the checked glyph: indeterminate ("some selected")
+// must read differently from checked ("all selected") to a sighted user.
+// The ARIA (`aria-checked="mixed"`) already distinguishes the two states for
+// assistive tech; this closes the same gap visually. Drawn the same way as
+// CheckMark (an inline SVG path stroked with `currentColor`) rather than
+// introducing a second indicator mechanism.
+const DASH_PATH = 'M2.5 6h7';
 
 function CheckMark() {
   return (
     <svg
+      className={classes.check}
       viewBox="0 0 12 12"
       fill="none"
       stroke="currentColor"
@@ -80,6 +88,24 @@ function CheckMark() {
       style={{ width: '70%', height: '70%' }}
     >
       <path d={CHECK_PATH} />
+    </svg>
+  );
+}
+
+function DashMark() {
+  return (
+    <svg
+      className={classes.dash}
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      style={{ width: '70%', height: '70%' }}
+    >
+      <path d={DASH_PATH} />
     </svg>
   );
 }
@@ -170,6 +196,7 @@ export const Checkbox = defineComponent<
         >
           <BaseCheckbox.Indicator {...getStyles('indicator')}>
             <CheckMark />
+            <DashMark />
           </BaseCheckbox.Indicator>
         </BaseCheckbox.Root>
         {label != null ? <span {...getStyles('label')}>{label}</span> : null}
