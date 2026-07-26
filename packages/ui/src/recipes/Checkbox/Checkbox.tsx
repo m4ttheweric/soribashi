@@ -1,22 +1,18 @@
 import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
-import type { StylesApiProps, UniversalStyleProps } from '@soribashi/core';
-import { defineGenericComponent } from '@soribashi/core';
+import { defineComponent } from '@soribashi/core';
 import type { ReactNode, Ref } from 'react';
 import classes from './Checkbox.module.css';
-
-/** The four style slots getStyles() can target; also the Styles API's FactoryStylesNames. */
-type CheckboxSlots = 'root' | 'control' | 'indicator' | 'label';
 
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). Checkbox needs no real generic type
- * inference the way Select<TItem> eventually will, but it is still a
- * data-driven form control (checked/indeterminate/disabled state, a real
- * change event) rather than a pure styled primitive or a Base-UI-owned
- * open/close lifecycle compound, so `defineGenericComponent` is the builder
- * the playbook assigns to this category, not `defineComponent`/
- * `defineCompound`. Read by packages/ui/scripts/derive.ts to build the
+ * 4 = generic/form control (§ 2.4). Checkbox is a single `defineComponent`
+ * with four slots, per the spec's locked decision: it needs no real generic
+ * type inference over an item type the way Select<TItem> eventually will,
+ * so `defineComponent` (Alert's own builder, and the one the spec/plan/brief
+ * all name) handles its fixed prop interface, multi-slot styling, and
+ * `vocabularyAxes` injection directly, the same shape Alert.tsx already
+ * proves out. Read by packages/ui/scripts/derive.ts to build the
  * agent-facing manifest; not itself derived, since it records an authoring
  * decision, not a fact recoverable from RecipeMeta or the CSS.
  */
@@ -51,10 +47,11 @@ const CHECKBOX_SIZES: Record<string, string> = {
  * `uncheckedValue`/`form`/`id`/`inputRef`/`parent` (grouped-checkbox use,
  * unused here) plus the generic Base UI `render`/`className`/`style`
  * surface. `render` is Base UI's own polymorphism mechanism and is stripped
- * at the type level below (defineGenericComponent does not strip it for
- * you), the way Popover.tsx strips it from every Base UI part it wraps.
+ * at the type level below (`defineComponent` does not strip it for you,
+ * same as every other Base-UI-backed recipe), the way Popover.tsx strips it
+ * from every Base UI part it wraps.
  */
-export interface CheckboxOwnProps
+export interface CheckboxProps
   extends Omit<BaseCheckbox.Root.Props, 'render' | 'className' | 'style' | 'children'> {
   /**
    * Label text/content rendered beside the control, inside the same
@@ -66,27 +63,7 @@ export interface CheckboxOwnProps
    * would.
    */
   label?: ReactNode;
-  /**
-   * `size`/`intent` are declared here (not auto-injected the way
-   * `defineComponent`'s `InjectedVocabularyProps` does for Alert/Badge):
-   * `defineGenericComponent`'s TSignature pattern owns call-site prop typing
-   * end to end (see GenericRenderCtx's doc comment in
-   * define-generic-component.tsx), so a generic-component recipe author
-   * writes its own public prop type rather than relying on the builder to
-   * project `vocabularyAxes` into it. Typed `string` (not narrowed to the ui
-   * theme's literal unions) to match Alert/Badge's own injected axis
-   * props: `@soribashi/core`'s raw `defineComponent`/`defineGenericComponent`
-   * exports are the theme-independent factory functions, and only the
-   * `makeBuilders<TTheme>()` themed wrapper narrows an axis's type via
-   * `ThemedVocabularyProps`, which no recipe in this package uses today.
-   */
-  size?: string;
-  intent?: string;
 }
-
-export type CheckboxProps = CheckboxOwnProps &
-  StylesApiProps<{ props: CheckboxOwnProps; stylesNames: CheckboxSlots }> &
-  UniversalStyleProps;
 
 const CHECK_PATH = 'M3.5 7.5 6 10l6-7';
 
@@ -110,18 +87,18 @@ function CheckMark() {
 /**
  * `size`/`intent` are injected by `vocabularyAxes: ['size', 'intent']`
  * rather than declared on `CheckboxProps` directly (vocabulary axis props
- * come from the builder, not the recipe's own prop type). Checkbox declares
- * NO variant axis: a checkbox has exactly one visual treatment per
+ * come from the builder, not the recipe's own prop type): `defineComponent`
+ * composes `InjectedVocabularyProps<TVocabAxes>` into the public type for
+ * free, the same mechanism Alert/Badge get, so `Checkbox`'s `size`/`intent`
+ * are narrowable by a themed `makeBuilders<TTheme>()` wrapper the same way
+ * theirs are, unlike a hand-declared `string` prop would be. Checkbox
+ * declares NO variant axis: a checkbox has exactly one visual treatment per
  * intent/size, so there is nothing for a `variant` tuple to select between.
- * All four generic params are supplied explicitly (TSignature, TSelectors,
+ * All four generic params are supplied explicitly (TOwnProps, TSelectors,
  * TVariants, TVocabAxes) per the skill's generic-params trap.
  */
-type CheckboxSignature = (
-  props: CheckboxProps & { ref?: Ref<HTMLElement> },
-) => React.ReactElement | null;
-
-export const Checkbox = defineGenericComponent<
-  CheckboxSignature,
+export const Checkbox = defineComponent<
+  CheckboxProps,
   readonly ['root', 'control', 'indicator', 'label'],
   readonly [],
   readonly ['size', 'intent']
@@ -177,6 +154,15 @@ export const Checkbox = defineGenericComponent<
     return (
       // biome-ignore lint/a11y/noLabelWithoutControl: the association IS real, just invisible to this static check. Base UI's Checkbox.Root (an opaque custom component from biome's perspective) renders a hidden native <input type="checkbox"> as a descendant of this <label>; Checkbox.test.tsx's "toggles when the label text is clicked" case proves the association at runtime.
       <label {...getStyles('root')}>
+        {/*
+          `ref` lands on Checkbox.Root (the interactive control), not this
+          outer `<label>` that carries the `root` selector's styles. This
+          diverges from Alert's convention (ref and `root` on the same
+          element) deliberately: a checkbox's ref is far more useful pointed
+          at the actual `role="checkbox"` control (focus/measure/query it
+          directly, the way a native `<input ref>` would) than at a
+          non-interactive label wrapper.
+        */}
         <BaseCheckbox.Root
           ref={ref as Ref<HTMLElement>}
           {...(rest as Omit<CheckboxProps, 'label'>)}

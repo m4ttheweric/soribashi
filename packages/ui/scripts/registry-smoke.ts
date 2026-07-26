@@ -160,7 +160,8 @@ function makeScratchDir(): string {
  * scratch dir, and Vite 8's build-time TS transform resolves and fails
  * loudly on a dangling `extends` if that file comes along for the ride.
  *
- * Rewrites every vendored-package dependency's `workspace:*` specifier to a
+ * Rewrites every vendored-package dependency using the `workspace:` protocol
+ * (any range form: `workspace:*`, `workspace:^`, `workspace:~`, ...) to a
  * relative `file:` path before writing the copy (e.g. `@soribashi/core`'s
  * `"@soribashi/factory": "workspace:*"` becomes `"file:../factory"`). Every
  * vendored package sits as a sibling directory under scratchDir/vendor/, so
@@ -188,7 +189,19 @@ function vendorSourcePackage(name: string, scratchDir: string): void {
     const deps = pkgJson[depField];
     if (!deps) continue;
     for (const [depName, depRange] of Object.entries(deps)) {
-      if (depRange === 'workspace:*' && depName.startsWith('@soribashi/')) {
+      // Matches any `workspace:` protocol specifier (`workspace:*`, and the
+      // semver-range forms `workspace:^`/`workspace:~`/`workspace:1.2.3`
+      // bun/npm workspaces also accept), not just the exact literal
+      // `workspace:*` every package.json in this repo happens to use today:
+      // a future dependency declared with a range form would hit the exact
+      // same EUNSUPPORTEDPROTOCOL failure this rewrite exists to prevent,
+      // and there is no cheaper way to stay correct than matching the
+      // protocol prefix rather than one literal value of it.
+      if (
+        typeof depRange === 'string' &&
+        depRange.startsWith('workspace:') &&
+        depName.startsWith('@soribashi/')
+      ) {
         deps[depName] = `file:../${depName.slice('@soribashi/'.length)}`;
       }
     }
