@@ -92,7 +92,7 @@ describe('Select (browser)', () => {
     expect(onValueChange).toHaveBeenCalledWith('cherry', expect.anything());
   });
 
-  it('renders group labels above their items', async () => {
+  it('renders group labels above their items, in DOM order (not just all visible)', async () => {
     const screen = await wrap(
       <Select items={GROUPED_ITEMS} getGroup={(i) => i.group} placeholder="Pick" />,
     );
@@ -103,6 +103,21 @@ describe('Select (browser)', () => {
     await expect.element(screen.getByText('Vegetable')).toBeVisible();
     await expect.element(screen.getByRole('option', { name: 'Apple' })).toBeVisible();
     await expect.element(screen.getByRole('option', { name: 'Carrot' })).toBeVisible();
+
+    // Fix round 1, Minor finding: the assertions above alone would pass even
+    // if rendering order were scrambled ("all visible" is not "in order").
+    // Read every leaf text node inside the listbox, in real DOM order, and
+    // assert group labels precede their own items: "Fruit" (group order by
+    // first appearance) before "Apple"/"Banana", then "Vegetable" before
+    // "Carrot" -- the exact shape resolveSelectItems's node-tier test
+    // (items.test.ts) already proves for the pure resolution, now proven
+    // for what actually reaches the DOM.
+    const listbox = screen.getByRole('listbox').element();
+    const leafTexts = Array.from(listbox.querySelectorAll('*'))
+      .filter((el) => el.children.length === 0 && el.textContent?.trim())
+      .map((el) => el.textContent?.trim());
+
+    expect(leafTexts).toEqual(['Fruit', 'Apple', 'Banana', 'Vegetable', 'Carrot']);
   });
 
   it('renders the popup inside `container` when given one (scoped-theme escape)', async () => {
@@ -213,7 +228,12 @@ function _typeCheckSelectSignature() {
   const withAccessors = (
     <Select
       items={[{ id: 1, name: 'Ada' }]}
-      getLabel={(u) => u.name}
+      // @ts-expect-error `age` does not exist on `{id, name}`: proves `u` is
+      // typed as the item, not `any` (fix round 1, Minor finding -- without
+      // this, `getLabel={(u) => u.name}` above would type-check identically
+      // whether `u` were `{id, name}` or `any`, since nothing here probed an
+      // invalid property access).
+      getLabel={(u) => u.age}
       getValue={(u) => u.id}
       onValueChange={(value) => {
         expectTypeOf(value).toEqualTypeOf<unknown>();

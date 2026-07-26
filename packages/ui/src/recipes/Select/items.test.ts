@@ -88,4 +88,47 @@ describe('resolveSelectItems (node tier, pure logic)', () => {
 
     expect(() => resolveSelectItems(items)).toThrowError(/duplicate/i);
   });
+
+  // Fix round 1, Important finding: a single non-{label,value} item with no
+  // accessors previously rendered a blank, unlabeled, valueless option with
+  // no error at all (the old defaults silently returned '' / undefined).
+  // These pin the loud-throw fix instead.
+  it('throws naming the item index when a single item has no "label" and no getLabel is supplied', () => {
+    // Has a `value` (so the value check passes) but no `label`, isolating
+    // the label-specific throw from the value-specific one below.
+    const items = [{ value: 'a' }];
+
+    expect(() => resolveSelectItems(items)).toThrowError(/index 0.*"label"/i);
+  });
+
+  it('throws naming the item index when a single item has no "value" and no getValue is supplied', () => {
+    const items = [{ label: 'Ada' }];
+
+    expect(() => resolveSelectItems(items)).toThrowError(/index 0.*"value"/i);
+  });
+
+  it('throws for the first non-conforming item even when earlier items are well-formed', () => {
+    const items = [
+      { label: 'A', value: 'a' },
+      { id: 2, name: 'Grace' },
+    ];
+
+    expect(() => resolveSelectItems(items)).toThrowError(/index 1/);
+  });
+
+  it('does not throw for a deliberately empty label or a deliberately falsy value', () => {
+    const items = [{ label: '', value: 0 }];
+
+    const resolved = resolveSelectItems(items);
+
+    expect(resolved.flat).toEqual([{ value: 0, label: '', item: items[0] }]);
+  });
+
+  it('does not throw when getLabel/getValue accessors are supplied for a non-{label,value} shape', () => {
+    const items = [{ id: 1, name: 'Ada' }];
+
+    const resolved = resolveSelectItems(items, { getLabel: (u) => u.name, getValue: (u) => u.id });
+
+    expect(resolved.flat).toEqual([{ value: 1, label: 'Ada', item: items[0] }]);
+  });
 });

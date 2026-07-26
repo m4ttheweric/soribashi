@@ -54,8 +54,39 @@ interface DefaultShape {
   value?: unknown;
 }
 
-const defaultGetLabel = <T>(item: T): string => String((item as DefaultShape)?.label ?? '');
-const defaultGetValue = <T>(item: T): unknown => (item as DefaultShape)?.value;
+/**
+ * Default `label`/`value` readers, used only when the caller supplies no
+ * `getLabel`/`getValue` accessor. Each throws loudly, naming the offending
+ * item's index, rather than silently degrading to `''`/`undefined` for an
+ * item shape that isn't `{label, value}` (fix round 1, Important finding):
+ * a `String(item.label ?? '')`-style fallback would previously render a
+ * blank, unlabeled, valueless option with no error at all for a single
+ * non-conforming item, and only accidentally surface as a "duplicate value"
+ * throw for two or more (both resolving to the same `undefined`), which is
+ * not a designed check for this case. Checking `=== undefined` specifically
+ * (not a falsy check) lets a deliberately empty label (`label: ''`) or a
+ * deliberately falsy value (`value: 0`/`value: false`) through unharmed;
+ * only a genuinely ABSENT property throws.
+ */
+const defaultGetLabel = <T>(item: T, index: number): string => {
+  const label = (item as DefaultShape | null | undefined)?.label;
+  if (label === undefined) {
+    throw new Error(
+      `Select: item at index ${index} has no "label" property and no getLabel accessor was supplied. Pass getLabel to resolve this item's display text.`,
+    );
+  }
+  return String(label);
+};
+
+const defaultGetValue = <T>(item: T, index: number): unknown => {
+  const shape = item as DefaultShape | null | undefined;
+  if (shape?.value === undefined) {
+    throw new Error(
+      `Select: item at index ${index} has no "value" property and no getValue accessor was supplied. Pass getValue to resolve this item's value.`,
+    );
+  }
+  return shape.value;
+};
 
 /**
  * Resolves a caller's raw `items` array into the label/value pairs Select
@@ -73,22 +104,23 @@ export function resolveSelectItems<T>(
   items: readonly T[],
   accessors: SelectAccessors<T> = {},
 ): ResolvedSelectItems<T> {
-  const getLabel = accessors.getLabel ?? defaultGetLabel;
-  const getValue = accessors.getValue ?? defaultGetValue;
   const getGroup = accessors.getGroup;
 
   const flat: ResolvedSelectItem<T>[] = [];
   const seenValues = new Set<unknown>();
 
+  let index = 0;
   for (const item of items) {
-    const value = getValue(item);
+    const value = accessors.getValue ? accessors.getValue(item) : defaultGetValue(item, index);
     if (seenValues.has(value)) {
       throw new Error(
         `Select: duplicate item value ${JSON.stringify(value)}. Every item's resolved value must be unique.`,
       );
     }
     seenValues.add(value);
-    flat.push({ value, label: getLabel(item), item });
+    const label = accessors.getLabel ? accessors.getLabel(item) : defaultGetLabel(item, index);
+    flat.push({ value, label, item });
+    index += 1;
   }
 
   if (!getGroup) {
