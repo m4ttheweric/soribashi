@@ -27,20 +27,26 @@
  * real consumer would do post-publish. This note is repeated in the
  * script's own console output for anyone reading CI logs.
  *
- * It also cannot yet prove a Base UI item (e.g. popover, which declares
- * `@base-ui/react` in its registry dependencies) actually resolves and
- * builds: observed with `popover` temporarily added to SMOKE_ITEMS, the
- * shadcn CLI itself failed (it shells out to `npm install`, which does not
- * understand the vendored @soribashi/core's `workspace:*` deps on
- * factory/theme and errors with EUNSUPPORTEDPROTOCOL), so the check fell
- * back to manualVendor; `bun install` and `vite build` both then succeeded,
- * but only because writeAppEntry's hand-written JSX never renders Popover,
- * so its unused import was eliminated before Vite needed to resolve
- * `@base-ui/react` at all, and the run still failed at the bundle-marker
- * assertion for that reason. So a passing `vite build` here is not yet
- * evidence a Base UI item resolves; SMOKE_ITEMS does not include one today,
- * and writeAppEntry needs to actually render one before this note can be
- * retired.
+ * This DOES now also prove a Base UI item (`checkbox`, which declares
+ * `@base-ui/react` in its registry dependencies) resolves and builds through
+ * the real CLI path. That was not always true: observed with `popover`
+ * temporarily added to SMOKE_ITEMS (Task 1), the shadcn CLI's own `npm
+ * install` step failed with EUNSUPPORTEDPROTOCOL on the vendored
+ * @soribashi/core's `workspace:*` deps on factory/theme the moment there was
+ * a real external package (Base UI) for npm to resolve against the
+ * registry -- button/stack alone never surfaced this because their
+ * dependency graph never needed npm to leave workspace-local resolution.
+ * The check fell back to manualVendor at the time, and even then only
+ * appeared to pass: `bun install`/`vite build` succeeded only because
+ * writeAppEntry's hand-written JSX never rendered Popover, so its unused
+ * import was tree-shaken before Vite needed to resolve `@base-ui/react` at
+ * all, and the run still failed at the bundle-marker assertion for that
+ * reason. `vendorSourcePackage` now rewrites every vendored package's
+ * `workspace:*` specifier to a relative `file:` path before handing the
+ * copy to npm (see that function's own doc comment), which fixed the CLI
+ * path itself rather than accepting the manualVendor fallback for Base UI
+ * items; `checkbox` is rendered for real by writeAppEntry below, so the
+ * bundle-marker assertion is real evidence this time, not a pass-by-omission.
  *
  * The copy (rather than `workspaces` pointed straight at this repo's real
  * packages/core etc.) is load-bearing, not incidental: `workspace:*`
@@ -70,7 +76,15 @@
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -83,11 +97,13 @@ const THEME_CSS_PATH = join(REPO_ROOT, 'apps', 'workshop', 'src', 'generated', '
 
 /**
  * The registry items this check installs, one per authoring category it
- * wants proof for: `button` (a leaf primitive) and `stack` (a layout
- * recipe). Add a name here to extend coverage; a name with no matching
- * registry/<name>.json fails loudly in readRegistryItem, not silently.
+ * wants proof for: `button` (a leaf primitive), `stack` (a layout recipe),
+ * and `checkbox` (a Base UI-backed form control, the first SMOKE_ITEM with
+ * an external npm dependency to resolve). Add a name here to extend
+ * coverage; a name with no matching registry/<name>.json fails loudly in
+ * readRegistryItem, not silently.
  */
-const SMOKE_ITEMS = ['button', 'stack'] as const;
+const SMOKE_ITEMS = ['button', 'stack', 'checkbox'] as const;
 type SmokeItemName = (typeof SMOKE_ITEMS)[number];
 
 interface RegistryFile {
@@ -143,12 +159,41 @@ function makeScratchDir(): string {
  * a path relative to this repo's layout that does not exist inside the
  * scratch dir, and Vite 8's build-time TS transform resolves and fails
  * loudly on a dangling `extends` if that file comes along for the ride.
+ *
+ * Rewrites every vendored-package dependency's `workspace:*` specifier to a
+ * relative `file:` path before writing the copy (e.g. `@soribashi/core`'s
+ * `"@soribashi/factory": "workspace:*"` becomes `"file:../factory"`). Every
+ * vendored package sits as a sibling directory under scratchDir/vendor/, so
+ * `../<unscoped-name>` always resolves. This is required, not cosmetic: the
+ * shadcn CLI shells out to `npm install`, and npm does not understand the
+ * `workspace:` protocol the moment it actually has to hit the registry for
+ * some OTHER dependency (e.g. a Base UI item's `@base-ui/react`) --
+ * confirmed empirically with `popover` temporarily in SMOKE_ITEMS, where
+ * this same npm install step failed with EUNSUPPORTEDPROTOCOL on exactly
+ * these `workspace:*` specifiers (see the module doc comment's
+ * `it also cannot yet prove a Base UI item...` paragraph). Button/stack
+ * alone never surfaced this because their dependency graph has nothing
+ * beyond the vendored packages themselves, so npm's workspace-local
+ * resolution never needs to touch the registry at all; a real npm-registry
+ * dependency anywhere in the graph is what triggers npm to choke on the
+ * unrelated `workspace:*` specifiers sitting in vendor/core's package.json.
  */
 function vendorSourcePackage(name: string, scratchDir: string): void {
   const src = join(REPO_ROOT, 'packages', name);
   const dest = join(scratchDir, 'vendor', name);
   mkdirSync(dest, { recursive: true });
-  cpSync(join(src, 'package.json'), join(dest, 'package.json'));
+
+  const pkgJson = JSON.parse(readFileSync(join(src, 'package.json'), 'utf-8'));
+  for (const depField of ['dependencies', 'peerDependencies'] as const) {
+    const deps = pkgJson[depField];
+    if (!deps) continue;
+    for (const [depName, depRange] of Object.entries(deps)) {
+      if (depRange === 'workspace:*' && depName.startsWith('@soribashi/')) {
+        deps[depName] = `file:../${depName.slice('@soribashi/'.length)}`;
+      }
+    }
+  }
+  writeFileSync(join(dest, 'package.json'), `${JSON.stringify(pkgJson, null, 2)}\n`, 'utf-8');
   cpSync(join(src, 'src'), join(dest, 'src'), { recursive: true });
 }
 
@@ -390,12 +435,16 @@ function pascalCase(name: string): string {
 }
 
 /**
- * Renders Button inside Stack so a single mount proves both SMOKE_ITEMS
- * together, the way a consumer installing a layout recipe alongside a leaf
- * recipe actually uses them. This composition is written by hand (not
- * derived from SMOKE_ITEMS generically): which recipes nest inside which is
- * an authoring decision, not something recoverable from the registry item
- * alone. Adding a third SMOKE_ITEM needs this JSX updated too.
+ * Renders Button and Checkbox inside Stack so a single mount proves all
+ * three SMOKE_ITEMS together, the way a consumer installing a layout recipe
+ * alongside leaf recipes actually uses them. Checkbox is genuinely rendered
+ * here, not merely imported: an unrendered import is tree-shaken before
+ * module resolution (see the module doc comment's Popover history), so
+ * actually mounting it is what makes the build require `@base-ui/react` to
+ * resolve at all. This composition is written by hand (not derived from
+ * SMOKE_ITEMS generically): which recipes nest inside which is an authoring
+ * decision, not something recoverable from the registry item alone. Adding
+ * a fourth SMOKE_ITEM needs this JSX updated too.
  */
 async function writeAppEntry(scratchDir: string, items: RegistryItem[]): Promise<void> {
   const importLines = items.map((item) => {
@@ -415,6 +464,7 @@ if (el) {
   createRoot(el).render(
     <Stack>
       <Button intent="primary">Smoke</Button>
+      <Checkbox label="smoke" />
     </Stack>,
   );
 }
