@@ -88,6 +88,12 @@ export function resolveCanvasColor(scope: HTMLElement): string {
  * Deterministic `data-testid` for one grid cell, shared by `describeColourGrid`
  * and any fixture (e.g. a `SMALL_COVERAGE` entry) that wants to put the same
  * id on the element it wants measured.
+ *
+ * Since this module's pre-refactor form, the id is prefixed with the recipe
+ * name (`Button-primary-filled-md`); the prior shape had no recipe prefix at
+ * all (`primary-filled-md`). A reader diffing this file's output against
+ * older CI runs should expect that prefix to be new, not a sign something
+ * else changed.
  */
 export function cellId(name: string, intent: string, variant: string): string {
   return `${name}-${intent}-${variant}`;
@@ -160,6 +166,12 @@ export function describeColourGrid<
           {intents.map((intent) =>
             variants.map((variant) =>
               sizePasses.map((size) => (
+                // Must stay a `Fragment`, never a real element (e.g. `<span>`):
+                // wrapping a cell in an actual DOM node would sit between the
+                // cell and whatever it visually composites against, changing
+                // the CSS cascade for any transparent-background variant
+                // (outline/ghost/link) and silently invalidating its contrast
+                // reading.
                 <Fragment key={gridTestId(intent, variant, size)}>
                   {renderCell(intent, variant, gridTestId(intent, variant, size), size)}
                 </Fragment>
