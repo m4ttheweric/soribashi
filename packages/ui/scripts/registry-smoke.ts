@@ -27,6 +27,21 @@
  * real consumer would do post-publish. This note is repeated in the
  * script's own console output for anyone reading CI logs.
  *
+ * It also cannot yet prove a Base UI item (e.g. popover, which declares
+ * `@base-ui/react` in its registry dependencies) actually resolves and
+ * builds: observed with `popover` temporarily added to SMOKE_ITEMS, the
+ * shadcn CLI itself failed (it shells out to `npm install`, which does not
+ * understand the vendored @soribashi/core's `workspace:*` deps on
+ * factory/theme and errors with EUNSUPPORTEDPROTOCOL), so the check fell
+ * back to manualVendor; `bun install` and `vite build` both then succeeded,
+ * but only because writeAppEntry's hand-written JSX never renders Popover,
+ * so its unused import was eliminated before Vite needed to resolve
+ * `@base-ui/react` at all, and the run still failed at the bundle-marker
+ * assertion for that reason. So a passing `vite build` here is not yet
+ * evidence a Base UI item resolves; SMOKE_ITEMS does not include one today,
+ * and writeAppEntry needs to actually render one before this note can be
+ * retired.
+ *
  * The copy (rather than `workspaces` pointed straight at this repo's real
  * packages/core etc.) is load-bearing, not incidental: `workspace:*`
  * dependencies only resolve inside an actual bun workspace, and bun's
@@ -60,6 +75,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildScratchDependencies } from './scratch-deps.ts';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, '..', '..', '..');
@@ -143,10 +159,14 @@ function vendorSourcePackage(name: string, scratchDir: string): void {
  * vendorSourcePackage) and linked in via `file:`, per the module-level
  * doc comment's caveat about what this can and cannot prove.
  */
-async function writeScaffold(scratchDir: string): Promise<void> {
+async function writeScaffold(scratchDir: string, items: RegistryItem[]): Promise<void> {
   for (const name of ['core', 'factory', 'theme']) {
     vendorSourcePackage(name, scratchDir);
   }
+
+  const uiDeps = JSON.parse(
+    readFileSync(join(REPO_ROOT, 'packages', 'ui', 'package.json'), 'utf-8'),
+  ).dependencies;
 
   const pkg = {
     name: 'soribashi-registry-smoke',
@@ -154,11 +174,18 @@ async function writeScaffold(scratchDir: string): Promise<void> {
     version: '0.0.0',
     type: 'module',
     scripts: { build: 'vite build' },
-    dependencies: {
-      react: '^19.2',
-      'react-dom': '^19.2',
-      '@soribashi/core': 'file:./vendor/core',
-    },
+    // Derived from each SMOKE_ITEMS entry's own `dependencies` (see
+    // buildScratchDependencies), rather than hardcoded, so a SMOKE_ITEM
+    // needing an external package beyond @soribashi/core (e.g. a Base UI
+    // item's `@base-ui/react`) gets that package pinned to the range
+    // packages/ui/package.json itself uses, not left to whatever the shadcn
+    // CLI resolves. @soribashi/core is the only soribashi package that also
+    // gets a top-level entry here, since that is what the vendored
+    // Button.tsx (which imports `from '@soribashi/core'`) needs hoisted into
+    // this project's own node_modules; factory/theme only need to be
+    // resolvable from inside vendor/core, which workspace membership alone
+    // provides (see buildScratchDependencies for why).
+    dependencies: buildScratchDependencies(items, uiDeps),
     devDependencies: {
       '@vitejs/plugin-react': '^6',
       vite: '^8',
@@ -166,11 +193,6 @@ async function writeScaffold(scratchDir: string): Promise<void> {
     // Relative, entirely inside the scratch dir: `@soribashi/core`'s own
     // `workspace:*` dependencies on factory/theme resolve against these
     // siblings once they are all workspace members together.
-    // @soribashi/core is the only one that also needs a top-level
-    // `dependencies` entry above, since that is what the vendored Button.tsx
-    // (which imports `from '@soribashi/core'`) needs hoisted into this
-    // project's own node_modules; factory/theme only need to be resolvable
-    // from inside vendor/core, which workspace membership alone provides.
     workspaces: ['vendor/*'],
   };
 
@@ -513,7 +535,7 @@ async function main(): Promise<void> {
   const scratchDir = makeScratchDir();
 
   try {
-    await writeScaffold(scratchDir);
+    await writeScaffold(scratchDir, items);
     const vendored = await vendorItems(scratchDir, items);
     await writeAppEntry(scratchDir, items);
     runBunInstall(scratchDir);
