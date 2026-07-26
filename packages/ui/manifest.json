@@ -288,7 +288,6 @@
       "tokenDependencies": [
         "--border-default",
         "--breakpoint-xs",
-        "--font-family-sans",
         "--font-size-md",
         "--font-size-sm",
         "--font-weight-semibold",
