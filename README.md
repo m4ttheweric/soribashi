@@ -14,8 +14,8 @@ But we also made one. A small one, `@soribashi/ui`, built with soribashi, verifi
 
 | Builder | Shape | Example |
 |---|---|---|
-| `defineComponent` | Standard component, style slots, no need to render as anything else | Alert, Badge, Checkbox |
-| `definePolymorphicComponent` | Renders as any element (`as="a"`) | Button |
+| `defineComponent` | Standard component, style slots, no need to render as anything else | Alert, Checkbox |
+| `definePolymorphicComponent` | Renders as any element (`as="a"`) | Button, Badge |
 | `defineCompound` | Multi-part, shared context, usually wrapping a Base UI primitive | Popover, Tabs |
 | `defineGenericComponent` | Data-driven, needs a real generic type parameter | Select |
 
