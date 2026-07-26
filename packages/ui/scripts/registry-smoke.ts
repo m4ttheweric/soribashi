@@ -2,16 +2,20 @@
 /**
  * Registry install smoke check.
  *
- * Proves the button registry item (packages/ui/registry/button.json) is
- * actually installable into a real Vite + React project, the way an agent
- * or a developer running `shadcn add` against this registry would
- * experience it, end to end: scaffold a throwaway project, vendor Button
- * into it, install real dependencies, and build.
+ * Proves each registry item named in SMOKE_ITEMS (packages/ui/registry/
+ * <name>.json) is actually installable into a real Vite + React project,
+ * the way an agent or a developer running `shadcn add` against this
+ * registry would experience it, end to end: scaffold a throwaway project,
+ * vendor every SMOKE_ITEM into it, install real dependencies, and build.
+ * SMOKE_ITEMS deliberately covers more than one authoring category (a leaf
+ * recipe and a layout recipe) so the check proves the registry, not just
+ * one recipe's registry item.
  *
- * What this DOES prove: the vendored Button.tsx/Button.module.css resolve
+ * What this DOES prove: the vendored .tsx/.module.css files resolve
  * against @soribashi/core (and its workspace-internal deps: factory,
- * theme), compile under Vite/React 19, and the resulting bundle contains a
- * class name that came from Button.module.css.
+ * theme), compile under Vite/React 19, and the resulting bundle contains,
+ * for each SMOKE_ITEM, a marker that came from that item's own files (see
+ * findItemMarker).
  *
  * What this CANNOT prove yet: resolution of @soribashi/core from the real
  * npm registry. It is `private: true` and unpublished, so this script
@@ -36,13 +40,14 @@
  * keeps every mutation inside the disposable scratch directory.
  *
  * Vendoring prefers driving the real `shadcn` CLI (`bunx shadcn@latest add
- * ./registry/button.json --yes --overwrite`) against a minimal
- * components.json/tsconfig.json this script writes, since that is the
- * actual tool an agent or developer would run. If the CLI fails for any
- * reason (network, a future shadcn version hard-requiring Tailwind wiring
- * this plain-CSS project cannot satisfy, etc.), this script falls back to a
- * manual resolver that writes each registry file's `content` to its
- * `target` itself. Either way, which path was taken is printed.
+ * ./registry/<name>.json ... --yes --overwrite`, one item per SMOKE_ITEM in
+ * a single invocation) against a minimal components.json/tsconfig.json this
+ * script writes, since that is the actual tool an agent or developer would
+ * run. If the CLI fails for any reason (network, a future shadcn version
+ * hard-requiring Tailwind wiring this plain-CSS project cannot satisfy,
+ * etc.), this script falls back to a manual resolver that writes each
+ * registry file's `content` to its `target` itself. Either way, which path
+ * was taken is printed.
  *
  * Deliberately not part of `bun run test`: this hits the network (resolves
  * `shadcn` and real npm deps) and takes minutes. Run directly with
@@ -58,17 +63,16 @@ import { fileURLToPath } from 'node:url';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, '..', '..', '..');
-const BUTTON_REGISTRY_PATH = join(REPO_ROOT, 'packages', 'ui', 'registry', 'button.json');
-const BUTTON_MODULE_CSS_PATH = join(
-  REPO_ROOT,
-  'packages',
-  'ui',
-  'src',
-  'recipes',
-  'Button',
-  'Button.module.css',
-);
 const THEME_CSS_PATH = join(REPO_ROOT, 'apps', 'workshop', 'src', 'generated', 'theme.css');
+
+/**
+ * The registry items this check installs, one per authoring category it
+ * wants proof for: `button` (a leaf primitive) and `stack` (a layout
+ * recipe). Add a name here to extend coverage; a name with no matching
+ * registry/<name>.json fails loudly in readRegistryItem, not silently.
+ */
+const SMOKE_ITEMS = ['button', 'stack'] as const;
+type SmokeItemName = (typeof SMOKE_ITEMS)[number];
 
 interface RegistryFile {
   path: string;
@@ -87,13 +91,24 @@ function log(message: string): void {
   console.log(`[registry-smoke] ${message}`);
 }
 
-function readButtonRegistryItem(): RegistryItem {
-  if (!existsSync(BUTTON_REGISTRY_PATH)) {
+function registryItemPath(name: SmokeItemName): string {
+  return join(REPO_ROOT, 'packages', 'ui', 'registry', `${name}.json`);
+}
+
+/**
+ * Loud-failure requirement: a SMOKE_ITEMS entry with no matching registry
+ * file must fail with a message that says exactly which entry and which
+ * path, and how to fix it, not a bare ENOENT.
+ */
+function readRegistryItem(name: SmokeItemName): RegistryItem {
+  const path = registryItemPath(name);
+  if (!existsSync(path)) {
     throw new Error(
-      `[registry-smoke] ${BUTTON_REGISTRY_PATH} does not exist. Run: bun run generate:ui`,
+      `[registry-smoke] SMOKE_ITEMS entry "${name}" has no matching registry file at ${path}. ` +
+        'Run: bun run generate:ui',
     );
   }
-  return JSON.parse(readFileSync(BUTTON_REGISTRY_PATH, 'utf-8')) as RegistryItem;
+  return JSON.parse(readFileSync(path, 'utf-8')) as RegistryItem;
 }
 
 function makeScratchDir(): string {
@@ -227,13 +242,16 @@ export default defineConfig({
   await writeFile(join(scratchDir, 'vite.config.ts'), viteConfig, 'utf-8');
   await writeFile(join(scratchDir, 'index.html'), indexHtml, 'utf-8');
   await writeFile(join(scratchDir, 'src', 'index.css'), '', 'utf-8');
-  // The CLI is invoked as `add ./registry/button.json`, a local-file item
-  // address, so it needs its own copy inside the scratch project.
-  await writeFile(
-    join(scratchDir, 'registry', 'button.json'),
-    readFileSync(BUTTON_REGISTRY_PATH, 'utf-8'),
-    'utf-8',
-  );
+  // The CLI is invoked as `add ./registry/<name>.json`, a local-file item
+  // address per SMOKE_ITEM, so each one needs its own copy inside the
+  // scratch project.
+  for (const name of SMOKE_ITEMS) {
+    await writeFile(
+      join(scratchDir, 'registry', `${name}.json`),
+      readFileSync(registryItemPath(name), 'utf-8'),
+      'utf-8',
+    );
+  }
 }
 
 /**
@@ -256,15 +274,19 @@ interface VendorResult {
 }
 
 /**
- * Drives the real `shadcn` CLI. Returns ok: false (never throws) on any
- * failure so the caller can fall back to the manual resolver; the specific
- * failure is logged either way.
+ * Drives the real `shadcn` CLI with every SMOKE_ITEM in a single `add`
+ * invocation, the way a developer installing several recipes at once would.
+ * Returns ok: false (never throws) on any failure so the caller can fall
+ * back to the manual resolver; the specific failure is logged either way.
  */
-function tryCliVendor(scratchDir: string, item: RegistryItem): { ok: boolean; reason?: string } {
-  log('attempting to vendor via: bunx shadcn@latest add ./registry/button.json --yes --overwrite');
+function tryCliVendor(scratchDir: string, items: RegistryItem[]): { ok: boolean; reason?: string } {
+  const registryArgs = items.map((item) => `./registry/${item.name}.json`);
+  log(
+    `attempting to vendor via: bunx shadcn@latest add ${registryArgs.join(' ')} --yes --overwrite`,
+  );
   const result = spawnSync(
     'bunx',
-    ['shadcn@latest', 'add', './registry/button.json', '--yes', '--overwrite'],
+    ['shadcn@latest', 'add', ...registryArgs, '--yes', '--overwrite'],
     {
       cwd: scratchDir,
       encoding: 'utf-8',
@@ -283,23 +305,25 @@ function tryCliVendor(scratchDir: string, item: RegistryItem): { ok: boolean; re
     };
   }
 
-  for (const file of item.files) {
-    const candidates = candidateVendoredPaths(scratchDir, file.target);
-    const written = candidates.find((p) => existsSync(p));
-    if (!written) {
-      return {
-        ok: false,
-        reason:
-          `CLI reported success but no file was found for target "${file.target}" at any of: ` +
-          candidates.join(', '),
-      };
-    }
-    const actual = readFileSync(written, 'utf-8');
-    if (actual !== file.content) {
-      return {
-        ok: false,
-        reason: `CLI-written file at ${written} does not match the registry item's content for ${file.path}.`,
-      };
+  for (const item of items) {
+    for (const file of item.files) {
+      const candidates = candidateVendoredPaths(scratchDir, file.target);
+      const written = candidates.find((p) => existsSync(p));
+      if (!written) {
+        return {
+          ok: false,
+          reason:
+            `CLI reported success but no file was found for "${item.name}"'s target "${file.target}" ` +
+            `at any of: ${candidates.join(', ')}`,
+        };
+      }
+      const actual = readFileSync(written, 'utf-8');
+      if (actual !== file.content) {
+        return {
+          ok: false,
+          reason: `CLI-written file at ${written} does not match the registry item's content for ${file.path}.`,
+        };
+      }
     }
   }
 
@@ -307,40 +331,70 @@ function tryCliVendor(scratchDir: string, item: RegistryItem): { ok: boolean; re
 }
 
 /**
- * Fallback resolver: writes each files[] entry's `content` to its `target`
- * itself, using the same src/-rooted convention the CLI resolved to (see
- * candidateVendoredPaths), so main.tsx's import below works identically
+ * Fallback resolver: writes each item's files[] entry's `content` to its
+ * `target`, using the same src/-rooted convention the CLI resolved to (see
+ * candidateVendoredPaths), so main.tsx's imports below work identically
  * regardless of which path was taken.
  */
-async function manualVendor(scratchDir: string, item: RegistryItem): Promise<void> {
-  for (const file of item.files) {
-    const target = join(scratchDir, 'src', file.target);
-    await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, file.content, 'utf-8');
-    log(`manual resolver wrote ${target}`);
+async function manualVendor(scratchDir: string, items: RegistryItem[]): Promise<void> {
+  for (const item of items) {
+    for (const file of item.files) {
+      const target = join(scratchDir, 'src', file.target);
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, file.content, 'utf-8');
+      log(`manual resolver wrote ${target}`);
+    }
   }
 }
 
-async function vendorButton(scratchDir: string, item: RegistryItem): Promise<VendorResult> {
-  const cli = tryCliVendor(scratchDir, item);
+async function vendorItems(scratchDir: string, items: RegistryItem[]): Promise<VendorResult> {
+  const cli = tryCliVendor(scratchDir, items);
   if (cli.ok) {
     log('vendored via: the real shadcn CLI');
     return { path: 'cli' };
   }
   log(`CLI vendoring failed, falling back to the manual resolver. Reason: ${cli.reason}`);
-  await manualVendor(scratchDir, item);
+  await manualVendor(scratchDir, items);
   log('vendored via: the manual resolver (fallback)');
   return { path: 'manual', reason: cli.reason };
 }
 
-async function writeAppEntry(scratchDir: string): Promise<void> {
+/** `button` -> `Button`, `aspect-ratio` -> `AspectRatio`: PascalCase of a SMOKE_ITEMS name, matching the recipe's own exported component name. */
+function pascalCase(name: string): string {
+  return name
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+}
+
+/**
+ * Renders Button inside Stack so a single mount proves both SMOKE_ITEMS
+ * together, the way a consumer installing a layout recipe alongside a leaf
+ * recipe actually uses them. This composition is written by hand (not
+ * derived from SMOKE_ITEMS generically): which recipes nest inside which is
+ * an authoring decision, not something recoverable from the registry item
+ * alone. Adding a third SMOKE_ITEM needs this JSX updated too.
+ */
+async function writeAppEntry(scratchDir: string, items: RegistryItem[]): Promise<void> {
+  const importLines = items.map((item) => {
+    const tsxFile = item.files.find((f) => f.target.endsWith('.tsx'));
+    if (!tsxFile) {
+      throw new Error(`[registry-smoke] Registry item "${item.name}" has no .tsx file to import.`);
+    }
+    return `import { ${pascalCase(item.name)} } from './${tsxFile.target}';`;
+  });
+
   const mainTsx = `import { createRoot } from 'react-dom/client';
-import { Button } from './components/soribashi/Button/Button.tsx';
+${importLines.join('\n')}
 import './theme.css';
 
 const el = document.getElementById('root');
 if (el) {
-  createRoot(el).render(<Button intent="primary">Smoke</Button>);
+  createRoot(el).render(
+    <Stack>
+      <Button intent="primary">Smoke</Button>
+    </Stack>,
+  );
 }
 `;
   await writeFile(join(scratchDir, 'src', 'main.tsx'), mainTsx, 'utf-8');
@@ -362,37 +416,58 @@ function runViteBuild(scratchDir: string): void {
 }
 
 /**
- * Button.module.css's own top-level local class names (`.root`, `.label`),
- * read straight from source rather than hardcoded, so this stays correct
- * if the recipe's CSS ever adds or renames a slot.
+ * A recipe's own `--sb-<name>-*` CSS custom properties, read straight from
+ * the registry item's own module CSS content rather than hardcoded, so this
+ * stays correct if a recipe's CSS ever adds or renames one. This is the
+ * bundle marker every SMOKE_ITEM is checked against (see findItemMarker):
+ * a local CSS Module class name (e.g. `.root`) was the original,
+ * single-item version of this check, but it does not generalize once more
+ * than one SMOKE_ITEM shares a selector name, which Button and Stack both
+ * do (each declares only `.root`). Vite CSS Modules hashes each occurrence
+ * to a distinct string, but a same-named-selector search against the
+ * *combined* built CSS of several items can only ever find the first
+ * occurrence in the concatenated text, which is not necessarily the item
+ * being checked; that would silently validate the wrong recipe's survival,
+ * not prove anything about the one under test. Every SMOKE_ITEM recipe with
+ * a size/dimension-driven var instead prefixes its custom property with its
+ * own recipe name by convention (`--sb-button-h`, `--sb-stack-gap`, ...),
+ * making the string unique to that recipe by construction: unhashed, so it
+ * survives verbatim both in the built CSS (the module CSS's own
+ * `var(--sb-...)` reference) and in the built JS (the same string as an
+ * object key in the recipe's `vars()` resolver, compiled straight from the
+ * registry item's own .tsx content).
  */
-function extractLocalClassNames(css: string): string[] {
+function extractRecipeCustomProperties(css: string, itemName: string): string[] {
   const names = new Set<string>();
-  const re = /^\s*\.([a-zA-Z_][\w-]*)\s*\{/gm;
+  const re = new RegExp(`--sb-${itemName}-[\\w-]+`, 'g');
   let match: RegExpExecArray | null;
   // biome-ignore lint/suspicious/noAssignInExpressions: standard exec-loop idiom
   while ((match = re.exec(css)) !== null) {
-    const name = match[1];
-    if (name) names.add(name);
+    names.add(match[0]);
   }
   return [...names];
 }
 
 /**
- * Finds a local class name inside a built CSS bundle. Vite's default CSS
- * Modules build hashing produces names like `_root_fs7jf_2`
- * (`_{local}_{hash}_{line}`); the literal `.local` form is also accepted in
- * case hashing is ever disabled. Returns the exact matched string (without
- * the leading dot) so the caller can check for it verbatim in the JS bundle.
+ * The one marker for a given registry item that must appear, verbatim, in
+ * both the built CSS and the built JS. Returns null (never throws) so the
+ * caller can report which item failed.
  */
-function findBuiltClassName(builtCss: string, localName: string): string | null {
-  const hashed = builtCss.match(new RegExp(`_${localName}_[A-Za-z0-9]+_\\d+`));
-  if (hashed) return hashed[0];
-  if (new RegExp(`\\.${localName}\\b`).test(builtCss)) return localName;
+function findItemMarker(item: RegistryItem, builtCss: string, builtJs: string): string | null {
+  const cssFile = item.files.find((f) => f.path.endsWith('.module.css'));
+  if (!cssFile) return null;
+  for (const varName of extractRecipeCustomProperties(cssFile.content, item.name)) {
+    if (builtCss.includes(varName) && builtJs.includes(varName)) {
+      return varName;
+    }
+  }
   return null;
 }
 
-async function assertBundleHasButtonClass(scratchDir: string): Promise<void> {
+async function assertBundleHasRecipeMarkers(
+  scratchDir: string,
+  items: RegistryItem[],
+): Promise<void> {
   const assetsDir = join(scratchDir, 'dist', 'assets');
   if (!existsSync(assetsDir)) {
     throw new Error(`[registry-smoke] Expected build output at ${assetsDir}, found none.`);
@@ -410,48 +485,40 @@ async function assertBundleHasButtonClass(scratchDir: string): Promise<void> {
   const builtCss = cssFiles.map((f) => readFileSync(join(assetsDir, f), 'utf-8')).join('\n');
   const builtJs = jsFiles.map((f) => readFileSync(join(assetsDir, f), 'utf-8')).join('\n');
 
-  const localNames = extractLocalClassNames(readFileSync(BUTTON_MODULE_CSS_PATH, 'utf-8'));
-  if (localNames.length === 0) {
-    throw new Error(
-      `[registry-smoke] Could not find any local class names in ${BUTTON_MODULE_CSS_PATH} to look for.`,
+  for (const item of items) {
+    const marker = findItemMarker(item, builtCss, builtJs);
+    if (!marker) {
+      throw new Error(
+        `[registry-smoke] No --sb-${item.name}-* marker for registry item "${item.name}" was found, ` +
+          'matching, in both the built CSS and JS bundles.',
+      );
+    }
+    log(
+      `bundle assertion passed for "${item.name}": marker "${marker}" found in both the built CSS ` +
+        'and the built JS.',
     );
   }
-
-  for (const localName of localNames) {
-    const builtClass = findBuiltClassName(builtCss, localName);
-    if (builtClass && builtJs.includes(builtClass)) {
-      log(
-        `bundle assertion passed: class "${builtClass}" (from Button.module.css's .${localName}) ` +
-          'found in both the built CSS and the built JS.',
-      );
-      return;
-    }
-  }
-
-  throw new Error(
-    `[registry-smoke] None of Button.module.css's local classes (${localNames.join(', ')}) were ` +
-      'found, matching, in both the built CSS and JS bundles.',
-  );
 }
 
 async function main(): Promise<void> {
   log(
-    'NOTE: this proves the registry item resolves and builds via a workspace file: link to ' +
+    'NOTE: this proves each registry item resolves and builds via a workspace file: link to ' +
       '@soribashi/core (and its factory/theme workspace deps), not via published-npm ' +
       'resolution, since @soribashi/core is not published. That is a real gap this check cannot ' +
       'close until publishing exists.',
   );
+  log(`SMOKE_ITEMS: ${SMOKE_ITEMS.join(', ')}`);
 
-  const item = readButtonRegistryItem();
+  const items = SMOKE_ITEMS.map((name) => readRegistryItem(name));
   const scratchDir = makeScratchDir();
 
   try {
     await writeScaffold(scratchDir);
-    const vendored = await vendorButton(scratchDir, item);
-    await writeAppEntry(scratchDir);
+    const vendored = await vendorItems(scratchDir, items);
+    await writeAppEntry(scratchDir, items);
     runBunInstall(scratchDir);
     runViteBuild(scratchDir);
-    await assertBundleHasButtonClass(scratchDir);
+    await assertBundleHasRecipeMarkers(scratchDir, items);
     log(`PASS (vendoring path: ${vendored.path})`);
   } finally {
     rmSync(scratchDir, { recursive: true, force: true });
