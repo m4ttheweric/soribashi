@@ -102,9 +102,7 @@ describe('Checkbox (browser)', () => {
       </>,
     );
 
-    const checkedSvgs = screen.container.querySelectorAll<SVGElement>(
-      '.probe-checked-glyph svg',
-    );
+    const checkedSvgs = screen.container.querySelectorAll<SVGElement>('.probe-checked-glyph svg');
     const indeterminateSvgs = screen.container.querySelectorAll<SVGElement>(
       '.probe-indeterminate-glyph svg',
     );
