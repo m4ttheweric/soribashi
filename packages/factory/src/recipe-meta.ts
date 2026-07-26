@@ -17,7 +17,7 @@ export interface RecipeMeta {
   /**
    * Compound PART names (the public sub-components). Empty for the three
    * single-component builders. Distinct from `slots`: a part need not be a
-   * style slot (Popover's `content` composes three Base UI elements), and a
+   * style slot (Popover's `content` composes four Base UI elements), and a
    * style slot need not be a part (Popover's `positioner`).
    */
   parts: readonly string[];
