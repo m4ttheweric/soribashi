@@ -57,6 +57,7 @@ export {
   getSpacing,
   getThemeColor,
   InlineStyles,
+  isDev,
   makeBuilders,
   parseStyleProps,
   registerTheme,

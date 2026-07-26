@@ -3,6 +3,7 @@ import {
   defineComponent,
   getSpacing,
   InlineStyles,
+  isDev,
   type ResolvedTheme,
   useRandomClassName,
   useTheme,
@@ -41,28 +42,6 @@ export interface ResolvedGridCols {
   media: Array<{ query: string; cols: number }>;
 }
 
-/**
- * `@soribashi/ui` depends only on `@soribashi/core` (never `@soribashi/factory`
- * directly, see package.json), and `isDev` is not re-exported through core's
- * barrel. This is a self-contained reimplementation of the same detection
- * `packages/factory/src/style-props/theme-resolvers/is-dev.ts` uses: Vite's
- * `import.meta.env.DEV` first, then `process.env.NODE_ENV`, defaulting to dev
- * so warnings surface when the environment can't be determined.
- */
-function isGridDev(): boolean {
-  try {
-    // @ts-expect-error: import.meta.env is Vite-specific; not in the standard lib types.
-    const viteEnv = import.meta?.env;
-    if (viteEnv && typeof viteEnv.DEV === 'boolean') return viteEnv.DEV;
-  } catch {
-    // import.meta access threw (rare; environment that strips ESM import.meta); fall through.
-  }
-  if (typeof process !== 'undefined' && process.env) {
-    return process.env.NODE_ENV !== 'production';
-  }
-  return true;
-}
-
 const DEFAULT_BREAKPOINT_KEYS = Object.keys(defaultTokens.breakpoint ?? {});
 
 /** Mirrors parse-style-props.ts's breakpointKeysFor: themed keys, else the default map. */
@@ -78,7 +57,7 @@ const warnedMissingGridBreakpoints = new Set<string>();
 function gridMediaQueryFor(theme: ResolvedTheme, key: string): string | undefined {
   const themed = theme.tokens.breakpoint?.[key];
   if (themed) return `(min-width: ${themed})`;
-  if (isGridDev() && !warnedMissingGridBreakpoints.has(key)) {
+  if (isDev() && !warnedMissingGridBreakpoints.has(key)) {
     warnedMissingGridBreakpoints.add(key);
     // eslint-disable-next-line no-console
     console.warn(
@@ -125,7 +104,7 @@ export function resolveGridCols(cols: GridColsValue, theme: ResolvedTheme): Reso
   for (const [key, value] of Object.entries(cols)) {
     if (key === 'base' || value === undefined) continue;
     if (!breakpointKeys.includes(key)) {
-      if (isGridDev() && !warnedUnknownGridBreakpoints.has(key)) {
+      if (isDev() && !warnedUnknownGridBreakpoints.has(key)) {
         warnedUnknownGridBreakpoints.add(key);
         // eslint-disable-next-line no-console
         console.warn(`[soribashi] <Grid> cols has an unknown breakpoint key "${key}"; skipping.`);
@@ -155,7 +134,7 @@ export const Grid = defineComponent<GridProps>({
     const hasCols = p.cols !== undefined;
     const hasMinChild = p.minChildWidth !== undefined;
 
-    if (hasCols && hasMinChild && isGridDev() && !warnedColsMinChildConflict) {
+    if (hasCols && hasMinChild && isDev() && !warnedColsMinChildConflict) {
       warnedColsMinChildConflict = true;
       // eslint-disable-next-line no-console
       console.error(
@@ -218,12 +197,16 @@ export const Grid = defineComponent<GridProps>({
         />
       ) : null;
 
-    // Spread getStyles('root') last, then override className explicitly
-    // (matches blocks' Box.tsx pre-deletion pattern): baseStyles carries the
-    // built-in class plus any universal-style-props responsive class, and
-    // the explicit className prop below appends Grid's own per-instance
-    // responsive class without dropping baseStyles's other entries
-    // (style/data-* attrs stay intact from the earlier spread).
+    // `{...rest}` then `{...baseStyles}` last matches every other
+    // packages/ui recipe's spread order (Stack/Group/Center/AspectRatio's
+    // `{...rest} {...getStyles('root')}`; blocks' pre-deletion Box.tsx
+    // actually spreads the opposite way, baseStyles before rest, so that is
+    // not the precedent here). The explicit className prop after baseStyles
+    // is Grid's own addition on top of that shared order: baseStyles carries
+    // the built-in class plus any universal-style-props responsive class,
+    // and className below appends Grid's own per-instance responsive class
+    // without dropping baseStyles's other entries (style/data-* attrs stay
+    // intact from the earlier spread).
     const baseStyles = getStyles('root');
     const className = styleNode ? [baseStyles.className, cls].join(' ') : baseStyles.className;
 

@@ -28,6 +28,35 @@ describe('resolveGridCols', () => {
       ],
     });
   });
+
+  it('a known key with no themed breakpoint value falls back to defaultTokens with a one-time warn', () => {
+    // createTheme backfills an empty breakpoint map to defaultTokens'
+    // (create-theme.ts's withBreakpointFallback), so the missing-value
+    // fallback path must be exercised by stripping breakpoint back off the
+    // already-resolved theme, mirroring packages/blocks/test/Box/
+    // responsive-breakpoint-fallback.test.tsx's identical trick.
+    const resolved = createTheme({ tokens: { ...uiTheme.tokens, breakpoint: {} } });
+    const { breakpoint: _backfilled, ...tokens } = resolved.tokens;
+    const themeWithoutBreakpoints = { ...resolved, tokens };
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const first = resolveGridCols({ base: 1, md: 2 }, themeWithoutBreakpoints);
+    const second = resolveGridCols({ base: 1, md: 3 }, themeWithoutBreakpoints);
+
+    expect(first).toEqual({ base: 1, media: [{ query: '(min-width: 48rem)', cols: 2 }] });
+    expect(second).toEqual({ base: 1, media: [{ query: '(min-width: 48rem)', cols: 3 }] });
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0]?.join(' ')).toContain('md');
+  });
+
+  it('an unrecognised breakpoint key is skipped with a warn while other entries still resolve', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const result = resolveGridCols({ base: 1, md: 2, potato: 9 }, uiTheme);
+
+    expect(result).toEqual({ base: 1, media: [{ query: '(min-width: 48rem)', cols: 2 }] });
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0]?.join(' ')).toContain('potato');
+  });
 });
 
 describe('Grid (browser)', () => {
