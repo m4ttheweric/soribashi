@@ -1,15 +1,27 @@
 import type { ComponentType } from 'react';
 import { useState } from 'react';
+import { AccordionPage } from './pages/AccordionPage.tsx';
 import { AlertPage } from './pages/AlertPage.tsx';
+import { AvatarPage } from './pages/AvatarPage.tsx';
 import { BadgePage } from './pages/BadgePage.tsx';
 import { ButtonPage } from './pages/ButtonPage.tsx';
 import { CheckboxPage } from './pages/CheckboxPage.tsx';
+import { DialogPage } from './pages/DialogPage.tsx';
+import { DividerPage } from './pages/DividerPage.tsx';
+import { FieldPage } from './pages/FieldPage.tsx';
+import { FormPage } from './pages/FormPage.tsx';
 import { LayoutPage } from './pages/LayoutPage.tsx';
 import { PopoverPage } from './pages/PopoverPage.tsx';
+import { RadioGroupPage } from './pages/RadioGroupPage.tsx';
 import { SelectPage } from './pages/SelectPage.tsx';
+import { SkeletonPage } from './pages/SkeletonPage.tsx';
+import { SwitchPage } from './pages/SwitchPage.tsx';
 import { TabsPage } from './pages/TabsPage.tsx';
 import { TenantsPage } from './pages/TenantsPage.tsx';
+import { TextareaPage } from './pages/TextareaPage.tsx';
+import { TextInputPage } from './pages/TextInputPage.tsx';
 import { Tokens } from './pages/Tokens.tsx';
+import { TooltipPage } from './pages/TooltipPage.tsx';
 
 /**
  * Page-registration table. Each key is both the sidebar identity and the
@@ -27,6 +39,18 @@ const PAGES: Record<string, ComponentType> = {
   popover: PopoverPage,
   tenants: TenantsPage,
   layout: LayoutPage,
+  field: FieldPage,
+  textinput: TextInputPage,
+  textarea: TextareaPage,
+  switch: SwitchPage,
+  radiogroup: RadioGroupPage,
+  tooltip: TooltipPage,
+  dialog: DialogPage,
+  accordion: AccordionPage,
+  avatar: AvatarPage,
+  skeleton: SkeletonPage,
+  divider: DividerPage,
+  form: FormPage,
 };
 
 function pageLabel(key: string): string {

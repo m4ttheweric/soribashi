@@ -1,4 +1,4 @@
-import { Button, Popover, Select } from '@soribashi/ui';
+import { Button, Dialog, Popover, Select } from '@soribashi/ui';
 import { useRef } from 'react';
 
 /**
@@ -60,10 +60,10 @@ const TENANT_CARDS: TenantCardConfig[] = [
 
 function TenantCard({ config }: { config: TenantCardConfig }) {
   // The container ref must point to an element INSIDE the tenant's scope div
-  // (and inside the .dark wrapper, for the dark-proof card). Popover.Content
-  // and Select's Portal both default to portalling onto document.body, which
-  // sits outside every scoped theme wrapper and would render with the base
-  // uiTheme instead of this tenant's tokens.
+  // (and inside the .dark wrapper, for the dark-proof card). Popover.Content,
+  // Select's Portal, and Dialog.Content all default to portalling onto
+  // document.body, which sits outside every scoped theme wrapper and would
+  // render with the base uiTheme instead of this tenant's tokens.
   const containerRef = useRef<HTMLDivElement>(null);
 
   const body = (
@@ -102,6 +102,24 @@ function TenantCard({ config }: { config: TenantCardConfig }) {
         placeholder={`${config.label} select`}
         container={containerRef}
       />
+
+      {/*
+        Same portal-escape proof, exercised through Dialog's own `container`
+        prop: a THIRD overlay family (Popover/Select above), pointed at this
+        card's own containerRef so its backdrop and popup render with
+        this tenant's scoped tokens instead of the page default.
+      */}
+      <Dialog.Root>
+        <Dialog.Trigger>Open {config.label} dialog</Dialog.Trigger>
+        <Dialog.Content container={containerRef}>
+          <Dialog.Title>{config.label}</Dialog.Title>
+          <Dialog.Description>
+            Portalled into this card's own container, so it renders with {config.label}'s scoped
+            tokens instead of the page default.
+          </Dialog.Description>
+          <Dialog.Close>Close</Dialog.Close>
+        </Dialog.Content>
+      </Dialog.Root>
     </div>
   );
 
@@ -121,8 +139,8 @@ export function TenantsPage() {
     <div>
       <h1>Tenants</h1>
       <p>
-        One Button, one Popover, and one Select, rendered three times under different scoped-theme
-        wrappers. Each card's primary colour and corner radius come from{' '}
+        One Button, one Popover, one Select, and one Dialog, rendered three times under different
+        scoped-theme wrappers. Each card's primary colour and corner radius come from{' '}
         <code>createTheme(&#123; scope: '.tenant-…' &#125;)</code> + <code>emitCss</code>, written
         by <code>scripts/codegen-tenants.ts</code> into <code>generated/tenants.css</code>.
       </p>
