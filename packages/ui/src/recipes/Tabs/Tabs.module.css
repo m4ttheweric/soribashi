@@ -139,8 +139,18 @@
   .root[data-variant="line"][data-orientation="vertical"] .indicator:not([hidden]) {
     inset-inline-start: auto;
     inset-inline-end: 0;
+    /* Base UI measures --active-tab-top from the list's TOP edge, so the
+       indicator has to be top-anchored before translateY can place it. The
+       base rule's `inset-block-end: 0` is the horizontal underline's anchor
+       and must be released here, or the translate walks downward from the
+       bottom edge instead. */
+    inset-block-start: 0;
+    inset-block-end: auto;
     inline-size: 2px;
     block-size: var(--active-tab-height);
     transform: translateY(var(--active-tab-top));
+    transition:
+      transform 150ms,
+      block-size 150ms;
   }
 }
