@@ -1,4 +1,3 @@
-// biome-ignore-all lint/a11y/useAriaPropsForRole: aria-valuenow is only required for the FOCUSABLE separator variant (an interactive splitter with a position to report); this recipe only ever renders the STATIC divider, which has no such value. File-level (not a line-level biome-ignore) because this rule does not attach reliably to a suppression comment placed directly above the JSX when aria-orientation is a dynamic expression rather than a string literal -- verified empirically against this exact element shape before reaching for the file-level form.
 import type { ReactNode, Ref } from 'react';
 import { defineComponent } from '../../builders.ts';
 import classes from './Divider.module.css';
@@ -60,6 +59,7 @@ export const Divider = defineComponent<DividerProps, readonly ['root', 'label']>
       // biome-ignore lint/a11y/useFocusableInteractive: this is the STATIC (non-interactive) separator variant -- a visual/semantic divider, not a resizable splitter -- which WAI-ARIA explicitly does NOT require to be focusable; adding tabIndex would put a non-operable element in the tab order.
       <div
         ref={ref as Ref<HTMLDivElement>}
+        // biome-ignore lint/a11y/useAriaPropsForRole: aria-valuenow is only required for the FOCUSABLE separator variant (an interactive splitter with a position to report); this is the STATIC divider, which has no such value -- a genuine false positive for this variant, same rationale as the useFocusableInteractive ignore above.
         role="separator"
         aria-orientation={orientation}
         data-orientation={orientation}
