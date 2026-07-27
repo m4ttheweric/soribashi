@@ -226,9 +226,43 @@ describe('design ledger: measured rows', () => {
           <Select items={[{ label: 'Apple', value: 'apple' }]} defaultValue="apple" size={size} />
         </div>,
       );
-      const button = screen.container.querySelector('button')!;
-      const input = screen.container.querySelector('input')!;
+      // Select's trigger is itself a real <button> (Base UI's SelectTrigger
+      // renders one, distinguished only by role="combobox"), so a bare
+      // `querySelector('button')` would pick whichever button comes first in
+      // DOM order. That happens to be this JSX's own Button today, but only
+      // by mount-order happenstance: reorder the JSX above and the query
+      // would silently start resolving to the Select trigger instead, and
+      // this row would stop measuring Button at all while still reporting
+      // green. The `:not([role="combobox"])` exclusion is load-bearing, not
+      // decorative. Verified order-independent by temporarily swapping the
+      // JSX so Select mounted first: the exclusion still found the real
+      // Button and the row still passed.
+      //
+      // Select's root ALSO renders its own native <input> unconditionally
+      // (Base UI's SelectRoot, confirmed by reading node_modules/@base-ui/
+      // react/select/root/SelectRoot.js): a near-invisible one (1px x 1px,
+      // aria-hidden, tabindex=-1) it uses for browser autofill/validation,
+      // present even though this recipe never sets `name`. That input has no
+      // class attribute, since Select never calls getStyles on it. A bare
+      // `querySelector('input')` would have the exact same order-dependency
+      // problem the button selector had: found empirically during the swap
+      // above, where it resolved to Select's hidden 1px input instead of
+      // TextInput's real one once Select preceded TextInput in the DOM.
+      // TextInput's own <input> always carries its compiled `.input`
+      // CSS-module class (from `getStyles('input')`), regardless of anatomy
+      // mode, so matching on that class is order-independent the same way
+      // the trigger's `[role="combobox"]` already is.
+      const button = screen.container.querySelector('button:not([role="combobox"])')!;
+      const input = screen.container.querySelector('input[class*="input"]')!;
       const trigger = screen.container.querySelector('[role="combobox"]')!;
+
+      // Guards against a selector fix silently degrading into "the same
+      // element measured twice, which trivially agrees with itself": each of
+      // the three must be a distinct node.
+      expect(
+        new Set([button, input, trigger]).size,
+        `${size}: button/input/trigger did not resolve to three distinct elements`,
+      ).toBe(3);
 
       const heights = [button, input, trigger].map(
         (el) => Math.round(el.getBoundingClientRect().height * 100) / 100,
