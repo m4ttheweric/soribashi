@@ -98,6 +98,8 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Group: 'Horizontal flex row with theme-spacing gap and optional even growth.',
   Paper: 'A surface: raised background, themed radius/shadow, optional border.',
   Popover: 'Compound popover built on Base UI, themed through the soribashi vocabulary rails.',
+  RadioGroup:
+    'A data-driven radio group built on Base UI, with item accessors and the Field anatomy.',
   Select:
     'Generic single-select built on Base UI, with custom item accessors and optional grouping.',
   Stack: 'Vertical flex stack with theme-spacing gap.',

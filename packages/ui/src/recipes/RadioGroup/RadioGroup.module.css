@@ -1,0 +1,108 @@
+@layer soribashi.recipes {
+  /*
+   * The flat item list stacks vertically, like TextInput's/Switch's own
+   * `Field.Root` column stack (Field.Root does NOT get `data-layout="row"`
+   * here, per the task brief: only the per-item control+label pairing below
+   * is a row). `group` maps to Base UI's `RadioGroup` (a `<div
+   * role="radiogroup">`), the element `RadioGroup.tsx`'s `ref` lands on.
+   */
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  /*
+   * One item: a real `<label>` wrapping the control and its own label/
+   * description text, the same containment-based association Checkbox.tsx
+   * uses (a hidden native `<input type="radio">`, rendered by Base UI's
+   * `Radio.Root`, is a labelable descendant of this element).
+   */
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
+    color: var(--text-default, inherit);
+    cursor: pointer;
+
+    &:has([data-disabled]) {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  /*
+   * Geometry is entirely derived from `--sb-radiogroup-size`, the size var
+   * RadioGroup.tsx's `vars` resolver emits on this slot (Checkbox's own
+   * `--sb-checkbox-size` convention). `border-radius: var(--radius-full)`
+   * (not a bare `50%`, which is not on the CSS-literal allowlist) makes a
+   * perfect circle whenever inline-size equals block-size, which they always
+   * do here.
+   */
+  .control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    inline-size: var(--sb-radiogroup-size);
+    block-size: var(--sb-radiogroup-size);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-full);
+    background: transparent;
+    cursor: pointer;
+    transition:
+      background-color 150ms,
+      border-color 150ms;
+
+    &[data-checked] {
+      background: var(--sb-radiogroup-checked-bg);
+      border-color: var(--sb-radiogroup-checked-bg);
+    }
+
+    &[data-disabled] {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-primary, var(--sb-radiogroup-checked-bg));
+      outline-offset: 2px;
+    }
+  }
+
+  /*
+   * Base UI's `Radio.Indicator` defaults to `keepMounted: false`: it only
+   * mounts into the DOM at all while its radio is checked (Checkbox's own
+   * indicator-visibility shape, see Checkbox.module.css's `.indicator`
+   * rule), so there is no `[data-checked]`/`[data-unchecked]` toggle needed
+   * here the way Switch's always-mounted thumb needs one. Deliberately no
+   * `background` here: the visible dot is drawn by the SVG `RadioDot`
+   * (RadioGroup.tsx) via `fill="currentColor"`, keeping this element's own
+   * `background-color` genuinely transparent so the contrast matrix's
+   * `backdropClass` reads the sibling `.control`'s real, opaque checked
+   * background instead of a background this element would otherwise paint
+   * itself (Switch's ThumbDot/currentColor mechanism, applied here per the
+   * task brief).
+   */
+  .indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 100%;
+    block-size: 100%;
+    color: var(--sb-radiogroup-checked-color);
+  }
+
+  .itemLabel {
+    user-select: none;
+  }
+
+  .itemDescription {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+}

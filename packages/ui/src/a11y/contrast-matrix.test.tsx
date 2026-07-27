@@ -19,6 +19,7 @@ import { Button } from '../recipes/Button/Button.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
+import { RadioGroup } from '../recipes/RadioGroup/RadioGroup.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 import { Switch } from '../recipes/Switch/Switch.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
@@ -238,6 +239,52 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         backdropClass: 'matrix-target',
         description:
           'Popover: description text (--text-muted) on popup surface (--surface-default)',
+      },
+    ],
+  },
+
+  // State established at mount only (`defaultValue`), never by interaction:
+  // this entry mounts once and is read twice (light, then dark), and an
+  // interaction inside one scheme's `it` would leak into or be missing from
+  // the other (see SmallCoverageEntry's doc comment above). Mirrors
+  // Checkbox's/Switch's own shape: the indicator, like Checkbox's checkmark
+  // and Switch's thumb, paints via an SVG using `currentColor` with no CSS
+  // background of its own (RadioGroup.module.css's `.indicator` rule), so
+  // `backdropClass` -- the control's real, opaque checked background -- is
+  // what `contrastRatio` actually composites against. `classNames.control`/
+  // `.indicator`/`.itemLabel` each apply the SAME class to every rendered
+  // item (the Styles API has no per-instance-item override); `defaultValue`
+  // is deliberately the FIRST item's value ("free"), so the checked item is
+  // both the first DOM match for `.matrix-target-radiogroup-control`
+  // (`querySelector` returns the first match) and the only item whose
+  // indicator mounts at all (`keepMounted: false`), keeping both cells
+  // unambiguous without needing an attribute-selector disambiguator the way
+  // Select's highlighted-item cell does.
+  RadioGroup: {
+    render: () => (
+      <RadioGroup
+        defaultValue="free"
+        intent="primary"
+        items={[
+          { label: 'Free', value: 'free' },
+          { label: 'Pro', value: 'pro' },
+        ]}
+        classNames={{
+          control: 'matrix-target-radiogroup-control',
+          indicator: 'matrix-target-radiogroup-indicator',
+          itemLabel: 'matrix-target-radiogroup-itemLabel',
+        }}
+      />
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-radiogroup-indicator',
+        backdropClass: 'matrix-target-radiogroup-control',
+        description: 'RadioGroup: selected indicator on control background',
+      },
+      {
+        targetClass: 'matrix-target-radiogroup-itemLabel',
+        description: 'RadioGroup: item label text on canvas',
       },
     ],
   },

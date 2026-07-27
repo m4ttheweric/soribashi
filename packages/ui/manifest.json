@@ -341,6 +341,49 @@
       "registryDependencies": []
     },
     {
+      "name": "RadioGroup",
+      "category": 4,
+      "builder": "defineGenericComponent",
+      "slots": [
+        "root",
+        "label",
+        "description",
+        "error",
+        "group",
+        "item",
+        "control",
+        "indicator",
+        "itemLabel",
+        "itemDescription"
+      ],
+      "parts": [],
+      "vocabularyAxes": ["size", "intent"],
+      "variants": [],
+      "defaults": {
+        "size": "md",
+        "intent": "primary"
+      },
+      "files": [
+        "packages/ui/src/recipes/RadioGroup/RadioGroup.tsx",
+        "packages/ui/src/recipes/RadioGroup/RadioGroup.module.css",
+        "packages/ui/src/recipes/RadioGroup/RadioGroup.test.tsx",
+        "packages/ui/src/recipes/RadioGroup/RadioGroup.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--border-default",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--font-size-xs",
+        "--radius-full",
+        "--spacing-xs",
+        "--text-default",
+        "--text-muted"
+      ],
+      "baseUi": true,
+      "registryDependencies": ["field"]
+    },
+    {
       "name": "Select",
       "category": 4,
       "builder": "defineGenericComponent",

@@ -12,6 +12,7 @@ import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
+import { RadioGroup } from '../recipes/RadioGroup/RadioGroup.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
 import { Switch } from '../recipes/Switch/Switch.tsx';
@@ -112,6 +113,17 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
         <Popover.Title>Title</Popover.Title>
       </Popover.Content>
     </Popover.Root>
+  ),
+
+  RadioGroup: () => (
+    <RadioGroup
+      items={[
+        { label: 'Free', value: 'free' },
+        { label: 'Pro', value: 'pro' },
+      ]}
+      defaultValue="pro"
+      classNames={{ control: 'reskin-target' }}
+    />
   ),
 
   Select: (scopeEl) => (
