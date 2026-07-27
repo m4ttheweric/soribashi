@@ -42,3 +42,6 @@ packages/ui/src/**/__screenshots__/**/*-win32.png
 # Vitest's own scratch dir for toMatchScreenshot mismatch/missing-reference debug images
 # (never the committed baselines themselves, see above).
 packages/ui/.vitest-attachments/
+
+# superpowers subagent-driven-development scratch workspace
+.superpowers/
