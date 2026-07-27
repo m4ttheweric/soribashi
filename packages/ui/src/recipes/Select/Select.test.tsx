@@ -269,6 +269,30 @@ describe('Select (browser)', () => {
     expect(extendedHeight).toBe(explicitHeight);
   });
 
+  it('shows a focus ring on the trigger distinct from the resting border colour (fix-wave Critical 2, computed)', async () => {
+    // Regression pin, identical shape to TextInput.test.tsx's/Textarea.test.tsx's
+    // own case: `--accent-primary` is emitted by no theme in this repo, so
+    // the trigger's `:focus-visible` rule's fallback always applies. The
+    // fallback used to be `var(--border-default)`, the SAME token the
+    // resting border already reads, making the focused outline compute
+    // identical to the unfocused border. Fixed to `var(--text-default)`,
+    // Tabs'/Accordion's established choice for this same fallback.
+    const screen = await wrap(<Select items={FRUITS} placeholder="Pick a fruit" />);
+    const trigger = screen.getByRole('combobox').element() as HTMLElement;
+    const restingBorderColor = getComputedStyle(trigger).borderColor;
+    // A real key press (rather than a bare `.focus()` call) before focusing:
+    // Chromium's focus-visible heuristic tracks the last input MODALITY
+    // (keyboard vs. pointer) for the whole document, and earlier tests in
+    // this file real-click the trigger, which would otherwise leave pointer
+    // modality active and suppress `:focus-visible` on a plain `.focus()`
+    // call here (confirmed empirically: without this, outlineStyle read
+    // 'none', not the resting-border-equal outline the bug produces).
+    await userEvent.keyboard('{Tab}');
+    trigger.focus();
+    expect(getComputedStyle(trigger).outlineStyle).toBe('solid');
+    expect(getComputedStyle(trigger).outlineColor).not.toBe(restingBorderColor);
+  });
+
   it('accepts style props on Root, strips them, and applies no margin anywhere (Root has no DOM of its own)', async () => {
     // Select's `Root` is a Base UI context provider with no element of its
     // own (the same shape as Popover's Root, see Popover.test.tsx's

@@ -55,8 +55,21 @@ type TriggerProps = Omit<BasePopover.Trigger.Props, 'render'>;
  * re-anchor the portal inside that scope via this prop. Everything else in
  * `rest` forwards to the Positioner (side/align/sideOffset/...); `children`
  * render inside the Popup.
+ *
+ * `className`/`style` are omitted here (fix-wave Important 1), not just
+ * dropped at runtime: `Content` composes four DOM elements (Positioner,
+ * Popup, Arrow, and the Portal itself), so there is no single natural target
+ * for a bare `className`/`style` the way the Styles API's own
+ * `classNames`/`styles` config prop has (`classNames={{ popup: '...' }}` is
+ * the real way to target one of them). Before this fix, both keys type-
+ * accepted here while the render body below silently discarded them (still
+ * destructured there as a harmless double-guard, now unreachable via the
+ * public type).
  */
-type ContentProps = Omit<BasePopover.Positioner.Props, 'children' | 'render'> & {
+type ContentProps = Omit<
+  BasePopover.Positioner.Props,
+  'children' | 'render' | 'className' | 'style'
+> & {
   container?: BasePopover.Portal.Props['container'];
   children?: ReactNode;
 };

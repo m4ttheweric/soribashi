@@ -79,8 +79,17 @@ type TriggerProps = Omit<BaseDialog.Trigger.Props, 'render'>;
  * is none) -- `initialFocus`/`finalFocus` included, so a caller can still
  * override Base UI's own sensible defaults (first tabbable / trigger)
  * through this one part, matching where Base UI itself puts those props.
+ *
+ * `className`/`style` are omitted here (fix-wave Important 1), not just
+ * dropped at runtime, for the identical structural reason Popover.tsx's/
+ * Tooltip.tsx's own `ContentProps` give: `Content` composes multiple DOM
+ * elements (Portal + Backdrop + Popup) with no single natural target for a
+ * bare `className`/`style` (use `classNames={{ popup: '...' }}` instead).
+ * Before this fix, both keys type-accepted here while the render body below
+ * silently discarded them (still destructured there as a harmless
+ * double-guard, now unreachable via the public type).
  */
-type ContentProps = Omit<BaseDialog.Popup.Props, 'children' | 'render'> & {
+type ContentProps = Omit<BaseDialog.Popup.Props, 'children' | 'render' | 'className' | 'style'> & {
   container?: BaseDialog.Portal.Props['container'];
   children?: ReactNode;
 };

@@ -606,7 +606,12 @@
         "packages/ui/src/recipes/Switch/Switch.test.tsx",
         "packages/ui/src/recipes/Switch/Switch.visual.test.tsx"
       ],
-      "tokenDependencies": ["--accent-primary", "--border-default", "--surface-default"],
+      "tokenDependencies": [
+        "--accent-primary",
+        "--border-default",
+        "--surface-default",
+        "--text-muted"
+      ],
       "baseUi": true,
       "registryDependencies": ["field"]
     },

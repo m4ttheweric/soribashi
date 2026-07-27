@@ -1,6 +1,5 @@
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup as BaseRadioGroup } from '@base-ui/react/radio-group';
-import type { StylesApiProps, UniversalStyleProps } from '@soribashi/core';
 import type { ReactNode, Ref } from 'react';
 import { useContext, useId } from 'react';
 import { defineComponent } from '../../builders.ts';
@@ -212,21 +211,6 @@ const RADIOGROUP_SELECTORS = [
   'itemLabel',
   'itemDescription',
 ] as const;
-type RadioGroupSelectorName = (typeof RADIOGROUP_SELECTORS)[number];
-
-/**
- * The `FactoryPayload` shape `StylesApiProps` needs to type `classNames`/
- * `styles`/`vars`/`attributes` against this recipe's own selector union.
- * `defineComponent` composes this automatically for most recipes via its own
- * render-ctx machinery, but this interface is still spelled out explicitly
- * here (mirroring Select.tsx's `SelectPayload`) since `RadioGroupProps`
- * itself is declared as a standalone interface (needed for `RootProps`/
- * `RadioGroupAccessors` composition) rather than inferred inline.
- */
-interface RadioGroupPayload {
-  props: Record<string, unknown>;
-  stylesNames: RadioGroupSelectorName;
-}
 
 /**
  * `size`/`intent` are NOT declared on this interface: `vocabularyAxes: ['size',
@@ -235,12 +219,17 @@ interface RadioGroupPayload {
  * `ThemedVocabularyProps` (see the module doc comment), the same way
  * Checkbox.tsx's/Switch.tsx's own `CheckboxProps`/`SwitchProps` leave both
  * axes off their own interfaces.
+ *
+ * No explicit `StylesApiProps<...>`/`UniversalStyleProps` extension here
+ * either (fix-wave Minor rider, collapsed to match Switch.tsx's identical
+ * standalone-interface shape): `defineComponent`'s own
+ * `DefineComponentPublicProps` already intersects both onto the public prop
+ * type automatically, keyed off the config's own `selectors` tuple below --
+ * a recipe-level `RadioGroupPayload`/explicit extension was dead weight
+ * duplicating that composition, not a requirement of declaring
+ * `RadioGroupProps` as a standalone interface.
  */
-export interface RadioGroupProps
-  extends RootProps,
-    RadioGroupAccessors<RadioGroupItem>,
-    StylesApiProps<RadioGroupPayload>,
-    UniversalStyleProps {
+export interface RadioGroupProps extends RootProps, RadioGroupAccessors<RadioGroupItem> {
   /** The raw item data, fixed to `RadioGroupItem`'s shape. Resolved via `getLabel`/`getValue` (items.ts); `description` is read directly, never accessor-driven. */
   items: readonly RadioGroupItem[];
   /**

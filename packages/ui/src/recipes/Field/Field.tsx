@@ -8,15 +8,15 @@ import classes from './Field.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.5). The playbook's own recipe table (§ "Field
- * composition") already places `Field` in this category, as a "reusable
- * form-control wrapper" alongside Select and Checkbox, even though this
- * slice authors it with `defineCompound` rather than `defineComponent`: the
- * category classifies what the recipe IS (form-field anatomy other controls
- * plug into), not which builder shape happens to implement it. Read by
- * packages/ui/scripts/derive.ts to build the agent-facing manifest; not
- * itself derived, since it records an authoring decision, not a fact
- * recoverable from RecipeMeta or the CSS.
+ * 4 = generic/form control (§ 2.5). The playbook's own "Three-unit
+ * composition" table, in that same § 2.5 section, already places `Field` in
+ * this category, as a "reusable form-control wrapper" alongside Select and
+ * Checkbox, even though this slice authors it with `defineCompound` rather
+ * than `defineComponent`: the category classifies what the recipe IS
+ * (form-field anatomy other controls plug into), not which builder shape
+ * happens to implement it. Read by packages/ui/scripts/derive.ts to build
+ * the agent-facing manifest; not itself derived, since it records an
+ * authoring decision, not a fact recoverable from RecipeMeta or the CSS.
  */
 export const recipeCategory = 4 as const;
 

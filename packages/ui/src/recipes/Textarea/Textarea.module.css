@@ -25,7 +25,12 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--accent-primary, var(--border-default));
+      /* No theme in this repo emits `--accent-primary` (fix-wave Critical 2:
+         confirmed by grepping every emitted theme's token output), so the
+         fallback always applied and computed identical to the resting
+         border (~1.1:1 vs canvas), an invisible focus ring. `--text-default`
+         is Tabs'/Accordion's established choice for this same fallback. */
+      outline: 2px solid var(--accent-primary, var(--text-default));
       outline-offset: 2px;
     }
 

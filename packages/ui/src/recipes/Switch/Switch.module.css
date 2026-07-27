@@ -51,9 +51,15 @@
    * Deliberately no `background` here: the visible dot is drawn by the SVG
    * `ThumbDot` (Switch.tsx) via `fill="currentColor"`, keeping THIS
    * element's own `background-color` genuinely transparent. `color` is what
-   * drives that fill -- unchecked reads the neutral surface tone, checked
-   * reads the resolved checked-foreground colour, the same intentResolver
-   * output Checkbox's indicator glyph consumes for the identical reason.
+   * drives that fill -- unchecked reads `--text-muted` (the exact pairing
+   * Text.dimmed's SMALL_COVERAGE cells already prove clears AA against the
+   * canvas in both schemes; fix-wave Critical 1: the prior
+   * `var(--surface-default)` computed to pure white on a ~98.4%-lightness
+   * canvas over this transparent track, ~1.04:1, effectively invisible in
+   * light mode), checked reads the resolved checked-foreground colour, the
+   * same intentResolver output Checkbox's indicator glyph consumes for the
+   * identical reason. Only the thumb's colour changed here: the track fill
+   * is untouched, a deliberately smaller fix than redesigning the track.
    */
   .thumb {
     position: absolute;
@@ -61,7 +67,7 @@
     inset-block-start: 1px;
     inline-size: calc(var(--sb-switch-h) - 1px - 1px);
     block-size: calc(var(--sb-switch-h) - 1px - 1px);
-    color: var(--surface-default);
+    color: var(--text-muted);
     transition:
       transform 150ms,
       color 150ms;

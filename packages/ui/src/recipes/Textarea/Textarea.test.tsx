@@ -207,6 +207,24 @@ describe('Textarea (browser)', () => {
     expect(margin).not.toBe('0px');
   });
 
+  it('shows a focus ring distinct from the resting border colour (fix-wave Critical 2, computed)', async () => {
+    // Regression pin, identical shape to TextInput.test.tsx's own case:
+    // `--accent-primary` is emitted by no theme in this repo, so the
+    // `:focus-visible` rule's fallback always applies. The fallback used to
+    // be `var(--border-default)`, the SAME token the resting border already
+    // reads, making the focused outline compute identical to the unfocused
+    // border. Fixed to `var(--text-default)`, Tabs'/Accordion's established
+    // choice for this same fallback.
+    const screen = await wrap(
+      <Textarea label="Bio" classNames={{ textarea: 'probe-focus-textarea' }} />,
+    );
+    const box = screen.container.querySelector('.probe-focus-textarea') as HTMLTextAreaElement;
+    const restingBorderColor = getComputedStyle(box).borderColor;
+    box.focus();
+    expect(getComputedStyle(box).outlineStyle).toBe('solid');
+    expect(getComputedStyle(box).outlineColor).not.toBe(restingBorderColor);
+  });
+
   it('has zero axe violations across its showcase states (sizes, error, disabled)', async () => {
     const sizes = uiVocabulary.size.values;
 

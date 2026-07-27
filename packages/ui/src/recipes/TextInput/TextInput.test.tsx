@@ -187,6 +187,24 @@ describe('TextInput (browser)', () => {
     expect(margin).not.toBe('0px');
   });
 
+  it('shows a focus ring distinct from the resting border colour (fix-wave Critical 2, computed)', async () => {
+    // Regression pin: `--accent-primary` is emitted by no theme in this repo,
+    // so the `:focus-visible` rule's fallback always applies. The fallback
+    // used to be `var(--border-default)`, the SAME token the resting border
+    // already reads, making the focused outline compute identical to the
+    // unfocused border (~1.1:1 vs canvas, effectively invisible). Fixed to
+    // `var(--text-default)`, Tabs'/Accordion's established choice for this
+    // same fallback.
+    const screen = await wrap(
+      <TextInput label="Name" classNames={{ input: 'probe-focus-input' }} />,
+    );
+    const input = screen.container.querySelector('.probe-focus-input') as HTMLInputElement;
+    const restingBorderColor = getComputedStyle(input).borderColor;
+    input.focus();
+    expect(getComputedStyle(input).outlineStyle).toBe('solid');
+    expect(getComputedStyle(input).outlineColor).not.toBe(restingBorderColor);
+  });
+
   it('has zero axe violations across its showcase states (sizes, error, disabled)', async () => {
     const sizes = uiVocabulary.size.values;
 

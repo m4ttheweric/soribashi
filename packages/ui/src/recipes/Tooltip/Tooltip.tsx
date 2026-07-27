@@ -59,8 +59,20 @@ type TriggerProps = Omit<BaseTooltip.Trigger.Props, 'render'>;
  * `<body>`, escaping any `.tenant-*`/`.dark` scoped-theme wrapper. Everything
  * else in `rest` forwards to the Positioner (side/align/sideOffset/...);
  * `children` render inside the Popup.
+ *
+ * `className`/`style` are omitted here (fix-wave Important 1), not just
+ * dropped at runtime, for the identical structural reason Popover.tsx's own
+ * `ContentProps` gives: `Content` composes multiple DOM elements with no
+ * single natural target for a bare `className`/`style` (use
+ * `classNames={{ popup: '...' }}` instead). Before this fix, both keys
+ * type-accepted here while the render body below silently discarded them
+ * (still destructured there as a harmless double-guard, now unreachable via
+ * the public type).
  */
-type ContentProps = Omit<BaseTooltip.Positioner.Props, 'children' | 'render'> & {
+type ContentProps = Omit<
+  BaseTooltip.Positioner.Props,
+  'children' | 'render' | 'className' | 'style'
+> & {
   container?: BaseTooltip.Portal.Props['container'];
   children?: ReactNode;
 };

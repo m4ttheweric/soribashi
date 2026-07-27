@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
+import { contrastRatio, resolveCanvasColor, toRgbString } from '../../a11y/matrix-harness.tsx';
 import { uiTheme, uiVocabulary } from '../../theme.ts';
 import { Field } from '../Field/Field.tsx';
 import { Switch } from './Switch.tsx';
@@ -183,6 +184,30 @@ describe('Switch (browser)', () => {
     const screen = await wrap(<Switch label="x" classNames={{ root: 'probe-sp' }} m="xl" />);
     const margin = getComputedStyle(screen.container.querySelector('.probe-sp')!).margin;
     expect(margin).not.toBe('0px');
+  });
+
+  it('renders the unchecked thumb with real contrast against the canvas, not invisible (fix-wave Critical 1)', async () => {
+    // Regression pin, in the style of Button.test.tsx's neutral-wash-
+    // distinctness test: the unchecked thumb (Switch.module.css's `.thumb`
+    // rule, no `[data-checked]`) draws its visible SVG dot via
+    // `color: var(--text-muted)` over a transparent track, so the thumb's
+    // computed `color` is what actually paints on the canvas. The prior
+    // `color: var(--surface-default)` (near-white) measured ~1.04:1 against
+    // the ~98.4%-lightness canvas, effectively invisible in light mode; this
+    // pin fails against that value (contrastRatio well under 3) and passes
+    // against `--text-muted`, the exact pairing Text.dimmed's SMALL_COVERAGE
+    // cells already prove clears AA against this same canvas in both
+    // schemes.
+    const screen = await wrap(<Switch classNames={{ thumb: 'probe-unchecked-thumb' }} />);
+    const thumb = screen.container.querySelector('.probe-unchecked-thumb') as HTMLElement;
+    const thumbColor = toRgbString(getComputedStyle(thumb).color);
+    const canvasColor = resolveCanvasColor(screen.container as HTMLElement);
+
+    expect(thumbColor).not.toBe(canvasColor);
+    // WCAG 1.4.11 non-text contrast floor (a UI component's visible boundary
+    // against its background), not the 4.5:1 text floor: the thumb's SVG
+    // dot is a graphical control, not text.
+    expect(contrastRatio(thumbColor, canvasColor, canvasColor)).toBeGreaterThanOrEqual(3);
   });
 
   it('has zero axe violations across its showcase states (intent x size, checked, disabled)', async () => {
