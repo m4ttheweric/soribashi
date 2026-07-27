@@ -94,6 +94,12 @@
       "description": "Vertical flex stack with theme-spacing gap."
     },
     {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "A labelled switch control built on Base UI, on the Field anatomy."
+    },
+    {
       "name": "tabs",
       "type": "registry:ui",
       "title": "Tabs",

@@ -14,6 +14,7 @@ import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
+import { Switch } from '../recipes/Switch/Switch.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
@@ -131,6 +132,8 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
       <div>b</div>
     </Stack>
   ),
+
+  Switch: () => <Switch label="x" defaultChecked classNames={{ control: 'reskin-target' }} />,
 
   Tabs: () => (
     <Tabs.Root defaultValue="a" classNames={{ tab: 'reskin-target' }}>

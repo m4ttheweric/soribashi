@@ -415,6 +415,28 @@
       "registryDependencies": []
     },
     {
+      "name": "Switch",
+      "category": 4,
+      "builder": "defineComponent",
+      "slots": ["root", "label", "description", "error", "control", "thumb"],
+      "parts": [],
+      "vocabularyAxes": ["size", "intent"],
+      "variants": [],
+      "defaults": {
+        "size": "md",
+        "intent": "primary"
+      },
+      "files": [
+        "packages/ui/src/recipes/Switch/Switch.tsx",
+        "packages/ui/src/recipes/Switch/Switch.module.css",
+        "packages/ui/src/recipes/Switch/Switch.test.tsx",
+        "packages/ui/src/recipes/Switch/Switch.visual.test.tsx"
+      ],
+      "tokenDependencies": ["--accent-primary", "--border-default", "--surface-default"],
+      "baseUi": true,
+      "registryDependencies": ["field"]
+    },
+    {
       "name": "Tabs",
       "category": 3,
       "builder": "defineCompound",

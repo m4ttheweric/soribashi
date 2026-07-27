@@ -146,18 +146,22 @@ describe('extractRecipeDependencies', () => {
   });
 });
 
-it('derives registryDependencies: [] for every current recipe except TextInput and Textarea (-> field)', async () => {
+it('derives registryDependencies: [] for every current recipe except TextInput, Textarea, and Switch (-> field)', async () => {
   // Task 3 landed this as an all-[] degenerate case (no recipe imported a
   // sibling recipe yet). TextInput (Task 5) is the first real, non-empty
   // instance: its render imports `Field` via '../Field/Field.tsx', so
   // extractRecipeDependencies picks it up. Textarea (Task 6) mirrors
   // TextInput's own '../Field/Field.tsx' import, so it grows the same
-  // dependency. Every OTHER recipe stays degenerate, so this keeps
-  // asserting that blanket case for everything but the two recipes that
-  // have grown a real dependency.
+  // dependency. Switch (Task 7) mirrors it again (Checkbox's control
+  // template plus the Field anatomy contract). Every OTHER recipe stays
+  // degenerate, so this keeps asserting that blanket case for everything but
+  // the three recipes that have grown a real dependency. A named list, not a
+  // wildcard: a future recipe that happens to also import Field must be
+  // added here explicitly, not silently swept in.
   const manifest = await buildManifest();
+  const FIELD_DEPENDENTS = new Set(['TextInput', 'Textarea', 'Switch']);
   for (const recipe of manifest.recipes) {
-    if (recipe.name === 'TextInput' || recipe.name === 'Textarea') {
+    if (FIELD_DEPENDENTS.has(recipe.name)) {
       expect(recipe.registryDependencies, recipe.name).toEqual(['field']);
     } else {
       expect(recipe.registryDependencies, recipe.name).toEqual([]);
@@ -166,7 +170,7 @@ it('derives registryDependencies: [] for every current recipe except TextInput a
 });
 
 describe('buildManifest', () => {
-  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Field, Grid, Group, Paper, Popover, Select, Stack, Tabs, Text, Textarea, TextInput, and Title', async () => {
+  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Field, Grid, Group, Paper, Popover, Select, Stack, Switch, Tabs, Text, Textarea, TextInput, and Title', async () => {
     const manifest = await buildManifest();
     expect(manifest.recipes.map((r) => r.name)).toEqual([
       'Alert',
@@ -184,6 +188,7 @@ describe('buildManifest', () => {
       'Popover',
       'Select',
       'Stack',
+      'Switch',
       'Tabs',
       'Text',
       'Textarea',

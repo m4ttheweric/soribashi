@@ -101,6 +101,7 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Select:
     'Generic single-select built on Base UI, with custom item accessors and optional grouping.',
   Stack: 'Vertical flex stack with theme-spacing gap.',
+  Switch: 'A labelled switch control built on Base UI, on the Field anatomy.',
   Tabs: 'Compound tabs built on Base UI, with line/pill/enclosed variants riding the soribashi vocabulary rails.',
   Text: 'Polymorphic body text riding the size vocabulary, with dimmed and truncate modifiers.',
   Textarea: 'A multiline text control on the Field anatomy. No autosize (deferred, not forgotten).',

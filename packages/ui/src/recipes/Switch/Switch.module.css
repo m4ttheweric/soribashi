@@ -1,0 +1,74 @@
+@layer soribashi.recipes {
+  /*
+   * Track geometry is entirely derived from `--sb-switch-h` (block-size
+   * directly, inline-size via `calc()`), the size var Switch.tsx's `vars`
+   * resolver emits on this slot: the whole control scales from one variable,
+   * matching Checkbox's own `--sb-checkbox-size` convention.
+   */
+  .control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    inline-size: calc(var(--sb-switch-h) * 1.75);
+    block-size: var(--sb-switch-h);
+    border: 1px solid var(--border-default);
+    border-radius: var(--sb-switch-h);
+    background: transparent;
+    cursor: pointer;
+    transition:
+      background-color 150ms,
+      border-color 150ms;
+
+    &[data-checked] {
+      background: var(--sb-switch-checked-bg);
+      border-color: var(--sb-switch-checked-bg);
+    }
+
+    &[data-disabled] {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-primary, var(--sb-switch-checked-bg));
+      outline-offset: 2px;
+    }
+  }
+
+  /*
+   * A 1px inset on every side (an allowlisted length literal, not a
+   * recipe-invented magic number), sized off the SAME `--sb-switch-h` the
+   * track reads: `--sb-switch-h` cascades from `.control` (where the vars
+   * resolver sets it via inline style) down to this child element, since
+   * custom properties inherit by default. The checked travel distance,
+   * `calc(var(--sb-switch-h) * 0.75)`, falls out of the track/thumb geometry
+   * algebraically: trackWidth (1.75h) minus thumbSize (h - 2 * inset) minus
+   * the 2 insets collapses to exactly `0.75h`, independent of the inset
+   * value, so no extra literal is needed in the translate itself.
+   *
+   * Deliberately no `background` here: the visible dot is drawn by the SVG
+   * `ThumbDot` (Switch.tsx) via `fill="currentColor"`, keeping THIS
+   * element's own `background-color` genuinely transparent. `color` is what
+   * drives that fill -- unchecked reads the neutral surface tone, checked
+   * reads the resolved checked-foreground colour, the same intentResolver
+   * output Checkbox's indicator glyph consumes for the identical reason.
+   */
+  .thumb {
+    position: absolute;
+    inset-inline-start: 1px;
+    inset-block-start: 1px;
+    inline-size: calc(var(--sb-switch-h) - 1px - 1px);
+    block-size: calc(var(--sb-switch-h) - 1px - 1px);
+    color: var(--surface-default);
+    transition:
+      transform 150ms,
+      color 150ms;
+
+    &[data-checked] {
+      color: var(--sb-switch-checked-color);
+      transform: translateX(calc(var(--sb-switch-h) * 0.75));
+    }
+  }
+}

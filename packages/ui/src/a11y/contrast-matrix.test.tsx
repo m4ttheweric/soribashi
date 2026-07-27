@@ -20,6 +20,7 @@ import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
+import { Switch } from '../recipes/Switch/Switch.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
@@ -290,6 +291,44 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         targetClass: 'matrix-target-select-item:not([data-highlighted])',
         backdropClass: 'matrix-target-select-popup',
         description: 'Select: unhighlighted item text on popup surface',
+      },
+    ],
+  },
+
+  // State established at mount only (`defaultChecked`), never by interaction:
+  // this entry mounts once and is read twice (light, then dark), and an
+  // interaction inside one scheme's `it` would leak into or be missing from
+  // the other (see SmallCoverageEntry's doc comment above). Both cells share
+  // Checkbox's own shapes: the first mirrors Checkbox's indicator-on-control
+  // cell exactly (the thumb, like the indicator, paints via an SVG using
+  // `currentColor` with no CSS background of its own, so `backdropClass`
+  // -- the control's real, opaque checked background -- is what
+  // `contrastRatio` actually composites against, not a silently-ignored
+  // argument); the second mirrors TextInput's/Textarea's own "label text on
+  // canvas" cell (Field.module.css's `.label` rule sets only `color`, no
+  // background of its own).
+  Switch: {
+    render: () => (
+      <Switch
+        defaultChecked
+        intent="primary"
+        label="Notify"
+        classNames={{
+          control: 'matrix-target-switch-control',
+          thumb: 'matrix-target-switch-thumb',
+          label: 'matrix-target-switch-label',
+        }}
+      />
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-switch-thumb',
+        backdropClass: 'matrix-target-switch-control',
+        description: 'Switch: checked thumb on checked track',
+      },
+      {
+        targetClass: 'matrix-target-switch-label',
+        description: 'Switch: label text on canvas',
       },
     ],
   },
