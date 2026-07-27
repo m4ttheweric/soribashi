@@ -62,6 +62,26 @@ export const LEDGER: readonly LedgerRow[] = [
   },
 ];
 
+// A pass/fail count alone reads as "done"; naming what the ledger did NOT
+// look at keeps a green run honest about the difference between "no known
+// defect" and "swept". This is read on every run, not filed away in a spec
+// where a limitation only gets read once.
+export function coverageReport(rows: readonly LedgerRow[], allRecipes: readonly string[]): string {
+  const covered = new Set(
+    rows
+      .map((r) => r.id.split('.')[0]?.toLowerCase())
+      .filter((prefix): prefix is string => prefix !== undefined),
+  );
+  const hit = allRecipes.filter((name) => covered.has(name.toLowerCase()));
+  const missed = allRecipes.filter((name) => !covered.has(name.toLowerCase())).sort();
+
+  return [
+    `design ledger: ${rows.length}/${rows.length} rows declared`,
+    `covering ${hit.length} of ${allRecipes.length} recipes`,
+    `uncovered: ${missed.join(', ')}`,
+  ].join('\n');
+}
+
 export function validateLedger(rows: readonly LedgerRow[]): string[] {
   const problems: string[] = [];
   const seen = new Set<string>();
