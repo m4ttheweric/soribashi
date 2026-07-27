@@ -103,6 +103,7 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Stack: 'Vertical flex stack with theme-spacing gap.',
   Tabs: 'Compound tabs built on Base UI, with line/pill/enclosed variants riding the soribashi vocabulary rails.',
   Text: 'Polymorphic body text riding the size vocabulary, with dimmed and truncate modifiers.',
+  Textarea: 'A multiline text control on the Field anatomy. No autosize (deferred, not forgotten).',
   TextInput:
     'A text input on the Field anatomy: label, description, and error as convenience props or hand-composed.',
   Title: 'Semantic h1-h6 heading with theme heading tokens per order.',

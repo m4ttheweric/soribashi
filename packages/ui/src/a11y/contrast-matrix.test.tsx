@@ -22,6 +22,7 @@ import { Popover } from '../recipes/Popover/Popover.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Text } from '../recipes/Text/Text.tsx';
+import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
 import { uiTheme, uiVocabulary } from '../theme.ts';
@@ -366,6 +367,34 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
     ],
   },
 
+  // colour-contrast half of Field.tsx's own `{ exempt: 'colour-via: ...' }`
+  // classification (matrix-classification.ts): label/description/error are
+  // the SAME Field parts TextInput's entry below already measures (Field
+  // composes identically for every control on this anatomy contract), so
+  // this entry does not re-measure them. It only proves the one cell
+  // TextInput's entry cannot: the textarea's OWN value text on its own
+  // surface. State established at mount only (`defaultValue`), never by
+  // interaction, same as every other entry here.
+  Textarea: {
+    render: () => (
+      <Textarea
+        label="Label"
+        description="Hint"
+        error="Required"
+        defaultValue="Sample"
+        classNames={{
+          textarea: 'matrix-target-textarea-textarea',
+        }}
+      />
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-textarea-textarea',
+        description: 'Textarea: textarea value text on the textarea surface',
+      },
+    ],
+  },
+
   // State established at mount only (`defaultValue`), never by interaction:
   // this entry mounts once and is read twice (light, then dark), and an
   // interaction inside one scheme's `it` would leak into or be missing from
@@ -374,7 +403,8 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
   // classification (matrix-classification.ts): Field itself renders no
   // colour-bearing cells of its own, so its label/description/error parts'
   // real, rendered contrast is proven here, through the control that
-  // actually composes them.
+  // actually composes them. Textarea's own entry above shares these same
+  // Field parts and does not re-measure them.
   TextInput: {
     render: () => (
       <TextInput

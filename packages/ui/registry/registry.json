@@ -106,6 +106,12 @@
       "description": "Polymorphic body text riding the size vocabulary, with dimmed and truncate modifiers."
     },
     {
+      "name": "textarea",
+      "type": "registry:ui",
+      "title": "Textarea",
+      "description": "A multiline text control on the Field anatomy. No autosize (deferred, not forgotten)."
+    },
+    {
       "name": "textinput",
       "type": "registry:ui",
       "title": "TextInput",
