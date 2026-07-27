@@ -11,7 +11,9 @@ export interface LedgerRow {
   diverge?: string;
 }
 
-export const LEDGER: readonly LedgerRow[] = [];
+export const LEDGER: readonly LedgerRow[] = [
+  { id: 'switch.thumb.centered', species: 'invariant', tier: 'measured', assert: 'predicate' },
+];
 
 export function validateLedger(rows: readonly LedgerRow[]): string[] {
   const problems: string[] = [];
