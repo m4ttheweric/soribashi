@@ -1,0 +1,39 @@
+@layer soribashi.recipes {
+  .popup {
+    box-sizing: border-box;
+    padding-inline: var(--spacing-sm);
+    padding-block: var(--spacing-xs);
+    border-radius: var(--radius-md);
+    background: var(--color-neutral-800);
+    color: var(--color-neutral-50);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-xs);
+    transform-origin: var(--transform-origin);
+    transition:
+      opacity 150ms,
+      transform 150ms;
+
+    /* Base UI stamps these while the element enters/exits; combined with
+       @starting-style below they give a pure-CSS enter and exit animation.
+       Identical mechanism to Popover.module.css's `.popup` rule. */
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    @starting-style {
+      &[data-open] {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+    }
+  }
+
+  .arrow {
+    display: flex;
+    /* Matches `.popup`'s background so the arrow reads as part of the same
+       opaque surface (the SVG paints with `currentColor`), the same pairing
+       Popover.module.css's `.arrow` makes with `.popup`'s own background. */
+    color: var(--color-neutral-800);
+  }
+}

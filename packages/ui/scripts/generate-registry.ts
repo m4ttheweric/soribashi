@@ -110,6 +110,8 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   TextInput:
     'A text input on the Field anatomy: label, description, and error as convenience props or hand-composed.',
   Title: 'Semantic h1-h6 heading with theme heading tokens per order.',
+  Tooltip:
+    'Compound tooltip built on Base UI: hover/focus transient overlay on the Popover template.',
 };
 
 /**

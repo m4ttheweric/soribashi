@@ -136,6 +136,12 @@
       "description": "Semantic h1-h6 heading with theme heading tokens per order."
     },
     {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "Compound tooltip built on Base UI: hover/focus transient overlay on the Popover template."
+    },
+    {
       "name": "soribashi-init",
       "type": "registry:lib",
       "title": "Soribashi Init",

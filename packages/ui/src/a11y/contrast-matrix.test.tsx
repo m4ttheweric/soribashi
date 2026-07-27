@@ -27,6 +27,7 @@ import { Text } from '../recipes/Text/Text.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
+import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 import { uiTheme, uiVocabulary } from '../theme.ts';
 import { SMALL_COVERAGE_NAMES } from './matrix-classification.ts';
 import {
@@ -542,6 +543,35 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         targetClass: 'matrix-target-title-paper',
         backdropClass: 'matrix-target-title-paper-backdrop',
         description: 'Title: default text on Paper surface',
+      },
+    ],
+  },
+
+  // State established at mount only (`defaultOpen`), never by interaction:
+  // this entry mounts once and is read twice (light, then dark), same
+  // rationale as every other entry above. `defaultOpen` is the real prop
+  // name verified against the installed `TooltipRootProps` (task report's
+  // Base UI Tooltip findings) -- Tooltip's Root forwards it straight to
+  // Base UI's TooltipRoot, the same mount-time-open idiom Popover's own
+  // entry above uses via a controlled `open`/`onOpenChange` pair instead
+  // (Tooltip has no reason to prefer one over the other here; `defaultOpen`
+  // is simply less code for an uncontrolled one-shot mount). Tooltip.module.css's
+  // `.popup` sets both `background` (--color-neutral-800) and `color`
+  // (--color-neutral-50), an opaque surface with no backdrop needed, the
+  // same shape as Popover's own popup-text cell above.
+  Tooltip: {
+    render: () => (
+      <Tooltip.Root defaultOpen>
+        <Tooltip.Trigger delay={0}>Hover me</Tooltip.Trigger>
+        <Tooltip.Content classNames={{ popup: 'matrix-target-tooltip-popup' }}>
+          Sample tooltip copy, read for contrast against the popup surface.
+        </Tooltip.Content>
+      </Tooltip.Root>
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-tooltip-popup',
+        description: 'Tooltip: popup text on popup surface',
       },
     ],
   },

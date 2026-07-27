@@ -643,6 +643,33 @@
       ],
       "baseUi": false,
       "registryDependencies": []
+    },
+    {
+      "name": "Tooltip",
+      "category": 2,
+      "builder": "defineCompound",
+      "slots": ["root", "trigger", "positioner", "popup", "arrow"],
+      "parts": ["root", "trigger", "content"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {},
+      "files": [
+        "packages/ui/src/recipes/Tooltip/Tooltip.tsx",
+        "packages/ui/src/recipes/Tooltip/Tooltip.module.css",
+        "packages/ui/src/recipes/Tooltip/Tooltip.test.tsx",
+        "packages/ui/src/recipes/Tooltip/Tooltip.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--color-neutral-50",
+        "--color-neutral-800",
+        "--font-family-sans",
+        "--font-size-xs",
+        "--radius-md",
+        "--spacing-sm",
+        "--spacing-xs"
+      ],
+      "baseUi": true,
+      "registryDependencies": []
     }
   ]
 }

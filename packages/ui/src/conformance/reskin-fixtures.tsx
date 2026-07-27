@@ -21,6 +21,7 @@ import { Text } from '../recipes/Text/Text.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
+import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 
 /**
  * One minimal, force-visible rendering per recipe, keyed by the recipe's
@@ -165,4 +166,19 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
   TextInput: () => <TextInput label="x" classNames={{ input: 'reskin-target' }} />,
 
   Title: () => <Title className="reskin-target">x</Title>,
+
+  // `defaultOpen` force-opens without a hover/focus interaction (Tooltip's
+  // Root forwards it straight to Base UI's TooltipRoot, same mount-time-open
+  // idiom Select's `defaultOpen` fixture below uses). `scopeEl` forwards to
+  // `container` (Tooltip.tsx's `ContentProps` -> the Portal): the same
+  // portal-escapes-scope reason Popover's/Select's fixtures give above --
+  // without it this guard would compare the base theme against itself.
+  Tooltip: (scopeEl) => (
+    <Tooltip.Root defaultOpen>
+      <Tooltip.Trigger delay={0}>Hover me</Tooltip.Trigger>
+      <Tooltip.Content container={scopeEl} classNames={{ popup: 'reskin-target' }}>
+        x
+      </Tooltip.Content>
+    </Tooltip.Root>
+  ),
 };

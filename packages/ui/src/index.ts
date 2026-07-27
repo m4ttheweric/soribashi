@@ -20,4 +20,5 @@ export { Text, textTheme } from './recipes/Text/Text.tsx';
 export { Textarea, textareaTheme } from './recipes/Textarea/Textarea.tsx';
 export { TextInput, textInputTheme } from './recipes/TextInput/TextInput.tsx';
 export { Title, titleTheme } from './recipes/Title/Title.tsx';
+export { Tooltip, tooltipTheme } from './recipes/Tooltip/Tooltip.tsx';
 export { uiTheme, uiVocabulary } from './theme.ts';
