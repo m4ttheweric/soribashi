@@ -343,7 +343,7 @@
     {
       "name": "RadioGroup",
       "category": 4,
-      "builder": "defineGenericComponent",
+      "builder": "defineComponent",
       "slots": [
         "root",
         "label",

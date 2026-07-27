@@ -1,10 +1,9 @@
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup as BaseRadioGroup } from '@base-ui/react/radio-group';
 import type { StylesApiProps, UniversalStyleProps } from '@soribashi/core';
-import type { ReactElement, ReactNode, Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { useContext, useId } from 'react';
-import { defineGenericComponent } from '../../builders.ts';
-import type { uiVocabulary } from '../../theme.ts';
+import { defineComponent } from '../../builders.ts';
 import { Field, FieldAnatomyContext } from '../Field/Field.tsx';
 import { type RadioGroupAccessors, resolveRadioGroupItems } from './items.ts';
 import classes from './RadioGroup.module.css';
@@ -13,19 +12,38 @@ import classes from './RadioGroup.module.css';
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
  * 4 = generic/form control (§ 2.4). RadioGroup follows Select's own category-4
- * precedent (§ 2.4's title is simply "Form control"; Select and Checkbox both
- * classify here despite one needing generic inference and the other not): a
- * flat, data-driven `items` prop with `getLabel`/`getValue` accessors over a
- * caller-supplied item type `T`, not a public compound of individually
- * authored children (there is no `RadioGroup.Item`). Because the accessors
- * genuinely need to type-check against `T` (`<RadioGroup items={plans}
- * getLabel={(p) => p.name} .../>` must type `p` as `Plan`, not `any`), this
- * recipe uses `defineGenericComponent`, the same builder Select uses and for
- * the same reason (see Select.tsx's own doc comment); Checkbox, which needs
- * no item-type generic, correctly stays on `defineComponent` instead. Read by
- * packages/ui/scripts/derive.ts to build the agent-facing manifest; not
- * itself derived, since it records an authoring decision, not a fact
- * recoverable from RecipeMeta or the CSS.
+ * precedent for its DATA SHAPE only: a flat, data-driven `items` prop with
+ * `getLabel`/`getValue` accessors, not a public compound of individually
+ * authored children (there is no `RadioGroup.Item`). The precedent does NOT
+ * extend to Select's builder: the slice 4 spec's roster locks `RadioGroup |
+ * 4 | defineComponent` as a reviewed decision, and this recipe's public
+ * surface is not generic over an arbitrary caller item type the way
+ * `Select<T>` is. The accepted trade: `items` is typed over the fixed
+ * `RadioGroupItem` shape (`{ label, value, description? }`, values always
+ * strings, matching a native radio's own value semantics), not a
+ * caller-supplied generic `T`. `getLabel`/`getValue` still let a caller
+ * reshape which property of THAT fixed item type supplies the label/value,
+ * but cannot widen the item shape itself the way Select's genuine generic
+ * could. `items.ts`'s own resolver (`resolveRadioGroupItems<T>`) stays fully
+ * generic for its own node-tier tests; only this recipe's public prop
+ * surface fixes `T = RadioGroupItem`.
+ *
+ * `defineComponent` (imported from `'../../builders.ts'`, this package's own
+ * `makeBuilders<typeof uiTheme>()` wrapper -- see `create-builders.ts` and
+ * `themed-builders.ts`'s `ThemedDefineComponent`) also gives
+ * `vocabularyAxes: ['size', 'intent']` real, theme-narrowed literal
+ * injection for free (`InjectedVocabularyProps` intersected with
+ * `ThemedVocabularyProps<uiVocabulary, TVocabAxes>`), which
+ * `defineGenericComponent` cannot provide at all (`ThemedDefineGenericComponent`
+ * has no such narrowing hook; confirmed by reading `themed-builders.ts`
+ * directly). A hand-declared `size`/`intent` union, the way this file
+ * originally carried before this conversion, can silently drift from the
+ * theme's own vocabulary with no compiler check tying the two together --
+ * exactly the substitution this slice's Checkbox recipe hit (also drafted
+ * against `defineGenericComponent` from the category description alone) and
+ * reverted for the identical reason. Read by packages/ui/scripts/derive.ts to
+ * build the agent-facing manifest; not itself derived, since it records an
+ * authoring decision, not a fact recoverable from RecipeMeta or the CSS.
  */
 export const recipeCategory = 4 as const;
 
@@ -145,29 +163,38 @@ export const recipeCategory = 4 as const;
  * this package follows.
  */
 type RootProps = Omit<
-  BaseRadioGroup.Props<unknown>,
+  BaseRadioGroup.Props<string>,
   'render' | 'className' | 'style' | 'children' | 'value' | 'defaultValue' | 'onValueChange'
 >;
 
 /**
- * `size`/`intent` are hand-declared here, narrowed directly against the ui
- * theme's own vocabularies, the same way Select.tsx's `SelectSize` is: per
- * Select.tsx's own doc comment, `defineGenericComponent`'s public type comes
- * ENTIRELY from the author-supplied `TSignature`, with no automatic
- * `InjectedVocabularyProps` composition the way `defineComponent`/
- * `definePolymorphicComponent`/`defineCompound` provide. `@soribashi/ui`
- * doing so here is the same "ui package is a consumer, allowed to take a
- * vocabulary position" carve-out CLAUDE.md's invariant 2 describes.
+ * The fixed item shape this recipe's public surface commits to (the accepted
+ * trade for `defineComponent` over `defineGenericComponent`, per the module
+ * doc comment above). `value: string`, not `unknown`: a radio's value is
+ * always a string at the DOM level (Base UI's hidden `<input type="radio"
+ * value={...}>` serializes it that way regardless), so fixing the type to
+ * `string` costs nothing real while making `RadioGroupProps`'s
+ * `value`/`defaultValue`/`onValueChange` concretely typed instead of
+ * `unknown`. `getLabel`/`getValue` (via `RadioGroupAccessors<RadioGroupItem>`
+ * below) let a caller supply a differently-shaped object that still narrows
+ * to this interface structurally (extra properties are fine; `label`/`value`
+ * must still be present), or override which value each resolves to; they
+ * cannot accept a caller item type with NO `label`/`value` fields at all,
+ * which is exactly the ergonomic cost this recipe's task report flagged and
+ * the controller accepted.
  */
-export type RadioGroupSize = (typeof uiVocabulary.size.values)[number];
-export type RadioGroupIntent = (typeof uiVocabulary.intent.values)[number];
+export interface RadioGroupItem {
+  label: string;
+  value: string;
+  description?: ReactNode;
+}
 
 /**
  * Slots, following the const-array convention (Popover.tsx/Field.tsx):
- * `defineGenericComponent` reports this array as `RecipeMeta.slots` verbatim.
- * All ten actually render somewhere (none trimmed): `root`/`label`/
- * `description`/`error` only in anatomy mode (the same known bare-mode
- * limitation TextInput/Switch document -- no `root` element in bare mode, so
+ * `defineComponent` reports this array as `RecipeMeta.slots` verbatim. All
+ * ten actually render somewhere (none trimmed): `root`/`label`/`description`/
+ * `error` only in anatomy mode (the same known bare-mode limitation
+ * TextInput/Switch document -- no `root` element in bare mode, so
  * `data-size`/`data-intent` never land there either); `group`/`item`/
  * `control`/`indicator`/`itemLabel` always; `itemDescription` only for an
  * item that actually supplies a `description`, which is still a real,
@@ -189,53 +216,46 @@ type RadioGroupSelectorName = (typeof RADIOGROUP_SELECTORS)[number];
 
 /**
  * The `FactoryPayload` shape `StylesApiProps` needs to type `classNames`/
- * `styles`/`vars`/`attributes` against this recipe's own selector union, the
- * same `SelectPayload` shape Select.tsx spells out for the identical reason
- * (generic components get none of this composed in automatically).
+ * `styles`/`vars`/`attributes` against this recipe's own selector union.
+ * `defineComponent` composes this automatically for most recipes via its own
+ * render-ctx machinery, but this interface is still spelled out explicitly
+ * here (mirroring Select.tsx's `SelectPayload`) since `RadioGroupProps`
+ * itself is declared as a standalone interface (needed for `RootProps`/
+ * `RadioGroupAccessors` composition) rather than inferred inline.
  */
 interface RadioGroupPayload {
   props: Record<string, unknown>;
   stylesNames: RadioGroupSelectorName;
 }
 
-export interface RadioGroupProps<T>
+/**
+ * `size`/`intent` are NOT declared on this interface: `vocabularyAxes: ['size',
+ * 'intent']` on the builder call below injects them, theme-narrowed to
+ * `uiVocabulary`'s own literal unions via `InjectedVocabularyProps` +
+ * `ThemedVocabularyProps` (see the module doc comment), the same way
+ * Checkbox.tsx's/Switch.tsx's own `CheckboxProps`/`SwitchProps` leave both
+ * axes off their own interfaces.
+ */
+export interface RadioGroupProps
   extends RootProps,
-    RadioGroupAccessors<T>,
+    RadioGroupAccessors<RadioGroupItem>,
     StylesApiProps<RadioGroupPayload>,
     UniversalStyleProps {
-  /** The raw item data. Resolved via `getLabel`/`getValue` (items.ts); `description` is read directly, never accessor-driven. */
-  items: readonly T[];
-  /** The resolved value of the currently selected item, or `undefined`. Controlled form. */
-  value?: unknown;
-  /** The resolved value the group is initially rendered with. Uncontrolled form. */
-  defaultValue?: unknown;
+  /** The raw item data, fixed to `RadioGroupItem`'s shape. Resolved via `getLabel`/`getValue` (items.ts); `description` is read directly, never accessor-driven. */
+  items: readonly RadioGroupItem[];
+  /** The value of the currently selected item, or `undefined`. Controlled form. */
+  value?: string;
+  /** The value the group is initially rendered with. Uncontrolled form. */
+  defaultValue?: string;
   /** Called with the resolved value (never the raw item) of the newly selected radio. */
-  onValueChange?: BaseRadioGroup.Props<unknown>['onValueChange'];
+  onValueChange?: BaseRadioGroup.Props<string>['onValueChange'];
   /** Field label, rendered via `Field.Label` when present. See the module doc comment. */
   label?: ReactNode;
   /** Field description/hint, rendered via `Field.Description` when present. */
   description?: ReactNode;
   /** Field error, rendered via `Field.Error` (forced-visible) when present. */
   error?: ReactNode;
-  /** Themed size (control dimensions). */
-  size?: RadioGroupSize;
-  /** Themed intent (checked colour). */
-  intent?: RadioGroupIntent;
 }
-
-/**
- * The author-supplied generic call signature `defineGenericComponent`'s
- * `TSignature` type parameter preserves through `withProps` (Select.tsx's own
- * `SelectSignature` doc comment explains the mechanism this mirrors exactly).
- * Forgetting to pass this explicitly (leaving `TSignature` to default to
- * `GenericComponentFn`, whose `props` is `any`) would silently drop every
- * prop's typing, not just `size`/`intent` -- see this file's own
- * `_typeCheckRadioGroupSignature` (bottom of RadioGroup.test.tsx) for the
- * compile-time pin against exactly that regression.
- */
-export type RadioGroupSignature = <T>(
-  props: RadioGroupProps<T> & { ref?: Ref<HTMLDivElement> },
-) => ReactElement | null;
 
 /**
  * Control dimensions keyed on the ui theme's size vocabulary, following the
@@ -252,20 +272,6 @@ const RADIOGROUP_SIZES: Record<string, string> = {
   lg: '1.25rem',
   xl: '1.375rem',
 };
-
-interface RadioGroupRenderProps extends Record<string, unknown> {
-  items: readonly unknown[];
-  getLabel?: (item: unknown) => string;
-  getValue?: (item: unknown) => unknown;
-  value?: unknown;
-  defaultValue?: unknown;
-  onValueChange?: BaseRadioGroup.Props<unknown>['onValueChange'];
-  label?: ReactNode;
-  description?: ReactNode;
-  error?: ReactNode;
-  size?: RadioGroupSize;
-  intent?: RadioGroupIntent;
-}
 
 /**
  * The selected item's visible mark, drawn as an inline SVG dot filled with
@@ -319,14 +325,12 @@ function RadioDot() {
  *
  * `useContext(FieldAnatomyContext)`/`useId()` inside this `render` function
  * body are legal for the same reason TextInput.tsx's doc comment gives:
- * `defineGenericComponent` calls `config.render(...)` as a plain,
- * unconditional, synchronous function call from a fixed point in its own
- * render body (confirmed by reading `generic-component.tsx`'s
- * `defineGenericComponent`, the same call shape `defineComponent` uses),
+ * `defineComponent` calls `config.render(...)` as a plain, unconditional,
+ * synchronous function call from a fixed point in its own render body,
  * functionally identical to inlining the hook calls there.
  */
-export const RadioGroup = defineGenericComponent<
-  RadioGroupSignature,
+export const RadioGroup = defineComponent<
+  RadioGroupProps,
   typeof RADIOGROUP_SELECTORS,
   readonly [],
   readonly ['size', 'intent']
@@ -388,7 +392,7 @@ export const RadioGroup = defineGenericComponent<
       attributes: _attributes,
       unstyled: _unstyled,
       ...groupRest
-    } = props as RadioGroupRenderProps;
+    } = props as RadioGroupProps & Record<string, unknown>;
 
     const hasAnatomy = label != null || description != null || error != null;
     const inAncestorField = useContext(FieldAnatomyContext);
@@ -426,7 +430,7 @@ export const RadioGroup = defineGenericComponent<
             // biome-ignore lint/a11y/noLabelWithoutControl: the association IS real, just invisible to this static check. Base UI's Radio.Root (an opaque custom component from biome's perspective) renders a hidden native <input type="radio"> as a descendant of this <label>; RadioGroup.test.tsx's "selects when an item label text is clicked" case proves the association at runtime.
             <label key={String(resolvedItem.value)} {...getStyles('item')}>
               <Radio.Root
-                value={resolvedItem.value}
+                value={resolvedItem.value as string}
                 aria-labelledby={itemLabelId}
                 aria-describedby={itemDescriptionId}
                 {...getStyles('control')}

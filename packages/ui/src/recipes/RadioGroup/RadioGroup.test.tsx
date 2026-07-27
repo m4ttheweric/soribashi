@@ -1,5 +1,5 @@
 import { createTheme, SoribashiProvider } from '@soribashi/core';
-import { describe, expect, expectTypeOf, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
@@ -247,50 +247,3 @@ describe('RadioGroup (browser)', () => {
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
   });
 });
-
-/**
- * Compile-time pin against the generic-params trap for `defineGenericComponent`,
- * mirroring Select.test.tsx's `_typeCheckSelectSignature` exactly: RadioGroup's
- * public type comes ENTIRELY from the author-supplied `RadioGroupSignature`
- * type argument (see RadioGroup.tsx's own doc comment and
- * define-generic-component.tsx's doc comment: unlike defineComponent/
- * definePolymorphicComponent/defineCompound, there is no automatic
- * composition of vocabulary-axis props into a generic component's public
- * type). If a future edit forgot to pass `RadioGroupSignature` explicitly to
- * the `defineGenericComponent<...>` call (falling back to the default
- * `GenericComponentFn`, which types `props` as `any`), every prop -- not just
- * `size`/`intent` -- would silently accept anything, and the
- * `@ts-expect-error` lines below would stop erroring with no other signal.
- * This function is never called; it exists purely for `bun run typecheck` to
- * check.
- */
-function _typeCheckRadioGroupSignature() {
-  const items = [{ label: 'Free', value: 'free' }];
-
-  const valid = <RadioGroup items={items} size="lg" intent="danger" />;
-  void valid;
-
-  // @ts-expect-error size is narrowed to the ui theme's size vocabulary; "enormous" is not a member
-  const invalidSize = <RadioGroup items={items} size="enormous" />;
-  void invalidSize;
-
-  // @ts-expect-error items is required
-  const missingItems = <RadioGroup />;
-  void missingItems;
-
-  const withAccessors = (
-    <RadioGroup
-      items={[{ id: 1, name: 'Ada' }]}
-      // @ts-expect-error `age` does not exist on `{id, name}`: proves the item
-      // is typed as the item shape, not `any` (mirrors Select's own pin,
-      // "fix round 1, Minor finding").
-      getLabel={(p) => p.age}
-      getValue={(p) => p.id}
-      onValueChange={(value) => {
-        expectTypeOf(value).toEqualTypeOf<unknown>();
-      }}
-    />
-  );
-  void withAccessors;
-}
-void _typeCheckRadioGroupSignature;
