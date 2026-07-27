@@ -1,5 +1,14 @@
 # Soribashi: Implementation Status
 
+> **Orientation: this file is the single entry point.** An agent starting new work here needs, in this order:
+>
+> 1. **This file's top slice record** (immediately below) for the current state, and its "Deliberately future" list for the open debt a new slice draws from.
+> 2. **`.claude/skills/authoring-a-recipe/SKILL.md`**, the agent-facing authoring path for a `packages/ui` recipe: four-file layout, builder selection, CSS rules, test-tier expectations, and the traps that have already bitten someone.
+> 3. **The per-slice process records in `.local-dev/`** (gitignored, local to the dev machine, absent from fresh clones): `slice-4-outcomes.md` is the latest, with `slice-3-outcomes.md` and `slice-2-outcomes.md` behind it. Each carries a "facts established empirically (do not rediscover)" list that is load-bearing for the next slice's planning; read the latest one before brainstorming a new slice.
+> 4. **The specs**: the parent roadmap at `.local-dev/specs/2026-07-24-soribashi-ui-design.md` (slice 5 candidates are also named in the slice 4 spec's out-of-scope list), per-slice specs and plans in `.local-dev/specs/` and `.local-dev/plans/`, and the recipe conversion playbook at `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md` (the four authoring categories).
+>
+> The established slice workflow: brainstorm against this file plus the latest outcomes record, write the spec to `.local-dev/specs/`, have a subagent review the spec BEFORE planning (this has caught an unsatisfiable acceptance criterion three slices running), then plan and execute subagent-driven on a `feat/slice-N-*` branch, closing with a whole-branch review, one fix wave, and a new `.local-dev/slice-N-outcomes.md`.
+
 > **Current as of 2026-07-27.** Slice 4 (below) is the current top record: the themed-builders spike lands (public `size`/`intent` now narrow to the theme's vocabulary literals), cross-recipe registry dependencies are derived and proven through the real shadcn CLI, and eleven new recipes ship, including the Field anatomy contract four form controls compose against, taking `@soribashi/ui` from seventeen recipes to twenty-eight. It sits above the slice 3 record, the slice 2 record, the slice 1b record, the recipe-pilot record (2026-07-01), and the v1 Mantine-adaptation foundation record (2026-04-25), all kept unchanged further down this file.
 
 ## Slice 4: the themed-builders spike, cross-recipe registry dependencies, the Field anatomy contract, and eleven new recipes (2026-07-27)

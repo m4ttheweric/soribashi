@@ -19,9 +19,7 @@ bun run smoke:registry  # end-to-end shadcn-CLI install smoke check against the 
 
 ## Orientation
 
-- `STATUS.md` is the implementation status record (slice 2 top section, slice 1b record, post-v1 record, v1 foundation record).
-- The recipe conversion playbook lives at `docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md`; it defines the four authoring categories and the conversion sweep.
-- `.claude/skills/authoring-a-recipe/SKILL.md` is the agent-facing authoring path for a `packages/ui` recipe: four-file layout, builder selection, CSS rules, test-tier expectations, and the traps.
+- **Start at `STATUS.md`. It is the single orientation entry point:** the latest slice's record sits on top (older slice records below, unchanged), and its own Orientation block points at every other context document this repo uses (the authoring skill, the playbook, and the gitignored `.local-dev/` specs, plans, and per-slice outcomes records). Nothing in this file duplicates what STATUS.md indexes.
 
 ## Invariants
 
