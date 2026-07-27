@@ -25,23 +25,19 @@
     /* The semantic surface tokens all sit within one ramp step of the canvas
        by design (raised is neutral-100 against a neutral-50 canvas), which is
        correct for a real surface and far too faint for a placeholder that has
-       to read as absent content. A decorative fill reaches the ramp directly. */
-    background: var(--color-neutral-200);
+       to read as absent content. A decorative fill reaches the ramp directly,
+       through its OWN semantic slot (surface.placeholder, declared in
+       packages/ui/src/theme.ts) rather than a raw --color-neutral-* reach:
+       WCAG relative luminance is not scheme-symmetric for a fixed rung-count
+       gap (the dark tail of the ramp compresses harder than the light head
+       for the same gap, see reference.ts's skeleton.deltaY.dark witness), so
+       light and dark need different ramp positions here, not the same
+       position's own automatic light/dark pair. surface.placeholder's `dark`
+       reference (SemanticSurfaceValue's per-scheme override) carries that
+       distinction in the theme layer instead of a recipe-authored `.dark`
+       selector, keeping this file scheme-agnostic and fully re-skinnable
+       through createTheme plus .extend() alone. */
+    background: var(--surface-placeholder);
     animation: sb-skeleton-pulse 1.5s ease-in-out infinite alternate;
-  }
-
-  /* WCAG relative luminance is not scheme-symmetric for a fixed rung-count
-     gap: the dark half of the neutral ramp is compressed far harder than the
-     light half (see reference.ts's skeleton.deltaY.dark witness for the
-     measured numbers). --color-neutral-200 against a dark-mode
-     --surface-canvas only clears ~0.044, almost exactly as faint as the
-     one-ramp-step bug this file was fixed for in light mode. Dark needs a
-     bigger rung-count gap than light does to read as a real placeholder
-     rather than a same-as-canvas smear; --color-neutral-400 is that gap for
-     dark specifically, left as a light-mode-only fill for light so an
-     already-sufficient light-mode contrast doesn't get collaterally
-     darkened just to satisfy the harder-to-reach dark case. */
-  :global(.dark) .root {
-    background: var(--color-neutral-400);
   }
 }

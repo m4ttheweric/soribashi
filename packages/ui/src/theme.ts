@@ -22,4 +22,21 @@ export const uiTheme = createTheme({
   tokens: defaultTokens,
   dark: defaultDarkTokens,
   vocabulary: uiVocabulary,
+  semanticTokens: {
+    surface: {
+      // Skeleton's decorative fill (design-ledger fix round 2). WHICH ramp
+      // index reaches "clearly distinct from canvas" is not scheme-symmetric
+      // under WCAG relative luminance -- the dark tail of the neutral ramp
+      // compresses harder than the light head for the same rung-count gap
+      // (see packages/ui/src/design-ledger/reference.ts's skeleton.deltaY.*
+      // witnesses for the measured numbers) -- so this needs two different
+      // ramp positions, not one position that happens to differ per scheme
+      // for free the way every other surface.* slot here does. This is
+      // @soribashi/ui, acting as a consumer, taking that position (CLAUDE.md
+      // invariant 2); @soribashi/theme only gained the CAPABILITY to express
+      // a per-scheme surface reference (SemanticSurfaceValue's optional
+      // `dark` field), never an opinion on which ramp indices are right.
+      placeholder: { value: 'colors.neutral.200', dark: 'colors.neutral.400' },
+    },
+  },
 });

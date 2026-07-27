@@ -41,8 +41,9 @@ export const REFERENCE: Record<string, FloorWitness> = {
       'the same one-ramp-step gap that looks tiny in OKLCH-L (0.0162) reads as a larger Y-delta. ' +
       'Keeping 0.04 would have let the exact regression this row was written for pass silently. ' +
       'This bound gates TWO live-measured quantities in light mode, both against the same 0.08: ' +
-      'the resting fill (--color-neutral-200 vs neutral-50 canvas, Y-delta 0.1596) and the fill ' +
-      'composited over canvas at the pulse\'s live "to" keyframe opacity (0.6), Y-delta 0.0960. ' +
+      'the resting fill (surface.placeholder, which resolves to neutral-200 in light, vs neutral-50 ' +
+      'canvas, Y-delta 0.1596) and the fill composited over canvas at the pulse\'s live "to" ' +
+      'keyframe opacity (0.6), Y-delta 0.0960. ' +
       'Reverting that opacity to its pre-fix 0.4 lands the composited delta at 0.0679, below 0.08: ' +
       'the floor was chosen to sit inside that gap (0.0679 < 0.08 < 0.0960) so a trough regression ' +
       "goes red without touching the resting check's own, wider margin.",
@@ -52,13 +53,19 @@ export const REFERENCE: Record<string, FloorWitness> = {
     witness:
       'Same neutral-scale mechanism as skeleton.deltaY.light, but WCAG Y compresses harder at the ' +
       "DARK tail of the ramp than the light head does for the same rung-count gap (fix round 1's " +
-      'finding): --color-neutral-200 against a dark-mode --surface-canvas only reaches Y-delta ' +
-      '0.0442, almost exactly where the light-mode bug above sat (0.0451), i.e. dark shipped as ' +
-      'faint as the bug this row exists to catch. Skeleton.module.css now carries a ' +
-      ':global(.dark) .root override to --color-neutral-400 specifically for dark (light keeps ' +
-      '--color-neutral-200 unchanged, so an already-sufficient light-mode contrast is not ' +
-      "collaterally darkened just to satisfy the harder-to-reach dark case). With that fill, dark's " +
-      'resting delta is 0.1648; composited at the same live "to" keyframe opacity (0.6) it is ' +
+      'finding): the SAME ramp index in both schemes (neutral-200 against a dark-mode ' +
+      '--surface-canvas) only reaches Y-delta 0.0442, almost exactly where the light-mode bug above ' +
+      'sat (0.0451), i.e. dark shipped as faint as the bug this row exists to catch. Fix round 1 ' +
+      'closed this with a recipe-authored `:global(.dark) .root` CSS override; fix round 2 replaced ' +
+      "that with a framework capability instead (packages/theme's SemanticSurfaceValue gained an " +
+      'optional `dark` reference, resolved by codegen through the same light-dark() pairing ' +
+      "tokens.colors' own dark overrides use): packages/ui/src/theme.ts now declares " +
+      "surface.placeholder as `{ value: 'colors.neutral.200', dark: 'colors.neutral.400' }`, a " +
+      'CONSUMER taking that position, not the framework (CLAUDE.md invariant 2); ' +
+      'Skeleton.module.css reads a single, scheme-agnostic `var(--surface-placeholder)` and stays ' +
+      'fully re-skinnable through createTheme plus .extend() alone, no file edits. Numerically ' +
+      "unchanged from fix round 1: dark's resting delta is still 0.1648; composited at the same " +
+      'live "to" keyframe opacity (0.6) it is still ' +
       '0.0683; reverted to the pre-fix 0.4 it is 0.0370. 0.05 sits inside that gap (0.0370 < 0.05 < ' +
       '0.0683), so a trough regression goes red in dark mode too, on its own honestly-smaller margin ' +
       '(the dark end of the ramp has less room to work with than the light end does, at this ' +

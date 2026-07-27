@@ -133,6 +133,27 @@ describe('validateTheme — semantic token references', () => {
     expect(() => validateTheme(theme)).toThrow(/no shade '999'/);
   });
 
+  it('accepts the object-form surface dark slot when it resolves (fix round 2)', () => {
+    const theme = themeWith({
+      semanticTokens: {
+        surface: { placeholder: { value: 'colors.neutral.200', dark: 'colors.neutral.400' } },
+      },
+    });
+
+    expect(() => validateTheme(theme)).not.toThrow();
+  });
+
+  it('validates the object-form surface dark slot, naming it distinctly from value/foreground', () => {
+    const theme = themeWith({
+      semanticTokens: {
+        surface: { placeholder: { value: 'colors.neutral.200', dark: 'colors.neutral.999' } },
+      },
+    });
+
+    expect(() => validateTheme(theme)).toThrow(/semanticTokens\.surface\.placeholder\.dark/);
+    expect(() => validateTheme(theme)).toThrow(/no shade '999'/);
+  });
+
   it('validates accent slot refs', () => {
     const theme = themeWith({
       semanticTokens: {

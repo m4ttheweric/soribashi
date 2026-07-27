@@ -114,15 +114,33 @@ export type SemanticReference = string;
 
 /**
  * A surface slot may be a plain token reference (string) or an object that
- * pairs the surface background with an optional formalized foreground.
+ * pairs the surface background with an optional formalized foreground and/or
+ * an optional per-scheme override.
  *
  * Object form was introduced in Wave 2 for the Tooltip `floating` slot, which
  * needs to declare its paired foreground color in the token vocabulary.
  * Existing string-form surface values continue to work unchanged.
+ *
+ * `dark`, added in the design-ledger slice, is a SECOND reference, not a
+ * literal colour: codegen resolves both `value` and `dark` to their own
+ * `var(--color-...)` lookups and pairs the two through the same
+ * `light-dark()` mechanism `tokens.colors`' own dark overrides already use
+ * (see emit-css.ts's `pairValue`), emitting ONE custom property whose two
+ * branches can point at entirely different ramp positions instead of the
+ * same reference's own light/dark pair. This exists because a fixed
+ * rung-count gap in a colour ramp is not scheme-symmetric under WCAG
+ * relative luminance (the dark tail of a ramp compresses harder than the
+ * light head for the same gap) — a recipe that needs "clearly distinct from
+ * canvas" in both schemes may need different ramp indices per scheme, and
+ * previously had no theme-only way to say so short of a recipe-authored
+ * `.dark`-scoped CSS override, which broke "re-skinnable through createTheme
+ * plus .extend() alone, with no file edits" the moment a consumer wanted a
+ * different value. `dark` absent (the default): `value` resolves identically
+ * in both schemes, exactly as before this field existed.
  */
 export type SemanticSurfaceValue =
   | SemanticReference
-  | { value: SemanticReference; foreground?: SemanticReference };
+  | { value: SemanticReference; dark?: SemanticReference; foreground?: SemanticReference };
 
 /**
  * Role-name aliases. Emitted as CSS custom properties at codegen time.

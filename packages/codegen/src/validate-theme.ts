@@ -53,6 +53,9 @@ export function validateTheme(theme: ResolvedTheme): void {
       validateRef(raw, `semanticTokens.surface.${key}`, theme, errors);
     } else {
       validateRef(raw.value, `semanticTokens.surface.${key}.value`, theme, errors);
+      if (raw.dark !== undefined) {
+        validateRef(raw.dark, `semanticTokens.surface.${key}.dark`, theme, errors);
+      }
       if (raw.foreground !== undefined) {
         validateRef(raw.foreground, `semanticTokens.surface.${key}.foreground`, theme, errors);
       }

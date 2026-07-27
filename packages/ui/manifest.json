@@ -563,7 +563,7 @@
         "packages/ui/src/recipes/Skeleton/Skeleton.test.tsx",
         "packages/ui/src/recipes/Skeleton/Skeleton.visual.test.tsx"
       ],
-      "tokenDependencies": ["--color-neutral-200", "--color-neutral-400", "--radius-sm"],
+      "tokenDependencies": ["--radius-sm", "--surface-placeholder"],
       "baseUi": false,
       "registryDependencies": []
     },

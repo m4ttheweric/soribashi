@@ -186,7 +186,15 @@ function countEmittedTokenVars(theme: ResolvedTheme): number {
  * Every other token family below is emitted bare (light value only). Dark
  * overrides for non-colour tokens are rejected by validateTheme
  * (validate-theme.ts's validateDarkOverrides) before emitCss ever runs, so
- * `dark` is only ever consulted here for `tokens.colors`.
+ * `tokens.colors` is the only token family that ever calls this with a
+ * defined `dark`. `emitSemanticLines` below reuses this same function one
+ * layer up, for `semanticTokens.surface`'s optional per-scheme `dark`
+ * reference (design-ledger slice): there `light`/`dark` are themselves
+ * `var(--color-...)` lookups rather than raw token values, so the emitted
+ * light-dark() can nest another light-dark() inside each branch when the
+ * underlying colour token also carries its own dark override. Confirmed in
+ * Chromium that nesting resolves correctly (each occurrence independently
+ * against the color-scheme of the consuming element).
  */
 function pairValue(light: string, dark: string | undefined): string {
   return dark === undefined ? light : `light-dark(${light}, ${dark})`;
@@ -271,7 +279,18 @@ function emitSemanticLines(lines: string[], theme: ResolvedTheme): void {
 
   for (const [key, raw] of Object.entries(theme.semanticTokens.surface).sort(byKey)) {
     const pair = resolveSurfacePair(raw);
-    lines.push(`  --surface-${key}: ${semanticToVar(pair.value)};`);
+    // Reuses tokens.colors' own light/dark pairing mechanism one layer up:
+    // `pair.dark` absent emits the SAME bare `var(...)` this slot always has
+    // (pairValue's no-op branch), so every existing string-form and
+    // `{value, foreground}` theme is byte-for-byte unaffected. When present,
+    // this is TWO different semantic references (not one reference's own
+    // light/dark colour pair), so the emitted light-dark() can itself nest
+    // another light-dark() inside each branch (from the underlying colour
+    // token's own dark override, if any) — verified in Chromium to resolve
+    // correctly: each nested light-dark() call resolves independently
+    // against the color-scheme of the element consuming the property.
+    const darkVar = pair.dark !== undefined ? semanticToVar(pair.dark) : undefined;
+    lines.push(`  --surface-${key}: ${pairValue(semanticToVar(pair.value), darkVar)};`);
     if (pair.foreground !== undefined) {
       lines.push(`  --surface-${key}-foreground: ${semanticToVar(pair.foreground)};`);
     }
@@ -290,6 +309,7 @@ function emitSemanticLines(lines: string[], theme: ResolvedTheme): void {
 
 interface SurfacePair {
   value: string;
+  dark?: string;
   foreground?: string;
 }
 
@@ -299,6 +319,7 @@ function resolveSurfacePair(raw: SemanticSurfaceValue): SurfacePair {
   }
   return {
     value: raw.value,
+    dark: raw.dark,
     foreground: raw.foreground,
   };
 }
