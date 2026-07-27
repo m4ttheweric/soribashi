@@ -45,3 +45,6 @@ packages/ui/.vitest-attachments/
 
 # superpowers subagent-driven-development scratch workspace
 .superpowers/
+
+# vitest browser-mode failure screenshots (real baselines live under src/recipes/*/__screenshots__/)
+packages/ui/src/__screenshots__/
