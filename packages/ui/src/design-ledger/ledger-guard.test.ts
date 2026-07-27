@@ -123,4 +123,61 @@ describe('ledger coverage', () => {
       `these recipes reference --accent-primary but are never mounted in ledger.browser.test.tsx, so the focus.ring.uniform scan cannot see their rules: ${unmounted.join(', ')}`,
     ).toEqual([]);
   });
+
+  it('prints the real ledger coverage and names every currently uncovered recipe', () => {
+    // `console.log` is intercepted and buffered by vitest's reporter, and
+    // this repo's default reporter (`vitest run`, no --reporter flag, which
+    // is what `bun run test` invokes) only ever flushes that buffer for a
+    // FAILING test; a passing test's console.log never reaches the terminal
+    // under it (checked directly: this repo already has one other test with
+    // this exact "prints X" shape, css-variable-parity.test.ts's "prints
+    // coverage summary", and its console.log is equally invisible under
+    // plain `bun run test`). `process.stdout.write` bypasses that
+    // interception and writes straight to the real terminal regardless of
+    // pass/fail (checked directly too), which is what actually delivers the
+    // spec's "printed on every run" promise rather than merely running code
+    // nobody ever sees the output of (fix round 1 finding).
+    const recipesDir = join(import.meta.dirname, '..', 'recipes');
+    const allRecipes = readdirSync(recipesDir).sort();
+    const report = coverageReport(LEDGER, allRecipes);
+    process.stdout.write(`${report}\n`);
+
+    // Recomputed here independently of coverageReport's own internals
+    // (mirroring its covers-then-prefix rule, not calling it) so this test
+    // still catches coverageReport if it were ever changed to summarize or
+    // truncate the uncovered list (the design spec's own illustrative
+    // example does exactly that: "Alert, AspectRatio, ... (22)"), rather
+    // than just re-running the same code path and trivially agreeing with
+    // itself.
+    const covered = new Set<string>();
+    for (const row of LEDGER) {
+      const names =
+        row.covers ?? [row.id.split('.')[0]].filter((p): p is string => p !== undefined);
+      for (const name of names) covered.add(name.toLowerCase());
+    }
+    const expectedUncovered = allRecipes.filter((name) => !covered.has(name.toLowerCase()));
+    expect(expectedUncovered.length).toBeGreaterThan(0);
+
+    for (const name of expectedUncovered) {
+      expect(report, `coverage report silently dropped uncovered recipe "${name}"`).toContain(name);
+    }
+  });
+
+  it("every recipe named in a row's covers field is a real recipe directory", () => {
+    // A typo here would silently inflate the coverage count (a recipe that
+    // does not exist can never show up in `allRecipes`, so it can never be
+    // subtracted back out as uncovered either), which is worse than no
+    // coverage figure at all: it reads as a real recipe being checked when
+    // nothing is checking anything by that name.
+    const recipesDir = join(import.meta.dirname, '..', 'recipes');
+    const realRecipes = new Set(readdirSync(recipesDir));
+
+    const unknown: string[] = [];
+    for (const row of LEDGER) {
+      for (const name of row.covers ?? []) {
+        if (!realRecipes.has(name)) unknown.push(`${row.id}: covers unknown recipe "${name}"`);
+      }
+    }
+    expect(unknown).toEqual([]);
+  });
 });

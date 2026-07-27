@@ -9,14 +9,56 @@ export interface LedgerRow {
   witness?: string;
   /** A recorded, deliberate difference. Must cite proof, never give a reason. */
   diverge?: string;
+  /**
+   * Recipes this row actually checks, when the id's first dot-segment does
+   * not already name exactly one recipe directory. Declared, not inferred:
+   * which recipes a cross-cutting row like focus.ring.uniform touches is a
+   * fact only the row's author knows, not something coverageReport's prefix
+   * heuristic can recover (it previously missed radio.dot.centered covering
+   * RadioGroup, since the id's prefix is "radio" not "radiogroup", and gave
+   * no credit at all to focus.ring.uniform or controls.sharedHeight for the
+   * many recipes they genuinely mount and check).
+   */
+  covers?: readonly string[];
 }
 
 export const LEDGER: readonly LedgerRow[] = [
   { id: 'switch.thumb.centered', species: 'invariant', tier: 'measured', assert: 'predicate' },
-  { id: 'radio.dot.centered', species: 'invariant', tier: 'measured', assert: 'predicate' },
+  {
+    id: 'radio.dot.centered',
+    species: 'invariant',
+    tier: 'measured',
+    assert: 'predicate',
+    // The id's prefix is "radio", not the recipe directory "RadioGroup", so
+    // coverageReport's prefix inference alone would silently mark RadioGroup
+    // uncovered despite this row measuring it directly (fix round 1 finding).
+    covers: ['RadioGroup'],
+  },
   { id: 'tabs.indicator.withinList', species: 'invariant', tier: 'measured', assert: 'predicate' },
   { id: 'select.popup.clearsTrigger', species: 'invariant', tier: 'measured', assert: 'predicate' },
-  { id: 'focus.ring.uniform', species: 'invariant', tier: 'measured', assert: 'predicate' },
+  {
+    id: 'focus.ring.uniform',
+    species: 'invariant',
+    tier: 'measured',
+    assert: 'predicate',
+    // Every recipe this row's scan can actually see, i.e. every recipe
+    // mounted somewhere in ledger.browser.test.tsx by the time this test
+    // reads document.styleSheets (ledger-guard.test.ts's mount-completeness
+    // guard keeps this list honest: it fails if a recipe referencing
+    // --accent-primary is ever added without a matching mount).
+    covers: [
+      'Accordion',
+      'Alert',
+      'Button',
+      'Checkbox',
+      'RadioGroup',
+      'Select',
+      'Switch',
+      'Tabs',
+      'TextInput',
+      'Textarea',
+    ],
+  },
   {
     id: 'dialog.scrim.effectiveDarkness',
     species: 'floor',
@@ -59,6 +101,10 @@ export const LEDGER: readonly LedgerRow[] = [
     tier: 'measured',
     assert: 'predicate',
     tolerance: 0.5,
+    // The id's prefix "controls" names no recipe at all, so without this the
+    // three recipes this row actually measures would get zero coverage
+    // credit even though each is exercised at every size.
+    covers: ['Button', 'TextInput', 'Select'],
   },
 ];
 
@@ -67,11 +113,17 @@ export const LEDGER: readonly LedgerRow[] = [
 // defect" and "swept". This is read on every run, not filed away in a spec
 // where a limitation only gets read once.
 export function coverageReport(rows: readonly LedgerRow[], allRecipes: readonly string[]): string {
-  const covered = new Set(
-    rows
-      .map((r) => r.id.split('.')[0]?.toLowerCase())
-      .filter((prefix): prefix is string => prefix !== undefined),
-  );
+  const covered = new Set<string>();
+  for (const row of rows) {
+    // `covers` is the ground truth when a row declares it: only the row's
+    // author knows which recipes a cross-cutting check like
+    // focus.ring.uniform actually touches. The id-prefix guess is a fallback
+    // for the common case where the first dot-segment already names exactly
+    // one recipe (e.g. "switch.thumb.centered" -> "Switch"), kept so every
+    // existing row does not need a redundant `covers` entry.
+    const names = row.covers ?? [row.id.split('.')[0]].filter((p): p is string => p !== undefined);
+    for (const name of names) covered.add(name.toLowerCase());
+  }
   const hit = allRecipes.filter((name) => covered.has(name.toLowerCase()));
   const missed = allRecipes.filter((name) => !covered.has(name.toLowerCase())).sort();
 
