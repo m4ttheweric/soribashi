@@ -84,6 +84,7 @@ function readRepoFile(repoRelativePath: string): string {
  * loudly rather than shipping a registry item with placeholder copy.
  */
 const RECIPE_DESCRIPTIONS: Record<string, string> = {
+  Accordion: 'Compound accordion built on Base UI: composable header/trigger/panel items.',
   Alert: 'A single-element alert surface with icon, title, body, and close slots.',
   AspectRatio: 'Locks a fixed width/height ratio for its content.',
   Badge: 'A small, colour-bearing polymorphic tag riding the soribashi vocabulary rails.',

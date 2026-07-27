@@ -1,3 +1,4 @@
+export { Accordion, accordionTheme } from './recipes/Accordion/Accordion.tsx';
 export { Alert, alertTheme } from './recipes/Alert/Alert.tsx';
 export { AspectRatio, aspectRatioTheme } from './recipes/AspectRatio/AspectRatio.tsx';
 export { Badge, badgeTheme } from './recipes/Badge/Badge.tsx';

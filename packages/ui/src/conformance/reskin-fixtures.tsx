@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Accordion } from '../recipes/Accordion/Accordion.tsx';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { AspectRatio } from '../recipes/AspectRatio/AspectRatio.tsx';
 import { Badge } from '../recipes/Badge/Badge.tsx';
@@ -47,6 +48,22 @@ import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
  *      already differ for some unrelated reason).
  */
 export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode> = {
+  // No portal (Accordion renders no overlay), so `scopeEl` is unused here,
+  // matching Alert's/Tabs' own no-portal fixtures. `defaultValue` opens the
+  // first item at mount so the tagged trigger renders through its
+  // `data-panel-open` styling, the recipe's most visually representative
+  // state.
+  Accordion: () => (
+    <Accordion.Root defaultValue={['a']}>
+      <Accordion.Item value="a">
+        <Accordion.Header>
+          <Accordion.Trigger classNames={{ trigger: 'reskin-target' }}>A</Accordion.Trigger>
+        </Accordion.Header>
+        <Accordion.Panel>Panel A</Accordion.Panel>
+      </Accordion.Item>
+    </Accordion.Root>
+  ),
+
   Alert: () => (
     <Alert classNames={{ root: 'reskin-target' }} intent="info" variant="subtle">
       x

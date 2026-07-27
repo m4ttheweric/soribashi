@@ -1,0 +1,76 @@
+@layer soribashi.recipes {
+  .root {
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-family-sans);
+    border-block-start: 1px solid var(--border-default);
+  }
+
+  .item {
+    border-block-end: 1px solid var(--border-default);
+  }
+
+  /*
+   * Base UI's Header always renders a real heading element (h3 by default,
+   * or whatever `as` overrides it to, see Accordion.tsx's polymorphic
+   * `header` part); a bare heading carries browser-default block margins
+   * that would otherwise open a gap this recipe doesn't want between the
+   * item's own border and its trigger.
+   */
+  .header {
+    margin: 0;
+  }
+
+  .trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    inline-size: 100%;
+    padding-block: var(--spacing-sm);
+    padding-inline: var(--spacing-xs);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: 1;
+    text-align: start;
+    cursor: pointer;
+    transition:
+      background-color 120ms,
+      color 120ms;
+
+    &:hover {
+      color: var(--text-default);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--accent-primary, var(--text-default));
+      outline-offset: 2px;
+    }
+    &[data-disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+
+  /*
+   * Keyed on Base UI's own stamped open-state attribute (Global Constraint
+   * 5): AccordionTrigger stamps `data-panel-open` only while its panel is
+   * open (AccordionTriggerDataAttributes.d.ts / AccordionTrigger.mjs's
+   * `triggerOpenStateMapping`), with no complementary "closed" attribute, so
+   * a single presence selector is enough here (unlike Item/Header/Panel,
+   * which Base UI stamps with both `data-open` and `data-closed`, see
+   * Accordion.tsx's Base UI findings comment).
+   */
+  .trigger[data-panel-open] {
+    background: var(--surface-raised);
+    color: var(--text-default);
+  }
+
+  .panel {
+    padding-block-end: var(--spacing-md);
+    padding-inline: var(--spacing-xs);
+    color: var(--text-muted);
+  }
+}

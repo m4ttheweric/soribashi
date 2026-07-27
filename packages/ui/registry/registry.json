@@ -4,6 +4,12 @@
   "homepage": "https://github.com/soribashi/soribashi",
   "items": [
     {
+      "name": "accordion",
+      "type": "registry:ui",
+      "title": "Accordion",
+      "description": "Compound accordion built on Base UI: composable header/trigger/panel items."
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",

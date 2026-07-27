@@ -13,6 +13,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 // importing the main entry left `container` empty by the first `it` (cleanup
 // already ran); importing `/pure` did not.
 import { render } from 'vitest-browser-react/pure';
+import { Accordion } from '../recipes/Accordion/Accordion.tsx';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
@@ -154,6 +155,48 @@ interface SmallCoverageEntry {
 }
 
 const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
+  // State established at mount only (`defaultValue`), never by interaction,
+  // same rule as every other entry here (see SmallCoverageEntry's doc
+  // comment). The expanded item's trigger paints its own opaque
+  // `--surface-raised` background (Accordion.module.css's
+  // `.trigger[data-panel-open]` rule), a self-contained fg/bg pair with no
+  // backdrop needed; the collapsed sibling's trigger stays
+  // background-transparent and sits directly on the page canvas (the
+  // `.root`/`.item` rules paint no background of their own either), the same
+  // no-backdrop shape Tabs' own unselected-tab cell has.
+  Accordion: {
+    render: () => (
+      <Accordion.Root defaultValue={['a']}>
+        <Accordion.Item value="a">
+          <Accordion.Header>
+            <Accordion.Trigger classNames={{ trigger: 'matrix-target-accordion-expanded' }}>
+              Expanded
+            </Accordion.Trigger>
+          </Accordion.Header>
+          <Accordion.Panel>Panel A</Accordion.Panel>
+        </Accordion.Item>
+        <Accordion.Item value="b">
+          <Accordion.Header>
+            <Accordion.Trigger classNames={{ trigger: 'matrix-target-accordion-collapsed' }}>
+              Collapsed
+            </Accordion.Trigger>
+          </Accordion.Header>
+          <Accordion.Panel>Panel B</Accordion.Panel>
+        </Accordion.Item>
+      </Accordion.Root>
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-accordion-expanded',
+        description: 'Accordion: expanded item header text on --surface-raised',
+      },
+      {
+        targetClass: 'matrix-target-accordion-collapsed',
+        description: 'Accordion: collapsed item header text (--text-muted) on canvas',
+      },
+    ],
+  },
+
   // State established at mount only (defaultChecked/indeterminate), never by
   // interaction: this entry mounts once and is read twice (light, then
   // dark), and an interaction inside one scheme's `it` would leak into or be

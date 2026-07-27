@@ -21,6 +21,7 @@ export type MatrixClassification = 'covered' | { exempt: string };
 
 /** EVERY manifest recipe must appear here; the guard fails by name otherwise. */
 export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
+  Accordion: 'covered',
   Alert: 'covered',
   AspectRatio: { exempt: 'geometry only' },
   Badge: 'covered',
@@ -57,6 +58,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
  * without importing contrast-matrix.test.tsx itself.
  */
 export const SMALL_COVERAGE_NAMES: readonly string[] = [
+  'Accordion',
   'Checkbox',
   'Dialog',
   'Paper',
