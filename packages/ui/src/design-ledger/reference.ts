@@ -16,28 +16,58 @@ export interface FloorWitness {
  * predate and are unchanged as of the pinned HEAD above.
  */
 export const REFERENCE: Record<string, FloorWitness> = {
-  'skeleton.deltaL': {
+  'skeleton.deltaY.light': {
     bound: 0.08,
     witness:
-      'shadcn/ui @ 2a2deaac417cb33720bcdfd0452d7585c3aa417f, registry/new-york-v4/ui/skeleton.tsx ' +
+      // "Y" throughout both skeleton.deltaY.* witnesses means WCAG relative
+      // luminance (the same 0-1 scale ledger.browser.test.tsx's own
+      // relLuminance computes over real rendered rgb() channels), NOT OKLCH's
+      // "L" lightness channel, which is what the shadcn citation numbers
+      // below are measured in. The two scales are cited side by side on
+      // purpose (they disagree about how big this gap looks), never
+      // conflated.
+      'shadcn/ui @ 2a2deaac417cb33720bcdfd0452d7585c3aa417f, apps/v4/registry/new-york-v4/ui/skeleton.tsx ' +
       '"bg-accent" against the page\'s "bg-background", both resolved via registry/themes.ts\'s ' +
       '"neutral" base colour (the CLI default): light accent oklch(0.97 0 0) vs background ' +
       'oklch(1 0 0) is only a 0.03 OKLCH-lightness gap; dark accent oklch(0.269 0 0) vs background ' +
       'oklch(0.145 0 0) is a wider 0.124 gap. Both are OKLCH-L deltas, a different scale from this ' +
-      "row's own runtime assertion (WCAG relative luminance over the actual rendered rgb()), so " +
+      "row's own runtime assertion (WCAG relative luminance, Y, over the actual rendered rgb()), so " +
       'they are corroborating evidence that shadcn itself ships a subtle, sometimes barely-there ' +
       'skeleton fill, not a unit-matched proof. The placeholder guess of 0.04 this row started ' +
       'from turned out to sit ON THE WRONG SIDE of our own current bug once actually measured: ' +
       "soribashi's own neutral-50 canvas vs neutral-100 fill (the pre-fix, one-ramp-step case " +
-      'this row exists to catch) measures 0.0451 in relative luminance, which is HIGHER than ' +
-      "0.04 -- a WCAG-luminance delta is not perceptually linear the way OKLCH's L channel is, and " +
-      'compresses far less near white, so the same one-ramp-step gap that looks tiny in OKLCH-L ' +
-      '(0.0162) reads as a larger relative-luminance delta. Keeping 0.04 would have let the exact ' +
-      'regression this row was written for pass silently. Recomputed empirically instead (measured ' +
-      'live via the browser test, see ledger.browser.test.tsx): neutral-50 vs neutral-100 = 0.0451 ' +
-      '(the bug), neutral-50 vs neutral-200 = 0.1596 (the fix). 0.08 is our own choice, sitting ' +
-      'with real margin above the failing case and real margin below the fixed case, rather than a ' +
-      'value picked to sit exactly between two shadcn numbers.',
+      'this row exists to catch) measures Y-delta 0.0451, which is HIGHER than 0.04 -- WCAG Y is ' +
+      "not perceptually linear the way OKLCH's L channel is, and compresses far less near white, so " +
+      'the same one-ramp-step gap that looks tiny in OKLCH-L (0.0162) reads as a larger Y-delta. ' +
+      'Keeping 0.04 would have let the exact regression this row was written for pass silently. ' +
+      'This bound gates TWO live-measured quantities in light mode, both against the same 0.08: ' +
+      'the resting fill (--color-neutral-200 vs neutral-50 canvas, Y-delta 0.1596) and the fill ' +
+      'composited over canvas at the pulse\'s live "to" keyframe opacity (0.6), Y-delta 0.0960. ' +
+      'Reverting that opacity to its pre-fix 0.4 lands the composited delta at 0.0679, below 0.08: ' +
+      'the floor was chosen to sit inside that gap (0.0679 < 0.08 < 0.0960) so a trough regression ' +
+      "goes red without touching the resting check's own, wider margin.",
+  },
+  'skeleton.deltaY.dark': {
+    bound: 0.05,
+    witness:
+      'Same neutral-scale mechanism as skeleton.deltaY.light, but WCAG Y compresses harder at the ' +
+      "DARK tail of the ramp than the light head does for the same rung-count gap (fix round 1's " +
+      'finding): --color-neutral-200 against a dark-mode --surface-canvas only reaches Y-delta ' +
+      '0.0442, almost exactly where the light-mode bug above sat (0.0451), i.e. dark shipped as ' +
+      'faint as the bug this row exists to catch. Skeleton.module.css now carries a ' +
+      ':global(.dark) .root override to --color-neutral-400 specifically for dark (light keeps ' +
+      '--color-neutral-200 unchanged, so an already-sufficient light-mode contrast is not ' +
+      "collaterally darkened just to satisfy the harder-to-reach dark case). With that fill, dark's " +
+      'resting delta is 0.1648; composited at the same live "to" keyframe opacity (0.6) it is ' +
+      '0.0683; reverted to the pre-fix 0.4 it is 0.0370. 0.05 sits inside that gap (0.0370 < 0.05 < ' +
+      '0.0683), so a trough regression goes red in dark mode too, on its own honestly-smaller margin ' +
+      '(the dark end of the ramp has less room to work with than the light end does, at this ' +
+      'rung-count; a wider dark margin would need an even stronger, visually heavier dark fill than ' +
+      "this row asks for). Not shadcn-derived: shadcn's own dark accent/background gap (OKLCH-L " +
+      "0.124, see skeleton.deltaY.light's witness) is a different scale and a different fill " +
+      'mechanism (a single "bg-accent" utility, no per-scheme override), so it is not directly ' +
+      "comparable evidence here; this bound is soribashi's own, chosen from soribashi's own " +
+      'live-measured numbers.',
   },
   'dialog.scrim.effectiveDarkness': {
     bound: [0.4, 0.7],

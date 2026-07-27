@@ -5,6 +5,7 @@ import { render } from 'vitest-browser-react';
 import {
   installNoTransitionStyle,
   NO_TRANSITION_CLASS,
+  resolveCanvasColor,
   toRgbString,
 } from '../a11y/matrix-harness.tsx';
 import { Accordion } from '../recipes/Accordion/Accordion.tsx';
@@ -200,15 +201,119 @@ describe('design ledger: measured rows', () => {
     expect(expected).toBeTruthy();
   });
 
-  it('skeleton.deltaL', async () => {
+  // Shared by both skeleton.deltaY.* rows below. `toRgbString` (matrix-harness.tsx)
+  // collapses any getComputedStyle colour to `rgb(r, g, b)` for an opaque read,
+  // only ever emitting `rgba(r, g, b, a)` (a fourth number) when the source
+  // colour genuinely carries alpha. Every colour these rows touch
+  // (--surface-canvas, --color-neutral-200/400) is fully opaque, so a
+  // real 4th component here would mean this composite math is being fed a
+  // colour it was never built to handle; fail loudly instead of the silent
+  // `.slice(0, 3)` an earlier round of this row used, which discarded a
+  // possible alpha with no comment at all.
+  function rgbChannels(rgb: string): readonly [number, number, number] {
+    const nums = rgb.match(/[\d.]+/g)!.map(Number);
+    if (nums.length === 4) {
+      throw new Error(`rgbChannels: unexpected alpha channel in "${rgb}"`);
+    }
+    return nums as [number, number, number];
+  }
+
+  function relLuminance([r, g, b]: readonly [number, number, number]): number {
+    const lin = (c: number) => {
+      const s = c / 255;
+      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  }
+
+  // Composites `fill` over `canvas` at `alpha`, matching how the browser's
+  // own alpha blending lands on 8-bit sRGB channels (round-per-channel, not
+  // linear-light blending): this is the same model used to derive the
+  // reference numbers in reference.ts's skeleton.deltaY.* witnesses, and
+  // reproduces them exactly when fed the same inputs.
+  function compositeOverCanvas(
+    fill: readonly [number, number, number],
+    canvas: readonly [number, number, number],
+    alpha: number,
+  ): readonly [number, number, number] {
+    return fill.map((c, i) => Math.round(c * alpha + canvas[i]! * (1 - alpha))) as [
+      number,
+      number,
+      number,
+    ];
+  }
+
+  // Reads the LIVE `to` keyframe opacity straight off the CSSOM rather than
+  // assuming a hardcoded number: a hardcoded trough value would silently stay
+  // "correct" even if Skeleton.module.css's own keyframe regressed, which is
+  // exactly the failure mode this row exists to catch (see reference.ts).
+  // Recurses into grouping rules (`@layer`, `@media`, ...) since this
+  // package's CSS Modules always land inside `@layer soribashi.recipes`, one
+  // top-level CSSRule per stylesheet (Task 6's finding).
+  //
+  // Two things confirmed empirically (a throwaway dump of every rule's
+  // constructor name and cssText) before writing the matcher below, neither
+  // of which matches the source `.module.css` literally: CSS Modules scopes
+  // an animation name exactly like a class name (`sb-skeleton-pulse`
+  // compiles to something like `_sb-skeleton-pulse_xjkev_1`), so an exact
+  // `rule.name === keyframesName` match never fires; a substring match does.
+  // Separately, this build's CSS pipeline normalizes the source's `from`/`to`
+  // keyframe selectors to `0%`/`100%` before the browser ever parses them
+  // (unrelated to and unaffected by no-hardcoded-values.test.ts's own
+  // preference for `from`/`to`, which scans the SOURCE file text directly,
+  // never this compiled form), so the trough match checks both spellings.
+  function findTroughOpacity(keyframesName: string): number {
+    function search(rules: CSSRuleList): number | undefined {
+      for (const rule of Array.from(rules)) {
+        if (rule instanceof CSSKeyframesRule && rule.name.includes(keyframesName)) {
+          for (const kf of Array.from(rule.cssRules)) {
+            if (kf instanceof CSSKeyframeRule && (kf.keyText === 'to' || kf.keyText === '100%')) {
+              const opacity = Number(kf.style.opacity);
+              if (!Number.isNaN(opacity)) return opacity;
+            }
+          }
+        }
+        const nested = (rule as CSSGroupingRule).cssRules;
+        if (nested) {
+          const found = search(nested);
+          if (found !== undefined) return found;
+        }
+      }
+      return undefined;
+    }
+
+    for (const sheet of document.styleSheets) {
+      let rules: CSSRuleList;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        continue;
+      }
+      const found = search(rules);
+      if (found !== undefined) return found;
+    }
+    throw new Error(`keyframes "${keyframesName}" not found in any stylesheet`);
+  }
+
+  interface SkeletonMeasurement {
+    restingDelta: number;
+    troughDelta: number;
+    troughOpacity: number;
+    fill: string;
+    canvas: string;
+  }
+
+  async function measureSkeleton(scheme: 'light' | 'dark'): Promise<SkeletonMeasurement> {
     // installNoTransitionStyle only freezes `transition`; Skeleton.module.css's
     // pulse is a perpetually-running `animation`, a wholly separate CSS
     // mechanism (same finding as Skeleton.visual.test.tsx's own local
     // no-transition block), so a plain transition freeze alone would still
-    // let this read land on whatever opacity the keyframe happens to be
-    // interpolating through at that instant. A second local stylesheet
+    // let a resting-state read land on whatever opacity the keyframe happens
+    // to be interpolating through at that instant. A second local stylesheet
     // extends the SAME shared class with `animation: none !important` so
-    // both mechanisms are frozen before the colour is read.
+    // both mechanisms are frozen before the resting colour is read; the
+    // trough colour below is derived separately, by composite math, not by
+    // ever unfreezing the animation to look for it.
     const removeNoTransitionStyle = installNoTransitionStyle();
     const noAnimationStyle = document.createElement('style');
     noAnimationStyle.textContent = `
@@ -218,12 +323,15 @@ describe('design ledger: measured rows', () => {
     document.head.appendChild(noAnimationStyle);
 
     try {
+      const wrapperClass = scheme === 'dark' ? `${NO_TRANSITION_CLASS} dark` : NO_TRANSITION_CLASS;
       const screen = await wrap(
-        <div className={NO_TRANSITION_CLASS} style={{ background: 'var(--surface-canvas)' }}>
+        <div className={wrapperClass} style={{ background: 'var(--surface-canvas)' }}>
           <Skeleton style={{ width: '120px', height: '16px' }} />
         </div>,
       );
+      const wrapperEl = screen.container.querySelector(`.${NO_TRANSITION_CLASS}`) as HTMLElement;
       const el = screen.container.querySelector('[class*="root"]')!;
+
       // matrix-harness.tsx's toRgbString docstring: this Chromium build
       // serializes getComputedStyle colours back as oklch(...), unconverted,
       // not the legacy rgb()/rgba() a naive digit-scraping regex expects.
@@ -231,33 +339,56 @@ describe('design ledger: measured rows', () => {
       // since long before oklch() existed) is the same, already-verified fix
       // this repo uses everywhere else a computed colour needs real channels.
       const fill = toRgbString(getComputedStyle(el).backgroundColor);
+      // resolveCanvasColor appends its probe as a CHILD of `wrapperEl`, not
+      // document.body directly: --surface-canvas (like every token here) is
+      // only overridden for dark under a `.dark` scope, so a probe living
+      // outside that scope would silently read the light value even during
+      // the dark pass.
+      const canvas = toRgbString(resolveCanvasColor(wrapperEl));
 
-      const probe = document.createElement('div');
-      document.body.appendChild(probe);
-      probe.style.backgroundColor = 'var(--surface-canvas)';
-      const canvas = toRgbString(getComputedStyle(probe).backgroundColor);
-      probe.remove();
+      const fillRgb = rgbChannels(fill);
+      const canvasRgb = rgbChannels(canvas);
+      const troughOpacity = findTroughOpacity('sb-skeleton-pulse');
+      const troughRgb = compositeOverCanvas(fillRgb, canvasRgb, troughOpacity);
 
-      const L = (rgb: string) => {
-        const [r, g, b] = rgb
-          .match(/[\d.]+/g)!
-          .slice(0, 3)
-          .map(Number) as [number, number, number];
-        const lin = (c: number) => {
-          const s = c / 255;
-          return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-        };
-        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+      return {
+        restingDelta: Math.abs(relLuminance(fillRgb) - relLuminance(canvasRgb)),
+        troughDelta: Math.abs(relLuminance(troughRgb) - relLuminance(canvasRgb)),
+        troughOpacity,
+        fill,
+        canvas,
       };
-      const delta = Math.abs(L(fill) - L(canvas));
-      const floor = REFERENCE['skeleton.deltaL']!.bound as number;
-      expect(
-        delta,
-        `skeleton (${fill}) sits ${delta.toFixed(4)} from its canvas (${canvas}), floor is ${floor}`,
-      ).toBeGreaterThanOrEqual(floor);
     } finally {
       noAnimationStyle.remove();
       removeNoTransitionStyle();
     }
+  }
+
+  it('skeleton.deltaY.light', async () => {
+    const { restingDelta, troughDelta, troughOpacity, fill, canvas } =
+      await measureSkeleton('light');
+    const floor = REFERENCE['skeleton.deltaY.light']!.bound as number;
+    expect(
+      restingDelta,
+      `light resting: skeleton (${fill}) sits ${restingDelta.toFixed(4)} from its canvas (${canvas}), floor is ${floor}`,
+    ).toBeGreaterThanOrEqual(floor);
+    expect(
+      troughDelta,
+      `light trough (opacity ${troughOpacity}): sits ${troughDelta.toFixed(4)} from its canvas, floor is ${floor}`,
+    ).toBeGreaterThanOrEqual(floor);
+  });
+
+  it('skeleton.deltaY.dark', async () => {
+    const { restingDelta, troughDelta, troughOpacity, fill, canvas } =
+      await measureSkeleton('dark');
+    const floor = REFERENCE['skeleton.deltaY.dark']!.bound as number;
+    expect(
+      restingDelta,
+      `dark resting: skeleton (${fill}) sits ${restingDelta.toFixed(4)} from its canvas (${canvas}), floor is ${floor}`,
+    ).toBeGreaterThanOrEqual(floor);
+    expect(
+      troughDelta,
+      `dark trough (opacity ${troughOpacity}): sits ${troughDelta.toFixed(4)} from its canvas, floor is ${floor}`,
+    ).toBeGreaterThanOrEqual(floor);
   });
 });

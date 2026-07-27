@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LEDGER, type LedgerRow, validateLedger } from './ledger.ts';
+import { REFERENCE } from './reference.ts';
 
 const base: LedgerRow = {
   id: 'test.row',
@@ -41,5 +42,23 @@ describe('ledger guard', () => {
 
   it('the committed ledger is valid', () => {
     expect(validateLedger(LEDGER)).toEqual([]);
+  });
+
+  it('every floor row bound matches its reference.ts entry exactly', () => {
+    // ledger.ts's `bound` is not load-bearing at runtime: ledger.test.ts and
+    // ledger.browser.test.tsx both read the ACTUAL comparison threshold from
+    // REFERENCE, not from LEDGER (fix round 1's finding: the two could drift
+    // silently, since only one of them is ever compiled into an assertion).
+    // This is the cross-check that makes ledger.ts's copy trustworthy to
+    // read at a glance instead of just decorative.
+    const floorRows = LEDGER.filter((row) => row.species === 'floor');
+    expect(floorRows.length).toBeGreaterThan(0);
+    for (const row of floorRows) {
+      const entry = REFERENCE[row.id];
+      expect(entry, `${row.id}: no REFERENCE entry to cross-check against`).toBeDefined();
+      expect(row.bound, `${row.id}: ledger.ts's bound diverges from reference.ts's`).toEqual(
+        entry!.bound,
+      );
+    }
   });
 });

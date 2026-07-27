@@ -25,12 +25,27 @@ export const LEDGER: readonly LedgerRow[] = [
     bound: [0.4, 0.7],
     witness: 'see reference.ts',
   },
+  // Two rows, not one: fix round 1 found that a single skeleton.deltaL row,
+  // measured light-only, could not see that the shipped fill (correct in
+  // light) still failed in dark, because WCAG relative luminance compresses
+  // harder at the dark tail of the neutral ramp than the light head does for
+  // the same rung-count gap. "deltaY" (not "deltaL") names the scale
+  // explicitly: this is WCAG relative luminance, not the OKLCH lightness
+  // ("L") the shadcn citations in reference.ts are measured in.
   {
-    id: 'skeleton.deltaL',
+    id: 'skeleton.deltaY.light',
     species: 'floor',
     tier: 'measured',
     assert: 'min',
     bound: 0.08,
+    witness: 'see reference.ts',
+  },
+  {
+    id: 'skeleton.deltaY.dark',
+    species: 'floor',
+    tier: 'measured',
+    assert: 'min',
+    bound: 0.05,
     witness: 'see reference.ts',
   },
 ];
