@@ -32,6 +32,10 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Checkbox: 'covered',
   Container: { exempt: 'geometry only' },
   Dialog: 'covered',
+  Divider: {
+    exempt:
+      'colour-via: the optional label renders --text-muted on the canvas, the exact pairing Text.dimmed SMALL_COVERAGE cells already measure in both schemes',
+  },
   Field: {
     exempt:
       'colour-via: TextInput and Textarea SMALL_COVERAGE cells render Field label/description/error parts and measure their computed colours on their real backdrops',

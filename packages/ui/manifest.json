@@ -304,6 +304,27 @@
       "registryDependencies": []
     },
     {
+      "name": "Divider",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root", "label"],
+      "parts": [],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {
+        "orientation": "horizontal"
+      },
+      "files": [
+        "packages/ui/src/recipes/Divider/Divider.tsx",
+        "packages/ui/src/recipes/Divider/Divider.module.css",
+        "packages/ui/src/recipes/Divider/Divider.test.tsx",
+        "packages/ui/src/recipes/Divider/Divider.visual.test.tsx"
+      ],
+      "tokenDependencies": ["--border-default", "--font-size-xs", "--spacing-sm", "--text-muted"],
+      "baseUi": false,
+      "registryDependencies": []
+    },
+    {
       "name": "Field",
       "category": 4,
       "builder": "defineCompound",

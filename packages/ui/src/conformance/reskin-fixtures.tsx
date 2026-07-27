@@ -10,6 +10,7 @@ import { Center } from '../recipes/Center/Center.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Container } from '../recipes/Container/Container.tsx';
 import { Dialog } from '../recipes/Dialog/Dialog.tsx';
+import { Divider } from '../recipes/Divider/Divider.tsx';
 import { Field } from '../recipes/Field/Field.tsx';
 import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
@@ -123,6 +124,8 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
       </Dialog.Content>
     </Dialog.Root>
   ),
+
+  Divider: () => <Divider label="x" classNames={{ label: 'reskin-target' }} />,
 
   Field: () => (
     <Field.Root>

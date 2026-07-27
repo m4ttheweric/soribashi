@@ -95,6 +95,7 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Checkbox: 'A labelled checkbox control built on Base UI, with indeterminate support.',
   Container: 'Centers and caps content width at a theme-driven size, or fluid.',
   Dialog: 'Compound modal dialog built on Base UI: backdrop, centred popup, focus containment.',
+  Divider: 'A horizontal or vertical rule with an optional centred label.',
   Field:
     'Compound form-field anatomy (label, description, error) built on Base UI, composed internally by the form controls.',
   Grid: 'CSS grid with a fixed or responsive column count, or auto-fit min-width columns.',

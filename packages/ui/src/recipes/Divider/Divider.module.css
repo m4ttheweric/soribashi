@@ -1,0 +1,36 @@
+@layer soribashi.recipes {
+  .root {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+
+    &[data-orientation="vertical"] {
+      flex-direction: column;
+      /* No block-size default: a vertical divider's rule has nothing to draw
+         against without a defined height, the same known limitation a
+         vertical rule always carries (its cross-axis size is content-driven,
+         but its main axis is not). The consumer sets one via the ordinary
+         `style`/`h`-style prop every recipe already accepts. */
+    }
+  }
+
+  .line {
+    flex: 1;
+    background: var(--border-default);
+  }
+
+  .root:not([data-orientation="vertical"]) > .line {
+    block-size: 1px;
+  }
+
+  .root[data-orientation="vertical"] > .line {
+    inline-size: 1px;
+  }
+
+  .label {
+    flex: none;
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+  }
+}

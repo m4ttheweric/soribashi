@@ -34,6 +34,16 @@ const RESKIN_B_NEUTRAL = {
   '200': 'oklch(0.75 0.14 330)',
   '400': 'oklch(0.55 0.22 330)',
   '500': 'oklch(0.45 0.24 330)',
+  // Added alongside Divider's own reskin fixture (its `label` slot renders
+  // ONLY `color: var(--text-muted)` and `font-size: var(--font-size-xs)`,
+  // neither of which any earlier fixture measured in isolation): this file's
+  // own doc comment above already claims "full colour coverage" matching
+  // validate-theme.test.ts's shade list, but that list's own '600' entry
+  // (added for DEFAULT_TEXT.muted, see its neighbouring comment) was missing
+  // here, a pre-existing gap invisible until a fixture depended on
+  // `--text-muted` changing with no other differing property to fall back
+  // on.
+  '600': 'oklch(0.38 0.2 330)',
   '900': 'oklch(0.15 0.1 330)',
 };
 

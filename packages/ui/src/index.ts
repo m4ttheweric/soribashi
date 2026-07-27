@@ -9,6 +9,7 @@ export { Center, centerTheme } from './recipes/Center/Center.tsx';
 export { Checkbox, checkboxTheme } from './recipes/Checkbox/Checkbox.tsx';
 export { Container, containerTheme } from './recipes/Container/Container.tsx';
 export { Dialog, dialogTheme } from './recipes/Dialog/Dialog.tsx';
+export { Divider, dividerTheme } from './recipes/Divider/Divider.tsx';
 export { Field, fieldTheme } from './recipes/Field/Field.tsx';
 export { Grid, gridTheme } from './recipes/Grid/Grid.tsx';
 export { Group, groupTheme } from './recipes/Group/Group.tsx';

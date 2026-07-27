@@ -70,6 +70,12 @@
       "description": "Compound modal dialog built on Base UI: backdrop, centred popup, focus containment."
     },
     {
+      "name": "divider",
+      "type": "registry:ui",
+      "title": "Divider",
+      "description": "A horizontal or vertical rule with an optional centred label."
+    },
+    {
       "name": "field",
       "type": "registry:ui",
       "title": "Field",
