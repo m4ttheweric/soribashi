@@ -1,0 +1,115 @@
+@layer soribashi.recipes {
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    /* `--surface-overlay` (packages/theme/src/create-theme.ts's DEFAULT_SURFACE)
+       is a raw, ramp-bypassing oklch value with alpha baked in specifically
+       so a scrim stays dark in BOTH colour schemes (its own in-source
+       comment: a neutral-ramp reference would invert under dark tokens and
+       turn the scrim near-white). It is already the token-derived translucent
+       scrim this slot needs; a hand-rolled `color-mix(..., <percent>%, ...)`
+       would (a) duplicate what this token already encodes and (b) fail
+       no-hardcoded-values.test.ts's length-literal scan, since a bare
+       percentage weight (e.g. `50%`) is not on that scanner's allowlist
+       (0, 1px, 2px, 100%) the way `var(--surface-overlay)` is exempt by
+       virtue of being a var() reference entirely. */
+    background: var(--surface-overlay);
+    transition: opacity 150ms;
+
+    /* Base UI stamps these while the element enters/exits; combined with
+       @starting-style below they give a pure-CSS enter and exit animation.
+       Identical mechanism to Popover.module.css's/Tooltip.module.css's
+       `.popup` rule, applied here to the backdrop instead. */
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+    }
+    @starting-style {
+      &[data-open] {
+        opacity: 0;
+      }
+    }
+  }
+
+  .popup {
+    /* Dialog has no Positioner (Dialog.tsx's ContentProps comment): the
+       popup centres on the viewport via plain CSS instead of floating-ui
+       anchoring. `position: fixed; inset: 0; margin: auto;` with BOTH
+       `max-inline-size` and `max-block-size` set (width/height themselves
+       left at their `auto` default) is a percentage-free centering
+       technique -- chosen specifically because the alternative (`top: 50%;
+       left: 50%; transform: translate(-50%, -50%)`) bakes raw `50%` length
+       literals that no-hardcoded-values.test.ts's scanner would flag (its
+       allowlist is 0, 1px, 2px, 100%; not 50%).
+       Verified empirically (a throwaway screenshot before writing this
+       comment), not just assumed from CSS2.1 10.3.7/10.6.4: with `inset: 0`
+       and `width`/`height` auto, an absolutely/fixed-positioned box's auto
+       margins are set to 0 and the auto dimension FILLS the available space
+       (100% of the viewport) UNLESS a `max-*-size` clamps it first -- the
+       "shrink-to-fit + evenly-split auto margins" centering only applies
+       when left/right (or top/bottom) is the sole auto pair, not when
+       width/height is the auto one. Once `max-inline-size`/`max-block-size`
+       clamp the fill-to-100% dimension, the browser re-solves the auto
+       margins as if that clamped value were the specified width/height,
+       which DOES split them evenly -- the classic, well-documented
+       `position:fixed; inset:0; margin:auto; max-width:...; max-height:...`
+       centering pattern. Confirmed both axes centre correctly in the
+       first-pass screenshot with both max-*-size rules present; the
+       first draft (max-inline-size only) centred horizontally but stretched
+       the popup to the full viewport height, which is what caught this. */
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    box-sizing: border-box;
+    max-inline-size: var(--breakpoint-xs);
+    max-block-size: var(--breakpoint-xs);
+    overflow: auto;
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--surface-default);
+    color: var(--text-default);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
+    box-shadow: var(--shadow-md);
+    transition:
+      opacity 150ms,
+      transform 150ms;
+
+    /* Base UI stamps these while the element enters/exits; combined with
+       @starting-style below they give a pure-CSS enter and exit animation.
+       Identical mechanism to Popover.module.css's/Tooltip.module.css's
+       `.popup` rule. No `transform-origin` override (unlike Popover's/
+       Tooltip's own `.popup`, which anchors it to floating-ui's per-side
+       `--transform-origin` var): a centred dialog has no anchor side, and
+       the default origin (the box's own centre) is already what a
+       scale-from-centre enter animation wants. */
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    @starting-style {
+      &[data-open] {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+    }
+  }
+
+  .title {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .description {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .close {
+    cursor: pointer;
+  }
+}

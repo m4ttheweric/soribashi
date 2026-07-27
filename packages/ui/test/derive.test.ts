@@ -173,7 +173,7 @@ it('derives registryDependencies: [] for every current recipe except TextInput, 
 });
 
 describe('buildManifest', () => {
-  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Field, Grid, Group, Paper, Popover, RadioGroup, Select, Stack, Switch, Tabs, Text, Textarea, TextInput, Title, and Tooltip', async () => {
+  it('returns entries for exactly Alert, AspectRatio, Badge, Box, Button, Center, Checkbox, Container, Dialog, Field, Grid, Group, Paper, Popover, RadioGroup, Select, Stack, Switch, Tabs, Text, Textarea, TextInput, Title, and Tooltip', async () => {
     const manifest = await buildManifest();
     expect(manifest.recipes.map((r) => r.name)).toEqual([
       'Alert',
@@ -184,6 +184,7 @@ describe('buildManifest', () => {
       'Center',
       'Checkbox',
       'Container',
+      'Dialog',
       'Field',
       'Grid',
       'Group',

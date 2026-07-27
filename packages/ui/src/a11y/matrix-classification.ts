@@ -29,6 +29,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Center: { exempt: 'geometry only' },
   Checkbox: 'covered',
   Container: { exempt: 'geometry only' },
+  Dialog: 'covered',
   Field: {
     exempt:
       'colour-via: TextInput and Textarea SMALL_COVERAGE cells render Field label/description/error parts and measure their computed colours on their real backdrops',
@@ -57,6 +58,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
  */
 export const SMALL_COVERAGE_NAMES: readonly string[] = [
   'Checkbox',
+  'Dialog',
   'Paper',
   'Popover',
   'RadioGroup',

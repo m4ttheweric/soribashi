@@ -52,6 +52,12 @@
       "description": "Centers and caps content width at a theme-driven size, or fluid."
     },
     {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "Compound modal dialog built on Base UI: backdrop, centred popup, focus containment."
+    },
+    {
       "name": "field",
       "type": "registry:ui",
       "title": "Field",

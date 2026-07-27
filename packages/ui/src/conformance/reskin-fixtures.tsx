@@ -7,6 +7,7 @@ import { Button } from '../recipes/Button/Button.tsx';
 import { Center } from '../recipes/Center/Center.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { Container } from '../recipes/Container/Container.tsx';
+import { Dialog } from '../recipes/Dialog/Dialog.tsx';
 import { Field } from '../recipes/Field/Field.tsx';
 import { Grid } from '../recipes/Grid/Grid.tsx';
 import { Group } from '../recipes/Group/Group.tsx';
@@ -83,6 +84,21 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
   ),
 
   Container: () => <Container className="reskin-target">x</Container>,
+
+  // `defaultOpen` force-opens without a click (Dialog's Root forwards it
+  // straight to Base UI's DialogRoot, the same mount-time-open idiom
+  // Tooltip's/Select's own fixtures use). `scopeEl` forwards to `container`
+  // (Dialog.tsx's `ContentProps` -> the Portal): the same portal-escapes-scope
+  // reason Popover's/Select's/Tooltip's fixtures give above -- without it
+  // this guard would compare the base theme against itself.
+  Dialog: (scopeEl) => (
+    <Dialog.Root defaultOpen>
+      <Dialog.Trigger>Open</Dialog.Trigger>
+      <Dialog.Content container={scopeEl} classNames={{ popup: 'reskin-target' }}>
+        <Dialog.Title>Title</Dialog.Title>
+      </Dialog.Content>
+    </Dialog.Root>
+  ),
 
   Field: () => (
     <Field.Root>

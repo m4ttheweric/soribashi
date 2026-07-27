@@ -17,6 +17,7 @@ import { Alert } from '../recipes/Alert/Alert.tsx';
 import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
+import { Dialog } from '../recipes/Dialog/Dialog.tsx';
 import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { RadioGroup } from '../recipes/RadioGroup/RadioGroup.tsx';
@@ -195,6 +196,40 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         targetClass: 'matrix-target-checkbox-indeterminate-indicator',
         backdropClass: 'matrix-target-checkbox-indeterminate-control',
         description: 'Checkbox: indeterminate indicator mark on control background',
+      },
+    ],
+  },
+
+  // State established at mount only (`defaultOpen`), never by interaction:
+  // this entry mounts once and is read twice (light, then dark), and an
+  // interaction inside one scheme's `it` would leak into or be missing from
+  // the other (see SmallCoverageEntry's doc comment above). Shares Popover's
+  // own two-cell shape exactly: `.popup` is an opaque surface (a self-
+  // contained fg/bg pair, no backdrop needed) and `.description` sets only
+  // `color: var(--text-muted)` with no background of its own, so it visually
+  // sits on `.popup`'s own `background: var(--surface-default)`, hence
+  // `backdropClass` pointing at the popup's own target class.
+  Dialog: {
+    render: () => (
+      <Dialog.Root defaultOpen>
+        <Dialog.Trigger>Open</Dialog.Trigger>
+        <Dialog.Content classNames={{ popup: 'matrix-target-dialog-popup' }}>
+          <Dialog.Title>Title</Dialog.Title>
+          <Dialog.Description classNames={{ description: 'matrix-target-dialog-description' }}>
+            Sample dialog body copy, read for contrast against the popup surface.
+          </Dialog.Description>
+        </Dialog.Content>
+      </Dialog.Root>
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-dialog-popup',
+        description: 'Dialog: popup text on popup surface',
+      },
+      {
+        targetClass: 'matrix-target-dialog-description',
+        backdropClass: 'matrix-target-dialog-popup',
+        description: 'Dialog: description text (--text-muted) on popup surface (--surface-default)',
       },
     ],
   },

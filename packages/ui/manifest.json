@@ -213,6 +213,39 @@
       "registryDependencies": []
     },
     {
+      "name": "Dialog",
+      "category": 2,
+      "builder": "defineCompound",
+      "slots": ["root", "trigger", "backdrop", "popup", "title", "description", "close"],
+      "parts": ["root", "trigger", "content", "title", "description", "close"],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {},
+      "files": [
+        "packages/ui/src/recipes/Dialog/Dialog.tsx",
+        "packages/ui/src/recipes/Dialog/Dialog.module.css",
+        "packages/ui/src/recipes/Dialog/Dialog.test.tsx",
+        "packages/ui/src/recipes/Dialog/Dialog.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--border-default",
+        "--breakpoint-xs",
+        "--font-family-sans",
+        "--font-size-md",
+        "--font-size-sm",
+        "--font-weight-semibold",
+        "--radius-lg",
+        "--shadow-md",
+        "--spacing-lg",
+        "--surface-default",
+        "--surface-overlay",
+        "--text-default",
+        "--text-muted"
+      ],
+      "baseUi": true,
+      "registryDependencies": []
+    },
+    {
       "name": "Field",
       "category": 4,
       "builder": "defineCompound",
