@@ -65,7 +65,8 @@
         "--spacing-lg",
         "--spacing-md",
         "--spacing-sm",
-        "--spacing-xs"
+        "--spacing-xs",
+        "--text-default"
       ],
       "baseUi": false,
       "registryDependencies": []
@@ -192,7 +193,8 @@
         "--font-weight-medium",
         "--radius-md",
         "--spacing-md",
-        "--spacing-xs"
+        "--spacing-xs",
+        "--text-default"
       ],
       "baseUi": false,
       "registryDependencies": []
@@ -610,6 +612,7 @@
         "--accent-primary",
         "--border-default",
         "--surface-default",
+        "--text-default",
         "--text-muted"
       ],
       "baseUi": true,

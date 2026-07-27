@@ -2,10 +2,16 @@ import { SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import { Accordion } from '../recipes/Accordion/Accordion.tsx';
+import { Alert } from '../recipes/Alert/Alert.tsx';
+import { Button } from '../recipes/Button/Button.tsx';
+import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { RadioGroup } from '../recipes/RadioGroup/RadioGroup.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 import { Switch } from '../recipes/Switch/Switch.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
+import { Textarea } from '../recipes/Textarea/Textarea.tsx';
+import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { uiTheme } from '../theme.ts';
 import { centeringGaps, isCentered } from './measure.ts';
 
@@ -127,5 +133,63 @@ describe('design ledger: measured rows', () => {
       intersects,
       `popup overlaps trigger. trigger ${t.top}..${t.bottom}, popup ${p.top}..${p.bottom}`,
     ).toBe(false);
+  });
+
+  it('focus.ring.uniform', async () => {
+    // vitest-browser gives every test FILE its own document, and a CSS
+    // module only lands a <style> tag in that document once something in
+    // THIS file actually references the module's binding (a bare `import`
+    // with no use gets elided by esbuild's TS transform, same as an
+    // unused type-only import, so it never runs). RadioGroup/Select/Switch/
+    // Tabs already get mounted by the earlier rows above; Accordion, Alert,
+    // Button, Checkbox, TextInput, and Textarea are mounted here for the
+    // sole purpose of registering their stylesheets before the scan below,
+    // confirmed necessary by first running this scan against only the
+    // recipes the earlier rows already mount: it found just two of the five
+    // known offenders (RadioGroup, Switch) because Alert/Button/Checkbox
+    // were never otherwise imported into this file.
+    await wrap(
+      <>
+        <Alert withCloseButton>Alert body</Alert>
+        <Button>Button label</Button>
+        <Checkbox label="Checkbox label" />
+        <Accordion.Root>
+          <Accordion.Item value="a">
+            <Accordion.Header>
+              <Accordion.Trigger>Trigger</Accordion.Trigger>
+            </Accordion.Header>
+            <Accordion.Panel>Panel</Accordion.Panel>
+          </Accordion.Item>
+        </Accordion.Root>
+        <TextInput label="Input" />
+        <Textarea label="Textarea" />
+      </>,
+    );
+
+    const probe = document.createElement('div');
+    document.body.appendChild(probe);
+    probe.style.outlineColor = 'var(--accent-primary, var(--text-default))';
+    const expected = getComputedStyle(probe).outlineColor;
+    probe.remove();
+
+    const sheets = [...document.styleSheets];
+    const offenders: string[] = [];
+    for (const sheet of sheets) {
+      let rules: CSSRuleList;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        continue;
+      }
+      for (const rule of [...rules]) {
+        const text = rule.cssText;
+        if (!text.includes('--accent-primary')) continue;
+        if (!text.includes('var(--accent-primary, var(--text-default))')) {
+          offenders.push(text.slice(0, 120));
+        }
+      }
+    }
+    expect(offenders, `divergent focus ring fallbacks:\n${offenders.join('\n')}`).toEqual([]);
+    expect(expected).toBeTruthy();
   });
 });

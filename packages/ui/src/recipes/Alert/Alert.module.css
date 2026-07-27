@@ -48,7 +48,7 @@
       background: var(--alert-hover, transparent);
     }
     &:focus-visible {
-      outline: 2px solid var(--accent-primary, var(--alert-border));
+      outline: 2px solid var(--accent-primary, var(--text-default));
       outline-offset: 2px;
     }
   }

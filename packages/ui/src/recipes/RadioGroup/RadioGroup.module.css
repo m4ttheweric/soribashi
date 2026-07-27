@@ -69,7 +69,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--accent-primary, var(--sb-radiogroup-checked-bg));
+      outline: 2px solid var(--accent-primary, var(--text-default));
       outline-offset: 2px;
     }
   }

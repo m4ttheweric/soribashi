@@ -34,7 +34,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--accent-primary, var(--sb-checkbox-checked-bg));
+      outline: 2px solid var(--accent-primary, var(--text-default));
     }
   }
 
