@@ -11,7 +11,7 @@ import classes from './RadioGroup.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). RadioGroup follows Select's own category-4
+ * 4 = generic/form control (§ 2.5). RadioGroup follows Select's own category-4
  * precedent for its DATA SHAPE only: a flat, data-driven `items` prop with
  * `getLabel`/`getValue` accessors, not a public compound of individually
  * authored children (there is no `RadioGroup.Item`). The precedent does NOT

@@ -68,11 +68,11 @@ describe('Dialog (visual)', () => {
 
   /**
    * Waits for Base UI's mount-entry state to actually clear before a
-   * screenshot is taken. Global Constraint 8's settled-state idiom, adapted
-   * from Tooltip.visual.test.tsx's identically-named helper: the
-   * no-transition class alone (installed above) is not sufficient, since
-   * `[data-starting-style]` clears on the next animation frame independent
-   * of any CSS transition duration.
+   * screenshot is taken. The same settled-state idiom used throughout this
+   * package, adapted from Tooltip.visual.test.tsx's identically-named
+   * helper: the no-transition class alone (installed above) is not
+   * sufficient, since `[data-starting-style]` clears on the next animation
+   * frame independent of any CSS transition duration.
    */
   async function waitForSettled(el: HTMLElement) {
     await vi.waitFor(

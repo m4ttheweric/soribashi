@@ -76,8 +76,10 @@ type PolyCtx<TProps> = PolymorphicPartRenderCtx<TProps, object, readonly [], Acc
  *     affects keyboard focus behavior." Base UI's installed version dropped
  *     the pattern entirely; Enter/Space still toggle for free (Trigger is a
  *     real `<button>`, native activation), but ArrowUp/ArrowDown do nothing
- *     without recipe-owned wiring. Global Constraint 2 still requires
- *     arrow-key movement between headers behaviourally, so this recipe owns
+ *     without recipe-owned wiring. Arrow-key movement between headers is
+ *     still required behaviourally (this recipe must still satisfy the
+ *     WAI-ARIA accordion pattern even though Base UI's installed version
+ *     dropped its own implementation of that one piece), so this recipe owns
  *     the pattern itself (`focusAdjacentTrigger` below) -- the same "Base UI
  *     provided nothing, the recipe owns it" shape Tooltip.tsx's
  *     `aria-describedby` wiring has, not Tabs' (Tabs' `List` gets its

@@ -55,9 +55,9 @@
   }
 
   /*
-   * Keyed on Base UI's own stamped open-state attribute (Global Constraint
-   * 5): AccordionTrigger stamps `data-panel-open` only while its panel is
-   * open (AccordionTriggerDataAttributes.d.ts / AccordionTrigger.mjs's
+   * Keyed on Base UI's own stamped open-state attribute: AccordionTrigger
+   * stamps `data-panel-open` only while its panel is open
+   * (AccordionTriggerDataAttributes.d.ts / AccordionTrigger.mjs's
    * `triggerOpenStateMapping`), with no complementary "closed" attribute, so
    * a single presence selector is enough here (unlike Item/Header/Panel,
    * which Base UI stamps with both `data-open` and `data-closed`, see

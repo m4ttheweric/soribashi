@@ -69,8 +69,8 @@ describe('Box (browser)', () => {
   it('the p style prop wins over an instance style prop targeting the same CSS property', async () => {
     // Re-pins wrapper-style-merge's precedence on Box: useStyles pushes
     // style-prop-derived styles onto the style stack AFTER the instance
-    // `style` prop (Global Constraint 8), so p="md" must win here even
-    // though style={{ padding: '1px' }} is also present.
+    // `style` prop, so p="md" must win here even though
+    // style={{ padding: '1px' }} is also present.
     const screen = await wrap(
       <Box p="md" style={{ padding: '1px' }}>
         Wins

@@ -42,8 +42,8 @@ export const Button = definePolymorphicComponent({
   // autoVars(...)`, mutually exclusive, not additive). Button needs both the
   // auto-derived --button-bg/--button-color/--button-border/... vars AND its
   // own --sb-button-h dimension var, so autoVars is invoked explicitly here
-  // and merged in; this is what keeps Global Constraint 10 ("the builder
-  // calls autoVars internally... do not hand-wire these") true in practice
+  // and merged in; this is what keeps the builder's own "autoVars runs
+  // internally, don't hand-wire these vars yourself" rule true in practice
   // once a recipe needs a size-driven var of its own.
   vars: (theme, props) => ({
     root: {

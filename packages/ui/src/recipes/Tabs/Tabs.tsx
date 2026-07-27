@@ -72,9 +72,10 @@ type PolyCtx<TProps> = PolymorphicPartRenderCtx<TProps, object, typeof TABS_VARI
  *   - Orientation is `TabsRoot.Orientation` (`'horizontal' | 'vertical'`,
  *     default `'horizontal'`), read off `TabsRootProps.orientation`, exactly
  *     as the brief assumed.
- * `render` is Base UI's own polymorphism mechanism and is stripped at the
- * type level below on every part (Global Constraint 6), the same way
- * Popover.tsx strips it from every Base UI part it wraps.
+ * `render` is Base UI's own polymorphism mechanism, not exposed publicly by
+ * soribashi compound parts, so it is stripped at the type level below on
+ * every part, the same way Popover.tsx strips it from every Base UI part it
+ * wraps.
  */
 type RootProps = Omit<BaseTabs.Root.Props, 'render'>;
 type ListProps = Omit<BaseTabs.List.Props, 'render'>;

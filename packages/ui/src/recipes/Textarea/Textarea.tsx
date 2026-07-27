@@ -8,7 +8,7 @@ import classes from './Textarea.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). Textarea is a single `defineComponent`
+ * 4 = generic/form control (§ 2.5). Textarea is a single `defineComponent`
  * with five slots, the same shape TextInput -- this contract's reference
  * implementation -- already proves out. Read by packages/ui/scripts/derive.ts
  * to build the agent-facing manifest; not itself derived, since it records

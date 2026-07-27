@@ -173,7 +173,7 @@ export function useStyles<P extends FactoryPayload>(config: UseStylesConfig<P>):
 
     if (isRoot && config.style) styleParts.push(config.style);
     // Universal Style Props (Task 2): style props beat the instance `style`
-    // prop, so this layers in right after config.style (Global Constraint 8).
+    // prop, so this layers in right after config.style.
     if (isRoot && config.stylePropsStyle) styleParts.push(config.stylePropsStyle);
     if (options?.style) styleParts.push(options.style);
 

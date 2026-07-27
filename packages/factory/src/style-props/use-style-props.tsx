@@ -17,7 +17,7 @@ import { STYLE_PROPS_DATA } from './style-props-data.ts';
 export interface UseStylePropsResult {
   /** merged props with every style prop and visibility prop removed; builders hand THIS to useStyles' varsResolver input and to the recipe render */
   rest: Record<string, unknown>;
-  /** static parsed styles; useStyles layers these onto the 'root' slot AFTER config.style (Global Constraint 8) */
+  /** static parsed styles; useStyles layers these onto the 'root' slot AFTER config.style, so a style prop always wins over an instance `style` prop targeting the same property */
   rootStyle: Record<string, string> | null;
   /** responsive class (when responsive values exist) plus visibility utility classes, space-joined, for the 'root' slot */
   rootClassName: string;

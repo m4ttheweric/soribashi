@@ -20,7 +20,7 @@ const wrap = (ui: React.ReactNode) =>
  * synchronously rather than entering the starting/ending transition
  * lifecycle -- see the task report's Base UI findings). Every assertion below
  * reads real DOM presence/computed style, never a `data-*` attribute that
- * merely claims a value changed (Global Constraint 2).
+ * merely claims a value changed.
  */
 function TwoItems({ defaultValue }: { defaultValue?: string[] } = {}) {
   return (

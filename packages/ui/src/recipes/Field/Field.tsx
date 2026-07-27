@@ -8,7 +8,7 @@ import classes from './Field.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). The playbook's own recipe table (§ "Field
+ * 4 = generic/form control (§ 2.5). The playbook's own recipe table (§ "Field
  * composition") already places `Field` in this category, as a "reusable
  * form-control wrapper" alongside Select and Checkbox, even though this
  * slice authors it with `defineCompound` rather than `defineComponent`: the

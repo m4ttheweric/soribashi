@@ -59,11 +59,12 @@ describe('Tooltip (visual)', () => {
 
   /**
    * Waits for Base UI's mount-entry state to actually clear before a
-   * screenshot is taken. Global Constraint 19's settled-state idiom: the
-   * no-transition class alone (installed above) is not sufficient, since
-   * `[data-starting-style]` clears on the next animation frame independent
-   * of any CSS transition duration (see Select.test.tsx's axe test comment
-   * for the full mechanism this mirrors).
+   * screenshot is taken. The settled-state idiom every timing-sensitive
+   * measurement in this package follows: the no-transition class alone
+   * (installed above) is not sufficient, since `[data-starting-style]`
+   * clears on the next animation frame independent of any CSS transition
+   * duration (see Select.test.tsx's axe test comment for the full mechanism
+   * this mirrors).
    */
   async function waitForSettled(tooltipEl: HTMLElement) {
     await vi.waitFor(

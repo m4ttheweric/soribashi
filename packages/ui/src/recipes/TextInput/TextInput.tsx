@@ -8,7 +8,7 @@ import classes from './TextInput.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). TextInput is a single `defineComponent`
+ * 4 = generic/form control (§ 2.5). TextInput is a single `defineComponent`
  * with five slots, the same shape Checkbox already proves out: it needs no
  * real generic type inference over an item type the way Select<TItem> does,
  * so `defineComponent` handles its fixed prop interface, multi-slot styling,

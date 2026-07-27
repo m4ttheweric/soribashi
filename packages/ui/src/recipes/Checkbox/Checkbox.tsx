@@ -6,7 +6,7 @@ import classes from './Checkbox.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). Checkbox is a single `defineComponent`
+ * 4 = generic/form control (§ 2.5). Checkbox is a single `defineComponent`
  * with four slots, per the spec's locked decision: it needs no real generic
  * type inference over an item type the way Select<TItem> eventually will,
  * so `defineComponent` (Alert's own builder, and the one the spec/plan/brief

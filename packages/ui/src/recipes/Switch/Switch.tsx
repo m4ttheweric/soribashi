@@ -8,7 +8,7 @@ import classes from './Switch.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). Switch is a single `defineComponent` with
+ * 4 = generic/form control (§ 2.5). Switch is a single `defineComponent` with
  * six slots, combining Checkbox's control template (a dimension record plus
  * `theme.intentResolver` for the checked fill) with the two-mode Field
  * anatomy contract TextInput/Textarea already prove out. It needs no real

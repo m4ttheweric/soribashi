@@ -9,7 +9,7 @@ import classes from './Select.module.css';
 /**
  * Authoring category from the recipe conversion playbook's four categories
  * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):
- * 4 = generic/form control (§ 2.4). Unlike Checkbox (also category 4, but a
+ * 4 = generic/form control (§ 2.5). Unlike Checkbox (also category 4, but a
  * fixed-shape control with no real generic type inference, so it correctly
  * uses `defineComponent`), Select genuinely needs to type-check against a
  * caller-supplied item type `T`: `<Select items={users} getLabel={(u) =>

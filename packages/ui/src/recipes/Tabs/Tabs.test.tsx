@@ -16,8 +16,9 @@ const wrap = (ui: React.ReactNode) =>
  * Every behavioural assertion below reads two things: where focus actually
  * landed (`document.activeElement`) and which panel is actually visible in
  * the DOM (queried by its text, not by inspecting a prop or attribute that
- * merely claims a value changed). Global Constraint 9 forbids the emissive
- * shortcut (asserting a handler fired or a data-* attribute was stamped).
+ * merely claims a value changed). Asserting that a handler fired or a
+ * data-* attribute was stamped, without observing real behaviour, is the
+ * emissive shortcut this suite avoids.
  */
 function ThreeTabs({ orientation }: { orientation?: 'horizontal' | 'vertical' } = {}) {
   return (

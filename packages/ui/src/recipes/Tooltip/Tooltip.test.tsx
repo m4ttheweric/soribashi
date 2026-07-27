@@ -139,13 +139,13 @@ describe('Tooltip (browser)', () => {
     expect(popup).not.toBeNull();
     expect(scopeEl.contains(popup)).toBe(true);
 
-    // Settle-poll before measuring (Global Constraint 19's idiom): a raw
-    // `background-color` read is unaffected by the popup's own `opacity`
-    // transition (a separate CSS property), so this isn't strictly required
-    // for THIS measurement the way an axe/contrast read would be, but it is
-    // applied anyway per the self-review bar ("every measuring assertion
-    // behind the settle idiom") and costs nothing since the popup is
-    // already open.
+    // Settle-poll before measuring, the idiom every timing-sensitive
+    // measurement in this package follows: a raw `background-color` read is
+    // unaffected by the popup's own `opacity` transition (a separate CSS
+    // property), so this isn't strictly required for THIS measurement the
+    // way an axe/contrast read would be, but it is applied anyway per the
+    // self-review bar ("every measuring assertion behind the settle idiom")
+    // and costs nothing since the popup is already open.
     const popupEl = popup as HTMLElement;
     await vi.waitFor(
       () => {
