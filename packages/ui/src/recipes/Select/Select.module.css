@@ -5,7 +5,18 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-xs);
-    min-inline-size: var(--breakpoint-xs);
+    /* Fills its container the way this package's other two form controls do
+       (TextInput's/Textarea's `inline-size: 100%`), so the layout decides the
+       field width. This rule used to read `min-inline-size:
+       var(--breakpoint-xs)`: a VIEWPORT breakpoint (24rem/384px) borrowed as
+       a component dimension, and a floor rather than a cap, so no container
+       could shrink it. Every Select in a column narrower than 384px punched
+       out through its container's right edge -- caught in the workshop's
+       tenants page, whose tenant-card bodies are 321px wide. A component
+       dimension that genuinely needs a value of its own belongs in a
+       recipe-owned dimension record (the authoring skill's § 6), never on the
+       breakpoint scale. Pinned by Select.test.tsx's narrow-container case. */
+    inline-size: 100%;
     block-size: var(--sb-select-trigger-height);
     padding-inline: var(--spacing-sm);
     border: 1px solid var(--border-default);
@@ -62,7 +73,16 @@
 
   .popup {
     box-sizing: border-box;
-    min-inline-size: var(--breakpoint-xs);
+    /* Matches the trigger's own width, the standard select-menu behaviour.
+       `--anchor-width` is set by Base UI's `Select.Positioner` (read off the
+       installed `@base-ui/react@1.6.0`'s
+       select/positioner/SelectPositionerCssVars.d.ts, alongside
+       `--transform-origin` below, per the authoring skill's § 17) and
+       inherits down to this popup, its child. This rule carried the same
+       `var(--breakpoint-xs)` floor `.trigger` did, with the same consequence
+       for the same reason: an open popup inside a narrow container was
+       pinned at 384px and overflowed it. */
+    min-inline-size: var(--anchor-width);
     max-block-size: var(--breakpoint-xs);
     overflow-y: auto;
     padding: var(--spacing-xs);

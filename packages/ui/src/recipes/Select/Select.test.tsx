@@ -305,6 +305,40 @@ describe('Select (browser)', () => {
     expect(trigger.getAttribute('m')).toBeNull();
     expect((trigger as HTMLElement).style.margin).toBe('');
   });
+
+  it('trigger and popup fit a container narrower than 24rem, rather than overflowing it', async () => {
+    // Regression pin for the workshop tenants-page overflow. `.trigger` and
+    // `.popup` both floored their inline size at `var(--breakpoint-xs)`
+    // (24rem = 384px): a VIEWPORT breakpoint used as a component dimension.
+    // A `min-inline-size` is a floor no container can shrink, so every Select
+    // in a column narrower than 384px punched out through its container's
+    // right edge -- measured at 384px inside the workshop's 321px tenant card
+    // bodies, trigger and open popup alike. Real measured geometry, not
+    // emitted CSS text (authoring skill § 18).
+    const NARROW_PX = 240;
+    const screen = await wrap(
+      <div style={{ inlineSize: `${NARROW_PX}px` }}>
+        <Select
+          items={FRUITS}
+          placeholder="Pick a fruit"
+          classNames={{ popup: 'select-narrow-popup-probe' }}
+        />
+      </div>,
+    );
+
+    const trigger = screen.getByRole('combobox').element();
+    expect(trigger.getBoundingClientRect().width).toBeLessThanOrEqual(NARROW_PX);
+
+    await screen.getByRole('combobox').click();
+    await expect.element(screen.getByRole('option', { name: 'Apple' })).toBeVisible();
+
+    // The popup is the element carrying the `popup` slot's class, not the
+    // `role="listbox"` element (that is `Select.List`, a child of it -- see
+    // the `container` case above).
+    const popup = document.querySelector('.select-narrow-popup-probe');
+    expect(popup).not.toBeNull();
+    expect((popup as HTMLElement).getBoundingClientRect().width).toBeLessThanOrEqual(NARROW_PX);
+  });
 });
 
 /**
