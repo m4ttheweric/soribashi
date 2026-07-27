@@ -283,6 +283,22 @@ const RADIOGROUP_SIZES: Record<string, string> = {
 };
 
 /**
+ * Dot diameters keyed on the size vocabulary. These are NOT a percentage of
+ * the control: the control's content box is its declared size minus the 1px
+ * border on each side, and a 50% dot lands on a half pixel whenever half that
+ * content box is odd (measured 2026-07-27: symmetric but antialiased at sm and
+ * lg only). Every value here is even, which keeps (content - dot) / 2 integral
+ * at all five sizes.
+ */
+const RADIOGROUP_DOT_SIZES: Record<string, string> = {
+  xs: '6px',
+  sm: '8px',
+  md: '8px',
+  lg: '10px',
+  xl: '12px',
+};
+
+/**
  * The selected item's visible mark, drawn as an inline SVG dot filled with
  * `currentColor` rather than a CSS `background-color` on the indicator
  * `<span>` itself -- the same mechanism Switch.tsx's `ThumbDot` uses, and for
@@ -301,7 +317,7 @@ function RadioDot() {
       viewBox="0 0 12 12"
       fill="currentColor"
       aria-hidden="true"
-      style={{ width: '50%', height: '50%' }}
+      style={{ width: '100%', height: '100%' }}
     >
       <circle cx="6" cy="6" r="6" />
     </svg>
@@ -367,6 +383,7 @@ export const RadioGroup = defineComponent<
     return {
       control: {
         '--sb-radiogroup-size': size,
+        '--sb-radiogroup-dot': RADIOGROUP_DOT_SIZES[p.size ?? 'md'] ?? RADIOGROUP_DOT_SIZES.md!,
         '--sb-radiogroup-checked-bg': resolved.background,
         '--sb-radiogroup-checked-color': resolved.color,
       },

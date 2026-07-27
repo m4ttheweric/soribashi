@@ -92,8 +92,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: 100%;
-    block-size: 100%;
+    inline-size: var(--sb-radiogroup-dot);
+    block-size: var(--sb-radiogroup-dot);
     color: var(--sb-radiogroup-checked-color);
   }
 
