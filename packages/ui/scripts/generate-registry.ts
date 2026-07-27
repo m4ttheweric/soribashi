@@ -105,6 +105,7 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
     'A data-driven radio group built on Base UI, with item accessors and the Field anatomy.',
   Select:
     'Generic single-select built on Base UI, with custom item accessors and optional grouping.',
+  Skeleton: 'A pulsing placeholder surface, geometry from style props.',
   Stack: 'Vertical flex stack with theme-spacing gap.',
   Switch: 'A labelled switch control built on Base UI, on the Field anatomy.',
   Tabs: 'Compound tabs built on Base UI, with line/pill/enclosed variants riding the soribashi vocabulary rails.',

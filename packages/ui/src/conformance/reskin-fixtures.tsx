@@ -17,6 +17,7 @@ import { Paper } from '../recipes/Paper/Paper.tsx';
 import { Popover } from '../recipes/Popover/Popover.tsx';
 import { RadioGroup } from '../recipes/RadioGroup/RadioGroup.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
+import { Skeleton } from '../recipes/Skeleton/Skeleton.tsx';
 import { Stack } from '../recipes/Stack/Stack.tsx';
 import { Switch } from '../recipes/Switch/Switch.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
@@ -177,6 +178,8 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
       classNames={{ popup: 'reskin-target' }}
     />
   ),
+
+  Skeleton: () => <Skeleton w={40} h={12} classNames={{ root: 'reskin-target' }} />,
 
   Stack: () => (
     <Stack className="reskin-target" gap="md">

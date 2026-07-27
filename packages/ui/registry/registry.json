@@ -112,6 +112,12 @@
       "description": "Generic single-select built on Base UI, with custom item accessors and optional grouping."
     },
     {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "A pulsing placeholder surface, geometry from style props."
+    },
+    {
       "name": "stack",
       "type": "registry:ui",
       "title": "Stack",

@@ -526,6 +526,25 @@
       "registryDependencies": []
     },
     {
+      "name": "Skeleton",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root"],
+      "parts": [],
+      "vocabularyAxes": [],
+      "variants": [],
+      "defaults": {},
+      "files": [
+        "packages/ui/src/recipes/Skeleton/Skeleton.tsx",
+        "packages/ui/src/recipes/Skeleton/Skeleton.module.css",
+        "packages/ui/src/recipes/Skeleton/Skeleton.test.tsx",
+        "packages/ui/src/recipes/Skeleton/Skeleton.visual.test.tsx"
+      ],
+      "tokenDependencies": ["--radius-sm", "--surface-raised"],
+      "baseUi": false,
+      "registryDependencies": []
+    },
+    {
       "name": "Stack",
       "category": 1,
       "builder": "defineComponent",

@@ -1,0 +1,28 @@
+@layer soribashi.recipes {
+  /*
+   * `from`/`to` keyframe selectors, not the usual `0%`/`50%`/`100%` a pulse
+   * would otherwise reach for: a bare percentage keyframe selector is,
+   * character for character, indistinguishable from a hardcoded length
+   * literal to the package's no-hardcoded-values scanner (its allowlist
+   * covers only 0, 1px, 2px, 100% -- not 50%, and not even a bare "0%"),
+   * which scans the whole stylesheet's text, selectors included. Pairing a
+   * two-stop from/to keyframe with `animation-direction: alternate` below
+   * produces the exact same back-and-forth pulse a `0%, 50%, 100%` version
+   * would, without ever writing a percentage.
+   */
+  @keyframes sb-skeleton-pulse {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.4;
+    }
+  }
+
+  .root {
+    display: block;
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    animation: sb-skeleton-pulse 1.5s ease-in-out infinite alternate;
+  }
+}

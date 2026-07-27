@@ -42,6 +42,10 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Popover: 'covered',
   RadioGroup: 'covered',
   Select: 'covered',
+  Skeleton: {
+    exempt:
+      'colour-via: decorative pulse surface renders no text; Skeleton.visual.test.tsx pins its appearance with the animation frozen',
+  },
   Stack: { exempt: 'geometry only' },
   Switch: 'covered',
   Tabs: 'covered',

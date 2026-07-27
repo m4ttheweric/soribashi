@@ -16,6 +16,7 @@ export { Paper, paperTheme } from './recipes/Paper/Paper.tsx';
 export { Popover, popoverTheme } from './recipes/Popover/Popover.tsx';
 export { RadioGroup, radioGroupTheme } from './recipes/RadioGroup/RadioGroup.tsx';
 export { Select, selectTheme } from './recipes/Select/Select.tsx';
+export { Skeleton, skeletonTheme } from './recipes/Skeleton/Skeleton.tsx';
 export { Stack, stackTheme } from './recipes/Stack/Stack.tsx';
 export { Switch, switchTheme } from './recipes/Switch/Switch.tsx';
 export { Tabs, tabsTheme } from './recipes/Tabs/Tabs.tsx';

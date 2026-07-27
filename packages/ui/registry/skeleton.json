@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "skeleton",
+  "type": "registry:ui",
+  "title": "Skeleton",
+  "description": "A pulsing placeholder surface, geometry from style props.",
+  "dependencies": ["@soribashi/core"],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/soribashi/Skeleton/Skeleton.tsx",
+      "type": "registry:ui",
+      "target": "components/soribashi/Skeleton/Skeleton.tsx",
+      "content": "import type { CSSProperties, Ref } from 'react';\nimport { defineComponent } from '../builders.ts';\nimport classes from './Skeleton.module.css';\n\n/**\n * Authoring category from the recipe conversion playbook's four categories\n * (docs/superpowers/specs/2026-04-26-recipe-conversion-playbook.md § 2):\n * 1 = pure styled primitive (§ 2.1). Read by packages/ui/scripts/derive.ts to\n * build the agent-facing manifest; not itself derived, since it records an\n * authoring decision, not a fact recoverable from RecipeMeta or the CSS.\n */\nexport const recipeCategory = 1 as const;\n\nexport interface SkeletonProps {\n  /**\n   * Inline-size, forwarded straight onto the root's `style`. No recipe-owned\n   * size vocabulary: a loading placeholder needs to match whatever real\n   * content it stands in for (a line of text, an avatar circle, a card), a\n   * shape no fixed size tuple could anticipate, so geometry is entirely the\n   * consumer's: `<Skeleton w={200} h={16} />`.\n   */\n  w?: CSSProperties['width'];\n  /** Block-size, forwarded straight onto the root's `style`. See `w`. */\n  h?: CSSProperties['height'];\n}\n\nexport const Skeleton = defineComponent<SkeletonProps, readonly ['root']>({\n  name: 'Skeleton',\n  selectors: ['root'] as const,\n  classes,\n  render: ({ props, getStyles, ref }) => {\n    // w/h are this recipe's own geometry props, merged into getStyles('root')'s\n    // own `style` option rather than forwarded as DOM attributes.\n    // classNames/styles/vars/attributes/unstyled are the Styles API's own\n    // config surface, not valid DOM attributes, and are stripped the same way\n    // every other recipe in this package strips them.\n    const {\n      w,\n      h,\n      classNames: _classNames,\n      styles: _styles,\n      vars: _vars,\n      attributes: _attributes,\n      unstyled: _unstyled,\n      ...rest\n    } = props as SkeletonProps & Record<string, unknown>;\n\n    return (\n      <div\n        ref={ref as Ref<HTMLDivElement>}\n        // Purely decorative: a Skeleton stands in for content that has not\n        // arrived yet, and renders no text of its own for assistive tech to\n        // announce, so it is hidden outright rather than given a role/label.\n        aria-hidden=\"true\"\n        {...rest}\n        {...getStyles('root', { style: { inlineSize: w, blockSize: h } })}\n      />\n    );\n  },\n});\n\nexport const skeletonTheme = Skeleton.extend({});\n"
+    },
+    {
+      "path": "registry/soribashi/Skeleton/Skeleton.module.css",
+      "type": "registry:ui",
+      "target": "components/soribashi/Skeleton/Skeleton.module.css",
+      "content": "@layer soribashi.recipes {\n  /*\n   * `from`/`to` keyframe selectors, not the usual `0%`/`50%`/`100%` a pulse\n   * would otherwise reach for: a bare percentage keyframe selector is,\n   * character for character, indistinguishable from a hardcoded length\n   * literal to the package's no-hardcoded-values scanner (its allowlist\n   * covers only 0, 1px, 2px, 100% -- not 50%, and not even a bare \"0%\"),\n   * which scans the whole stylesheet's text, selectors included. Pairing a\n   * two-stop from/to keyframe with `animation-direction: alternate` below\n   * produces the exact same back-and-forth pulse a `0%, 50%, 100%` version\n   * would, without ever writing a percentage.\n   */\n  @keyframes sb-skeleton-pulse {\n    from {\n      opacity: 1;\n    }\n    to {\n      opacity: 0.4;\n    }\n  }\n\n  .root {\n    display: block;\n    border-radius: var(--radius-sm);\n    background: var(--surface-raised);\n    animation: sb-skeleton-pulse 1.5s ease-in-out infinite alternate;\n  }\n}\n"
+    }
+  ]
+}
