@@ -127,16 +127,52 @@ const TooltipCompound = defineCompound({
         // programmatic association to its trigger at all unless something
         // wires it. This recipe wires the standard WAI-ARIA tooltip pattern
         // itself (https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/):
-        // `aria-describedby` here points at the same `contentId` the
-        // content part below stamps onto the Popup as `id` + `role="tooltip"`.
-        // Placed before `{...rest}` so an explicit caller-supplied
-        // `aria-describedby` can still override it.
+        // `aria-describedby` points at the same `contentId` the content part
+        // below stamps onto the Popup as `id` + `role="tooltip"`.
+        //
+        // Fix round 1 finding: an EARLIER version of this set `aria-describedby`
+        // unconditionally. The Popup has no `keepMounted` (default false, see
+        // Popover.tsx's identical default), so it is removed from the DOM
+        // entirely while closed -- an unconditional `aria-describedby` would
+        // reference a NON-EXISTENT id for the whole closed lifetime of the
+        // tooltip, which is most of the time. IDREF attributes must reference
+        // an existing element; the WAI-ARIA tooltip pattern gates the
+        // association on open state for exactly this reason. Gating it here
+        // needs the tooltip's LIVE open state, which is NOT available from
+        // `context` (defineCompound calls `config.context(rootProps)` with
+        // the ROOT's incoming props, not Base UI's own internal store state;
+        // an uncontrolled `defaultOpen` tooltip's live open/closed transitions
+        // never appear in `rootProps`). Reached instead via Base UI's own
+        // `render` prop used as an internal implementation detail (typed and
+        // public on `BaseUIComponentProps`, see internals/types.d.ts's
+        // `ComponentRenderFn<RenderFunctionProps, State>`; NOT re-exposed on
+        // this recipe's own `TriggerProps`, which still omits `render` and is
+        // still stripped from any caller-supplied props above): Base UI calls
+        // `render(mergedProps, state)` when `render` is a function
+        // (internals/useRenderElement.js's `evaluateRenderProp`), and
+        // `TooltipTriggerState.open` is the SAME `isOpenedByThisTrigger`
+        // selector that drives the `data-popup-open` attribute Base UI already
+        // stamps on this element by default -- the authoritative source of
+        // truth for "is this trigger's tooltip currently open", not a
+        // hand-rolled mirror via wrapping `onOpenChange` that could drift out
+        // of sync with Base UI's own internal transitions (disabled-while-open,
+        // another tooltip stealing a delay-group's instant-open slot, etc.).
+        // `type="button"` is set explicitly because a custom `render` function
+        // bypasses `useRenderElement.js`'s own `renderTag` default (confirmed
+        // by reading it): the DEFAULT (no custom `render`) path is the only
+        // place that default lives.
         return (
           <BaseTooltip.Trigger
             ref={ref as Ref<HTMLButtonElement>}
-            aria-describedby={ctx.contentId}
             {...rest}
             {...getStyles()}
+            render={(triggerProps, state) => (
+              <button
+                type="button"
+                {...triggerProps}
+                aria-describedby={state.open ? ctx.contentId : undefined}
+              />
+            )}
           />
         );
       },
