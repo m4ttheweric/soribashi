@@ -17,6 +17,22 @@ export const LEDGER: readonly LedgerRow[] = [
   { id: 'tabs.indicator.withinList', species: 'invariant', tier: 'measured', assert: 'predicate' },
   { id: 'select.popup.clearsTrigger', species: 'invariant', tier: 'measured', assert: 'predicate' },
   { id: 'focus.ring.uniform', species: 'invariant', tier: 'measured', assert: 'predicate' },
+  {
+    id: 'dialog.scrim.effectiveDarkness',
+    species: 'floor',
+    tier: 'token',
+    assert: 'range',
+    bound: [0.4, 0.7],
+    witness: 'see reference.ts',
+  },
+  {
+    id: 'skeleton.deltaL',
+    species: 'floor',
+    tier: 'measured',
+    assert: 'min',
+    bound: 0.08,
+    witness: 'see reference.ts',
+  },
 ];
 
 export function validateLedger(rows: readonly LedgerRow[]): string[] {

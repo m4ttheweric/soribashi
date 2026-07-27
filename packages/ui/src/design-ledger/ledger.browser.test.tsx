@@ -2,18 +2,25 @@ import { SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import {
+  installNoTransitionStyle,
+  NO_TRANSITION_CLASS,
+  toRgbString,
+} from '../a11y/matrix-harness.tsx';
 import { Accordion } from '../recipes/Accordion/Accordion.tsx';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
 import { RadioGroup } from '../recipes/RadioGroup/RadioGroup.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
+import { Skeleton } from '../recipes/Skeleton/Skeleton.tsx';
 import { Switch } from '../recipes/Switch/Switch.tsx';
 import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { uiTheme } from '../theme.ts';
 import { centeringGaps, isCentered } from './measure.ts';
+import { REFERENCE } from './reference.ts';
 
 const wrap = (ui: React.ReactNode) =>
   render(<SoribashiProvider theme={uiTheme}>{ui}</SoribashiProvider>);
@@ -191,5 +198,66 @@ describe('design ledger: measured rows', () => {
     }
     expect(offenders, `divergent focus ring fallbacks:\n${offenders.join('\n')}`).toEqual([]);
     expect(expected).toBeTruthy();
+  });
+
+  it('skeleton.deltaL', async () => {
+    // installNoTransitionStyle only freezes `transition`; Skeleton.module.css's
+    // pulse is a perpetually-running `animation`, a wholly separate CSS
+    // mechanism (same finding as Skeleton.visual.test.tsx's own local
+    // no-transition block), so a plain transition freeze alone would still
+    // let this read land on whatever opacity the keyframe happens to be
+    // interpolating through at that instant. A second local stylesheet
+    // extends the SAME shared class with `animation: none !important` so
+    // both mechanisms are frozen before the colour is read.
+    const removeNoTransitionStyle = installNoTransitionStyle();
+    const noAnimationStyle = document.createElement('style');
+    noAnimationStyle.textContent = `
+      .${NO_TRANSITION_CLASS},
+      .${NO_TRANSITION_CLASS} * { animation: none !important; }
+    `;
+    document.head.appendChild(noAnimationStyle);
+
+    try {
+      const screen = await wrap(
+        <div className={NO_TRANSITION_CLASS} style={{ background: 'var(--surface-canvas)' }}>
+          <Skeleton style={{ width: '120px', height: '16px' }} />
+        </div>,
+      );
+      const el = screen.container.querySelector('[class*="root"]')!;
+      // matrix-harness.tsx's toRgbString docstring: this Chromium build
+      // serializes getComputedStyle colours back as oklch(...), unconverted,
+      // not the legacy rgb()/rgba() a naive digit-scraping regex expects.
+      // Round-tripping through toRgbString's 1x1 canvas paint (8-bit sRGB
+      // since long before oklch() existed) is the same, already-verified fix
+      // this repo uses everywhere else a computed colour needs real channels.
+      const fill = toRgbString(getComputedStyle(el).backgroundColor);
+
+      const probe = document.createElement('div');
+      document.body.appendChild(probe);
+      probe.style.backgroundColor = 'var(--surface-canvas)';
+      const canvas = toRgbString(getComputedStyle(probe).backgroundColor);
+      probe.remove();
+
+      const L = (rgb: string) => {
+        const [r, g, b] = rgb
+          .match(/[\d.]+/g)!
+          .slice(0, 3)
+          .map(Number) as [number, number, number];
+        const lin = (c: number) => {
+          const s = c / 255;
+          return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        };
+        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+      };
+      const delta = Math.abs(L(fill) - L(canvas));
+      const floor = REFERENCE['skeleton.deltaL']!.bound as number;
+      expect(
+        delta,
+        `skeleton (${fill}) sits ${delta.toFixed(4)} from its canvas (${canvas}), floor is ${floor}`,
+      ).toBeGreaterThanOrEqual(floor);
+    } finally {
+      noAnimationStyle.remove();
+      removeNoTransitionStyle();
+    }
   });
 });

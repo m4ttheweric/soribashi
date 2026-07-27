@@ -15,14 +15,18 @@
       opacity: 1;
     }
     to {
-      opacity: 0.4;
+      opacity: 0.6;
     }
   }
 
   .root {
     display: block;
     border-radius: var(--radius-sm);
-    background: var(--surface-raised);
+    /* The semantic surface tokens all sit within one ramp step of the canvas
+       by design (raised is neutral-100 against a neutral-50 canvas), which is
+       correct for a real surface and far too faint for a placeholder that has
+       to read as absent content. A decorative fill reaches the ramp directly. */
+    background: var(--color-neutral-200);
     animation: sb-skeleton-pulse 1.5s ease-in-out infinite alternate;
   }
 }
