@@ -243,6 +243,26 @@ export interface RadioGroupProps
     UniversalStyleProps {
   /** The raw item data, fixed to `RadioGroupItem`'s shape. Resolved via `getLabel`/`getValue` (items.ts); `description` is read directly, never accessor-driven. */
   items: readonly RadioGroupItem[];
+  /**
+   * Fix round 1, Important finding: overrides the inherited
+   * `RadioGroupAccessors<RadioGroupItem>` member (items.ts's own
+   * `getValue?: (item: T) => unknown`, correctly generic there for the
+   * standalone resolver's own reuse) with a narrower, `string`-returning
+   * signature on THIS recipe's public surface. Without this override,
+   * `<RadioGroup getValue={() => 42} />` type-checked cleanly even though
+   * `value`/`defaultValue` are fixed to `string` and the render body casts
+   * `resolvedItem.value as string` at the `Radio.Root` callsite -- a
+   * non-string return would silently break the checked-value comparison at
+   * runtime with no compile-time or runtime warning. A narrower return type
+   * is a legal interface-member override (function return positions are
+   * covariant, and `string` is assignable wherever the base member's
+   * `unknown` was expected). This is a compile-time constraint only:
+   * `resolveRadioGroupItems` itself still types the resolved value as
+   * `unknown` (items.ts's own generic contract, unchanged), so the render
+   * body's existing `as string` cast at `Radio.Root value={...}` stays in
+   * place regardless.
+   */
+  getValue?: (item: RadioGroupItem) => string;
   /** The value of the currently selected item, or `undefined`. Controlled form. */
   value?: string;
   /** The value the group is initially rendered with. Uncontrolled form. */

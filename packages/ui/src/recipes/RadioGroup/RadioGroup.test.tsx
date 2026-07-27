@@ -5,7 +5,7 @@ import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
 import { uiTheme, uiVocabulary } from '../../theme.ts';
 import { Field } from '../Field/Field.tsx';
-import { RadioGroup } from './RadioGroup.tsx';
+import { RadioGroup, type RadioGroupItem } from './RadioGroup.tsx';
 
 // `render` from vitest-browser-react resolves a Promise<RenderResult> (see
 // Switch.test.tsx/Checkbox.test.tsx); `wrap` awaits it so callers get the
@@ -141,6 +141,44 @@ describe('RadioGroup (browser)', () => {
     expect(describedText).not.toContain('Everything, plus support');
   });
 
+  it('selects via custom getLabel/getValue over a non-{label,value} item shape, reporting the derived string value', async () => {
+    // Fix round 1, Important finding: no prior test exercised custom
+    // getLabel/getValue against the COMPOSED <RadioGroup> (only items.test.ts's
+    // standalone resolveRadioGroupItems). RadioGroupProps.items is fixed to
+    // RadioGroupItem's shape at the type level (the accepted trade for
+    // defineComponent over defineGenericComponent), so a genuinely
+    // non-conforming record type is threaded through via a deliberate cast --
+    // exactly the escape hatch a plain-JS caller (or dynamic data with no
+    // static type at all) would actually take at runtime, which is precisely
+    // what this test proves still resolves correctly.
+    interface Plan {
+      id: number;
+      name: string;
+    }
+    const plans: Plan[] = [
+      { id: 1, name: 'Free' },
+      { id: 2, name: 'Pro' },
+    ];
+
+    const onValueChange = vi.fn();
+    const screen = await wrap(
+      <RadioGroup
+        label="Plan"
+        items={plans as unknown as RadioGroupItem[]}
+        getLabel={(item) => (item as unknown as Plan).name}
+        getValue={(item) => String((item as unknown as Plan).id)}
+        onValueChange={onValueChange}
+      />,
+    );
+
+    const pro = screen.getByRole('radio', { name: 'Pro' });
+    await pro.click();
+    await expect.element(pro).toHaveAttribute('aria-checked', 'true');
+    // The DERIVED string value (getValue's own return, "2"), never the raw
+    // item and never a numeric id.
+    expect(onValueChange).toHaveBeenCalledWith('2', expect.anything());
+  });
+
   it('renders the identical group label through the convenience prop and hand-composed Field', async () => {
     const convenience = await wrap(<RadioGroup label="Plan" items={PLANS} />);
     await assertPlanFieldAnatomy(convenience);
@@ -247,3 +285,26 @@ describe('RadioGroup (browser)', () => {
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
   });
 });
+
+/**
+ * Compile-time pin (fix round 1, Important finding): `getValue`'s return type
+ * is constrained to `string` on RadioGroup's composed public surface
+ * (`RadioGroupProps`'s own override of the inherited, generically-`unknown`
+ * `RadioGroupAccessors<RadioGroupItem>` member -- see RadioGroup.tsx's own
+ * doc comment on that override), not left at the `unknown` items.ts's
+ * standalone `RadioGroupAccessors<T>` declares for its own reuse. A
+ * non-string return must be a compile error here, since `value`/
+ * `defaultValue` are fixed to `string` and a non-string `getValue` would
+ * otherwise silently break the checked-value comparison at runtime with no
+ * warning at all. This function is never called; it exists purely for
+ * `bun run typecheck` to check.
+ */
+function _typeCheckRadioGroupGetValueIsString() {
+  // @ts-expect-error getValue must return a string; a number is not assignable
+  const invalid = <RadioGroup items={PLANS} getValue={() => 42} />;
+  void invalid;
+
+  const valid = <RadioGroup items={PLANS} getValue={() => 'free'} />;
+  void valid;
+}
+void _typeCheckRadioGroupGetValueIsString;
