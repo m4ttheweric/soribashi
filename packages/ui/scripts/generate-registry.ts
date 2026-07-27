@@ -87,6 +87,7 @@ const RECIPE_DESCRIPTIONS: Record<string, string> = {
   Accordion: 'Compound accordion built on Base UI: composable header/trigger/panel items.',
   Alert: 'A single-element alert surface with icon, title, body, and close slots.',
   AspectRatio: 'Locks a fixed width/height ratio for its content.',
+  Avatar: 'An image avatar with initials fallback on a neutral surface.',
   Badge: 'A small, colour-bearing polymorphic tag riding the soribashi vocabulary rails.',
   Box: 'The polymorphic primitive: element choice, style props, nothing else.',
   Button: 'Polymorphic button riding the soribashi vocabulary rails.',

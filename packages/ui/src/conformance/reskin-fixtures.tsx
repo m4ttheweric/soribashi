@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Accordion } from '../recipes/Accordion/Accordion.tsx';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { AspectRatio } from '../recipes/AspectRatio/AspectRatio.tsx';
+import { Avatar } from '../recipes/Avatar/Avatar.tsx';
 import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Box } from '../recipes/Box/Box.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
@@ -75,6 +76,11 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
       x
     </AspectRatio>
   ),
+
+  // Fallback-only (no `src`): the same no-photo state the SMALL_COVERAGE
+  // entry in contrast-matrix.test.tsx uses, needing nothing async to settle
+  // before the guard reads its target.
+  Avatar: () => <Avatar fallback="AB" classNames={{ root: 'reskin-target' }} />,
 
   Badge: () => (
     <Badge classNames={{ root: 'reskin-target' }} intent="primary" variant="filled">

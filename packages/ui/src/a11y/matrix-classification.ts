@@ -24,6 +24,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Accordion: 'covered',
   Alert: 'covered',
   AspectRatio: { exempt: 'geometry only' },
+  Avatar: 'covered',
   Badge: 'covered',
   Box: { exempt: 'no colour of its own; style-prop colours are consumer input' },
   Button: 'covered',
@@ -59,6 +60,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
  */
 export const SMALL_COVERAGE_NAMES: readonly string[] = [
   'Accordion',
+  'Avatar',
   'Checkbox',
   'Dialog',
   'Paper',

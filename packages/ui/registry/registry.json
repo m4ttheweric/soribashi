@@ -22,6 +22,12 @@
       "description": "Locks a fixed width/height ratio for its content."
     },
     {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "An image avatar with initials fallback on a neutral surface."
+    },
+    {
       "name": "badge",
       "type": "registry:ui",
       "title": "Badge",

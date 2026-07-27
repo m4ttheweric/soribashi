@@ -15,6 +15,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react/pure';
 import { Accordion } from '../recipes/Accordion/Accordion.tsx';
 import { Alert } from '../recipes/Alert/Alert.tsx';
+import { Avatar } from '../recipes/Avatar/Avatar.tsx';
 import { Badge } from '../recipes/Badge/Badge.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
@@ -193,6 +194,39 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
       {
         targetClass: 'matrix-target-accordion-collapsed',
         description: 'Accordion: collapsed item header text (--text-muted) on canvas',
+      },
+    ],
+  },
+
+  // Fallback-only (no `src`): Base UI's `Avatar.Root` initialises
+  // `imageLoadingStatus` to `'idle'` and only ever changes it in response to
+  // a MOUNTED `Avatar.Image` reporting a real load/error; when this recipe
+  // renders no `Avatar.Image` at all (no `src` given), that status simply
+  // never leaves `'idle'`, so the fallback is visible from the very first
+  // render with no effect, no network request, and no async state
+  // transition to race. That is what makes this entry safe under this
+  // harness's mount-once-read-twice contract: a real network error's exact
+  // TIMING isn't something either scheme's read can control, but this cell
+  // doesn't depend on one -- the SAME initial, synchronous state also covers
+  // the errored-image case (Avatar.tsx's own doc comment: idle/loading/error
+  // are the three states `Avatar.Fallback` renders for, and the three
+  // `Avatar.Image` stays unmounted for), so the rendered fallback surface is
+  // pixel-identical to what an actually-failed image would produce.
+  Avatar: {
+    render: () => (
+      <Avatar
+        fallback="AB"
+        classNames={{
+          root: 'matrix-target-avatar-root',
+          fallback: 'matrix-target-avatar-fallback',
+        }}
+      />
+    ),
+    cells: [
+      {
+        targetClass: 'matrix-target-avatar-fallback',
+        backdropClass: 'matrix-target-avatar-root',
+        description: 'Avatar: fallback initials on avatar surface',
       },
     ],
   },

@@ -1,0 +1,36 @@
+@layer soribashi.recipes {
+  .root {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    inline-size: var(--sb-avatar-size, 2.5rem);
+    block-size: var(--sb-avatar-size, 2.5rem);
+    border-radius: var(--radius-full);
+    background: var(--surface-raised);
+    color: var(--text-default);
+    font-family: var(--font-family-sans);
+    font-weight: var(--font-weight-medium);
+    line-height: 1;
+    user-select: none;
+  }
+
+  .image {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 100%;
+    block-size: 100%;
+    /* Unitless multiplier, not a second length literal: scales the glyph
+       directly off the same size var the root's own geometry reads. */
+    font-size: calc(var(--sb-avatar-size, 2.5rem) * 0.4);
+  }
+}

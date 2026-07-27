@@ -1,6 +1,7 @@
 export { Accordion, accordionTheme } from './recipes/Accordion/Accordion.tsx';
 export { Alert, alertTheme } from './recipes/Alert/Alert.tsx';
 export { AspectRatio, aspectRatioTheme } from './recipes/AspectRatio/AspectRatio.tsx';
+export { Avatar, avatarTheme } from './recipes/Avatar/Avatar.tsx';
 export { Badge, badgeTheme } from './recipes/Badge/Badge.tsx';
 export { Box, boxTheme } from './recipes/Box/Box.tsx';
 export { Button, buttonTheme } from './recipes/Button/Button.tsx';

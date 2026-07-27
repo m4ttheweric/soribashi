@@ -92,6 +92,33 @@
       "registryDependencies": []
     },
     {
+      "name": "Avatar",
+      "category": 1,
+      "builder": "defineComponent",
+      "slots": ["root", "image", "fallback"],
+      "parts": [],
+      "vocabularyAxes": ["size"],
+      "variants": [],
+      "defaults": {
+        "size": "md"
+      },
+      "files": [
+        "packages/ui/src/recipes/Avatar/Avatar.tsx",
+        "packages/ui/src/recipes/Avatar/Avatar.module.css",
+        "packages/ui/src/recipes/Avatar/Avatar.test.tsx",
+        "packages/ui/src/recipes/Avatar/Avatar.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--font-family-sans",
+        "--font-weight-medium",
+        "--radius-full",
+        "--surface-raised",
+        "--text-default"
+      ],
+      "baseUi": true,
+      "registryDependencies": []
+    },
+    {
       "name": "Badge",
       "category": 1,
       "builder": "definePolymorphicComponent",
