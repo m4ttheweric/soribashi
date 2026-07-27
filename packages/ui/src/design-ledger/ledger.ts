@@ -15,6 +15,7 @@ export const LEDGER: readonly LedgerRow[] = [
   { id: 'switch.thumb.centered', species: 'invariant', tier: 'measured', assert: 'predicate' },
   { id: 'radio.dot.centered', species: 'invariant', tier: 'measured', assert: 'predicate' },
   { id: 'tabs.indicator.withinList', species: 'invariant', tier: 'measured', assert: 'predicate' },
+  { id: 'select.popup.clearsTrigger', species: 'invariant', tier: 'measured', assert: 'predicate' },
 ];
 
 export function validateLedger(rows: readonly LedgerRow[]): string[] {

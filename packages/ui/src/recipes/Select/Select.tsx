@@ -278,7 +278,15 @@ export const Select = defineGenericComponent<
           </BaseSelect.Icon>
         </BaseSelect.Trigger>
         <BaseSelect.Portal container={container}>
-          <BaseSelect.Positioner sideOffset={4} {...getStyles('positioner')}>
+          {/* Base UI defaults alignItemWithTrigger to true, which overlaps the
+              popup onto the trigger and makes sideOffset inert. This library
+              wants the popup below its trigger, so the default is turned off
+              explicitly rather than relied on. */}
+          <BaseSelect.Positioner
+            alignItemWithTrigger={false}
+            sideOffset={4}
+            {...getStyles('positioner')}
+          >
             <BaseSelect.Popup {...getStyles('popup')}>
               <BaseSelect.List {...getStyles('list')}>
                 {groups
