@@ -48,6 +48,18 @@ export const LEDGER: readonly LedgerRow[] = [
     bound: 0.05,
     witness: 'see reference.ts',
   },
+  // Admitted on argument, not an observed defect: nobody had measured whether
+  // Button/TextInput/Select's independently authored dimension records
+  // actually agree. Measured at every size (ledger.browser.test.tsx) before
+  // this row was written: they do, exactly, at 28/32/36/40/44px (xs..xl).
+  // Pure regression protection, not a fix for a found bug.
+  {
+    id: 'controls.sharedHeight',
+    species: 'invariant',
+    tier: 'measured',
+    assert: 'predicate',
+    tolerance: 0.5,
+  },
 ];
 
 export function validateLedger(rows: readonly LedgerRow[]): string[] {

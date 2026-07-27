@@ -201,6 +201,46 @@ describe('design ledger: measured rows', () => {
     expect(expected).toBeTruthy();
   });
 
+  it('controls.sharedHeight', async () => {
+    // Button/TextInput/Select each carry their own independently authored
+    // dimension record (BUTTON_HEIGHTS/TEXTINPUT_HEIGHTS/
+    // SELECT_TRIGGER_HEIGHTS, one per recipe file); nothing before this row
+    // enforced they actually agree. None of the three transitions
+    // block-size/height (Button transitions background-color/border-color/
+    // color; TextInput and Select's trigger transition border-color/
+    // background-color only, confirmed by reading each Module.css), so
+    // installNoTransitionStyle is not needed for a height read taken right
+    // after mount.
+    //
+    // Queries are scoped to this iteration's own `screen.container` rather
+    // than a page-wide `screen.getByRole(...)`: the loop mounts a fresh tree
+    // per size without unmounting the previous one first (cleanup only runs
+    // between `it` blocks, not between loop iterations within one), so an
+    // unscoped role query matches every earlier size's control too and
+    // throws a strict-mode violation from the second iteration onward.
+    for (const size of SIZES) {
+      const screen = await wrap(
+        <div>
+          <Button size={size}>Go</Button>
+          <TextInput size={size} />
+          <Select items={[{ label: 'Apple', value: 'apple' }]} defaultValue="apple" size={size} />
+        </div>,
+      );
+      const button = screen.container.querySelector('button')!;
+      const input = screen.container.querySelector('input')!;
+      const trigger = screen.container.querySelector('[role="combobox"]')!;
+
+      const heights = [button, input, trigger].map(
+        (el) => Math.round(el.getBoundingClientRect().height * 100) / 100,
+      );
+      const [a, b, c] = heights as [number, number, number];
+      expect(
+        Math.abs(a - b) < 0.5 && Math.abs(a - c) < 0.5,
+        `${size}: control heights disagree. button ${a}, input ${b}, select ${c}`,
+      ).toBe(true);
+    }
+  });
+
   // Shared by both skeleton.deltaY.* rows below. `toRgbString` (matrix-harness.tsx)
   // collapses any getComputedStyle colour to `rgb(r, g, b)` for an opaque read,
   // only ever emitting `rgba(r, g, b, a)` (a fourth number) when the source
