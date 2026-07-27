@@ -5,6 +5,10 @@
     inline-size: 100%;
     min-block-size: var(--sb-textarea-minh);
     padding-inline: var(--spacing-sm);
+    /* TextInput's `.input` rule has no block padding: its fixed block-size
+       already centers a single line of text. This control's block-size is
+       a MIN only (line 6), so wrapped/multi-line text needs its own
+       breathing room from the top/bottom edges regardless of height. */
     padding-block: var(--spacing-xs);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
