@@ -38,15 +38,26 @@
   }
 
   /*
-   * A 1px inset on every side (an allowlisted length literal, not a
-   * recipe-invented magic number), sized off the SAME `--sb-switch-h` the
-   * track reads: `--sb-switch-h` cascades from `.control` (where the vars
-   * resolver sets it via inline style) down to this child element, since
-   * custom properties inherit by default. The checked travel distance,
-   * `calc(var(--sb-switch-h) * 0.75)`, falls out of the track/thumb geometry
-   * algebraically: trackWidth (1.75h) minus thumbSize (h - 2 * inset) minus
-   * the 2 insets collapses to exactly `0.75h`, independent of the inset
-   * value, so no extra literal is needed in the translate itself.
+   * `--sb-switch-h` and `--sb-switch-gap` both cascade from `.control`
+   * (where the vars resolver sets each via inline style) down to this child
+   * element, since custom properties inherit by default. `--sb-switch-gap`
+   * is the VISIBLE gap the design ledger measures, from the track's own
+   * border-box edge -- not from this element's own containing block:
+   * `.control` sets `box-sizing: border-box` with a real `1px solid` border,
+   * so an absolutely positioned child (this element) resolves against the
+   * PADDING box, which already excludes that 1px border. Landing the visible
+   * edge-to-edge distance at exactly `--sb-switch-gap` therefore requires an
+   * inset of `gap - 1px` here, not `gap` itself (sm/xs's 1px gap is thus
+   * entirely the border: the inset below computes to 0). The thumb's own
+   * size follows the same accounting: `h - gap - gap`, one `gap` subtracted
+   * from each side.
+   *
+   * The checked travel distance, `calc(var(--sb-switch-h) * 0.75)` on
+   * `[data-checked]` below, is unaffected by a per-size `gap`: paddingBoxWidth
+   * (1.75h - 2px) minus two insets of (gap - 1px) minus a thumb of
+   * (h - 2 * gap) collapses to exactly `0.75h`, with every `gap` term
+   * cancelling out algebraically, so no per-size literal is needed in the
+   * translate itself.
    *
    * Deliberately no `background` here: the visible dot is drawn by the SVG
    * `ThumbDot` (Switch.tsx) via `fill="currentColor"`, keeping THIS
@@ -63,17 +74,10 @@
    */
   .thumb {
     position: absolute;
-    inset-inline-start: 1px;
-    inset-block-start: 1px;
-    /* Sized against the track's PADDING box, which is what an absolutely
-       positioned child resolves against: the 1px border is already excluded
-       before this element's own 1px inset applies. Subtracting only the two
-       insets (the prior `- 1px - 1px`) double counted the border's space and
-       left the thumb 1px proud of the bottom edge. The checked travel is
-       unaffected: (1.75h - 2px) - 1px - 1px - (h - 4px) still collapses to
-       exactly 0.75h. */
-    inline-size: calc(var(--sb-switch-h) - 1px - 1px - 1px - 1px);
-    block-size: calc(var(--sb-switch-h) - 1px - 1px - 1px - 1px);
+    inset-inline-start: calc(var(--sb-switch-gap) - 1px);
+    inset-block-start: calc(var(--sb-switch-gap) - 1px);
+    inline-size: calc(var(--sb-switch-h) - var(--sb-switch-gap) - var(--sb-switch-gap));
+    block-size: calc(var(--sb-switch-h) - var(--sb-switch-gap) - var(--sb-switch-gap));
     color: var(--text-muted);
     transition:
       transform 150ms,

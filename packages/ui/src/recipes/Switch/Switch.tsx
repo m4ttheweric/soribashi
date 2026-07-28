@@ -129,13 +129,45 @@ function ThumbDot() {
  * `.control` rule consumes for BOTH the track's block-size and (derived via
  * `calc()`) the track's inline-size and the thumb's geometry/travel distance,
  * so the whole control scales from this one variable.
+ *
+ * `xs` is mapped to the SAME value as `sm`, deliberately, not a distinct
+ * 0.875rem (14px) the way the other four sizes each get their own value.
+ * `.control`'s inline-size is `1.75 * h` (see Switch.module.css); every other
+ * height here (16/20/24/28px) is divisible by 4, which keeps that product a
+ * whole number, but 1.75 * 14 = 24.5, a fractional track width with a
+ * blurred right edge at any DPR. 14px cannot work at this ratio, so rather
+ * than let `size="xs"` silently fall through to `md` via this record's own
+ * `?? SWITCH_HEIGHTS.md` fallback (indistinguishable from a missing entry),
+ * xs is spelled out explicitly: Switch's smallest distinct size is sm.
  */
 const SWITCH_HEIGHTS: Record<string, string> = {
-  xs: '0.875rem',
+  xs: '1rem', // same as sm: 14px is fractional at this recipe's 1.75 ratio, see doc comment above.
   sm: '1rem',
   md: '1.25rem',
   lg: '1.5rem',
   xl: '1.75rem',
+};
+
+/**
+ * Visible gap (the track's border-box edge to the thumb's edge) keyed on the
+ * same size vocabulary, following the same dimension-record pattern. A fixed
+ * absolute gap reads fine at md/lg/xl's larger track heights but eats a
+ * disproportionate share of a 16px track (12.5%, vs 4.8% at xl's 28px),
+ * making the thumb look like it is overflowing its margin under
+ * antialiasing even though the geometry is exactly symmetric. sm/xs (mapped
+ * to the same height, see SWITCH_HEIGHTS above) take a smaller 1px gap
+ * instead of md/lg/xl's 2px, landing their thumb/track ratio (0.875) between
+ * md (0.8) and xl (0.857) rather than off the scale's low end. Read by
+ * Switch.module.css's `.thumb` rule as `--sb-switch-gap`, alongside
+ * `--sb-switch-h`, to derive the thumb's own inset and size (see that file's
+ * comment for the algebra).
+ */
+const SWITCH_GAPS: Record<string, string> = {
+  xs: '1px',
+  sm: '1px',
+  md: '2px',
+  lg: '2px',
+  xl: '2px',
 };
 
 /**
@@ -194,7 +226,9 @@ export const Switch = defineComponent<
   // fill, via `ThumbDot`'s `currentColor` (`.thumb[data-checked]`).
   vars: (theme, props) => {
     const p = props as { size?: string; intent?: string };
-    const size = SWITCH_HEIGHTS[p.size ?? 'md'] ?? SWITCH_HEIGHTS.md!;
+    const sizeKey = p.size ?? 'md';
+    const size = SWITCH_HEIGHTS[sizeKey] ?? SWITCH_HEIGHTS.md!;
+    const gap = SWITCH_GAPS[sizeKey] ?? SWITCH_GAPS.md!;
     const resolved = theme.intentResolver({
       intent: p.intent ?? 'primary',
       variant: 'filled',
@@ -203,6 +237,7 @@ export const Switch = defineComponent<
     return {
       control: {
         '--sb-switch-h': size,
+        '--sb-switch-gap': gap,
         '--sb-switch-checked-bg': resolved.background,
         '--sb-switch-checked-color': resolved.color,
       },

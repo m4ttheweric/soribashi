@@ -50,6 +50,26 @@ describe('design ledger: measured rows', () => {
     }
   });
 
+  it('switch.trackWidth.wholePixel', async () => {
+    // The 2026-07-27 xs defect: symmetric, whole-pixel gaps (switch.thumb.centered,
+    // above) coexisted with a fractional 24.5px track width, because
+    // `.control`'s inline-size is `1.75 * var(--sb-switch-h)` and xs's prior
+    // 0.875rem (14px) height is not divisible by 4. This row measures the
+    // property switch.thumb.centered's symmetry/gap assertions cannot see:
+    // the rendered track width itself must land on a whole device pixel, not
+    // merely near one under CSS subpixel rounding.
+    for (const size of SIZES) {
+      const screen = await wrap(<Switch size={size} />);
+      const control = screen.container.querySelector('[class*="control"]');
+      expect(control, `${size}: control`).not.toBeNull();
+
+      const width = control!.getBoundingClientRect().width;
+      const dpr = window.devicePixelRatio;
+      const wholePixel = Math.abs(width * dpr - Math.round(width * dpr)) < 0.01;
+      expect(wholePixel, `${size}: track width ${width} is not a whole pixel`).toBe(true);
+    }
+  });
+
   it('radio.dot.centered', async () => {
     const items = [
       { label: 'One', value: 'one' },

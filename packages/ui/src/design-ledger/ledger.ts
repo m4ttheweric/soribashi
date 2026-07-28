@@ -24,6 +24,20 @@ export interface LedgerRow {
 
 export const LEDGER: readonly LedgerRow[] = [
   { id: 'switch.thumb.centered', species: 'invariant', tier: 'measured', assert: 'predicate' },
+  // switch.thumb.centered (above) asserts symmetry and whole-pixel gaps, and
+  // both genuinely held at xs even before the 2026-07-27 fix: the defect it
+  // did not catch was a fractional TRACK WIDTH (1.75 * 14px = 24.5px), a
+  // property neither symmetry nor gap-wholeness implies. Deliberately not a
+  // constant-ratio row: this recipe's thumb/track ratio is not constant
+  // across sizes by design (0.875/0.8/0.833/0.857 for sm..xl), so asserting
+  // one fixed ratio would fail correctly-built sizes forever.
+  {
+    id: 'switch.trackWidth.wholePixel',
+    species: 'invariant',
+    tier: 'measured',
+    assert: 'predicate',
+    covers: ['Switch'],
+  },
   {
     id: 'radio.dot.centered',
     species: 'invariant',
