@@ -155,6 +155,24 @@ export function emitCss(theme: ResolvedTheme, opts: EmitCssOptions = {}): string
     lines.push('', '@layer soribashi.utilities {', ...utilities.map(indentLine), '}');
   }
 
+  // Reduced motion is collapsed once here rather than in every recipe: a
+  // recipe that transitions `var(--motion-duration-*)` inherits the honoring
+  // for free and cannot forget it. Emitted alongside the tokens (not in a
+  // layer) so it outranks the layered declarations it overrides. 0.01ms rather
+  // than 0 so transitionend/animationend still fire and any JS waiting on them
+  // does not hang.
+  const durationKeys = Object.keys(effectiveTheme.tokens.motionDuration ?? {}).sort();
+  if (utilitiesEnabled && durationKeys.length > 0) {
+    lines.push(
+      '',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  :root {',
+      ...durationKeys.map((key) => `    --motion-duration-${key}: 0.01ms;`),
+      '  }',
+      '}',
+    );
+  }
+
   return `${lines.join('\n')}\n`;
 }
 
@@ -253,6 +271,18 @@ function emitTokenLines(lines: string[], tokens: ThemeTokens, dark: PartialTheme
   if (tokens.zIndex) {
     for (const [key, value] of Object.entries(tokens.zIndex).sort(byKey)) {
       lines.push(`  --z-index-${key}: ${value};`);
+    }
+  }
+
+  if (tokens.motionDuration) {
+    for (const [key, value] of Object.entries(tokens.motionDuration).sort(byKey)) {
+      lines.push(`  --motion-duration-${key}: ${value};`);
+    }
+  }
+
+  if (tokens.motionEase) {
+    for (const [key, value] of Object.entries(tokens.motionEase).sort(byKey)) {
+      lines.push(`  --motion-ease-${key}: ${value};`);
     }
   }
 

@@ -32,6 +32,15 @@ export interface ThemeTokens {
   shadow?: Record<string, string>;
   breakpoint?: Record<string, string>;
   zIndex?: Record<string, string | number>;
+  /**
+   * Transition and animation durations. Split from `motionEase` rather than
+   * nested under one `motion` object so both follow the same flat
+   * `Record<string, string>` shape every other family here uses, and so a
+   * theme can override one without restating the other.
+   */
+  motionDuration?: Record<string, string>;
+  /** Easing curves, named by intent (enter/exit/standard) rather than by curve. */
+  motionEase?: Record<string, string>;
   /** Heading sizes per order (h1-h6). Used by the Title block. */
   heading?: HeadingTokens;
 }

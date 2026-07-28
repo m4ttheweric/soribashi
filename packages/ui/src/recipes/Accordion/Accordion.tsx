@@ -266,6 +266,13 @@ const AccordionCompound = defineCompound({
       },
     },
     panel: {
+      // Base UI defaults `keepMounted` to false, which unmounts a closed panel
+      // outright and leaves nothing for a closing height transition to animate
+      // (verified against the installed AccordionRoot.d.ts). Keeping it mounted
+      // is what makes the collapse animate in BOTH directions rather than only
+      // on open. Base UI still sets `hidden` while closed, so the content stays
+      // out of the accessibility tree and out of tab order.
+      defaults: { keepMounted: true },
       render: ({ props, getStyles, ref }: Ctx<PanelProps>) => {
         const rest = stripFrameworkKeys(props);
         return <BaseAccordion.Panel ref={ref as Ref<HTMLDivElement>} {...rest} {...getStyles()} />;

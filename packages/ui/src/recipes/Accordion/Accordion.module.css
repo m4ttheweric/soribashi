@@ -68,9 +68,61 @@
     color: var(--text-default);
   }
 
+  /*
+   * Keyframes, not a transition. Base UI keeps a closed panel in the DOM with
+   * the `hidden` attribute (so `display: none`), and a transition cannot
+   * interpolate out of `display: none`: the open direction snaps to its final
+   * height while only the close direction animates. Base UI detects which
+   * mechanism a panel uses and branches on it (useCollapsiblePanel.js's
+   * getAnimationType), measuring `--accordion-panel-height` and suppressing
+   * `animation-name` on mount for the css-animation path specifically, which
+   * is what stops every closed panel playing its collapse on first paint.
+   *
+   * `from`/`to` rather than percentage keyframe selectors: a bare `0%` reads
+   * as a hardcoded length to no-hardcoded-values.test.ts, which scans the
+   * stylesheet text including selectors. Same reason Skeleton's pulse uses
+   * from/to.
+   *
+   * `box-sizing: border-box` is load-bearing. Base UI measures the panel's
+   * BORDER box, so without it `block-size` would set the content box to that
+   * figure and the padding would be added on top, overshooting by exactly the
+   * padding before snapping back (measured: a 30px panel rendering at 42px).
+   */
+  @keyframes sb-accordion-panel-open {
+    from {
+      block-size: 0;
+      padding-block-end: 0;
+    }
+    to {
+      block-size: var(--accordion-panel-height);
+      padding-block-end: var(--spacing-md);
+    }
+  }
+
+  @keyframes sb-accordion-panel-close {
+    from {
+      block-size: var(--accordion-panel-height);
+      padding-block-end: var(--spacing-md);
+    }
+    to {
+      block-size: 0;
+      padding-block-end: 0;
+    }
+  }
+
   .panel {
+    box-sizing: border-box;
+    overflow: hidden;
     padding-block-end: var(--spacing-md);
     padding-inline: var(--spacing-xs);
     color: var(--text-muted);
+  }
+
+  .panel[data-open] {
+    animation: sb-accordion-panel-open var(--motion-duration-slow) var(--motion-ease-standard);
+  }
+
+  .panel:not([data-open]) {
+    animation: sb-accordion-panel-close var(--motion-duration-slow) var(--motion-ease-standard);
   }
 }

@@ -225,6 +225,19 @@ export const defaultTokens: ThemeTokens = {
     '2xl': '96rem',
     '3xl': '120rem',
   },
+  motionDuration: {
+    fast: '120ms',
+    base: '150ms',
+    slow: '200ms',
+  },
+  motionEase: {
+    // Named by intent, not by curve, so a recipe reads its own meaning: things
+    // entering decelerate into place, things leaving accelerate away. `standard`
+    // is for state changes that neither enter nor exit (colour, border).
+    enter: 'cubic-bezier(0, 0, 0.2, 1)',
+    exit: 'cubic-bezier(0.4, 0, 1, 1)',
+    standard: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  },
 };
 
 /**

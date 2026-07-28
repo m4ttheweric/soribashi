@@ -12,15 +12,17 @@ const wrap = (ui: React.ReactNode) =>
   render(<SoribashiProvider theme={uiTheme}>{ui}</SoribashiProvider>);
 
 /**
- * Base UI's default `keepMounted` is `false` (AccordionRoot.d.ts), so a
- * closed item's Panel is not merely hidden, it is entirely absent from the
- * DOM once its close (a no-op instant close here: Accordion.module.css sets
- * no transition/animation on `.panel`, so Base UI's own
- * `useCollapsiblePanel` measures `animationType === 'none'` and unmounts
- * synchronously rather than entering the starting/ending transition
- * lifecycle -- see the task report's Base UI findings). Every assertion below
- * reads real DOM presence/computed style, never a `data-*` attribute that
- * merely claims a value changed.
+ * This recipe's Panel part defaults `keepMounted` to true, overriding Base
+ * UI's own `false` (AccordionRoot.d.ts), because a panel that unmounts on
+ * close leaves nothing for the collapse animation to run on. A closed panel
+ * is therefore present in the DOM but hidden by Base UI, so the assertions
+ * below check VISIBILITY rather than presence. They still read real computed
+ * style and real box geometry, never a `data-*` attribute that merely claims
+ * a value changed.
+ *
+ * Openings and closes now take a real animation (Accordion.module.css's
+ * keyframes), so anything measuring the panel's box has to poll rather than
+ * assert synchronously, or it races the first frame.
  */
 function TwoItems({ defaultValue }: { defaultValue?: string[] } = {}) {
   return (
@@ -45,22 +47,27 @@ describe('Accordion (browser)', () => {
   it('expands an item on trigger click and shows only that panel (computed, not attribute)', async () => {
     const screen = await wrap(<TwoItems />);
 
-    expect(screen.getByText('Panel A content').query()).toBeNull();
-    expect(screen.getByText('Panel B content').query()).toBeNull();
+    await expect.element(screen.getByText('Panel A content')).not.toBeVisible();
+    await expect.element(screen.getByText('Panel B content')).not.toBeVisible();
 
     const triggerA = screen.getByRole('button', { name: 'Header A' }).element() as HTMLElement;
     await userEvent.click(triggerA);
 
     await expect.element(screen.getByText('Panel A content')).toBeVisible();
     const panelA = screen.getByText('Panel A content').element() as HTMLElement;
-    // Computed, not attribute: a real rendered box with non-zero size, not
-    // merely the absence of a `hidden` attribute.
     expect(getComputedStyle(panelA).display).not.toBe('none');
-    expect(panelA.offsetHeight).toBeGreaterThan(0);
-    // The sibling panel stays entirely out of the DOM (see the file header
-    // comment), which is the strongest possible "not visible" a test can
-    // observe.
-    expect(screen.getByText('Panel B content').query()).toBeNull();
+    // Computed, not attribute: a real rendered box with non-zero size, not
+    // merely the absence of a `hidden` attribute. Polled because the panel
+    // now opens through a height animation, so it genuinely measures 0 for
+    // the first frame; asserting synchronously would race the animation.
+    await vi.waitFor(() => expect(panelA.offsetHeight).toBeGreaterThan(0), {
+      timeout: 1000,
+      interval: 10,
+    });
+    // The sibling panel stays mounted (the panel part defaults `keepMounted`
+    // so the collapse has something to animate) but is hidden by Base UI, so
+    // "not visible" rather than "not present" is the assertion that holds.
+    await expect.element(screen.getByText('Panel B content')).not.toBeVisible();
   });
 
   it('collapses an open item on second click', async () => {
@@ -72,13 +79,13 @@ describe('Accordion (browser)', () => {
     await userEvent.click(triggerA);
 
     // Bounded settle-poll (matrix-harness.tsx's idiom, worked example in
-    // Tooltip.test.tsx): the close is instant with this recipe's CSS today
-    // (no transition declared on `.panel`), but polling rather than a single
-    // synchronous assertion keeps this robust if a future transition is
-    // added to Accordion.module.css.
+    // Tooltip.test.tsx). The close now runs a real collapse animation, so the
+    // panel stays measurable for its duration before Base UI marks it hidden;
+    // polling is what makes this independent of that duration.
     await vi.waitFor(
       () => {
-        expect(screen.getByText('Panel A content').query()).toBeNull();
+        const panel = screen.getByText('Panel A content').element() as HTMLElement;
+        expect(panel.checkVisibility()).toBe(false);
       },
       { timeout: 1000, interval: 10 },
     );
@@ -108,14 +115,15 @@ describe('Accordion (browser)', () => {
     // Enter/Space toggle via native <button> semantics (free: Base UI's
     // Trigger renders a real button, nativeButton default true), not this
     // recipe's own keydown handler, which only ever acts on Arrow keys.
-    expect(screen.getByText('Panel B content').query()).toBeNull();
+    await expect.element(screen.getByText('Panel B content')).not.toBeVisible();
     await userEvent.keyboard('{Enter}');
     await expect.element(screen.getByText('Panel B content')).toBeVisible();
 
     await userEvent.keyboard(' ');
     await vi.waitFor(
       () => {
-        expect(screen.getByText('Panel B content').query()).toBeNull();
+        const panel = screen.getByText('Panel B content').element() as HTMLElement;
+        expect(panel.checkVisibility()).toBe(false);
       },
       { timeout: 1000, interval: 10 },
     );
@@ -128,8 +136,7 @@ describe('Accordion (browser)', () => {
 
     // Base UI's Trigger only sets `aria-controls` while its panel is open
     // (AccordionTrigger.mjs: `'aria-controls': open ? panelId : undefined`),
-    // since a closed, unmounted panel has no id in the DOM to point at, so
-    // this association is only observable (and only meaningful) on an open
+    // so this association is only observable (and only meaningful) on an open
     // item -- confirmed from the installed source, not assumed.
     expect(triggerA.getAttribute('aria-controls')).toBe(panelA.id);
     expect(panelA.getAttribute('aria-labelledby')).toBe(triggerA.id);

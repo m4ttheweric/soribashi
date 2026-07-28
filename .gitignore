@@ -32,6 +32,14 @@ npm-debug.log*
 bun-debug.log*
 test/dist
 
+# vitest browser-mode failure screenshots. These land in a dir named after the
+# FAILING TEST FILE, so tier-2 captures go to <Name>.test.tsx/ while the real
+# visual baselines go to <Name>.visual.test.tsx/ and must stay tracked. The
+# patterns match FILES rather than dirs so the negation can re-include (git
+# cannot re-include anything under an excluded directory).
+packages/ui/src/**/__screenshots__/*.test.tsx/*.png
+!packages/ui/src/**/__screenshots__/*.visual.test.tsx/*.png
+
 # Visual baselines are CI-generated Linux artifacts; local-platform baselines are advisory
 # noise. Vitest nests each baseline one level deeper than this pattern originally assumed
 # (`__screenshots__/<test-file>/<name>-<browser>-<platform>.png`, confirmed against the
@@ -46,5 +54,3 @@ packages/ui/.vitest-attachments/
 # superpowers subagent-driven-development scratch workspace
 .superpowers/
 
-# vitest browser-mode failure screenshots (real baselines live under src/recipes/*/__screenshots__/)
-packages/ui/src/__screenshots__/
