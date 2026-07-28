@@ -31,11 +31,9 @@ export const uiTheme = createTheme({
       // (see packages/ui/src/design-ledger/reference.ts's skeleton.deltaY.*
       // witnesses for the measured numbers) -- so this needs two different
       // ramp positions, not one position that happens to differ per scheme
-      // for free the way every other surface.* slot here does. This is
-      // @soribashi/ui, acting as a consumer, taking that position (CLAUDE.md
-      // invariant 2); @soribashi/theme only gained the CAPABILITY to express
-      // a per-scheme surface reference (SemanticSurfaceValue's optional
-      // `dark` field), never an opinion on which ramp indices are right.
+      // for free (placeholder is the only surface.* slot that needs
+      // per-scheme values). @soribashi/theme ships this as an overridable
+      // default in DEFAULT_SURFACE; this declaration explicitly restates it.
       placeholder: { value: 'colors.neutral.200', dark: 'colors.neutral.400' },
     },
   },

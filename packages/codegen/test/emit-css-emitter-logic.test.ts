@@ -101,8 +101,11 @@ describe('emitCss — BUG-E-1: breakpoint emission', () => {
 // searching the whole output for `light-dark(`: createTheme's default
 // semantic set now contributes one unconditionally (surface.placeholder
 // carries a per-scheme reference), so a whole-output search would report the
-// default's pair no matter what the family under test did, and would equally
-// have stayed green if some OTHER token had been wrongly paired.
+// default's pair no matter what the family under test did. The emitted CSS
+// now legitimately contains a light-dark() pair for --surface-placeholder
+// (a framework default), so a whole-output search cannot distinguish that
+// expected pair from a regression; each assertion narrows to the specific
+// declaration its test is actually about.
 // ---------------------------------------------------------------------------
 
 describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
