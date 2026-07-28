@@ -185,38 +185,39 @@ const TooltipCompound = defineCompound({
         // bypasses `useRenderElement.js`'s own `renderTag` default (confirmed
         // by reading it): the DEFAULT (no custom `render`) path is the only
         // place that default lives.
-        const styles = getStyles();
         return (
           <BaseTooltip.Trigger
             ref={ref as Ref<HTMLButtonElement>}
             {...rest}
-            {...styles}
+            {...getStyles()}
             render={(triggerProps, state) => (
               <button
                 type="button"
                 {...triggerProps}
                 // A custom render replaces Base UI's own element entirely, so
-                // the className it merged into triggerProps is the ONLY copy
-                // that survives on this path... except that merge is a no-op
-                // whenever `styles.className` is an empty string (Base UI's
-                // own mergeClassNames treats a falsy incoming value as
-                // nothing to merge, see @base-ui/react's merge-props.js), so
-                // spreading triggerProps alone silently drops a real recipe
-                // class the moment there is nothing else to fall back on.
-                // Verified empirically (fix round 2, task report): with a
-                // non-empty classNames={{ trigger }} prop, Base UI's own
-                // merge already threads it into triggerProps.className;
-                // with nothing set, triggerProps.className comes back
-                // undefined even though this part called getStyles(). Merging
-                // both sources here, rather than trusting either alone, keeps
-                // the recipe's slot class on the element in both cases
-                // (measured 2026-07-27: without this the trigger renders with
-                // no class attribute whatsoever).
-                className={
-                  [(triggerProps as { className?: string }).className, styles.className]
-                    .filter(Boolean)
-                    .join(' ') || undefined
-                }
+                // whatever this spreads is the ONLY copy of any prop that
+                // survives, including className. It is tempting to also
+                // spread getStyles()'s own return value here for safety, but
+                // that double-applies the class: Base UI's own prop merge
+                // (@base-ui/react's useRenderElementProps, internals/
+                // useRenderElement.js) already folds the className passed to
+                // <BaseTooltip.Trigger> above into `triggerProps.className`
+                // before this function ever runs, since `componentProps`
+                // (the full props object Base UI reads className off of) is
+                // exactly what `{...getStyles()}` spread onto the element.
+                // Verified empirically (fix round 1, task report): with
+                // .trigger's CSS module rule present (see Tooltip.module.css)
+                // getStyles().className is non-empty, and triggerProps.className
+                // in this render already equals it one-for-one; joining the
+                // two here produced a literal duplicate class token
+                // ("_trigger_xyz _trigger_xyz") in the rendered DOM, caught
+                // by devtools inspection, not by any test, since a duplicate
+                // token is harmless to computed styles. Trusting
+                // triggerProps alone is what the "applies the recipe class"
+                // test pins: if a future Base UI upgrade ever stopped
+                // threading componentProps.className through to a custom
+                // render's merged props, that test fails loudly instead of
+                // this silently going back to two copies or none.
                 aria-describedby={state.open ? ctx.contentId : undefined}
               />
             )}

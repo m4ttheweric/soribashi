@@ -1,17 +1,21 @@
 @layer soribashi.recipes {
-  /* No visual rule needed today (Base UI owns the trigger's box model), but a
-     CSS module only exports a hashed class for selectors it actually finds
-     in this file: an unstyled selector is what makes getStyles('trigger')
-     return a real class rather than an empty string. box-sizing: border-box
-     is a no-op with no border/padding set here (border-box and content-box
-     compute identically at zero), so this changes no rendered pixel; it is
-     also the same sizing hygiene .popup below already opts into. Fix round 2
-     finding: without this, the trigger part's own render (Tooltip.tsx) has
-     nothing to merge, so a consumer's `classNames={{ trigger }}` still works
-     (that flows through a different, non-empty path -- see partClassNames in
-     use-styles.ts) but the always-on recipe class this test pins does not. */
+  /* No visual rule needed today (Base UI owns the trigger's box model
+     entirely: it is a real <button>, and Chromium's UA stylesheet already
+     gives it whatever padding/border it renders with, none of which this
+     recipe touches). A CSS module only exports a hashed class for a
+     selector it actually finds in this file though, so `getStyles('trigger')`
+     returned an empty string with no selector here at all (fix round 1
+     finding). `--sori-trigger-slot` is a custom property, not a visual
+     rule: an unreferenced custom property cannot affect layout, paint, or
+     any box-model calculation under any future edit to this selector,
+     unlike a real property such as box-sizing whose inertness would depend
+     on nothing else nearby ever setting width/height/padding/border, an
+     assumption a later edit could quietly break. Its only job is to give
+     the CSS module a selector to hash, so `getStyles('trigger')` returns a
+     real class in `Tooltip.tsx`'s trigger render (task report, "applies the
+     recipe class to the trigger"). */
   .trigger {
-    box-sizing: border-box;
+    --sori-trigger-slot: 1;
   }
 
   .popup {
