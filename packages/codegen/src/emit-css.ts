@@ -286,7 +286,7 @@ function emitSemanticLines(lines: string[], theme: ResolvedTheme): void {
     // this is TWO different semantic references (not one reference's own
     // light/dark colour pair), so the emitted light-dark() can itself nest
     // another light-dark() inside each branch (from the underlying colour
-    // token's own dark override, if any) — verified in Chromium to resolve
+    // token's own dark override, if any). Verified in Chromium to resolve
     // correctly: each nested light-dark() call resolves independently
     // against the color-scheme of the element consuming the property.
     const darkVar = pair.dark !== undefined ? semanticToVar(pair.dark) : undefined;

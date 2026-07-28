@@ -130,7 +130,7 @@ export type SemanticReference = string;
  * same reference's own light/dark pair. This exists because a fixed
  * rung-count gap in a colour ramp is not scheme-symmetric under WCAG
  * relative luminance (the dark tail of a ramp compresses harder than the
- * light head for the same gap) — a recipe that needs "clearly distinct from
+ * light head for the same gap). A recipe that needs "clearly distinct from
  * canvas" in both schemes may need different ramp indices per scheme, and
  * previously had no theme-only way to say so short of a recipe-authored
  * `.dark`-scoped CSS override, which broke "re-skinnable through createTheme
