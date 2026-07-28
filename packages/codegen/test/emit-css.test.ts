@@ -134,7 +134,12 @@ describe('emitCss', () => {
     const css = emitCss(theme);
     // Wrapped one level deeper inside @layer soribashi.tokens { ... } now.
     expect(css).toContain('.dark {\n    color-scheme: dark;\n  }');
-    expect(css).not.toContain('light-dark(');
+    // Named declaration rather than a whole-output search for `light-dark(`:
+    // createTheme's default semantic set contributes one unconditionally
+    // (surface.placeholder carries a per-scheme reference), so a whole-output
+    // search reports that pair regardless of what this theme's own tokens did.
+    expect(css).toContain('--color-primary-500: hsl(0 0% 50%);');
+    expect(css).not.toContain('--color-primary-500: light-dark(');
   });
 
   it('still emits the light-dark() pair for composed themes with real dark overrides', () => {
@@ -597,7 +602,9 @@ describe('emitCss zIndex tokens', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('--z-index-modal: 200;');
-    expect(css).not.toContain('light-dark(');
+    // See the note on the `.dark block is always emitted` row above for why
+    // this names its declaration instead of searching the whole output.
+    expect(css).not.toContain('--z-index-modal: light-dark(');
   });
 });
 

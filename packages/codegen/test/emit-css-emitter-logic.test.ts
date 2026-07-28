@@ -96,6 +96,13 @@ describe('emitCss — BUG-E-1: breakpoint emission', () => {
 // (validateTheme rejects a `dark` entry for any of these families), so these
 // cases exercise emitCss's own defensive bare-value behaviour when called
 // directly with a theme that skipped validation.
+//
+// Each row below names the declaration it is asserting about rather than
+// searching the whole output for `light-dark(`: createTheme's default
+// semantic set now contributes one unconditionally (surface.placeholder
+// carries a per-scheme reference), so a whole-output search would report the
+// default's pair no matter what the family under test did, and would equally
+// have stayed green if some OTHER token had been wrongly paired.
 // ---------------------------------------------------------------------------
 
 describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
@@ -115,7 +122,7 @@ describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('--font-family-sans: Inter;');
-    expect(css).not.toContain('light-dark(');
+    expect(css).not.toContain('--font-family-sans: light-dark(');
   });
 
   it('ignores a dark fontWeight override and emits the light value bare', () => {
@@ -134,7 +141,7 @@ describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('--font-weight-bold: 700;');
-    expect(css).not.toContain('light-dark(');
+    expect(css).not.toContain('--font-weight-bold: light-dark(');
   });
 
   it('ignores a dark lineHeight override and emits the light value bare', () => {
@@ -153,7 +160,7 @@ describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('--line-height-md: 1.55;');
-    expect(css).not.toContain('light-dark(');
+    expect(css).not.toContain('--line-height-md: light-dark(');
   });
 
   it('ignores a dark breakpoint override and emits the light value bare', () => {
@@ -172,7 +179,7 @@ describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('--breakpoint-md: 62em;');
-    expect(css).not.toContain('light-dark(');
+    expect(css).not.toContain('--breakpoint-md: light-dark(');
   });
 
   it('ignores a dark heading.textWrap override and emits the light value bare', () => {
@@ -211,7 +218,7 @@ describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('--heading-text-wrap: wrap;');
-    expect(css).not.toContain('light-dark(');
+    expect(css).not.toContain('--heading-text-wrap: light-dark(');
   });
 
   it('ignores a dark heading fontSize override and emits the light value bare', () => {
@@ -248,7 +255,7 @@ describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
 
     const css = emitCss(theme);
     expect(css).toContain('--heading-h1-font-size: 2rem;');
-    expect(css).not.toContain('light-dark(');
+    expect(css).not.toContain('--heading-h1-font-size: light-dark(');
   });
 });
 
@@ -340,7 +347,10 @@ describe('emitCss — dark block emission', () => {
     const css = emitCss(theme);
     // Wrapped one level deeper inside @layer soribashi.tokens { ... } now.
     expect(css).toContain('.dark {\n    color-scheme: dark;\n  }');
-    expect(css).not.toContain('light-dark(');
+    // Named declaration, for the same reason the BUG-E-2 rows above name
+    // theirs: the default semantic set always contributes a light-dark().
+    expect(css).toContain('--color-primary-500: hsl(0 0% 50%);');
+    expect(css).not.toContain('--color-primary-500: light-dark(');
   });
 
   it('dark block uses the configured darkMode.selector', () => {

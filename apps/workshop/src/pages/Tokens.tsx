@@ -19,7 +19,7 @@ const NEUTRAL_SHADES = [
 
 // Semantic surface names emitted as --surface-* (packages/theme's
 // DEFAULT_SURFACE in create-theme.ts).
-const SURFACES = ['canvas', 'default', 'raised', 'sunken', 'overlay'];
+const SURFACES = ['canvas', 'default', 'raised', 'sunken', 'overlay', 'placeholder'];
 
 export function Tokens() {
   return (

@@ -32,7 +32,11 @@ describe('emitCss light-dark', () => {
       }),
     );
     expect(css).toContain('--color-brand-500: oklch(0.6 0.2 260);');
-    expect(css).not.toContain('light-dark(');
+    // Named declaration rather than a whole-output search for `light-dark(`:
+    // createTheme's default semantic set contributes one unconditionally
+    // (surface.placeholder carries a per-scheme reference), so a whole-output
+    // search reports that pair regardless of what this token did.
+    expect(css).not.toContain('--color-brand-500: light-dark(');
   });
 
   it('emits a color-scheme flip instead of restating tokens', () => {

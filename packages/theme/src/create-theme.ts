@@ -9,6 +9,7 @@ import type {
   PartialThemeVocabulary,
   ResolvedTheme,
   ResolveVocab,
+  SemanticSurfaceValue,
   SemanticTokensConfig,
   ThemeDefinition,
   ThemeTokens,
@@ -32,7 +33,7 @@ const DEFAULT_TEXT: Record<string, string> = {
   disabled: 'colors.neutral.400',
 };
 
-const DEFAULT_SURFACE: Record<string, string> = {
+const DEFAULT_SURFACE: Record<string, SemanticSurfaceValue> = {
   canvas: 'colors.neutral.50',
   default: 'colors.neutral.0',
   raised: 'colors.neutral.100',
@@ -41,6 +42,17 @@ const DEFAULT_SURFACE: Record<string, string> = {
   // dark tokens, turning the scrim near-white. A scrim must stay dark in both
   // schemes, so it bypasses the ramp entirely.
   overlay: 'oklch(0.2064 0.0388 265.55 / 0.6)',
+  // Every other slot here sits within one ramp step of the canvas, which is
+  // right for a real surface and far too faint for a placeholder that has to
+  // read as absent content, so a recipe like Skeleton needs a slot of its own
+  // rather than a raw `--color-neutral-*` reach. It lives in the default set
+  // (not only in a consumer theme) because a theme that declares no
+  // `semanticTokens` at all still has to render that recipe: without a default
+  // the custom property is never emitted and the element paints transparent.
+  // Two ramp positions rather than one: WCAG relative luminance is not
+  // scheme-symmetric for a fixed rung-count gap, since the dark tail of the
+  // ramp compresses harder than the light head.
+  placeholder: { value: 'colors.neutral.200', dark: 'colors.neutral.400' },
 };
 
 const DEFAULT_BORDER: Record<string, string> = {
