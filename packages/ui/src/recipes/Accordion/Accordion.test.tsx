@@ -132,7 +132,15 @@ describe('Accordion (browser)', () => {
   it('associates each trigger and panel (aria-controls / aria-labelledby resolve to each other)', async () => {
     const screen = await wrap(<TwoItems defaultValue={['a']} />);
     const triggerA = screen.getByRole('button', { name: 'Header A' }).element();
-    const panelA = screen.getByText('Panel A content').element();
+    // The text sits inside the panel's inner `panelContent` wrapper (the
+    // padding lives there so the collapse animates exactly one property), so
+    // walk up to the panel itself rather than asserting against the wrapper.
+    const panelA = screen
+      .getByText('Panel A content')
+      .element()
+      .closest('[role="region"]') as HTMLElement | null;
+    expect(panelA).not.toBeNull();
+    if (panelA === null) throw new Error('panel not found');
 
     // Base UI's Trigger only sets `aria-controls` while its panel is open
     // (AccordionTrigger.mjs: `'aria-controls': open ? panelId : undefined`),

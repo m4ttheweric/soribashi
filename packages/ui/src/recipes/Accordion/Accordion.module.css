@@ -83,39 +83,41 @@
    * stylesheet text including selectors. Same reason Skeleton's pulse uses
    * from/to.
    *
-   * `box-sizing: border-box` is load-bearing. Base UI measures the panel's
-   * BORDER box, so without it `block-size` would set the content box to that
-   * figure and the padding would be added on top, overshooting by exactly the
-   * padding before snapping back (measured: a 30px panel rendering at 42px).
+   * The panel itself carries NO padding: that lives on `.panelContent` inside
+   * it, so exactly one property animates. Animating padding alongside height
+   * was measured to jitter, because Base UI measures the panel differently in
+   * each direction once the padding is on the animated box itself (18px, the
+   * content height, when opening; 30px, the full height, when closing), so no
+   * single box-sizing choice is correct for both. With the padding moved
+   * inward, `--accordion-panel-height` is unambiguously the panel's whole
+   * height and the same keyframe pair is right in both directions.
    */
   @keyframes sb-accordion-panel-open {
     from {
       block-size: 0;
-      padding-block-end: 0;
     }
     to {
       block-size: var(--accordion-panel-height);
-      padding-block-end: var(--spacing-md);
     }
   }
 
   @keyframes sb-accordion-panel-close {
     from {
       block-size: var(--accordion-panel-height);
-      padding-block-end: var(--spacing-md);
     }
     to {
       block-size: 0;
-      padding-block-end: 0;
     }
   }
 
   .panel {
-    box-sizing: border-box;
     overflow: hidden;
+    color: var(--text-muted);
+  }
+
+  .panelContent {
     padding-block-end: var(--spacing-md);
     padding-inline: var(--spacing-xs);
-    color: var(--text-muted);
   }
 
   .panel[data-open] {

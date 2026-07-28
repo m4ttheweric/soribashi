@@ -34,7 +34,13 @@ export const recipeCategory = 3 as const;
  * `accordion/index.parts.d.ts`, which exports exactly Root/Item/Header/
  * Trigger/Panel and nothing else.
  */
-const ACCORDION_SLOT_KEYS = ['root', 'item', 'header', 'trigger', 'panel'] as const;
+/**
+ * `panelContent` is a styled slot with no public part of its own, the same
+ * relationship Tabs' `indicator` has to its own parts map. It exists because
+ * the panel is the animated box: padding has to live on an inner element so
+ * the collapse animates exactly one property. See Accordion.module.css.
+ */
+const ACCORDION_SLOT_KEYS = ['root', 'item', 'header', 'trigger', 'panel', 'panelContent'] as const;
 
 type AccordionSlotKey = (typeof ACCORDION_SLOT_KEYS)[number];
 
@@ -274,8 +280,13 @@ const AccordionCompound = defineCompound({
       // out of the accessibility tree and out of tab order.
       defaults: { keepMounted: true },
       render: ({ props, getStyles, ref }: Ctx<PanelProps>) => {
-        const rest = stripFrameworkKeys(props);
-        return <BaseAccordion.Panel ref={ref as Ref<HTMLDivElement>} {...rest} {...getStyles()} />;
+        const { children, ...withoutOwnProps } = props;
+        const rest = stripFrameworkKeys(withoutOwnProps);
+        return (
+          <BaseAccordion.Panel ref={ref as Ref<HTMLDivElement>} {...rest} {...getStyles()}>
+            <div {...getStyles({ part: 'panelContent' })}>{children}</div>
+          </BaseAccordion.Panel>
+        );
       },
     },
   },

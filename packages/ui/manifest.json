@@ -9,7 +9,7 @@
       "name": "Accordion",
       "category": 3,
       "builder": "defineCompound",
-      "slots": ["root", "item", "header", "trigger", "panel"],
+      "slots": ["root", "item", "header", "trigger", "panel", "panelContent"],
       "parts": ["root", "item", "header", "trigger", "panel"],
       "vocabularyAxes": [],
       "variants": [],
