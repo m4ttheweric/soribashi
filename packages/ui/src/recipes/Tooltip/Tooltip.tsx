@@ -127,6 +127,18 @@ const TooltipCompound = defineCompound({
       render: ({ props }: Ctx<RootProps>) => <BaseTooltip.Root {...props} />,
     },
     trigger: {
+      // Base UI's own default is 600ms (@base-ui/react's TooltipTrigger.d.ts
+      // documents `delay?: number; @default 600`), which reads as the
+      // tooltip simply not existing to a real user: measured 2026-07-27,
+      // nothing is on screen at 150ms or 400ms of hover, only at 800ms. This
+      // recipe-level default (via defineCompound's `defaults`, same
+      // mechanism as Tabs.tsx's `list: { defaults: { activateOnFocus: true } }`)
+      // benefits every consumer without them having to know Base UI's
+      // default is too slow; useProps still lets an explicit `delay` prop on
+      // a call site win (instance props beat component defaults, see
+      // use-props.ts), so nothing here removes a consumer's ability to opt
+      // back into a longer delay.
+      defaults: { delay: 150 },
       render: ({ props, getStyles, ref, ctx }: Ctx<TriggerProps>) => {
         const rest = stripFrameworkKeys(props);
         // Empirically verified against the installed @base-ui/react/tooltip
@@ -173,15 +185,38 @@ const TooltipCompound = defineCompound({
         // bypasses `useRenderElement.js`'s own `renderTag` default (confirmed
         // by reading it): the DEFAULT (no custom `render`) path is the only
         // place that default lives.
+        const styles = getStyles();
         return (
           <BaseTooltip.Trigger
             ref={ref as Ref<HTMLButtonElement>}
             {...rest}
-            {...getStyles()}
+            {...styles}
             render={(triggerProps, state) => (
               <button
                 type="button"
                 {...triggerProps}
+                // A custom render replaces Base UI's own element entirely, so
+                // the className it merged into triggerProps is the ONLY copy
+                // that survives on this path... except that merge is a no-op
+                // whenever `styles.className` is an empty string (Base UI's
+                // own mergeClassNames treats a falsy incoming value as
+                // nothing to merge, see @base-ui/react's merge-props.js), so
+                // spreading triggerProps alone silently drops a real recipe
+                // class the moment there is nothing else to fall back on.
+                // Verified empirically (fix round 2, task report): with a
+                // non-empty classNames={{ trigger }} prop, Base UI's own
+                // merge already threads it into triggerProps.className;
+                // with nothing set, triggerProps.className comes back
+                // undefined even though this part called getStyles(). Merging
+                // both sources here, rather than trusting either alone, keeps
+                // the recipe's slot class on the element in both cases
+                // (measured 2026-07-27: without this the trigger renders with
+                // no class attribute whatsoever).
+                className={
+                  [(triggerProps as { className?: string }).className, styles.className]
+                    .filter(Boolean)
+                    .join(' ') || undefined
+                }
                 aria-describedby={state.open ? ctx.contentId : undefined}
               />
             )}

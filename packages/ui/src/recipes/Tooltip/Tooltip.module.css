@@ -1,4 +1,19 @@
 @layer soribashi.recipes {
+  /* No visual rule needed today (Base UI owns the trigger's box model), but a
+     CSS module only exports a hashed class for selectors it actually finds
+     in this file: an unstyled selector is what makes getStyles('trigger')
+     return a real class rather than an empty string. box-sizing: border-box
+     is a no-op with no border/padding set here (border-box and content-box
+     compute identically at zero), so this changes no rendered pixel; it is
+     also the same sizing hygiene .popup below already opts into. Fix round 2
+     finding: without this, the trigger part's own render (Tooltip.tsx) has
+     nothing to merge, so a consumer's `classNames={{ trigger }}` still works
+     (that flows through a different, non-empty path -- see partClassNames in
+     use-styles.ts) but the always-on recipe class this test pins does not. */
+  .trigger {
+    box-sizing: border-box;
+  }
+
   .popup {
     box-sizing: border-box;
     padding-inline: var(--spacing-sm);

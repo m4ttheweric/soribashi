@@ -266,4 +266,28 @@ describe('Tooltip (browser)', () => {
     expect(tooltipEl.getAttribute('p')).toBeNull();
     expect((tooltipEl as HTMLElement).style.padding).toBe('');
   });
+
+  it('applies the recipe class to the trigger', async () => {
+    const screen = await wrap(
+      <Tooltip.Root>
+        <Tooltip.Trigger>Hover me</Tooltip.Trigger>
+        <Tooltip.Content>Helpful hint</Tooltip.Content>
+      </Tooltip.Root>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Hover me' }).element();
+    expect(trigger.getAttribute('class')).toBeTruthy();
+  });
+
+  it('opens well inside Base UI default 600ms delay', async () => {
+    const screen = await wrap(
+      <Tooltip.Root>
+        <Tooltip.Trigger>Hover me</Tooltip.Trigger>
+        <Tooltip.Content>Helpful hint</Tooltip.Content>
+      </Tooltip.Root>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Hover me' }).element();
+    await userEvent.hover(trigger);
+    await new Promise((r) => setTimeout(r, 300));
+    expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  });
 });
