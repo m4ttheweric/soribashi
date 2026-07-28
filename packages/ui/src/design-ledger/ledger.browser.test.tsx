@@ -180,23 +180,55 @@ describe('design ledger: measured rows', () => {
     const expected = getComputedStyle(probe).outlineColor;
     probe.remove();
 
-    const sheets = [...document.styleSheets];
+    // Recurses into grouping rules for the same reason findTroughOpacity
+    // below does: each of this package's CSS Modules arrives as ONE top-level
+    // CSSLayerBlockRule whose cssText is the whole file. Scanning top-level
+    // rules therefore asked "does this FILE contain the correct string
+    // somewhere", which any one correct rule answers on behalf of every
+    // divergent rule beside it. Proven by injecting a layer block holding one
+    // correct and one divergent --accent-primary rule: the top-level-only
+    // scan reported zero offenders. It matters for the compounds, Tabs and
+    // Select, which have several focusable slots and so several such rules
+    // per file.
+    //
+    // Each rule is judged on `style.cssText`, its own declarations, rather
+    // than `cssText`, which for a nested rule carries its children's text
+    // too and would reintroduce the same "somewhere in here" question one
+    // level down.
     const offenders: string[] = [];
-    for (const sheet of sheets) {
+    const matched: string[] = [];
+    function scan(rules: CSSRuleList): void {
+      for (const rule of Array.from(rules)) {
+        const declarations = (rule as CSSStyleRule).style;
+        const text = declarations?.cssText ?? '';
+        if (text.includes('--accent-primary')) {
+          const selector = (rule as CSSStyleRule).selectorText;
+          matched.push(selector);
+          if (!text.includes('var(--accent-primary, var(--text-default))')) {
+            offenders.push(`${selector} { ${text} }`.slice(0, 160));
+          }
+        }
+        const nested = (rule as CSSGroupingRule).cssRules;
+        if (nested) scan(nested);
+      }
+    }
+    for (const sheet of document.styleSheets) {
       let rules: CSSRuleList;
       try {
         rules = sheet.cssRules;
       } catch {
         continue;
       }
-      for (const rule of [...rules]) {
-        const text = rule.cssText;
-        if (!text.includes('--accent-primary')) continue;
-        if (!text.includes('var(--accent-primary, var(--text-default))')) {
-          offenders.push(text.slice(0, 120));
-        }
-      }
+      scan(rules);
     }
+    // Floor, same rationale as the recipeCount floor in reskin.test.tsx: a
+    // scan whose matcher stops matching anything reports zero offenders and
+    // reads as green. 13 rules carry --accent-primary across the recipes
+    // mounted above at the time of writing, Tabs contributing three of them.
+    expect(
+      matched.length,
+      `focus ring scan matched ${matched.length} rules; it has stopped seeing the recipes`,
+    ).toBeGreaterThanOrEqual(10);
     expect(offenders, `divergent focus ring fallbacks:\n${offenders.join('\n')}`).toEqual([]);
     expect(expected).toBeTruthy();
   });
