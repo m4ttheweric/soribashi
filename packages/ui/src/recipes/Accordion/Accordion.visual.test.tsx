@@ -6,16 +6,25 @@ import { uiTheme } from '../../theme.ts';
 import { Accordion } from './Accordion.tsx';
 
 /**
- * Accordion.module.css transitions `.trigger`'s background-color/color
- * (120ms, the expanded-vs-collapsed cue). Same rationale as
- * Tabs.visual.test.tsx/Badge.visual.test.tsx: capture settled geometry and
- * colour, not a mid-transition frame.
+ * Accordion.module.css uses BOTH mechanisms, so this freezes both, the same
+ * pairing Skeleton.visual.test.tsx already establishes: `.trigger` transitions
+ * background-color/color (120ms, the expanded-vs-collapsed cue), and `.panel`
+ * runs a real collapse KEYFRAME animation. `transition: none` does not touch an
+ * animation, so without the second declaration the open panel's settled height
+ * would only be captured because Base UI happens to suppress `animation-name`
+ * on mount (useCollapsiblePanel.js's css-animation path). That suppression is
+ * a real mechanism and it does hold, but relying on it leaves the fixture's
+ * stated guarantee (settled geometry, never a mid-flight frame) resting on
+ * another library's mount-time behaviour rather than on this file.
  */
 const NO_TRANSITION_CLASS = 'sb-visual-no-transition';
 const noTransitionStyle = document.createElement('style');
 noTransitionStyle.textContent = `
   .${NO_TRANSITION_CLASS},
-  .${NO_TRANSITION_CLASS} * { transition: none !important; }
+  .${NO_TRANSITION_CLASS} * {
+    transition: none !important;
+    animation: none !important;
+  }
 `;
 document.head.appendChild(noTransitionStyle);
 
