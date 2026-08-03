@@ -6,6 +6,13 @@ Most teams pick between two bad trades: own your components and lose the governi
 
 But we also made one. A small one, `@soribashi/ui`, built with soribashi, verified the way we think a component should be verified before anyone vendors it into their own codebase. We think you'll like it, and more importantly, we think the way it was built is worth copying.
 
+- **Vocabulary is declared, not assumed**: typed, Zod-backed `defineVocabulary()` axes, never hardcoded by the framework itself.
+- **Four builders, one per component shape**: `defineComponent`, `definePolymorphicComponent`, `defineCompound`, `defineGenericComponent`.
+- **`Recipe.extend()` customizes without forking**: first-class public API, never bypassed anywhere in this repo.
+- **A CI-verified, shadcn-schema-compatible registry**: `bunx shadcn@latest add ./registry/button.json` is exercised end to end by the real `shadcn` CLI in CI, not simulated.
+
+Run it locally: see [Getting started](#getting-started). For how the rails work, keep reading.
+
 ## The rails
 
 **Vocabulary is declared, not assumed.** Soribashi itself has no opinion on what `size`, `intent`, or `variant` mean. You declare them once with `defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'])`, a typed tuple backed by Zod, and every component that opts into that axis gets compile-time narrowing and a runtime check for free. The framework packages never hardcode a vocabulary; only a consumer (like `@soribashi/ui`, in its own `theme.ts`) does.
