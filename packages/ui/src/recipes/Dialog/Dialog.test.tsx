@@ -1,6 +1,6 @@
 import { SoribashiProvider } from '@soribashi/core';
 import { describe, expect, it, vi } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
 import { installNoTransitionStyle, NO_TRANSITION_CLASS } from '../../a11y/matrix-harness.tsx';
@@ -253,6 +253,47 @@ describe('Dialog (browser)', () => {
     expect(popupBackground).toBe(scopedBackground);
 
     scopeEl.remove();
+  });
+
+  it('keeps a side gutter on a 320px viewport (popup never edge-to-edge)', async () => {
+    // Below --breakpoint-xs (384px) the popup's max-inline-size clamp never
+    // engaged, so the fixed-inset auto margins resolved to 0 and the popup
+    // ran edge-to-edge. Visual fixtures never render a sub-384px viewport,
+    // so this computed pin is the gate for the min()-based clamp.
+    await page.viewport(320, 640);
+    try {
+      const screen = await wrap(
+        <Dialog.Root defaultOpen>
+          <Dialog.Content>
+            <Dialog.Title>Narrow viewport</Dialog.Title>
+          </Dialog.Content>
+        </Dialog.Root>,
+      );
+      const dialog = screen.getByRole('dialog');
+      await expect.element(dialog).toBeVisible();
+      const popupEl = dialog.element() as HTMLElement;
+      // Settle the enter transition first: while [data-starting-style]'s
+      // scale(0.96) is still interpolating, getBoundingClientRect() reports
+      // a shrunken box whose left edge is off the viewport edge, which would
+      // fake exactly the gutter this test exists to pin.
+      await vi.waitFor(
+        () => {
+          expect(popupEl.hasAttribute('data-starting-style')).toBe(false);
+          const cs = getComputedStyle(popupEl);
+          expect(cs.opacity).toBe('1');
+          expect(['none', 'matrix(1, 0, 0, 1, 0, 0)']).toContain(cs.transform);
+        },
+        { timeout: 1000, interval: 10 },
+      );
+      const rect = popupEl.getBoundingClientRect();
+      expect(rect.left).toBeGreaterThan(0);
+      expect(window.innerWidth - rect.right).toBeGreaterThan(0);
+    } finally {
+      // vitest's browser-tier default viewport; restored so later tests in
+      // this file (and this worker's other files) measure at the size they
+      // were written for.
+      await page.viewport(414, 896);
+    }
   });
 
   it('has zero axe violations for an open dialog with title, description, and close', async () => {

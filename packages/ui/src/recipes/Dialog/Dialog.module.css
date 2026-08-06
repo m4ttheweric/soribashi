@@ -61,8 +61,14 @@
     inset: 0;
     margin: auto;
     box-sizing: border-box;
-    max-inline-size: var(--breakpoint-xs);
-    max-block-size: var(--breakpoint-xs);
+    /* Below --breakpoint-xs the old bare max-*-size clamp never engaged
+       (natural fill was already under it), so the auto margins resolved to 0
+       and the popup ran edge-to-edge. min() keeps the clamp engaged at every
+       viewport: the popup is the smaller of the xs breakpoint and the
+       viewport minus a gutter on each side. (`100%` resolves against the
+       viewport because the popup is `position: fixed; inset: 0`.) */
+    max-inline-size: min(var(--breakpoint-xs), calc(100% - 2 * var(--spacing-lg)));
+    max-block-size: min(var(--breakpoint-xs), calc(100% - 2 * var(--spacing-lg)));
     overflow: auto;
     padding: var(--spacing-lg);
     border: 1px solid var(--border-default);
