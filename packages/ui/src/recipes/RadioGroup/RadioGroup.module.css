@@ -55,8 +55,8 @@
     background: transparent;
     cursor: pointer;
     transition:
-      background-color 150ms,
-      border-color 150ms;
+      background-color var(--motion-duration-base) var(--motion-ease-standard),
+      border-color var(--motion-duration-base) var(--motion-ease-standard);
 
     &[data-checked] {
       background: var(--sb-radiogroup-checked-bg);

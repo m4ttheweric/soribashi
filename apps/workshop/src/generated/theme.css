@@ -124,6 +124,7 @@
     --breakpoint-xs: 24rem;
     --motion-duration-base: 150ms;
     --motion-duration-fast: 120ms;
+    --motion-duration-pulse: 1500ms;
     --motion-duration-slow: 200ms;
     --motion-ease-enter: cubic-bezier(0, 0, 0.2, 1);
     --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
@@ -385,6 +386,7 @@
   :root {
     --motion-duration-base: 0.01ms;
     --motion-duration-fast: 0.01ms;
+    --motion-duration-pulse: 0.01ms;
     --motion-duration-slow: 0.01ms;
   }
 }

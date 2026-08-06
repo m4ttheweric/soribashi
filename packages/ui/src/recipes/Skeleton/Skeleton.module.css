@@ -38,6 +38,7 @@
        selector, keeping this file scheme-agnostic and fully re-skinnable
        through createTheme plus .extend() alone. */
     background: var(--surface-placeholder);
-    animation: sb-skeleton-pulse 1.5s ease-in-out infinite alternate;
+    animation: sb-skeleton-pulse var(--motion-duration-pulse) var(--motion-ease-standard) infinite
+      alternate;
   }
 }

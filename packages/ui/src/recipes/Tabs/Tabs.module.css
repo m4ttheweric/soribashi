@@ -52,9 +52,9 @@
     user-select: none;
     white-space: nowrap;
     transition:
-      background-color 120ms,
-      color 120ms,
-      border-color 120ms;
+      background-color var(--motion-duration-fast) var(--motion-ease-standard),
+      color var(--motion-duration-fast) var(--motion-ease-standard),
+      border-color var(--motion-duration-fast) var(--motion-ease-standard);
 
     &:hover {
       color: var(--text-default);
@@ -132,8 +132,8 @@
     background: var(--accent-primary, var(--text-default));
     transform: translateX(var(--active-tab-left));
     transition:
-      transform 150ms,
-      width 150ms;
+      transform var(--motion-duration-base) var(--motion-ease-standard),
+      width var(--motion-duration-base) var(--motion-ease-standard);
   }
 
   .root[data-variant="line"][data-orientation="vertical"] .indicator:not([hidden]) {
@@ -150,7 +150,7 @@
     block-size: var(--active-tab-height);
     transform: translateY(var(--active-tab-top));
     transition:
-      transform 150ms,
-      block-size 150ms;
+      transform var(--motion-duration-base) var(--motion-ease-standard),
+      block-size var(--motion-duration-base) var(--motion-ease-standard);
   }
 }

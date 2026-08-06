@@ -14,7 +14,7 @@
        (0, 1px, 2px, 100%) the way `var(--surface-overlay)` is exempt by
        virtue of being a var() reference entirely. */
     background: var(--surface-overlay);
-    transition: opacity 150ms;
+    transition: opacity var(--motion-duration-base) var(--motion-ease-standard);
 
     /* Base UI stamps these while the element enters/exits; combined with
        @starting-style below they give a pure-CSS enter and exit animation.
@@ -73,8 +73,8 @@
     font-size: var(--font-size-sm);
     box-shadow: var(--shadow-md);
     transition:
-      opacity 150ms,
-      transform 150ms;
+      opacity var(--motion-duration-base) var(--motion-ease-standard),
+      transform var(--motion-duration-base) var(--motion-ease-standard);
 
     /* Base UI stamps these while the element enters/exits; combined with
        @starting-style below they give a pure-CSS enter and exit animation.
