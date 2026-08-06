@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from '../src/a11y/contrast.ts';
+import {
+  compositeOverQuantized,
+  contrastRatio,
+  parseColor,
+  relativeLuminance,
+} from '../src/a11y/contrast.ts';
 
 /**
  * Pins the pure WCAG 2.x contrast math against known anchors before the
@@ -74,5 +79,52 @@ describe('contrastRatio', () => {
 
   it('rejects an unparseable color string rather than silently returning NaN', () => {
     expect(() => contrastRatio('oklch(1 0 0)', 'rgb(0, 0, 0)')).toThrow();
+  });
+});
+
+describe('compositeOverQuantized', () => {
+  it('quantizes each composited channel to the 8-bit integer the browser blend lands on', () => {
+    // The design ledger's skeleton.deltaY.* rows model the browser's OWN
+    // alpha blend, which lands on 8-bit integers per channel, not the
+    // continuous values compositeOver keeps. Real inputs from the ledger's
+    // light-mode measurement: fill rgb(225, 231, 239) at the pulse's 0.6
+    // trough opacity over canvas rgb(248, 250, 252). Continuous compositing
+    // gives 234.2 / 238.6 / 244.2; the browser lands on 234 / 239 / 244.
+    // reference.ts's trough bounds were derived with this quantized model,
+    // so the ledger must reproduce it exactly.
+    const out = compositeOverQuantized(
+      parseColor('rgba(225, 231, 239, 0.6)'),
+      parseColor('rgb(248, 250, 252)'),
+    );
+    expect(out).toEqual({ r: 234, g: 239, b: 244, a: 1 });
+  });
+
+  it('is observably different from the continuous compositeOver (the fork it replaces was not redundant)', () => {
+    // The g channel above (238.6 continuous vs 239 quantized) is the proof
+    // that deduping the ledger's local composite through the continuous
+    // compositeOver would have MOVED the measured deltas; the quantized
+    // export exists precisely because that difference is real.
+    const quantized = compositeOverQuantized(
+      parseColor('rgba(225, 231, 239, 0.6)'),
+      parseColor('rgb(248, 250, 252)'),
+    );
+    expect(quantized.g).not.toBe(231 * 0.6 + 250 * 0.4);
+    expect(231 * 0.6 + 250 * 0.4).toBeCloseTo(238.6, 10);
+  });
+});
+
+describe('relativeLuminance', () => {
+  it('uses the WCAG-published linearization threshold, equivalent to the sRGB 0.04045 constant for 8-bit channels', () => {
+    // contrast.ts linearizes with WCAG 2.x's published 0.03928 threshold; the
+    // sRGB standard's is 0.04045. No integer channel lands between them
+    // (10/255 ≈ 0.03922 is below both, 11/255 ≈ 0.04314 above both), so for
+    // every color Chromium actually serializes (integer channels) the two
+    // constants are behaviourally identical. Pinned here from both sides of
+    // the boundary so a future "correction" of the constant in either
+    // direction keeps this documented equivalence true.
+    const below = relativeLuminance(parseColor('rgb(10, 10, 10)'));
+    expect(below).toBeCloseTo(10 / 255 / 12.92, 10);
+    const above = relativeLuminance(parseColor('rgb(11, 11, 11)'));
+    expect(above).toBeCloseTo(((11 / 255 + 0.055) / 1.055) ** 2.4, 10);
   });
 });

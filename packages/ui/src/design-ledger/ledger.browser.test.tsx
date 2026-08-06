@@ -3,6 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import {
+  compositeOverQuantized,
+  parseColor,
+  type RGBA,
+  relativeLuminance,
+} from '../a11y/contrast.ts';
+import {
   installNoTransitionStyle,
   NO_TRANSITION_CLASS,
   resolveCanvasColor,
@@ -373,37 +379,19 @@ describe('design ledger: measured rows', () => {
   // colour it was never built to handle; fail loudly instead of the silent
   // `.slice(0, 3)` an earlier round of this row used, which discarded a
   // possible alpha with no comment at all.
-  function rgbChannels(rgb: string): readonly [number, number, number] {
-    const nums = rgb.match(/[\d.]+/g)!.map(Number);
-    if (nums.length === 4) {
-      throw new Error(`rgbChannels: unexpected alpha channel in "${rgb}"`);
+  // Parsing and luminance/compositing maths come from a11y/contrast.ts (the
+  // package's single tested implementation) rather than local copies; this
+  // wrapper only keeps the loud-alpha input guard, which is ledger-specific
+  // validation, not colour maths. compositeOverQuantized (not the continuous
+  // compositeOver) is deliberate: the reference numbers in reference.ts's
+  // skeleton.deltaY.* witnesses were derived with the browser's own
+  // round-per-channel 8-bit blend, which that export models exactly.
+  function parseOpaque(rgb: string): RGBA {
+    const color = parseColor(rgb);
+    if (color.a !== 1) {
+      throw new Error(`parseOpaque: unexpected alpha channel in "${rgb}"`);
     }
-    return nums as [number, number, number];
-  }
-
-  function relLuminance([r, g, b]: readonly [number, number, number]): number {
-    const lin = (c: number) => {
-      const s = c / 255;
-      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-    };
-    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-  }
-
-  // Composites `fill` over `canvas` at `alpha`, matching how the browser's
-  // own alpha blending lands on 8-bit sRGB channels (round-per-channel, not
-  // linear-light blending): this is the same model used to derive the
-  // reference numbers in reference.ts's skeleton.deltaY.* witnesses, and
-  // reproduces them exactly when fed the same inputs.
-  function compositeOverCanvas(
-    fill: readonly [number, number, number],
-    canvas: readonly [number, number, number],
-    alpha: number,
-  ): readonly [number, number, number] {
-    return fill.map((c, i) => Math.round(c * alpha + canvas[i]! * (1 - alpha))) as [
-      number,
-      number,
-      number,
-    ];
+    return color;
   }
 
   // Reads the LIVE `to` keyframe opacity straight off the CSSOM rather than
@@ -509,14 +497,14 @@ describe('design ledger: measured rows', () => {
       // the dark pass.
       const canvas = toRgbString(resolveCanvasColor(wrapperEl));
 
-      const fillRgb = rgbChannels(fill);
-      const canvasRgb = rgbChannels(canvas);
+      const fillColor = parseOpaque(fill);
+      const canvasColor = parseOpaque(canvas);
       const troughOpacity = findTroughOpacity('sb-skeleton-pulse');
-      const troughRgb = compositeOverCanvas(fillRgb, canvasRgb, troughOpacity);
+      const troughColor = compositeOverQuantized({ ...fillColor, a: troughOpacity }, canvasColor);
 
       return {
-        restingDelta: Math.abs(relLuminance(fillRgb) - relLuminance(canvasRgb)),
-        troughDelta: Math.abs(relLuminance(troughRgb) - relLuminance(canvasRgb)),
+        restingDelta: Math.abs(relativeLuminance(fillColor) - relativeLuminance(canvasColor)),
+        troughDelta: Math.abs(relativeLuminance(troughColor) - relativeLuminance(canvasColor)),
         troughOpacity,
         fill,
         canvas,
