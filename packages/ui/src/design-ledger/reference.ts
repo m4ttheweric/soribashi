@@ -96,8 +96,8 @@ export const REFERENCE: Record<string, FloorWitness> = {
     bound: 0.08,
     witness:
       // "Y" throughout both skeleton.deltaY.* witnesses means WCAG relative
-      // luminance (the same 0-1 scale ledger.browser.test.tsx's own
-      // relLuminance computes over real rendered rgb() channels), NOT OKLCH's
+      // luminance (the same 0-1 scale a11y/contrast.ts's relativeLuminance
+      // computes over real rendered rgb() channels), NOT OKLCH's
       // "L" lightness channel, which is what the shadcn citation numbers
       // below are measured in. The two scales are cited side by side on
       // purpose (they disagree about how big this gap looks), never

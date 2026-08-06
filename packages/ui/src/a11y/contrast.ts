@@ -65,6 +65,24 @@ export function compositeOver(color: RGBA, backdrop: RGBA): RGBA {
 }
 
 /**
+ * Browser-faithful "over" compositing: the same operation as `compositeOver`,
+ * with each channel then quantized to the 8-bit integer the browser's own
+ * alpha blend actually lands on. `compositeOver` deliberately stays
+ * continuous (contrast-math.test.ts pins its 127.5 half-blend), which is the
+ * right model for grading ratios; this variant exists for measurements that
+ * must reproduce what `getComputedStyle` would report after a real paint,
+ * where channels are always integers. The design ledger's skeleton.deltaY.*
+ * rows depend on it: their reference bounds (packages/ui/src/design-ledger/
+ * reference.ts) were derived with this quantized model and sit close enough
+ * to their floors that the sub-channel difference between the two models is
+ * observable.
+ */
+export function compositeOverQuantized(color: RGBA, backdrop: RGBA): RGBA {
+  const c = compositeOver(color, backdrop);
+  return { r: Math.round(c.r), g: Math.round(c.g), b: Math.round(c.b), a: 1 };
+}
+
+/**
  * WCAG 2.x contrast ratio between `fg` and `bg`, both Chromium-serialized
  * `rgb()`/`rgba()` computed-style strings. Either (or both) may carry
  * alpha < 1 (the design system's `outline`/`ghost`/`link`/`subtle` variants
