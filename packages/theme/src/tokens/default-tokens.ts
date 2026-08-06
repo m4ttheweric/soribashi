@@ -232,8 +232,13 @@ export const defaultTokens: ThemeTokens = {
     // For ambient/looping animations (Skeleton's pulse), not interaction
     // feedback: a 1.5s cycle is a different animal from the fast/base/slow
     // interaction ramp, so it gets its own key instead of stretching the
-    // ramp. The reduced-motion collapse in emit-css.ts iterates all duration
-    // keys, so this one is honoured there automatically too.
+    // ramp. Note the emit-css.ts reduced-motion collapse (every duration key
+    // to 0.01ms) hits this key too, but that collapse is only correct for
+    // one-shot transitions: an infinite-alternate animation at near-zero
+    // duration cycles keyframes every frame at arbitrary phase (flicker).
+    // A consumer of this token for an infinite animation must opt out under
+    // prefers-reduced-motion itself, the way Skeleton.module.css sets
+    // `animation: none` and rests on its keyframes' `from` frame.
     pulse: '1500ms',
   },
   motionEase: {
