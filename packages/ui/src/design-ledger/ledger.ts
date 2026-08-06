@@ -145,6 +145,18 @@ export const LEDGER: readonly LedgerRow[] = [
   },
 ];
 
+/**
+ * The declared tolerance of a row, for assertions to read: a row's tolerance
+ * is only real if the assertion that measures the row compares through it
+ * (ledger-guard.test.ts enforces the linkage by scanning for
+ * `toleranceOf('<id>')`). A row that declares none tolerates nothing: 0.
+ */
+export function toleranceOf(id: string): number {
+  const row = LEDGER.find((r) => r.id === id);
+  if (!row) throw new Error(`no ledger row '${id}'`);
+  return row.tolerance ?? 0;
+}
+
 // A pass/fail count alone reads as "done"; naming what the ledger did NOT
 // look at keeps a green run honest about the difference between "no known
 // defect" and "swept". This is read on every run, not filed away in a spec
