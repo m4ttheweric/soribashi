@@ -98,14 +98,15 @@ export function extractTokenDependencies(css: string): string[] {
 
 /**
  * Recipe names this recipe's .tsx imports from sibling recipe directories
- * (the mandated cross-recipe form '../<Name>/...'), lowercased to
- * registry-item names, sorted and deduped. The uppercase first letter is
- * what distinguishes a sibling recipe directory from '../../builders.ts'
- * and relative non-recipe paths.
+ * (the mandated cross-recipe form '../<Name>/...', single- or double-quoted),
+ * lowercased to registry-item names, sorted and deduped. The uppercase first
+ * letter is what distinguishes a sibling recipe directory from
+ * '../../builders.ts' and relative non-recipe paths. Barrel imports
+ * ('../../index.ts', '@soribashi/ui') remain undetected — a known residual.
  */
 export function extractRecipeDependencies(tsxSource: string): string[] {
   const found = new Set<string>();
-  const re = /from\s+'\.\.\/([A-Z][A-Za-z0-9]*)\//g;
+  const re = /from\s+['"]\.\.\/([A-Z][A-Za-z0-9]*)\//g;
   let match: RegExpExecArray | null;
   // biome-ignore lint/suspicious/noAssignInExpressions: standard exec-loop idiom
   while ((match = re.exec(tsxSource)) !== null) {

@@ -136,6 +136,12 @@ describe('extractRecipeDependencies', () => {
     expect(extractRecipeDependencies(src)).toEqual([]);
   });
 
+  it('extractRecipeDependencies detects double-quoted sibling imports', () => {
+    expect(extractRecipeDependencies(`import { Field } from "../Field/Field.tsx";`)).toEqual([
+      'field',
+    ]);
+  });
+
   it('dedupes and sorts multiple imports from sibling recipes', () => {
     const src = [
       `import { Field, FieldAnatomyContext } from '../Field/Field.tsx';`,
