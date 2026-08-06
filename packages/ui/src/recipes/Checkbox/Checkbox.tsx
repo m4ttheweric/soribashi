@@ -84,7 +84,21 @@ export interface CheckboxProps
   error?: ReactNode;
 }
 
-const CHECK_PATH = 'M3.5 7.5 6 10l6-7';
+/**
+ * Centred in the 12x12 viewBox. The original path ('M3.5 7.5 6 10l6-7')
+ * spanned x 3.5..12 (centre 7.75, not 6) and y 3..10 (centre 6.5, not 6):
+ * the glyph itself sat off-centre inside its own SVG bounds, so however
+ * perfectly flex centred the SVG element in the control, the painted check
+ * rendered visibly right-and-down of centre at every size. This is the same
+ * class of defect as RadioGroup's half-pixel dot and Switch's padding-box
+ * thumb (STATUS.md design-ledger record): the fix moves the geometry, it
+ * does not nudge the container. This path is the original translated by
+ * (-1.75, -0.5) -- identical shape, bounds x 1.75..10.25 and y 2.5..9.5,
+ * both centred on 6. Round stroke caps extend symmetrically, so geometric
+ * centring is painted centring. Pinned by Checkbox.test.tsx's
+ * symmetric-gaps measurement at every size.
+ */
+const CHECK_PATH = 'M1.75 7 4.25 9.5l6-7';
 // A horizontal bar, not the checked glyph: indeterminate ("some selected")
 // must read differently from checked ("all selected") to a sighted user.
 // The ARIA (`aria-checked="mixed"`) already distinguishes the two states for

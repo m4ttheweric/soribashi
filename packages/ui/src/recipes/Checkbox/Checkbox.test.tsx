@@ -163,6 +163,77 @@ describe('Checkbox (browser)', () => {
     expect(checkedPath).not.toBe(indeterminatePath);
   });
 
+  it('centers the visible glyph in the control at every size, checked and indeterminate (symmetric gaps)', async () => {
+    // Regression pin for the off-center check glyph: the SVG element itself
+    // is always flex-centered, so this measures the PATH's rendered bounding
+    // box (the glyph's actual geometry, scaled through the viewBox) against
+    // the control's, modelled on design-ledger/measure.ts's centeringGaps
+    // idiom (local copy, not an import: recipes stand alone, same rationale
+    // as Dialog.test.tsx's duplicated helpers). Both glyphs coexist in the
+    // DOM with CSS toggling visibility off data-indeterminate, so each
+    // state's measurement first finds the VISIBLE svg.
+    const centeringGaps = (outer: Element, inner: Element) => {
+      const o = outer.getBoundingClientRect();
+      const i = inner.getBoundingClientRect();
+      return {
+        left: i.left - o.left,
+        right: o.right - i.right,
+        top: i.top - o.top,
+        bottom: o.bottom - i.bottom,
+      };
+    };
+    const sizes = uiVocabulary.size.values;
+    const screen = await wrap(
+      <>
+        {sizes.map((size) => (
+          <Checkbox
+            key={`c-${size}`}
+            size={size}
+            defaultChecked
+            label={`checked-${size}`}
+            classNames={{
+              control: `probe-center-checked-${size}-control`,
+              indicator: `probe-center-checked-${size}-indicator`,
+            }}
+          />
+        ))}
+        {sizes.map((size) => (
+          <Checkbox
+            key={`i-${size}`}
+            size={size}
+            indeterminate
+            label={`indeterminate-${size}`}
+            classNames={{
+              control: `probe-center-indeterminate-${size}-control`,
+              indicator: `probe-center-indeterminate-${size}-indicator`,
+            }}
+          />
+        ))}
+      </>,
+    );
+
+    for (const state of ['checked', 'indeterminate'] as const) {
+      for (const size of sizes) {
+        const control = screen.container.querySelector(`.probe-center-${state}-${size}-control`);
+        const svgs = screen.container.querySelectorAll<SVGElement>(
+          `.probe-center-${state}-${size}-indicator svg`,
+        );
+        const visible = Array.from(svgs).filter((svg) => getComputedStyle(svg).display !== 'none');
+        expect(visible, `${state}/${size}: exactly one visible glyph`).toHaveLength(1);
+        const path = visible[0]!.querySelector('path')!;
+        const gaps = centeringGaps(control!, path);
+        expect(
+          Math.abs(gaps.left - gaps.right),
+          `${state}/${size}: inline gaps asymmetric (left=${gaps.left.toFixed(2)} right=${gaps.right.toFixed(2)})`,
+        ).toBeLessThanOrEqual(0.5);
+        expect(
+          Math.abs(gaps.top - gaps.bottom),
+          `${state}/${size}: block gaps asymmetric (top=${gaps.top.toFixed(2)} bottom=${gaps.bottom.toFixed(2)})`,
+        ).toBeLessThanOrEqual(0.5);
+      }
+    }
+  });
+
   it('changes the checked control background with intent (computed, not attribute)', async () => {
     const screen = await wrap(
       <>
