@@ -172,23 +172,35 @@ describe('design ledger: measured rows', () => {
   });
 
   it('focus.ring.uniform', async () => {
-    // vitest-browser gives every test FILE its own document, and a CSS
-    // module only lands a <style> tag in that document once something in
-    // THIS file actually references the module's binding (a bare `import`
-    // with no use gets elided by esbuild's TS transform, same as an
-    // unused type-only import, so it never runs). RadioGroup/Select/Switch/
-    // Tabs already get mounted by the earlier rows above; Accordion, Alert,
-    // Button, Checkbox, TextInput, and Textarea are mounted here for the
-    // sole purpose of registering their stylesheets before the scan below,
-    // confirmed necessary by first running this scan against only the
-    // recipes the earlier rows already mount: it found just two of the five
-    // known offenders (RadioGroup, Switch) because Alert/Button/Checkbox
-    // were never otherwise imported into this file.
-    await wrap(
-      <>
-        <Alert withCloseButton>Alert body</Alert>
-        <Button>Button label</Button>
-        <Checkbox label="Checkbox label" />
+    // "Uniform" means the RENDERED ring, not the source text. The previous
+    // shape of this row scanned document.styleSheets for rules mentioning
+    // --accent-primary and asserted each contained the exact fallback string
+    // `var(--accent-primary, var(--text-default))` — which passes even when
+    // recipes' computed rings genuinely differ (a divergent outline-width or
+    // outline-style, or a ring rule sitting on an element that never takes
+    // focus, was invisible to it). This version focuses the real control in
+    // every covered recipe (the row's own `covers` list is ground truth) via
+    // a real keyboard Tab, reads the computed outline triple off the
+    // actually-focused element, and asserts the whole set collapses to
+    // exactly one distinct tuple.
+    //
+    // The mount-completeness guard in ledger-guard.test.ts (every recipe
+    // referencing --accent-primary must be mounted in this file) still keeps
+    // the covers list honest: measuring a computed ring requires the mount
+    // it checks for.
+    const row = LEDGER.find((r) => r.id === 'focus.ring.uniform');
+    expect(row?.covers?.length).toBeGreaterThan(0);
+
+    const radioItems = [
+      { label: 'One', value: 'one' },
+      { label: 'Two', value: 'two' },
+    ];
+    // One fixture per covered recipe, arranged so the FIRST tabbable element
+    // in the fixture is the control whose ring the recipe styles (Tab lands
+    // there from a fresh, otherwise-empty document; each fixture unmounts
+    // before the next mounts).
+    const mounts: Record<string, React.ReactElement> = {
+      Accordion: (
         <Accordion.Root>
           <Accordion.Item value="a">
             <Accordion.Header>
@@ -197,68 +209,64 @@ describe('design ledger: measured rows', () => {
             <Accordion.Panel>Panel</Accordion.Panel>
           </Accordion.Item>
         </Accordion.Root>
-        <TextInput label="Input" />
-        <Textarea label="Textarea" />
-      </>,
+      ),
+      Alert: <Alert withCloseButton>Alert body</Alert>,
+      Button: <Button>Button label</Button>,
+      Checkbox: <Checkbox label="Checkbox label" />,
+      RadioGroup: <RadioGroup items={radioItems} defaultValue="one" />,
+      Select: <Select items={[{ label: 'Apple', value: 'apple' }]} defaultValue="apple" />,
+      Switch: <Switch />,
+      Tabs: (
+        <Tabs.Root defaultValue="a">
+          <Tabs.List>
+            <Tabs.Tab value="a">First</Tabs.Tab>
+            <Tabs.Tab value="b">Second</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="a">Panel</Tabs.Panel>
+        </Tabs.Root>
+      ),
+      TextInput: <TextInput label="Input" />,
+      Textarea: <Textarea label="Textarea" />,
+    };
+    const unfixtured = (row?.covers ?? []).filter((name) => !(name in mounts));
+    expect(unfixtured, `covered recipes with no mount fixture: ${unfixtured.join(', ')}`).toEqual(
+      [],
     );
 
-    const probe = document.createElement('div');
-    document.body.appendChild(probe);
-    probe.style.outlineColor = 'var(--accent-primary, var(--text-default))';
-    const expected = getComputedStyle(probe).outlineColor;
-    probe.remove();
+    const results: { recipe: string; ring: string }[] = [];
+    for (const recipe of row?.covers ?? []) {
+      const screen = await wrap(mounts[recipe]!);
+      // Isolation between fixtures is hide-not-unmount: calling
+      // screen.unmount() inside the loop produced overlapping act() warnings
+      // and corrupted every later render in this file (observed directly).
+      // A display: none ancestor removes the previous fixture from the tab
+      // order just as thoroughly, so each Tab below can only land in the
+      // current fixture. Blur first so Tab always starts from <body>.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+      // A real Tab keypress, not element.focus(): keyboard modality is what
+      // guarantees :focus-visible matches in Chromium for button-like
+      // controls (programmatic focus after a pointer interaction would not).
+      await userEvent.tab();
+      const el = document.activeElement;
+      expect(
+        el instanceof HTMLElement && el !== document.body,
+        `${recipe}: Tab moved focus to ${el?.tagName ?? 'nothing'}, not a control`,
+      ).toBe(true);
+      const cs = getComputedStyle(el as HTMLElement);
+      results.push({
+        recipe,
+        ring: `${cs.outlineColor} | ${cs.outlineWidth} | ${cs.outlineStyle}`,
+      });
+      (screen.container as HTMLElement).style.display = 'none';
+    }
 
-    // Recurses into grouping rules for the same reason findTroughOpacity
-    // below does: each of this package's CSS Modules arrives as ONE top-level
-    // CSSLayerBlockRule whose cssText is the whole file. Scanning top-level
-    // rules therefore asked "does this FILE contain the correct string
-    // somewhere", which any one correct rule answers on behalf of every
-    // divergent rule beside it. Proven by injecting a layer block holding one
-    // correct and one divergent --accent-primary rule: the top-level-only
-    // scan reported zero offenders. It matters for the compounds, Tabs and
-    // Select, which have several focusable slots and so several such rules
-    // per file.
-    //
-    // Each rule is judged on `style.cssText`, its own declarations, rather
-    // than `cssText`, which for a nested rule carries its children's text
-    // too and would reintroduce the same "somewhere in here" question one
-    // level down.
-    const offenders: string[] = [];
-    const matched: string[] = [];
-    function scan(rules: CSSRuleList): void {
-      for (const rule of Array.from(rules)) {
-        const declarations = (rule as CSSStyleRule).style;
-        const text = declarations?.cssText ?? '';
-        if (text.includes('--accent-primary')) {
-          const selector = (rule as CSSStyleRule).selectorText;
-          matched.push(selector);
-          if (!text.includes('var(--accent-primary, var(--text-default))')) {
-            offenders.push(`${selector} { ${text} }`.slice(0, 160));
-          }
-        }
-        const nested = (rule as CSSGroupingRule).cssRules;
-        if (nested) scan(nested);
-      }
-    }
-    for (const sheet of document.styleSheets) {
-      let rules: CSSRuleList;
-      try {
-        rules = sheet.cssRules;
-      } catch {
-        continue;
-      }
-      scan(rules);
-    }
-    // Floor, same rationale as the recipeCount floor in reskin.test.tsx: a
-    // scan whose matcher stops matching anything reports zero offenders and
-    // reads as green. 13 rules carry --accent-primary across the recipes
-    // mounted above at the time of writing, Tabs contributing three of them.
+    const rings = new Set(results.map((r) => r.ring));
     expect(
-      matched.length,
-      `focus ring scan matched ${matched.length} rules; it has stopped seeing the recipes`,
-    ).toBeGreaterThanOrEqual(10);
-    expect(offenders, `divergent focus ring fallbacks:\n${offenders.join('\n')}`).toEqual([]);
-    expect(expected).toBeTruthy();
+      rings.size,
+      `focus.ring.uniform: expected one computed ring treatment across covered recipes, got:\n${results
+        .map((r) => `  ${r.recipe}: ${r.ring}`)
+        .join('\n')}`,
+    ).toBe(1);
   });
 
   it('controls.sharedHeight', async () => {
