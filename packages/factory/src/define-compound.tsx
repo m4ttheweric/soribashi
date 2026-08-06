@@ -599,8 +599,18 @@ export function defineCompound<
             config.variants,
           );
 
-          const { as: asProp, ...rest } = merged as {
+          // Base UI's `render` prop is not part of soribashi's public part
+          // API: drop it here so it can never be spread into Base UI or onto
+          // the DOM element. Recipes' own type-level Omit<..., 'render'> and
+          // runtime destructures remain as an unreachable double-guard (the
+          // same posture slice 4 took for className/style).
+          const {
+            as: asProp,
+            render: _render,
+            ...rest
+          } = merged as {
             as?: keyof JSX.IntrinsicElements;
+            render?: unknown;
             [key: string]: unknown;
           };
           const Element = (asProp ?? polyConfig.defaultElement) as keyof JSX.IntrinsicElements;
@@ -751,11 +761,21 @@ export function defineCompound<
               variant: TVariants[number] | undefined;
             });
 
+      // Base UI's `render` prop is not part of soribashi's public part API:
+      // drop it here so it can never be spread into Base UI or onto the DOM
+      // element. Recipes' own type-level Omit<..., 'render'> and runtime
+      // destructures remain as an unreachable double-guard (the same posture
+      // slice 4 took for className/style).
+      const { render: _render, ...partProps } = merged as {
+        render?: unknown;
+        [key: string]: unknown;
+      };
+
       return (partConfig.render as (c: PartRenderCtx<any, TCtxExtra, TVariants>) => ReactNode)({
-        props: merged,
+        props: partProps,
         getStyles: partGetStyles,
         ctx: ctxToPass as TCtxExtra & { variant: TVariants[number] | undefined },
-        children: (merged as { children?: ReactNode }).children,
+        children: (partProps as { children?: ReactNode }).children,
         ref,
       });
     });
