@@ -93,6 +93,22 @@ describe('ledger coverage', () => {
     ).toEqual([]);
   });
 
+  it('every row declaring a tolerance is asserted through it (tolerance is not decoration)', () => {
+    // Same static-scan idiom as guard clause 1 above: a row that declares a
+    // tolerance the assertion never reads is a magic number wearing a
+    // uniform. `toleranceOf('<id>')` in the browser runner is the greppable
+    // linkage that proves the declared number is the one the assertion uses.
+    const source = readFileSync(join(import.meta.dirname, 'ledger.browser.test.tsx'), 'utf8');
+    const decorative = LEDGER.filter(
+      (row) => row.tolerance !== undefined && !source.includes(`toleranceOf('${row.id}')`),
+    ).map((r) => r.id);
+    expect(
+      decorative,
+      `These rows declare a tolerance no assertion reads: ${decorative.join(', ')}. ` +
+        "Assert through toleranceOf('<row id>') in ledger.browser.test.tsx, or delete the field.",
+    ).toEqual([]);
+  });
+
   it('every declared row names a tier', () => {
     const untiered = LEDGER.filter((r) => r.tier !== 'token' && r.tier !== 'measured');
     expect(untiered.map((r) => r.id)).toEqual([]);

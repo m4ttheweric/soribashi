@@ -27,7 +27,7 @@ import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { uiTheme } from '../theme.ts';
-import { LEDGER } from './ledger.ts';
+import { LEDGER, toleranceOf } from './ledger.ts';
 import { centeringGaps, isCentered } from './measure.ts';
 import { REFERENCE } from './reference.ts';
 
@@ -328,9 +328,12 @@ describe('design ledger: measured rows', () => {
         (el) => Math.round(el.getBoundingClientRect().height * 100) / 100,
       );
       const [a, b, c] = heights as [number, number, number];
+      // Sub-pixel layout is real; the permitted disagreement is the row's own
+      // declared tolerance (ledger.ts), not an inline constant.
+      const tolerance = toleranceOf('controls.sharedHeight');
       expect(
-        Math.abs(a - b) < 0.5 && Math.abs(a - c) < 0.5,
-        `${size}: control heights disagree. button ${a}, input ${b}, select ${c}`,
+        Math.abs(a - b) < tolerance && Math.abs(a - c) < tolerance,
+        `${size}: control heights disagree beyond the declared ${tolerance}px tolerance. button ${a}, input ${b}, select ${c}`,
       ).toBe(true);
     }
   });
