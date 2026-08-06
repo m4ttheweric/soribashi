@@ -38,6 +38,13 @@ export function CheckboxPage() {
         <Checkbox label="Disabled, unchecked" disabled />
         <Checkbox label="Disabled, checked" disabled defaultChecked />
       </div>
+
+      <h2>Field anatomy</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '20rem' }}>
+        <Checkbox label="Label only (bare containment)" />
+        <Checkbox label="Subscribe" description="A weekly email. Unsubscribe any time." />
+        <Checkbox label="Accept the terms" description="Required to continue." error="Required" />
+      </div>
     </div>
   );
 }

@@ -150,7 +150,7 @@ describe('extractRecipeDependencies', () => {
   });
 });
 
-it('derives registryDependencies: [] for every current recipe except TextInput, Textarea, Switch, and RadioGroup (-> field)', async () => {
+it('derives registryDependencies: [] for every current recipe except TextInput, Textarea, Switch, RadioGroup, and Checkbox (-> field)', async () => {
   // Task 3 landed this as an all-[] degenerate case (no recipe imported a
   // sibling recipe yet). TextInput (Task 5) is the first real, non-empty
   // instance: its render imports `Field` via '../Field/Field.tsx', so
@@ -160,13 +160,15 @@ it('derives registryDependencies: [] for every current recipe except TextInput, 
   // template plus the Field anatomy contract). RadioGroup (Task 8) mirrors it
   // a fourth time (its own items.ts module plus the same Field anatomy
   // contract; items.ts itself imports nothing from Field, so it contributes
-  // no extra dependency edge). Every OTHER recipe stays degenerate, so this
-  // keeps asserting that blanket case for everything but the four recipes
+  // no extra dependency edge). Checkbox (the 2026-08-06 debt sweep's Field
+  // anatomy migration) is the fifth: description/error now render through
+  // Field.Root anatomy mode. Every OTHER recipe stays degenerate, so this
+  // keeps asserting that blanket case for everything but the five recipes
   // that have grown a real dependency. A named list, not a wildcard: a future
   // recipe that happens to also import Field must be added here explicitly,
   // not silently swept in.
   const manifest = await buildManifest();
-  const FIELD_DEPENDENTS = new Set(['TextInput', 'Textarea', 'Switch', 'RadioGroup']);
+  const FIELD_DEPENDENTS = new Set(['TextInput', 'Textarea', 'Switch', 'RadioGroup', 'Checkbox']);
   for (const recipe of manifest.recipes) {
     if (FIELD_DEPENDENTS.has(recipe.name)) {
       expect(recipe.registryDependencies, recipe.name).toEqual(['field']);

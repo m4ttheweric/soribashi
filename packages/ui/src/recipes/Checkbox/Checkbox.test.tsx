@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { formatViolations, runAxe } from '../../a11y/axe.ts';
 import { uiTheme, uiVocabulary } from '../../theme.ts';
+import { Field } from '../Field/Field.tsx';
 import { Checkbox } from './Checkbox.tsx';
 
 // `render` from vitest-browser-react resolves a Promise<RenderResult>; `wrap`
@@ -42,6 +43,48 @@ describe('Checkbox (browser)', () => {
     await control.click({ force: true });
     expect(onCheckedChange).not.toHaveBeenCalled();
     await expect.element(control).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('renders description and error through the Field anatomy when provided', async () => {
+    // Same aria-describedby-chain assertion Switch.test.tsx's
+    // assertNotifyFieldAnatomy uses: Base UI's Field wires the description
+    // and (match-forced) error ids onto the control automatically.
+    const screen = await wrap(<Checkbox label="A" description="B" error="C" />);
+    const control = screen.getByRole('checkbox', { name: 'A' });
+    await expect.element(control).toBeInTheDocument();
+    const el = control.element() as HTMLElement;
+    const ids = (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean);
+    const describedText = ids.map((id) => document.getElementById(id)?.textContent ?? '').join(' ');
+    expect(describedText).toContain('B');
+    expect(describedText).toContain('C');
+  });
+
+  it('renders only the bare control + label when no description/error is present', async () => {
+    // The locked compatibility decision: `label` alone keeps the native
+    // label-wraps-control containment (real association, pinned by the
+    // label-click test above), with NO Field.Root wrapper in the tree. The
+    // recipe's outermost element is the <label> itself, mounted directly in
+    // the render container.
+    const screen = await wrap(<Checkbox label="Accept" />);
+    const el = screen.getByRole('checkbox').element() as HTMLElement;
+    const labelEl = el.closest('label');
+    expect(labelEl).not.toBeNull();
+    expect(labelEl?.parentElement).toBe(screen.container);
+    expect(el.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('warns in dev when given anatomy props inside a hand-composed Field.Root', async () => {
+    // Same warning idiom as Switch.test.tsx's nested-warning case.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const screen = await wrap(
+      <Field.Root>
+        <Field.Label>Outer</Field.Label>
+        <Checkbox label="Inner" description="hint" />
+      </Field.Root>,
+    );
+    expect(warn.mock.calls.some(([msg]) => String(msg).includes('Checkbox'))).toBe(true);
+    await expect.element(screen.getByRole('checkbox')).toBeInTheDocument();
+    warn.mockRestore();
   });
 
   it('calls onCheckedChange with the new value on a real click', async () => {
