@@ -104,6 +104,19 @@ export const LEDGER: readonly LedgerRow[] = [
     bound: 0.05,
     witness: 'see reference.ts',
   },
+  {
+    id: 'accordion.panel.animates',
+    species: 'invariant',
+    tier: 'measured',
+    assert: 'predicate',
+    // The 2026-08-03 defect: keepMounted/keyframes/panelContent all required
+    // together (STATUS.md design-ledger record) before the panel animated at
+    // all. coverageReport credited Accordion without this row ever existing,
+    // so a regression of its one known defect would have been invisible to
+    // the ledger. This row pins the observable outcome: an opening panel has
+    // a real, running animation with a nonzero duration.
+    covers: ['Accordion'],
+  },
   // The first identity rows (part 2, step 1). An identity row records
   // soribashi's OWN decision, with no external witness: the value asserted is
   // what the shipped uiTheme actually renders, measured before being written

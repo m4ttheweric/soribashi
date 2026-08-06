@@ -269,6 +269,46 @@ describe('design ledger: measured rows', () => {
     ).toBe(1);
   });
 
+  it('accordion.panel.animates', async () => {
+    // The 2026-08-03 defect this row earns Accordion's coverage credit for:
+    // the panel needed keepMounted, keyframes, and the panelContent slot all
+    // together before it animated at all. The row pins the observable
+    // outcome only — an opening panel carries a real animation with a
+    // nonzero duration — NOT the one-off frame-sampling monotonicity sweep
+    // the original fix used for verification. Reading computed style after
+    // the click is race-free: `.panel[data-open]`'s animation declaration
+    // keeps animation-name/duration computed on the element for as long as
+    // the panel is open, even after the animation itself finishes.
+    const screen = await wrap(
+      <Accordion.Root>
+        <Accordion.Item value="a">
+          <Accordion.Header>
+            <Accordion.Trigger>Trigger</Accordion.Trigger>
+          </Accordion.Header>
+          <Accordion.Panel>Panel body</Accordion.Panel>
+        </Accordion.Item>
+      </Accordion.Root>,
+    );
+    await userEvent.click(screen.getByRole('button').element());
+
+    // `[class*="panel"]` would also match `.panelContent`, but the panel is
+    // its ancestor and precedes it in document order, and `[data-open]` is
+    // stamped on the panel part only (Base UI's own attribute).
+    const panel = await vi.waitUntil(
+      () => screen.container.querySelector('[class*="panel"][data-open]'),
+      { timeout: 2000 },
+    );
+    const cs = getComputedStyle(panel);
+    expect(
+      cs.animationName,
+      'open panel declares no animation (the 2026-08-03 defect: nothing animates)',
+    ).not.toBe('none');
+    expect(
+      Number.parseFloat(cs.animationDuration),
+      `open panel's animation has no duration (got "${cs.animationDuration}"); the token feeding it stopped resolving`,
+    ).toBeGreaterThan(0);
+  });
+
   it('controls.sharedHeight', async () => {
     // Button/TextInput/Select each carry their own independently authored
     // dimension record (BUTTON_HEIGHTS/TEXTINPUT_HEIGHTS/
