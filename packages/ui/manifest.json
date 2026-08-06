@@ -224,7 +224,7 @@
       "name": "Checkbox",
       "category": 4,
       "builder": "defineComponent",
-      "slots": ["root", "control", "indicator", "label"],
+      "slots": ["root", "control", "indicator", "label", "description", "error"],
       "parts": [],
       "vocabularyAxes": ["size", "intent"],
       "variants": [],
@@ -248,7 +248,7 @@
         "--text-default"
       ],
       "baseUi": true,
-      "registryDependencies": []
+      "registryDependencies": ["field"]
     },
     {
       "name": "Container",

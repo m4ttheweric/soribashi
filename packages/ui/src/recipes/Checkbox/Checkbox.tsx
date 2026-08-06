@@ -1,6 +1,8 @@
 import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
 import type { ReactNode, Ref } from 'react';
+import { useContext } from 'react';
 import { defineComponent } from '../../builders.ts';
+import { Field, FieldAnatomyContext } from '../Field/Field.tsx';
 import classes from './Checkbox.module.css';
 
 /**
@@ -54,15 +56,32 @@ const CHECKBOX_SIZES: Record<string, string> = {
 export interface CheckboxProps
   extends Omit<BaseCheckbox.Root.Props, 'render' | 'className' | 'style' | 'children'> {
   /**
-   * Label text/content rendered beside the control, inside the same
-   * `<label>` element the control mounts into. This is real label
-   * association (native label-wraps-control semantics), not proximity: the
-   * hidden native input Base UI's Root renders is a descendant of this
-   * `<label>`, so clicking the label text dispatches a click at that input
-   * the same way a native `<label><input type="checkbox">Text</label>`
-   * would.
+   * Label text/content rendered beside the control. The locked
+   * compatibility decision of the Field-anatomy migration: when `label` is
+   * the ONLY anatomy present, it renders inside the same `<label>` element
+   * the control mounts into -- real label association (native
+   * label-wraps-control semantics), not proximity: the hidden native input
+   * Base UI's Root renders is a descendant of this `<label>`, so clicking
+   * the label text dispatches a click at that input the same way a native
+   * `<label><input type="checkbox">Text</label>` would. When `description`
+   * or `error` is also present (Field anatomy mode), the label renders
+   * through `Field.Label` instead, the way Switch's always does; the
+   * association is then Base UI Field's own `<label for>` wiring, equally
+   * real.
    */
   label?: ReactNode;
+  /**
+   * Field description/hint, rendered via `Field.Description` when present.
+   * Its presence (or `error`'s) is what switches the recipe into
+   * `Field.Root` anatomy mode; see the render doc comment.
+   */
+  description?: ReactNode;
+  /**
+   * Field error, rendered via `Field.Error` (forced-visible) when present.
+   * Its presence (or `description`'s) is what switches the recipe into
+   * `Field.Root` anatomy mode; see the render doc comment.
+   */
+  error?: ReactNode;
 }
 
 const CHECK_PATH = 'M3.5 7.5 6 10l6-7';
@@ -129,13 +148,13 @@ function DashMark() {
  */
 export const Checkbox = defineComponent<
   CheckboxProps,
-  readonly ['root', 'control', 'indicator', 'label'],
+  readonly ['root', 'control', 'indicator', 'label', 'description', 'error'],
   readonly [],
   readonly ['size', 'intent']
 >({
   name: 'Checkbox',
   vocabularyAxes: ['size', 'intent'] as const,
-  selectors: ['root', 'control', 'indicator', 'label'] as const,
+  selectors: ['root', 'control', 'indicator', 'label', 'description', 'error'] as const,
   classes,
   defaults: { intent: 'primary', size: 'md' },
   // Checkbox declares no variants, so autoVars (which needs both `intent`
@@ -162,15 +181,33 @@ export const Checkbox = defineComponent<
       },
     };
   },
+  /**
+   * The two-mode Field anatomy contract (authoring skill section 19), with
+   * this recipe's locked compatibility decision layered on top: `label`
+   * ALONE keeps the pre-migration native label-wraps-control containment
+   * (pixel- and behaviour-identical for every existing call site, pinned by
+   * the label-click test), and only `description`/`error` presence switches
+   * the render into `Field.Root` anatomy mode, where the label renders
+   * through `Field.Label` the way Switch's does. `data-layout="row"`
+   * applies in anatomy mode (checkbox is a row control like Switch).
+   * `useContext(FieldAnatomyContext)` inside this `render` function body is
+   * legal for the reason TextInput.tsx's doc comment gives: the builder
+   * calls `config.render(...)` as a plain, unconditional, synchronous
+   * function call from a fixed point in its own render body.
+   */
   render: ({ props, getStyles, ref }) => {
     // Vocabulary axis props (size/intent) are NOT stripped by the builder
     // before render and getStyles('control') already emits data-size/
     // data-intent there, so they're destructured out here rather than
-    // spread onto the DOM. classNames/styles/vars/attributes/unstyled are
-    // the Styles API's own config surface, not valid DOM attributes, and
-    // are stripped the same way Alert.tsx/Badge.tsx strip them.
+    // spread onto the DOM. label/description/error are this recipe's own
+    // convenience props, consumed below rather than forwarded to the
+    // control. classNames/styles/vars/attributes/unstyled are the Styles
+    // API's own config surface, not valid DOM attributes, and are stripped
+    // the same way Alert.tsx/Badge.tsx strip them.
     const {
       label,
+      description,
+      error,
       size: _size,
       intent: _intent,
       classNames: _classNames,
@@ -181,30 +218,61 @@ export const Checkbox = defineComponent<
       ...rest
     } = props as CheckboxProps & Record<string, unknown>;
 
+    const hasFieldAnatomy = description != null || error != null;
+    const inAncestorField = useContext(FieldAnatomyContext);
+    if (process.env.NODE_ENV !== 'production' && hasFieldAnatomy && inAncestorField) {
+      console.warn(
+        '[soribashi] Checkbox received description/error inside a hand-composed ' +
+          'Field.Root. The two are mutually exclusive: use the bare control inside Field.Root ' +
+          'and compose Field.Label/Field.Description/Field.Error yourself.',
+      );
+    }
+
+    /*
+     * `ref` lands on Checkbox.Root (the interactive control) in both modes,
+     * not on the wrapper that carries the `root` selector's styles. This
+     * diverges from Alert's convention (ref and `root` on the same element)
+     * deliberately: a checkbox's ref is far more useful pointed at the
+     * actual `role="checkbox"` control (focus/measure/query it directly,
+     * the way a native `<input ref>` would) than at a non-interactive
+     * wrapper.
+     */
+    const control = (
+      <BaseCheckbox.Root
+        ref={ref as Ref<HTMLElement>}
+        {...(rest as Omit<CheckboxProps, 'label' | 'description' | 'error'>)}
+        {...getStyles('control')}
+      >
+        <BaseCheckbox.Indicator {...getStyles('indicator')}>
+          <CheckMark />
+          <DashMark />
+        </BaseCheckbox.Indicator>
+      </BaseCheckbox.Root>
+    );
+
+    if (!hasFieldAnatomy) {
+      return (
+        // biome-ignore lint/a11y/noLabelWithoutControl: the association IS real, just invisible to this static check. Base UI's Checkbox.Root (an opaque custom component from biome's perspective) renders a hidden native <input type="checkbox"> as a descendant of this <label>; Checkbox.test.tsx's "toggles when the label text is clicked" case proves the association at runtime.
+        <label {...getStyles('root')}>
+          {control}
+          {label != null ? <span {...getStyles('label')}>{label}</span> : null}
+        </label>
+      );
+    }
+
     return (
-      // biome-ignore lint/a11y/noLabelWithoutControl: the association IS real, just invisible to this static check. Base UI's Checkbox.Root (an opaque custom component from biome's perspective) renders a hidden native <input type="checkbox"> as a descendant of this <label>; Checkbox.test.tsx's "toggles when the label text is clicked" case proves the association at runtime.
-      <label {...getStyles('root')}>
-        {/*
-          `ref` lands on Checkbox.Root (the interactive control), not this
-          outer `<label>` that carries the `root` selector's styles. This
-          diverges from Alert's convention (ref and `root` on the same
-          element) deliberately: a checkbox's ref is far more useful pointed
-          at the actual `role="checkbox"` control (focus/measure/query it
-          directly, the way a native `<input ref>` would) than at a
-          non-interactive label wrapper.
-        */}
-        <BaseCheckbox.Root
-          ref={ref as Ref<HTMLElement>}
-          {...(rest as Omit<CheckboxProps, 'label'>)}
-          {...getStyles('control')}
-        >
-          <BaseCheckbox.Indicator {...getStyles('indicator')}>
-            <CheckMark />
-            <DashMark />
-          </BaseCheckbox.Indicator>
-        </BaseCheckbox.Root>
-        {label != null ? <span {...getStyles('label')}>{label}</span> : null}
-      </label>
+      <Field.Root invalid={error != null} data-layout="row" {...getStyles('root')}>
+        {label != null ? <Field.Label {...getStyles('label')}>{label}</Field.Label> : null}
+        {control}
+        {description != null ? (
+          <Field.Description {...getStyles('description')}>{description}</Field.Description>
+        ) : null}
+        {error != null ? (
+          <Field.Error match {...getStyles('error')}>
+            {error}
+          </Field.Error>
+        ) : null}
+      </Field.Root>
     );
   },
 });
