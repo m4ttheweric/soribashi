@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { coverageReport, LEDGER, type LedgerRow, validateLedger } from './ledger.ts';
-import { REFERENCE } from './reference.ts';
+import { DEFERRED, REFERENCE } from './reference.ts';
 
 const base: LedgerRow = {
   id: 'test.row',
@@ -48,6 +48,18 @@ describe('ledger guard', () => {
 
   it('the ledger carries at least one identity row (part 2 landed)', () => {
     expect(LEDGER.some((r) => r.species === 'identity')).toBe(true);
+  });
+
+  it('a shipped row drops its deferral (no id in both DEFERRED and LEDGER)', () => {
+    // DEFERRED records spec'd rows that did NOT ship; a row that lands while
+    // its deferral entry survives would read as simultaneously done and not
+    // done, and the stale entry would hide the next genuinely-deferred row.
+    const shipped = new Set(LEDGER.map((r) => r.id));
+    const stale = Object.keys(DEFERRED).filter((id) => shipped.has(id));
+    expect(
+      stale,
+      `these rows shipped but still carry a DEFERRED entry (remove it): ${stale.join(', ')}`,
+    ).toEqual([]);
   });
 
   it('every floor row bound matches its reference.ts entry exactly', () => {

@@ -32,6 +32,50 @@ export interface RampProvenance {
  * same Tailwind ramps) as its one unsolved risk; this record is what makes
  * the convergence explicit instead of silent.
  */
+/**
+ * Floor rows the design-ledger spec (2026-07-27, section 7) named that have
+ * not shipped. Each entry says why it was deferred and what would unblock it,
+ * the same "not done, recorded" discipline the STATUS.md future lists use;
+ * the ledger's whole ethos is that "not done" gets written down. Remove an
+ * entry when its row lands (ledger-guard.test.ts fails any id appearing in
+ * both DEFERRED and LEDGER). For the record: the spec's other two floor
+ * lines DID ship — dialog.scrim.effectiveDarkness as itself, and
+ * skeleton.deltaL as the two skeleton.deltaY.* rows (renamed to the scale
+ * actually measured).
+ */
+export const DEFERRED: Record<string, string> = {
+  'focus.ring.visible':
+    'Grandfathered on argument in the spec (the slice-4 invisible-ring escape ' +
+    'was the observation; the generalized 3:1 outline-vs-backdrop floor was ' +
+    'the argument), but the bound was never set from an observed stable range, ' +
+    "which criterion 10 requires before a floor row may assert. The symptom's " +
+    'observed half is covered: focus.ring.uniform measures the computed ring ' +
+    'on every covered recipe, and TextInput/Textarea/Select each carry a ' +
+    'computed pin that the focused outline differs from the resting border. ' +
+    'Unblocked by: measuring outline-vs-adjacent-background ratios across ' +
+    'covered recipes over repeated runs and recording that observation next ' +
+    'to the chosen bound.',
+  'control.disabled.opacity':
+    "Listed by the spec as pure calibration ('no bug'), which the admission " +
+    'rule forbids without an explicit grandfathering note nobody wrote: no ' +
+    'observed defect traces to it (every disabling recipe uses opacity: 0.5 ' +
+    'today). Unblocked by: an observed disabled-affordance defect, or a ' +
+    'deliberate grandfathering note plus a band chosen from the measured ' +
+    'stable values.',
+  'focus.ring.width':
+    'Spec-listed calibration row with no observed defect and no bound chosen ' +
+    'from observation. Partially subsumed: focus.ring.uniform now asserts the ' +
+    'computed outline-width is identical (2px) across all covered recipes, ' +
+    'which pins uniformity but deliberately not a band. Unblocked by: deciding ' +
+    'a width band is wanted at all, then setting it from the recorded witness ' +
+    'and observed values.',
+  'focus.ring.offset':
+    'Same standing as focus.ring.width (its spec table line named both): ' +
+    'calibration, no observed defect, no observed band, and not covered by ' +
+    'the uniformity row, which reads outline colour/width/style only. ' +
+    'Unblocked the same way, with outline-offset added to the measured tuple.',
+};
+
 export const PROVENANCE: Record<string, RampProvenance> = {
   radius: {
     source: 'tailwindcss packages/tailwindcss/theme.css --radius-*',
