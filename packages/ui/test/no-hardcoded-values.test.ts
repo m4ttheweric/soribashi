@@ -212,6 +212,15 @@ const LENGTH_LITERAL = /\d*\.?\d+(px|rem|em|vh|vw|vmin|vmax|ch|ex|%)/g;
 // deliberately the function-less keywords only; `linear` appears solely in
 // its function form (`linear(`) because the bare word is also a gradient
 // keyword.
+//
+// Stated residuals (like the barrel-import residual derive.ts records):
+// - NEGATIVE time literals (`-150ms`, valid only as a delay) escape: the
+//   leading `-` reads as an ident char to the boundary guard, so the match
+//   is skipped as if it sat inside an identifier. No recipe writes negative
+//   delays today; close with a sign-aware guard if one ever should.
+// - The BARE `linear` easing keyword is unscannable by design: the same
+//   word is a gradient keyword (`linear-gradient` aside, plain `linear`
+//   appears in other productions), so only its function form is detectable.
 const TIME_LITERAL = /\d*\.?\d+(ms|s)\b/g;
 const EASING_KEYWORDS = [
   'ease-in-out',
