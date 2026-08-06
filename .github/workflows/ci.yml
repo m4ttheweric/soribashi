@@ -13,6 +13,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
+      # The test suite's browser tier runs in real Chromium via vitest's
+      # browser mode; without this install those ~360 tests silently never
+      # execute (MAT-120: the job was green while running none of them).
+      - run: bunx playwright install --with-deps chromium
       - run: bun run lint
       - run: bun run typecheck
       # "bun run test" runs vitest; plain "bun test" would invoke Bun's own runner
@@ -53,11 +57,21 @@ jobs:
   visual:
     name: Visual regression
     runs-on: ubuntu-latest
+    # Same pinned image visual-baselines.yml generates the committed
+    # baselines with. Comparing on bare ubuntu-latest fails 15 of 28 files
+    # on font metrics alone (MAT-121); renderer parity is the entire gate.
+    container: mcr.microsoft.com/playwright:v1.59.1-noble
     steps:
       - uses: actions/checkout@v4
+      # The noble image ships without unzip, which setup-bun needs to extract
+      # the bun archive (the local Docker regeneration command in
+      # visual-baselines.yml installs it by hand for the same reason).
+      # Container jobs run as root, so no sudo.
+      - run: apt-get update -qq && apt-get install -y -qq unzip
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium
+      # (playwright install step removed: the container image ships the
+      # matching Chromium already)
       # Compares against the committed Linux baselines
       # (packages/ui/src/recipes/*/__screenshots__/*-chromium-linux.png) and never
       # updates them. No `--update` flag is passed, and GitHub Actions sets `CI=true`
