@@ -70,6 +70,29 @@ describe('ledger guard', () => {
 });
 
 describe('ledger coverage', () => {
+  it('every ledger row id appears in its own tier runner (guard clause 1: no unexercised rows)', () => {
+    // Static source scan, the repo's established guard idiom (see the
+    // --accent-primary mount-completeness guard below): it needs no browser
+    // tier and fails in the cheap node tier. Tier-aware on purpose: a
+    // `token` row's assertion lives in ledger.test.ts (dialog.scrim.
+    // effectiveDarkness is one today), and demanding its id in the BROWSER
+    // file would force naming rows in a file that never asserts them, which
+    // is the exact decoration this guard exists to forbid.
+    const tierSource: Record<LedgerRow['tier'], string> = {
+      token: readFileSync(join(import.meta.dirname, 'ledger.test.ts'), 'utf8'),
+      measured: readFileSync(join(import.meta.dirname, 'ledger.browser.test.tsx'), 'utf8'),
+    };
+    const unexercised = LEDGER.filter((row) => !tierSource[row.tier].includes(`'${row.id}'`)).map(
+      (r) => `${r.id} (tier: ${r.tier})`,
+    );
+    expect(
+      unexercised,
+      `These ledger rows are asserted by no tier — a row nobody exercises is decoration: ${unexercised.join(', ')}. ` +
+        "Add an assertion in the row's tier runner (token: ledger.test.ts, measured: " +
+        'ledger.browser.test.tsx) that names the row id in a string literal, or delete the row.',
+    ).toEqual([]);
+  });
+
   it('every declared row names a tier', () => {
     const untiered = LEDGER.filter((r) => r.tier !== 'token' && r.tier !== 'measured');
     expect(untiered.map((r) => r.id)).toEqual([]);
