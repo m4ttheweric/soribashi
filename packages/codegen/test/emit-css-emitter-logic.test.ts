@@ -9,17 +9,10 @@
  *   - BUG-E-1: breakpoint tokens not emitted by emitTokenLines()
  *   - BUG-E-2: non-colour families (fontFamily, fontWeight, lineHeight,
  *              breakpoint, heading) must NEVER thread a dark override
- *              through as a light-dark() pair. This used to assert the
- *              opposite (that they DID thread through as light-dark() pairs),
- *              which was itself a bug: light-dark() is a colour-only CSS
- *              function, so wrapping a length/number/keyword value in it is
- *              invalid at computed-value time and the token resolves to
- *              nothing in both schemes. See emit-css.ts's pairValue() doc
- *              comment. validateTheme now rejects a `dark` entry for any of
- *              these families outright (validate-theme.ts), so these cases
- *              also cover emitCss's own defensive behaviour if it is ever
- *              called directly (as these tests do) with a theme that skipped
- *              validation.
+ *              through as a light-dark() pair -- see the BUG-E-2 block
+ *              comment above its describe below for the full rationale
+ *              (colour-only light-dark(), and why each assertion names its
+ *              own declaration instead of searching the whole output).
  *   - Sort order: colors sorted family-then-shade alphabetically
  *   - Dark block emission: the .dark selector is now unconditional (it only
  *     flips color-scheme, so there is nothing to gate on theme.dark)
