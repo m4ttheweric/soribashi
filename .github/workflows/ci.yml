@@ -63,6 +63,11 @@ jobs:
     container: mcr.microsoft.com/playwright:v1.59.1-noble
     steps:
       - uses: actions/checkout@v4
+      # The noble image ships without unzip, which setup-bun needs to extract
+      # the bun archive (the local Docker regeneration command in
+      # visual-baselines.yml installs it by hand for the same reason).
+      # Container jobs run as root, so no sudo.
+      - run: apt-get update -qq && apt-get install -y -qq unzip
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       # (playwright install step removed: the container image ships the
