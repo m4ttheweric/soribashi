@@ -67,7 +67,11 @@ export interface CheckboxProps
    * or `error` is also present (Field anatomy mode), the label renders
    * through `Field.Label` instead, the way Switch's always does; the
    * association is then Base UI Field's own `<label for>` wiring, equally
-   * real.
+   * real. Known consequence of that locked decision: a label-ONLY Checkbox
+   * nested inside a hand-composed `Field.Root` renders its own containment
+   * `<label>` alongside the consumer's `Field.Label` -- two competing
+   * labels, with no dev warning, because only `description`/`error` (the
+   * Field-anatomy triggers) arm the mutual-exclusivity warning.
    */
   label?: ReactNode;
   /**
@@ -276,8 +280,15 @@ export const Checkbox = defineComponent<
 
     return (
       <Field.Root invalid={error != null} data-layout="row" {...getStyles('root')}>
-        {label != null ? <Field.Label {...getStyles('label')}>{label}</Field.Label> : null}
+        {/*
+          Control BEFORE Field.Label -- a deliberate divergence from Switch's
+          label-first row: a checkbox's convention is box-left, and bare mode
+          already renders control-then-label, so both modes agree visually.
+          The label association is id-based (Base UI's LabelableProvider),
+          not order-based, so accessibility is unaffected.
+        */}
         {control}
+        {label != null ? <Field.Label {...getStyles('label')}>{label}</Field.Label> : null}
         {description != null ? (
           <Field.Description {...getStyles('description')}>{description}</Field.Description>
         ) : null}
