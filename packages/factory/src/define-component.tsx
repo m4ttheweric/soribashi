@@ -1,5 +1,5 @@
 import type { ResolvedTheme } from '@soribashi/theme';
-import { forwardRef, type JSX, type Ref } from 'react';
+import { type CSSProperties, forwardRef, type JSX, type Ref } from 'react';
 import { autoVars } from './auto-vars.ts';
 import { buildDataAttrs } from './data-attrs.ts';
 import { useProps } from './hooks/use-props.ts';
@@ -164,7 +164,7 @@ export function defineComponent<
       dataAttrs: buildDataAttrs(config.vocabularyAxes ?? [], hasVariants, sp.rest),
       props: sp.rest as any,
       varsResolver: varsResolver as any,
-      stylePropsStyle: sp.rootStyle as any,
+      stylePropsStyle: sp.rootStyle as CSSProperties | null,
       stylePropsClassName: sp.rootClassName,
     });
 
