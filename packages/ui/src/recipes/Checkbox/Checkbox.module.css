@@ -1,11 +1,36 @@
 @layer soribashi.recipes {
+  /*
+   * Shared root styles only: rules that are correct on BOTH root elements
+   * this slot can land on -- the bare-mode containment <label> AND, in
+   * anatomy mode, Field.Root's own element. Anything bare-mode-specific
+   * lives in `label.root` below instead, because Field.module.css carries
+   * its own `.root` rule (flex-column stack) at the same specificity in the
+   * same layer, and cross-file same-specificity order is NOT deterministic
+   * under Vite's CSS-module concatenation (Field.module.css's own row-layout
+   * comment records this). Font and colour are genuinely shared: Field.Root
+   * sets neither, and Field's label/description/error parts each declare
+   * their own font-size/colour on top.
+   */
   .root {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
     font-family: var(--font-family-sans);
     font-size: var(--font-size-sm);
     color: var(--text-default, inherit);
+  }
+
+  /*
+   * Bare-mode layout, scoped by type+class (0-1-1): only true where the
+   * root IS the containment <label> (no anatomy props), so none of this can
+   * collide with Field's `.root` flex-column/gap rules in anatomy mode.
+   * `cursor: pointer` belongs here specifically -- on Field.Root it would
+   * bleed a pointer cursor over description/error text. The :has() disabled
+   * dimming is bare-mode-only for the same reason (in anatomy mode the
+   * control carries its own disabled state; the field's text stays
+   * readable).
+   */
+  label.root {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
     cursor: pointer;
 
     &:has([data-disabled]) {

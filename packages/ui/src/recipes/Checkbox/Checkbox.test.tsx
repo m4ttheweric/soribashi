@@ -73,6 +73,40 @@ describe('Checkbox (browser)', () => {
     expect(el.getAttribute('aria-describedby')).toBeNull();
   });
 
+  it("anatomy mode's Field.Root keeps Field's layout: no bare-mode inline-flex/cursor bleed, control before label", async () => {
+    // Regression pin for the .root collision: Checkbox.module.css and
+    // Field.module.css both declare a `.root` rule in the same layer at the
+    // same specificity, and cross-file order is not deterministic under
+    // Vite's CSS-module concatenation. Checkbox's bare-mode layout is scoped
+    // as `label.root` (type+class), so on Field.Root's element only Field's
+    // own layout can apply: display flex (not inline-flex), row direction
+    // (data-layout="row"), and no pointer cursor bleeding over the
+    // description/error text. Also pins the control-first DOM order (the
+    // deliberate divergence from Switch's label-first row: box-left is the
+    // checkbox convention, and bare mode already renders control-then-label).
+    const screen = await wrap(
+      <Checkbox
+        label="A"
+        description="B"
+        error="C"
+        classNames={{ root: 'probe-anatomy-root', label: 'probe-anatomy-label' }}
+      />,
+    );
+    const rootEl = screen.container.querySelector('.probe-anatomy-root') as HTMLElement;
+    expect(rootEl).not.toBeNull();
+    const cs = getComputedStyle(rootEl);
+    expect(cs.display).toBe('flex');
+    expect(cs.flexDirection).toBe('row');
+    expect(cs.cursor).not.toBe('pointer');
+
+    const controlEl = screen.getByRole('checkbox').element();
+    const labelEl = screen.container.querySelector('.probe-anatomy-label') as HTMLElement;
+    expect(labelEl).not.toBeNull();
+    expect(
+      controlEl.compareDocumentPosition(labelEl) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it('warns in dev when given anatomy props inside a hand-composed Field.Root', async () => {
     // Same warning idiom as Switch.test.tsx's nested-warning case.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
