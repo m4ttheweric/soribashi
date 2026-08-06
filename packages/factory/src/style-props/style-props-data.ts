@@ -14,6 +14,7 @@ import { fontFamilyResolver } from './resolvers/font-family-resolver.ts';
 import type { StylePropDefinition, StylePropResolver } from './style-types.ts';
 import {
   getFontSize,
+  getFontWeight,
   getLineHeight,
   getRadius,
   getSpacing,
@@ -29,9 +30,10 @@ const sizeOrRem: StylePropResolver = (v) => {
   return String(v);
 };
 
-// font-weight is identity: CSS keywords (bold, bolder, lighter) and numeric values
-// all pass through as-is. Mantine uses the same identity approach.
-// If a consumer wants a CSS variable, they can write `var(--font-weight-bold)` explicitly.
+// font-weight resolves theme tokens like its siblings (fz/lh): a token key
+// ('bold', 'semibold') becomes var(--font-weight-{key}); genuine CSS values
+// (numbers, '700', 'bolder', 'inherit', 'var(…)') pass through untouched.
+// See getFontWeight for the keyword/raw-value boundary.
 
 /**
  * Static map from prop name to CSS property + resolver. Mirrors Mantine's
@@ -74,7 +76,7 @@ export const STYLE_PROPS_DATA: Record<string, StylePropDefinition> = {
   // Typography
   ff: { property: 'fontFamily', resolver: fontFamilyResolver },
   fz: { property: 'fontSize', resolver: getFontSize as StylePropResolver },
-  fw: { property: 'fontWeight', resolver: identity },
+  fw: { property: 'fontWeight', resolver: getFontWeight as StylePropResolver },
   lh: { property: 'lineHeight', resolver: getLineHeight as StylePropResolver },
   lts: { property: 'letterSpacing', resolver: sizeOrRem },
   ta: { property: 'textAlign', resolver: identity },

@@ -1,4 +1,5 @@
 export { getFontSize } from './get-font-size.ts';
+export { getFontWeight } from './get-font-weight.ts';
 export { getLineHeight } from './get-line-height.ts';
 export { getRadius } from './get-radius.ts';
 export { getShadow } from './get-shadow.ts';
