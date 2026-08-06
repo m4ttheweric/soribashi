@@ -38,8 +38,8 @@
     text-align: start;
     cursor: pointer;
     transition:
-      background-color 120ms,
-      color 120ms;
+      background-color var(--motion-duration-fast) var(--motion-ease-standard),
+      color var(--motion-duration-fast) var(--motion-ease-standard);
 
     &:hover {
       color: var(--text-default);

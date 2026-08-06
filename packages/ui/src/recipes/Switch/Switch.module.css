@@ -18,8 +18,8 @@
     background: transparent;
     cursor: pointer;
     transition:
-      background-color 150ms,
-      border-color 150ms;
+      background-color var(--motion-duration-base) var(--motion-ease-standard),
+      border-color var(--motion-duration-base) var(--motion-ease-standard);
 
     &[data-checked] {
       background: var(--sb-switch-checked-bg);
@@ -80,8 +80,8 @@
     block-size: calc(var(--sb-switch-h) - var(--sb-switch-gap) - var(--sb-switch-gap));
     color: var(--text-muted);
     transition:
-      transform 150ms,
-      color 150ms;
+      transform var(--motion-duration-base) var(--motion-ease-standard),
+      color var(--motion-duration-base) var(--motion-ease-standard);
 
     &[data-checked] {
       color: var(--sb-switch-checked-color);

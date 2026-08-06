@@ -18,8 +18,11 @@ import { describe, expect, it } from 'vitest';
  *   3. Any remaining colour literal is flagged: hex, the listed colour
  *      functions, and named colours outside the allowlist.
  *   4. Any remaining length literal is flagged, outside the allowlist.
- *      Unitless numbers and time values (ms/s) pass untouched.
- *   5. A percentage in KEYFRAME-SELECTOR position (`50% {`, `0%, 100% {`,
+ *      Unitless numbers pass untouched.
+ *   5. Any remaining time literal (ms/s) or easing keyword/function is
+ *      flagged as kind "motion": durations and easings must arrive via the
+ *      --motion-* tokens.
+ *   6. A percentage in KEYFRAME-SELECTOR position (`50% {`, `0%, 100% {`,
  *      inside an `@keyframes` block) is a selector, not a declared value,
  *      and is never flagged, no matter what number it is (SORI-18). This is
  *      NOT the same as allowlisting a percentage value: `width: 50%;`
@@ -30,7 +33,7 @@ interface Violation {
   path: string;
   line: number;
   token: string;
-  kind: 'layer' | 'color' | 'length';
+  kind: 'layer' | 'color' | 'length' | 'motion';
 }
 
 // The CSS Color Module Level 4 / SVG1.1 extended keyword set, plus the three
@@ -207,6 +210,24 @@ const HEX_COLOR = /#[0-9a-f]{3,8}\b/gi;
 const FUNCTIONAL_COLOR = /\b(rgb|rgba|hsl|hsla|oklch|oklab|lab|lch|color)\(/gi;
 const NAMED_COLOR = new RegExp(`(${NAMED_COLOR_KEYWORDS.join('|')})`, 'gi');
 const LENGTH_LITERAL = /\d*\.?\d+(px|rem|em|vh|vw|vmin|vmax|ch|ex|%)/g;
+// Rule 5 (motion): time literals and easing keywords/functions must arrive
+// via the --motion-* tokens. `ms` is matched before `s` so "150ms" reports as
+// one token, and both are boundary-guarded below so the `s` in an identifier
+// (e.g. "translates") can't false-positive. The easing keyword list is
+// deliberately the function-less keywords only; `linear` appears solely in
+// its function form (`linear(`) because the bare word is also a gradient
+// keyword.
+const TIME_LITERAL = /\d*\.?\d+(ms|s)\b/g;
+const EASING_KEYWORDS = [
+  'ease-in-out',
+  'ease-in',
+  'ease-out',
+  'ease',
+  'step-start',
+  'step-end',
+].sort((a, b) => b.length - a.length);
+const EASING_KEYWORD = new RegExp(`(${EASING_KEYWORDS.join('|')})`, 'gi');
+const EASING_FUNCTION = /\b(cubic-bezier|steps|linear)\(/gi;
 
 // A comma-separated list of percentage keyframe offsets (`50%`, `0%, 100%`)
 // immediately preceding the rule's opening brace -- a SELECTOR, not a
@@ -352,7 +373,7 @@ function scanCssModule(source: string, path: string): Violation[] {
     stripVarExpressionsPreservingLines(stripCommentsPreservingLines(source)),
   );
 
-  const raw: Array<{ index: number; token: string; kind: 'color' | 'length' }> = [];
+  const raw: Array<{ index: number; token: string; kind: 'color' | 'length' | 'motion' }> = [];
 
   for (const m of scanned.matchAll(HEX_COLOR)) {
     raw.push({ index: m.index, token: m[0], kind: 'color' });
@@ -370,6 +391,22 @@ function scanCssModule(source: string, path: string): Violation[] {
   for (const m of scanned.matchAll(LENGTH_LITERAL)) {
     if (ALLOWED_LENGTH_LITERALS.has(m[0])) continue;
     raw.push({ index: m.index, token: m[0], kind: 'length' });
+  }
+  for (const m of scanned.matchAll(TIME_LITERAL)) {
+    const before = m.index - 1;
+    const after = m.index + m[0].length;
+    if (isIdentChar(scanned, before) || isIdentChar(scanned, after)) continue;
+    raw.push({ index: m.index, token: m[0], kind: 'motion' });
+  }
+  for (const m of scanned.matchAll(EASING_KEYWORD)) {
+    const before = m.index - 1;
+    const after = m.index + m[0].length;
+    if (isIdentChar(scanned, before) || isIdentChar(scanned, after)) continue;
+    raw.push({ index: m.index, token: m[0], kind: 'motion' });
+  }
+  for (const m of scanned.matchAll(EASING_FUNCTION)) {
+    if (isIdentChar(scanned, m.index - 1)) continue;
+    raw.push({ index: m.index, token: `${m[1]}(`, kind: 'motion' });
   }
 
   raw.sort((a, b) => a.index - b.index);
@@ -555,14 +592,44 @@ describe('scanCssModule', () => {
     expect(scanCssModule(css, 'fixture.module.css')).toEqual([]);
   });
 
-  it('does not flag unitless numbers or time values (ms/s)', () => {
+  it('flags time literals (ms/s) as kind "motion"', () => {
     const css = [
       '@layer soribashi.recipes {',
-      '  .root {',
-      '    opacity: 0.5;',
-      '    line-height: 1.4;',
-      '    transition: color 150ms, background 1s;',
-      '  }',
+      '  .root { transition: color 150ms, background 1s; }',
+      '}',
+      '',
+    ].join('\n');
+    const violations = scanCssModule(css, 'fixture.module.css');
+    expect(violations.map((v) => v.token)).toEqual(['150ms', '1s']);
+    expect(violations.every((v) => v.kind === 'motion')).toBe(true);
+  });
+
+  it('flags easing keywords and cubic-bezier() outside var()', () => {
+    const css = [
+      '@layer soribashi.recipes {',
+      '  .root { transition-timing-function: ease-in-out; }',
+      '  .alt { animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }',
+      '}',
+      '',
+    ].join('\n');
+    const violations = scanCssModule(css, 'fixture.module.css');
+    expect(violations.map((v) => v.token)).toEqual(['ease-in-out', 'cubic-bezier(']);
+  });
+
+  it('does not flag time/easing values inside a var() fallback', () => {
+    const css = [
+      '@layer soribashi.recipes {',
+      '  .root { transition: color var(--motion-duration-base, 150ms) var(--motion-ease-standard, ease); }',
+      '}',
+      '',
+    ].join('\n');
+    expect(scanCssModule(css, 'fixture.module.css')).toEqual([]);
+  });
+
+  it('still does not flag unitless numbers', () => {
+    const css = [
+      '@layer soribashi.recipes {',
+      '  .root { opacity: 0.5; line-height: 1.4; }',
       '}',
       '',
     ].join('\n');

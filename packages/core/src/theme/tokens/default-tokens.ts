@@ -229,6 +229,12 @@ export const defaultTokens: ThemeTokens = {
     fast: '120ms',
     base: '150ms',
     slow: '200ms',
+    // For ambient/looping animations (Skeleton's pulse), not interaction
+    // feedback: a 1.5s cycle is a different animal from the fast/base/slow
+    // interaction ramp, so it gets its own key instead of stretching the
+    // ramp. The reduced-motion collapse in emit-css.ts iterates all duration
+    // keys, so this one is honoured there automatically too.
+    pulse: '1500ms',
   },
   motionEase: {
     // Named by intent, not by curve, so a recipe reads its own meaning: things
