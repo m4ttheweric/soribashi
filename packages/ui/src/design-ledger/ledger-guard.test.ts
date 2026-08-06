@@ -143,7 +143,18 @@ describe('ledger coverage', () => {
     expect(report).toContain('uncovered: Alert, Button');
   });
 
-  it('every recipe referencing --accent-primary is mounted in the focus ring scan', () => {
+  it('every recipe referencing --accent-primary is focus-measured by focus.ring.uniform', () => {
+    // Under the old document.styleSheets scan, being mounted ANYWHERE in
+    // ledger.browser.test.tsx was sufficient for a recipe's ring rules to be
+    // seen, so this guard used to check for a mount (a `<Name` source scan).
+    // Under the per-recipe focus measurement a mount is only necessary, not
+    // sufficient: a recipe mounted by some other row's fixture (Button,
+    // TextInput, Select, Switch, Group all are) would satisfy a
+    // mounted-somewhere check without its ring ever being focused and
+    // measured. The real completeness condition is membership in
+    // focus.ring.uniform's own `covers` list — the browser test iterates
+    // exactly that list and fails any entry lacking a mount fixture, so
+    // covers-membership closes the loop end-to-end.
     const recipesDir = join(import.meta.dirname, '..', 'recipes');
     const referencing = readdirSync(recipesDir).filter((name) => {
       const css = join(recipesDir, name, `${name}.module.css`);
@@ -154,28 +165,13 @@ describe('ledger coverage', () => {
       }
     });
 
-    const browserTest = readFileSync(join(import.meta.dirname, 'ledger.browser.test.tsx'), 'utf8');
-
-    // A bare `includes('<' + name)` is fooled the moment one recipe's name is
-    // a PREFIX of another's, which is not hypothetical: "Text" is a literal
-    // prefix of both "TextInput" and "Textarea" in this exact recipe set
-    // (checked across every recipe directory name). Textarea/TextInput are
-    // mounted in ledger.browser.test.tsx, so its source text contains
-    // "<Textarea" and "<TextInput", both of which also contain "<Text" as a
-    // substring. If "Text" ever starts referencing --accent-primary, a plain
-    // substring search would read it as mounted purely because its sibling's
-    // longer tag happens to start the same way, silently reopening the exact
-    // gap this test exists to close. Requiring that the character right
-    // after the name is not itself an identifier character (so `<Text ` /
-    // `<Text>` / `<Text.Foo` count as a real mount but `<TextInput` does not)
-    // is what tells an actual `<Text ...>` mount apart from a same-prefixed
-    // sibling's tag.
-    const isMounted = (name: string) => new RegExp(`<${name}(?![A-Za-z0-9])`).test(browserTest);
-    const unmounted = referencing.filter((name) => !isMounted(name));
+    const covers = new Set(LEDGER.find((r) => r.id === 'focus.ring.uniform')?.covers ?? []);
+    expect(covers.size).toBeGreaterThan(0);
+    const unmeasured = referencing.filter((name) => !covers.has(name));
 
     expect(
-      unmounted,
-      `these recipes reference --accent-primary but are never mounted in ledger.browser.test.tsx, so the focus.ring.uniform scan cannot see their rules: ${unmounted.join(', ')}`,
+      unmeasured,
+      `these recipes reference --accent-primary but are missing from focus.ring.uniform's covers list, so their computed rings are never focus-measured: ${unmeasured.join(', ')}`,
     ).toEqual([]);
   });
 

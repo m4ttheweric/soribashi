@@ -267,6 +267,22 @@ describe('design ledger: measured rows', () => {
         .map((r) => `  ${r.recipe}: ${r.ring}`)
         .join('\n')}`,
     ).toBe(1);
+
+    // Uniform ABSENCE is also one tuple: if the ring rules stopped applying
+    // entirely, every control would compute the UA's own :focus-visible
+    // outline and rings.size === 1 would pass vacuously (the old styleSheets
+    // scan's >=10-matched-rules floor guarded against going blind this way;
+    // this is its replacement). A declared ring computes a concrete style
+    // ('solid' today); 'none' means no outline at all and 'auto' means the
+    // UA default took over. Deliberately ONLY an existence check, not a
+    // perceptual band — visibility/contrast of the ring belongs to the
+    // deferred focus.ring.visible row (reference.ts DEFERRED), not here.
+    const [uniformRing] = [...rings] as [string];
+    const uniformStyle = uniformRing.split(' | ')[2];
+    expect(
+      uniformStyle !== 'none' && uniformStyle !== 'auto',
+      `focus.ring.uniform: the one uniform tuple (${uniformRing}) is not a declared ring — outline-style "${uniformStyle}" means the recipes' ring rules have stopped applying; uniform absence is still absence`,
+    ).toBe(true);
   });
 
   it('accordion.panel.animates', async () => {
@@ -377,10 +393,12 @@ describe('design ledger: measured rows', () => {
       );
       const [a, b, c] = heights as [number, number, number];
       // Sub-pixel layout is real; the permitted disagreement is the row's own
-      // declared tolerance (ledger.ts), not an inline constant.
+      // declared tolerance (ledger.ts), not an inline constant. Inclusive
+      // (`<=`) per toleranceOf's contract: the default 0 for an undeclared
+      // tolerance must accept exact equality, not fail it.
       const tolerance = toleranceOf('controls.sharedHeight');
       expect(
-        Math.abs(a - b) < tolerance && Math.abs(a - c) < tolerance,
+        Math.abs(a - b) <= tolerance && Math.abs(a - c) <= tolerance,
         `${size}: control heights disagree beyond the declared ${tolerance}px tolerance. button ${a}, input ${b}, select ${c}`,
       ).toBe(true);
     }
