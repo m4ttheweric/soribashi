@@ -55,11 +55,12 @@ export const LEDGER: readonly LedgerRow[] = [
     species: 'invariant',
     tier: 'measured',
     assert: 'predicate',
-    // Every recipe this row's scan can actually see, i.e. every recipe
-    // mounted somewhere in ledger.browser.test.tsx by the time this test
-    // reads document.styleSheets (ledger-guard.test.ts's mount-completeness
-    // guard keeps this list honest: it fails if a recipe referencing
-    // --accent-primary is ever added without a matching mount).
+    // Every recipe whose declared focus ring this row measures: the browser
+    // test iterates exactly this list, mounts each entry's fixture, drives a
+    // real keyboard Tab, and reads the computed outline off the focused
+    // control. ledger-guard.test.ts keeps the list honest from both sides:
+    // any recipe referencing --accent-primary must appear here, and the
+    // browser test itself fails any entry lacking a mount fixture.
     covers: [
       'Accordion',
       'Alert',
@@ -163,6 +164,9 @@ export const LEDGER: readonly LedgerRow[] = [
  * is only real if the assertion that measures the row compares through it
  * (ledger-guard.test.ts enforces the linkage by scanning for
  * `toleranceOf('<id>')`). A row that declares none tolerates nothing: 0.
+ * Assertions must compare INCLUSIVELY (`<= tolerance`): tolerating nothing
+ * means requiring exact equality, and a strict `<` against the default 0
+ * would fail even measurements that agree exactly.
  */
 export function toleranceOf(id: string): number {
   const row = LEDGER.find((r) => r.id === id);
