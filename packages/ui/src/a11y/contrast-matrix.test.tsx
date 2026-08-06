@@ -366,13 +366,16 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
   // `backdropClass` -- the control's real, opaque checked background -- is
   // what `contrastRatio` actually composites against. `classNames.control`/
   // `.indicator`/`.itemLabel` each apply the SAME class to every rendered
-  // item (the Styles API has no per-instance-item override); `defaultValue`
-  // is deliberately the FIRST item's value ("free"), so the checked item is
-  // both the first DOM match for `.matrix-target-radiogroup-control`
-  // (`querySelector` returns the first match) and the only item whose
-  // indicator mounts at all (`keepMounted: false`), keeping both cells
-  // unambiguous without needing an attribute-selector disambiguator the way
-  // Select's highlighted-item cell does.
+  // item (the Styles API has no per-instance-item override), so each cell
+  // names its element by STATE, not by document order: the control cell keys
+  // on `[data-checked]` (Base UI stamps it on the checked Radio.Root) and
+  // the label cell keys on being the checked control's sibling, the same
+  // attribute-selector idiom Select's highlighted-item cell uses. This
+  // fixture previously leaned on `defaultValue` being the FIRST item so the
+  // checked control happened to be `querySelector`'s first match --
+  // declaration-order reliance the harness's resolveUniqueTarget guard now
+  // rejects loudly. The indicator needs no disambiguator: it is the only
+  // one mounted at all (`keepMounted: false`).
   RadioGroup: {
     render: () => (
       <RadioGroup
@@ -392,11 +395,15 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
     cells: [
       {
         targetClass: 'matrix-target-radiogroup-indicator',
-        backdropClass: 'matrix-target-radiogroup-control',
+        backdropClass: 'matrix-target-radiogroup-control[data-checked]',
         description: 'RadioGroup: selected indicator on control background',
       },
       {
-        targetClass: 'matrix-target-radiogroup-itemLabel',
+        // The checked control's sibling label span (control and label are
+        // siblings inside the item's own <label>, see RadioGroup.tsx's item
+        // render): named by state, not by document order.
+        targetClass:
+          'matrix-target-radiogroup-control[data-checked] ~ .matrix-target-radiogroup-itemLabel',
         description: 'RadioGroup: item label text on canvas',
       },
     ],
@@ -754,16 +761,37 @@ describe('small-coverage contrast cells (WCAG AA >= 4.5:1)', () => {
       mountEl.remove();
     });
 
-    function assertCellClearsAA(cell: SmallCoverageCell) {
-      const target = document.querySelector<HTMLElement>(`.${cell.targetClass}`);
-      if (!target) {
-        throw new Error(`small-coverage: no element found for target class "${cell.targetClass}"`);
+    /**
+     * Resolves a cell selector to exactly ONE element, loudly. The previous
+     * `querySelector` first-match resolution let JSX declaration order decide
+     * what got measured whenever a selector matched more than one element
+     * (RadioGroup's fixture leaned on it explicitly: `defaultValue` had to be
+     * the FIRST item so the checked control happened to be the first DOM
+     * match). Every cell now names its measurement target unambiguously (a
+     * unique class, or a class plus a state attribute selector the way
+     * Select's highlighted-item cell always has), and this guard makes any
+     * future ambiguity a loud failure instead of a silent
+     * whichever-comes-first measurement.
+     */
+    function resolveUniqueTarget(selector: string, role: 'target' | 'backdrop'): HTMLElement {
+      const matches = document.querySelectorAll<HTMLElement>(`.${selector}`);
+      if (matches.length !== 1) {
+        throw new Error(
+          `small-coverage: ${role} selector ".${selector}" matched ${matches.length} elements; ` +
+            'a cell must name exactly one (add a state attribute selector, e.g. [data-checked], ' +
+            'so declaration order cannot decide what gets measured)',
+        );
       }
+      return matches[0] as HTMLElement;
+    }
+
+    function assertCellClearsAA(cell: SmallCoverageCell) {
+      const target = resolveUniqueTarget(cell.targetClass, 'target');
       const cs = getComputedStyle(target);
       const fg = toRgbString(cs.color);
       const bg = toRgbString(cs.backgroundColor);
       const backdropEl = cell.backdropClass
-        ? document.querySelector<HTMLElement>(`.${cell.backdropClass}`)
+        ? resolveUniqueTarget(cell.backdropClass, 'backdrop')
         : null;
       const backdrop = backdropEl
         ? toRgbString(getComputedStyle(backdropEl).backgroundColor)
