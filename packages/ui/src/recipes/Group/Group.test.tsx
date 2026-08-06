@@ -59,6 +59,31 @@ describe('Group (browser)', () => {
     expect(Math.abs(bWidth - expectedWidth)).toBeLessThanOrEqual(1);
   });
 
+  it('grow with a single child gives it the full row width', async () => {
+    // Same fixed-width harness as the two-child grow test above, with n=1:
+    // the grow formula's gap term must vanish at the boundary ((300 - 0*gap)
+    // / 1 = 300), so the lone child gets the container's full content width.
+    const screen = await wrap(
+      <div style={{ width: '300px' }}>
+        <Group data-testid="group" grow>
+          <div data-testid="only">a</div>
+        </Group>
+      </div>,
+    );
+    const groupEl = screen.getByTestId('group').element();
+    expect(groupEl.getAttribute('data-grow')).toBe('true');
+    const onlyWidth = screen.getByTestId('only').element().getBoundingClientRect().width;
+    expect(Math.abs(onlyWidth - 300)).toBeLessThanOrEqual(1);
+  });
+
+  it('grow with no children renders an empty row without error', async () => {
+    const screen = await wrap(<Group data-testid="group" grow />);
+    const el = screen.getByTestId('group').element();
+    expect(el.getAttribute('data-grow')).toBe('true');
+    expect(el.childElementCount).toBe(0);
+    expect(getComputedStyle(el).display).toBe('flex');
+  });
+
   it('without grow, data-grow is absent', async () => {
     const screen = await wrap(
       <Group data-testid="group">
