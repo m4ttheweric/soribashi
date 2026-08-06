@@ -46,6 +46,10 @@ describe('ledger guard', () => {
     expect(validateLedger(LEDGER)).toEqual([]);
   });
 
+  it('the ledger carries at least one identity row (part 2 landed)', () => {
+    expect(LEDGER.some((r) => r.species === 'identity')).toBe(true);
+  });
+
   it('every floor row bound matches its reference.ts entry exactly', () => {
     // ledger.ts's `bound` is not load-bearing at runtime: ledger.test.ts and
     // ledger.browser.test.tsx both read the ACTUAL comparison threshold from

@@ -12,6 +12,7 @@ import { Accordion } from '../recipes/Accordion/Accordion.tsx';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { Button } from '../recipes/Button/Button.tsx';
 import { Checkbox } from '../recipes/Checkbox/Checkbox.tsx';
+import { Group } from '../recipes/Group/Group.tsx';
 import { RadioGroup } from '../recipes/RadioGroup/RadioGroup.tsx';
 import { Select } from '../recipes/Select/Select.tsx';
 import { Skeleton } from '../recipes/Skeleton/Skeleton.tsx';
@@ -20,6 +21,7 @@ import { Tabs } from '../recipes/Tabs/Tabs.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { uiTheme } from '../theme.ts';
+import { LEDGER } from './ledger.ts';
 import { centeringGaps, isCentered } from './measure.ts';
 import { REFERENCE } from './reference.ts';
 
@@ -325,6 +327,41 @@ describe('design ledger: measured rows', () => {
         `${size}: control heights disagree. button ${a}, input ${b}, select ${c}`,
       ).toBe(true);
     }
+  });
+
+  // The identity rows assert THROUGH their declared bound (read from LEDGER,
+  // not restated inline) so ledger.ts's number is the load-bearing record
+  // rather than a decorative copy of a constant that really lives here.
+  function identityBound(id: string): number {
+    const row = LEDGER.find((r) => r.id === id);
+    if (!row || typeof row.bound !== 'number') {
+      throw new Error(`no numeric-bound ledger row '${id}'`);
+    }
+    return row.bound;
+  }
+
+  it('radius.md.rendered', async () => {
+    // Measured before the row was written (2026-08-06): a default Button's
+    // computed border-radius is 6px (--radius-md, 0.375rem at the 16px root).
+    const bound = identityBound('radius.md.rendered');
+    const screen = await wrap(<Button>Go</Button>);
+    const button = screen.container.querySelector('button')!;
+    expect(getComputedStyle(button).borderRadius).toBe(`${bound}px`);
+  });
+
+  it('spacing.md.rendered', async () => {
+    // Measured before the row was written (2026-08-06): Group's default gap
+    // ('md' -> --spacing-md, 0.75rem) renders 12px between adjacent children.
+    const bound = identityBound('spacing.md.rendered');
+    const screen = await wrap(
+      <Group>
+        <span>first</span>
+        <span>second</span>
+      </Group>,
+    );
+    const [first, second] = Array.from(screen.container.querySelectorAll('span'));
+    const gap = second!.getBoundingClientRect().left - first!.getBoundingClientRect().right;
+    expect(gap).toBe(bound);
   });
 
   // Shared by both skeleton.deltaY.* rows below. `toRgbString` (matrix-harness.tsx)

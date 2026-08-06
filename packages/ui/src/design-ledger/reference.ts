@@ -3,6 +3,82 @@ export interface FloorWitness {
   witness: string;
 }
 
+export interface RampProvenance {
+  source: string;
+  version: string;
+  commit: string;
+  /** True when every VALUE in the ramp is the source's, character for character
+   * (keys may still be relabeled or subsetted; `notes` records exactly how). */
+  adoptedVerbatim: boolean;
+  notes: string;
+}
+
+/**
+ * Provenance of the non-colour ramps. Recorded 2026-08-06 (part 2, step 1).
+ * The radius / spacing / shadow / breakpoint ramps in
+ * packages/theme/src/tokens/default-tokens.ts are Tailwind CSS's default
+ * scale values, adopted at v1 foundation time with no value-level adaptation
+ * (each entry below records the exact key mapping, which is the only place
+ * anything was adapted). Verified against real published source on
+ * 2026-08-06, never recalled: tailwindcss v4.1.14, repo
+ * tailwindlabs/tailwindcss @ b67cbcf6ccaa58097cb6d8d7e0eb1fca1091ccca
+ * (packages/tailwindcss/theme.css), with two values traced to v3.4.17's
+ * stubs/config.full.js where v4 dropped or renamed them. KEEPING these
+ * values is now a recorded decision, not an accident: they are good,
+ * widely-tested defaults, and consumers re-skin via createTheme anyway. Any
+ * future divergence from Tailwind's values must update this record and the
+ * identity rows in ledger.ts rather than drifting silently. The spec named
+ * "identity values silently re-converging on shadcn" (which ships these
+ * same Tailwind ramps) as its one unsolved risk; this record is what makes
+ * the convergence explicit instead of silent.
+ */
+export const PROVENANCE: Record<string, RampProvenance> = {
+  radius: {
+    source: 'tailwindcss packages/tailwindcss/theme.css --radius-*',
+    version: 'v4.1.14',
+    commit: 'b67cbcf6ccaa58097cb6d8d7e0eb1fca1091ccca',
+    adoptedVerbatim: true,
+    notes:
+      'sm/md/lg/xl/2xl (0.25/0.375/0.5/0.75/1rem) match v4.1.14 key-for-key and ' +
+      "value-for-value. `full: 9999px` is v3.4.17's borderRadius.full " +
+      '(stubs/config.full.js; v4 dropped the variable in favour of ' +
+      "calc(infinity * 1px)). v4's xs/3xl/4xl steps were not adopted.",
+  },
+  spacing: {
+    source: 'tailwindcss packages/tailwindcss/theme.css --spacing (0.25rem base scale)',
+    version: 'v4.1.14',
+    commit: 'b67cbcf6ccaa58097cb6d8d7e0eb1fca1091ccca',
+    adoptedVerbatim: true,
+    notes:
+      'Values are Tailwind spacing-scale steps 1/2/3/4/6/8/12 (N * 0.25rem = ' +
+      '0.25/0.5/0.75/1/1.5/2/3rem), relabeled onto t-shirt keys xs..3xl. The ' +
+      'arithmetic is Tailwind; the key names are ours.',
+  },
+  shadow: {
+    source: 'tailwindcss packages/tailwindcss/theme.css --shadow-*',
+    version: 'v4.1.14',
+    commit: 'b67cbcf6ccaa58097cb6d8d7e0eb1fca1091ccca',
+    adoptedVerbatim: true,
+    notes:
+      'md/lg/xl match v4.1.14 --shadow-md/lg/xl character-for-character. Our ' +
+      "`sm` holds v4.1.14's --shadow-XS value (0 1px 2px 0 rgb(0 0 0 / 0.05)), " +
+      "which is v3.4.17's shadow-sm: under v3 naming all four keys match " +
+      'key-for-key (verified against both tags).',
+  },
+  breakpoint: {
+    source: 'tailwindcss packages/tailwindcss/theme.css --breakpoint-*',
+    version: 'v4.1.14',
+    commit: 'b67cbcf6ccaa58097cb6d8d7e0eb1fca1091ccca',
+    adoptedVerbatim: false,
+    notes:
+      'sm/md/lg/xl/2xl (40/48/64/80/96rem) match v4.1.14 --breakpoint-* ' +
+      'verbatim. `xs: 24rem` is NOT a Tailwind breakpoint (numerically it ' +
+      "coincides with v4's --container-sm) and `3xl: 120rem` exists in no " +
+      'Tailwind scale: both are soribashi extensions, so this ramp as a whole ' +
+      'is adapted, not verbatim.',
+  },
+};
+
 /**
  * Floor bounds. The witness records where a bound came from; it does not fix
  * the bound, which is soribashi's own decision. Read from real shadcn source
