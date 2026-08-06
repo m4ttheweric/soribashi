@@ -104,6 +104,29 @@ export const LEDGER: readonly LedgerRow[] = [
     bound: 0.05,
     witness: 'see reference.ts',
   },
+  // The first identity rows (part 2, step 1). An identity row records
+  // soribashi's OWN decision, with no external witness: the value asserted is
+  // what the shipped uiTheme actually renders, measured before being written
+  // down (an identity row records reality, it does not aspirate). Provenance
+  // for where these ramp values originally came from (Tailwind, verbatim) is
+  // recorded in reference.ts's PROVENANCE, which is what makes keeping them
+  // an explicit choice rather than silent convergence.
+  {
+    id: 'radius.md.rendered',
+    species: 'identity',
+    tier: 'measured',
+    assert: 'equals',
+    bound: 6, // px; --radius-md (0.375rem), Button's default corner radius
+    covers: ['Button'],
+  },
+  {
+    id: 'spacing.md.rendered',
+    species: 'identity',
+    tier: 'measured',
+    assert: 'equals',
+    bound: 12, // px; --spacing-md (0.75rem) as consumed by Group's default gap
+    covers: ['Group'],
+  },
   // Admitted on argument, not an observed defect: nobody had measured whether
   // Button/TextInput/Select's independently authored dimension records
   // actually agree. Measured at every size (ledger.browser.test.tsx) before
