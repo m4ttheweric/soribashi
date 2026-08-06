@@ -57,11 +57,16 @@ jobs:
   visual:
     name: Visual regression
     runs-on: ubuntu-latest
+    # Same pinned image visual-baselines.yml generates the committed
+    # baselines with. Comparing on bare ubuntu-latest fails 15 of 28 files
+    # on font metrics alone (MAT-121); renderer parity is the entire gate.
+    container: mcr.microsoft.com/playwright:v1.59.1-noble
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium
+      # (playwright install step removed: the container image ships the
+      # matching Chromium already)
       # Compares against the committed Linux baselines
       # (packages/ui/src/recipes/*/__screenshots__/*-chromium-linux.png) and never
       # updates them. No `--update` flag is passed, and GitHub Actions sets `CI=true`
