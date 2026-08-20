@@ -10,6 +10,8 @@
     "packages/*/bin/**/*",
     "packages/*/scripts/**/*",
     "packages/*/vitest*.config.ts",
+    "scripts/**/*",
+    "apps/*/vite.config.ts",
     "apps/*/src/**/*",
     "apps/*/test/**/*",
     "apps/*/tests/**/*",

@@ -34,7 +34,7 @@
     },
     "packages/codegen": {
       "name": "@soribashi/codegen",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "soribashi": "./bin/soribashi.ts",
       },
@@ -50,10 +50,13 @@
     },
     "packages/core": {
       "name": "@soribashi/core",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@soribashi/factory": "workspace:*",
         "@soribashi/theme": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^7",
       },
       "peerDependencies": {
         "react": "^18.0.0 || ^19.0.0",
@@ -62,7 +65,7 @@
     },
     "packages/factory": {
       "name": "@soribashi/factory",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@soribashi/theme": "workspace:*",
         "clsx": "^2.1.1",
@@ -86,7 +89,7 @@
     },
     "packages/theme": {
       "name": "@soribashi/theme",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "zod": "^4",
       },

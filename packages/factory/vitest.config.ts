@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
+import { soribashiSourceResolution } from '../../scripts/source-conditions.ts';
 
 export default defineConfig({
+  ...soribashiSourceResolution(),
   test: {
     environment: 'jsdom',
     globals: true,

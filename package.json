@@ -8,6 +8,8 @@
     "apps/*"
   ],
   "scripts": {
+    "build": "bun run --cwd packages/theme build && bun run --cwd packages/factory build && bun run --cwd packages/core build && bun run --cwd packages/codegen build",
+    "pack:check": "bun scripts/verify-pack.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:visual": "vitest run --config packages/ui/vitest.visual.config.ts",
@@ -16,10 +18,10 @@
     "format": "biome format . --write",
     "codegen": "bun run --cwd packages/ui codegen",
     "codegen:watch": "bun run --cwd packages/ui codegen:watch",
-    "codegen:tenants": "bun run apps/workshop/scripts/codegen-tenants.ts",
+    "codegen:tenants": "bun --conditions=soribashi-source apps/workshop/scripts/codegen-tenants.ts",
     "dev:workshop": "bun run --cwd apps/workshop dev",
-    "generate:ui": "bun run packages/ui/scripts/generate-manifest.ts && bun run packages/ui/scripts/generate-registry.ts",
-    "smoke:registry": "bun run packages/ui/scripts/registry-smoke.ts"
+    "generate:ui": "bun --conditions=soribashi-source packages/ui/scripts/generate-manifest.ts && bun --conditions=soribashi-source packages/ui/scripts/generate-registry.ts",
+    "smoke:registry": "bun --conditions=soribashi-source packages/ui/scripts/registry-smoke.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2",

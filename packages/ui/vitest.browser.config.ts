@@ -1,8 +1,10 @@
 import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { soribashiSourceResolution } from '../../scripts/source-conditions.ts';
 
 export default defineConfig({
+  ...soribashiSourceResolution(),
   plugins: [react()],
   // Anchors `include` resolution to this package's directory regardless of
   // invocation cwd, same rationale as vitest.visual.config.ts's `root`: Vite's

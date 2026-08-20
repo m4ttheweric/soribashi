@@ -1,21 +1,56 @@
 {
   "name": "@soribashi/codegen",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "The `soribashi` CLI: reads a Soribashi theme and emits layered CSS custom properties, @property registrations, and Tailwind v4 output.",
   "license": "MIT",
-  "private": true,
+  "author": "Matthew Goodwin",
+  "homepage": "https://github.com/m4ttheweric/soribashi#readme",
+  "bugs": {
+    "url": "https://github.com/m4ttheweric/soribashi/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m4ttheweric/soribashi.git",
+    "directory": "packages/codegen"
+  },
+  "keywords": [
+    "soribashi",
+    "codegen",
+    "css",
+    "design-tokens",
+    "tailwindcss",
+    "cli"
+  ],
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "bin": {
-    "soribashi": "./bin/soribashi.ts"
+    "soribashi": "./dist/bin/soribashi.js"
   },
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "soribashi-source": "./src/index.ts",
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
     }
   },
+  "files": [
+    "dist",
+    "src",
+    "bin",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
   "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun ../../scripts/fix-dts-extensions.ts dist",
+    "prepack": "bun run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

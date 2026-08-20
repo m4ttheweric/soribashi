@@ -18,8 +18,8 @@
     "./theme.css": "./src/generated/theme.css"
   },
   "scripts": {
-    "codegen": "bun run ../codegen/bin/soribashi.ts build",
-    "codegen:watch": "bun run ../codegen/bin/soribashi.ts watch",
+    "codegen": "bun --conditions=soribashi-source ../codegen/bin/soribashi.ts build",
+    "codegen:watch": "bun --conditions=soribashi-source ../codegen/bin/soribashi.ts watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

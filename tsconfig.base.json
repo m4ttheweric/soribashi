@@ -6,6 +6,19 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
 
+    // Every `@soribashi/*` package's "exports" map points at its built `dist/`
+    // (that is what consumers install), with a `"soribashi-source"` condition
+    // listed first that points back at `src/`. Opting into that condition here
+    // is what keeps THIS repo type-checking its own packages as TypeScript
+    // source: no build step is required before `bun run typecheck`, a change in
+    // `packages/theme/src` is seen immediately by `packages/factory`, and
+    // go-to-definition lands on real source rather than a `.d.ts`.
+    // The published artifact is unaffected — no consumer sets this condition,
+    // so every consumer resolves `dist/` and never type-checks our source.
+    // Vitest and Vite opt in the same way, via `resolve.conditions`; Bun does
+    // via `--conditions=soribashi-source` in the root package.json scripts.
+    "customConditions": ["soribashi-source"],
+
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -45,12 +58,12 @@
     // that's the exact behavior this comment documents as unreliable under TS 7.
     "types": ["node"],
 
-    // Declarations are never emitted in this repo — every package sets
-    // `"types": "./src/index.ts"` (consumed as source) and all tsc runs are
-    // `--noEmit`. Leaving `declaration: true` only triggered TS2742 nameability
-    // checks on inferred types (e.g. the generic `createTheme` return) that can
-    // never actually be emitted, so it's disabled. Re-enable alongside a real
-    // .d.ts build step if packages ever ship compiled types.
+    // Off for the checking configs (this is the base every `--noEmit` run
+    // extends), where emitting declarations buys nothing and only adds TS2742
+    // nameability checks on inferred types that are never written out.
+    // The publishable packages DO ship declarations: each one's
+    // `tsconfig.build.json` turns `declaration` back on alongside `noEmit:
+    // false` and is the only config that emits.
     "declaration": false,
     "sourceMap": true,
 
