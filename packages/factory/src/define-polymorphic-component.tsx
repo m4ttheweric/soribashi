@@ -232,6 +232,15 @@ type PolymorphicExtendProps<
     ComponentPropsWithoutRef<TDefaultAs>,
     keyof TOwnProps | keyof StylesApiProps<FactoryPayload>
   > & {
+    /**
+     * A theme's `defaultProps` may retarget the rendered element, which this
+     * builder already implements and pins with a runtime test: `as` is
+     * resolved AFTER `useProps` merges theme defaults in, and stripped before
+     * render. It belongs in the type for the same reason — without it,
+     * `.extend({ defaultProps: { as: 'button' } })` failed excess-property
+     * checking (TS2353) on a config the runtime honours.
+     */
+    as?: ElementType;
     variant?: TVariants[number];
     intent?: string;
   };
