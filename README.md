@@ -72,6 +72,50 @@ Two things exist specifically so an agent (or a developer moving fast) doesn't h
 - **A derived manifest.** `bun run generate:ui` walks every recipe's frozen metadata and its own source, and writes `packages/ui/manifest.json`: name, authoring category, builder, slots, vocabulary axes, variants, defaults, the four file paths, and every theme token the recipe's CSS actually depends on. For compounds, `slots` now reports real stylable slot keys, not part names: each compound declares a `const SLOT_KEYS = [...] as const` array and passes it to `defineCompound` (see Popover's and Tabs' `slotKeys`), because a part-name/CSS-class union can't reconstruct the real set (Popover's `positioner` is a styled slot with no part; its `content` part is not itself a style slot). Nothing in the manifest is hand-authored; a drift test rebuilds it the same way and fails on any difference from what's committed.
 - **In-repo skills.** `.claude/skills/authoring-a-recipe/` is the checklist for adding or changing a recipe: the four-file layout, builder selection, the CSS rules, what each test tier needs, and the traps that have already bitten someone once (async `render`, `light-dark()` being colour-only, a recipe's `vars` replacing rather than layering on `autoVars`, and more).
 
+## Installing from npm
+
+The four framework packages are published as built artifacts:
+
+| Package | What it is |
+| --- | --- |
+| [`@soribashi/core`](./packages/core) | The barrel. One import for the factory's builders and the theme model. Start here. |
+| [`@soribashi/factory`](./packages/factory) | `defineComponent`, `defineCompound`, polymorphic/generic builders, style props. |
+| [`@soribashi/theme`](./packages/theme) | `createTheme`, `composeTheme`, `defineVocabulary`, the token contract. |
+| [`@soribashi/codegen`](./packages/codegen) | The `soribashi` CLI: theme -> CSS. |
+
+```bash
+bun add @soribashi/core react react-dom
+bun add -d @soribashi/codegen
+```
+
+`@soribashi/core` re-exports the public surface of `factory` and `theme`, so most projects need only `core` plus `codegen`. `react` and `react-dom` (18 or 19) are peer dependencies. The four packages are versioned in lock step.
+
+```tsx
+import { createTheme, defineComponent, defineVocabulary, SoribashiProvider } from '@soribashi/core';
+
+const theme = createTheme({
+  name: 'app',
+  vocabulary: { size: defineVocabulary(['sm', 'md', 'lg'] as const) },
+});
+```
+
+Then point the CLI at a config and generate the stylesheet:
+
+```ts
+// soribashi.config.ts
+export default { theme, output: { css: './src/generated/theme.css' } };
+```
+
+```bash
+bunx soribashi build     # or: bunx soribashi watch
+```
+
+**Each package ships compiled JavaScript and `.d.ts` declarations in `dist/`, and its `exports` map points there.** Your `tsc` never compiles Soribashi's source, so you don't inherit its `tsconfig` requirements: no `@types/node` or `bun-types` entries you didn't ask for, and no `TS2578` from suppressions inside our source being re-checked against your ambient types. (`src/` rides along in the tarball only so declaration maps resolve for go-to-definition; it is not an entry point.)
+
+The `soribashi` CLI needs [Bun](https://bun.sh) on `PATH` — its shebang is `#!/usr/bin/env bun`, because a `soribashi.config.ts` is imported directly and Bun's native TypeScript loader is what makes that work with no build step. The library packages themselves are plain ESM and run under Node, Bun, or any bundler.
+
+`@soribashi/ui` is deliberately **not** on npm. It's distributed shadcn-style, as source you vendor and own — see [Vendoring it](#vendoring-it) above.
+
 ## Getting started
 
 Requires [Bun](https://bun.sh).
@@ -81,13 +125,60 @@ bun install
 bun run test            # vitest across all packages
 bun run typecheck
 bun run lint             # biome
+bun run build            # compile packages/{theme,factory,core,codegen} to dist/
 bun run codegen          # theme -> CSS
 bun run dev:workshop     # recipe showcase + multi-tenant demo
 ```
 
+### How this repo consumes its own packages
+
+Each publishable package's `exports` map points at `dist/`, which is what consumers get. Each map also lists a `"soribashi-source"` condition **first**, pointing back at `src/`:
+
+```jsonc
+"exports": {
+  ".": {
+    "soribashi-source": "./src/index.ts", // this workspace only
+    "types": "./dist/index.d.ts",         // everyone else
+    "default": "./dist/index.js"
+  }
+}
+```
+
+Only this repo opts into that condition, so the workspace keeps running against TypeScript source with no build step — a change in `packages/theme/src` is seen immediately by `packages/factory`, and go-to-definition lands on real source. Each tool opts in its own way:
+
+- **tsc** — `customConditions` in [`tsconfig.base.json`](./tsconfig.base.json)
+- **Vite / Vitest** — `resolve.conditions`, shared from [`scripts/source-conditions.ts`](./scripts/source-conditions.ts)
+- **Bun** — `--conditions=soribashi-source` in the root `package.json` scripts
+
+No consumer sets the condition, so no consumer ever resolves our source. If you add a tool that resolves `@soribashi/*` inside this repo, opt it in the same way, or it will silently read a possibly-stale `dist/`.
+
+### Publishing
+
+**Publish with Bun, not npm.** `bun publish` rewrites each `workspace:*` interdependency to the concrete version; `npm publish` does not, and would push a manifest containing the literal string `workspace:*` — not a valid registry range, so every install of it fails. npm also ignores `publishConfig` field overrides such as `exports` (that's a pnpm/yarn feature), which is why these `exports` maps point at `dist/` directly rather than relying on a publish-time swap.
+
+`bun run pack:check` packs all four with `bun pm pack` and asserts both invariants: no `workspace:` range survives, and no published entry point escapes `dist/`. Run it before publishing.
+
+### Development-mode appendix: consuming from a checkout
+
+Before the packages were published, adopters consumed them from a sibling checkout via `file:` dependencies plus `overrides`. That path still works for local development against unreleased changes, but **installing from npm is now the supported path**, and the checkout recipe is a debugging tool rather than a setup step.
+
+One thing changed for existing `file:` consumers: because `exports` now points at `dist/`, and `dist/` is generated (and gitignored), **a `file:` dependency resolves to nothing until this checkout has been built.** Run `bun run build` here once after pulling, and again after any change you want the consumer to see. That staleness window is the reason `file:` is no longer the recommended path.
+
+The rest of the friction is real too, and is why it's no longer primary: Bun's `overrides` are top-level only and aren't re-applied to an already-overridden package's own `workspace:*` requests, so an adopter has to hand-flatten the whole graph — every `@soribashi/*` package as a direct `file:` dependency, plus each one's own runtime dependencies (`clsx`, `tailwind-merge`, `zod`) re-declared at the consumer root, because `file:`-delivered packages don't install their own. See [SORI-4](https://linear.app/mattstack/issue/SORI-4) for the full failure signature.
+
+To develop against a local checkout today, prefer linking over `file:`:
+
+```bash
+cd ~/path/to/soribashi && bun run build
+cd packages/core && bun link
+cd ~/path/to/your-app && bun link @soribashi/core
+```
+
+`bun link` resolves the package through its normal `exports` map, so you get the built `dist/` — re-run `bun run build` in the soribashi checkout after each change.
+
 ## Status
 
-Pre-v1, actively built in public slices. The foundation (factory, theme, codegen, vocabulary rails) is stable and framework-only: `@soribashi/core` exports no components. `@soribashi/ui` has twenty-eight recipes across all four authoring categories, ten of them native layout recipes carrying universal style props, with the full three-tier verification story described above wired into CI. See [STATUS.md](./STATUS.md) for the detailed record and what's deliberately still ahead (npm publishing). Packages are versioned at `0.0.0` and not yet published.
+Pre-v1, actively built in public slices. The foundation (factory, theme, codegen, vocabulary rails) is stable and framework-only: `@soribashi/core` exports no components. `@soribashi/ui` has twenty-eight recipes across all four authoring categories, ten of them native layout recipes carrying universal style props, with the full three-tier verification story described above wired into CI. See [STATUS.md](./STATUS.md) for the detailed record and what's deliberately still ahead. The four framework packages are versioned at `0.1.0` and prepared for their first npm release — built artifacts, declarations, and `dist`-first `exports` are in place; see [Installing from npm](#installing-from-npm).
 
 ## Manifesto
 
