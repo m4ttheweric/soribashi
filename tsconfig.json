@@ -23,5 +23,30 @@
     "playwright.config.ts",
     "vitest.config.ts"
   ],
-  "exclude": ["**/node_modules", "**/dist", "**/build"]
+  "exclude": [
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+
+    // The private file:-era shims (see each one's shim/index.js). They are not
+    // this workspace's source — they exist for one FOREIGN consumer, a sibling
+    // tui-kit checkout, and are deleted the day it migrates to the published
+    // @soribashi/core.
+    //
+    // They are excluded rather than checked because the only real code in them,
+    // packages/codegen/bin/soribashi.ts, imports `@soribashi/core/codegen` with
+    // nothing in this repo declaring that dependency — deliberately, since
+    // declaring it is what breaks the shim in the consumer (again: see
+    // shim/index.js). Nothing here resolves it, so `tsc` would report TS2307 on
+    // a file that is correct for the only environment it ever runs in.
+    //
+    // Without this, the repo type-checks only by accident: a leftover
+    // packages/codegen/node_modules/@soribashi/core symlink from an earlier
+    // install made it resolve, and a fresh clone — which has no such link —
+    // failed. The shims are covered where it counts, by running tui-kit's full
+    // suite and gates against them.
+    "packages/theme",
+    "packages/factory",
+    "packages/codegen"
+  ]
 }

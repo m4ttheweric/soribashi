@@ -8,7 +8,7 @@
   "main": "./shim/index.js",
   "types": "./shim/index.d.ts",
   "bin": {
-    "soribashi": "./bin/soribashi.js"
+    "soribashi": "./bin/soribashi.ts"
   },
   "exports": {
     ".": {
