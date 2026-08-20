@@ -31,13 +31,6 @@
         "vite": "^8",
       },
     },
-    "packages/codegen": {
-      "name": "@soribashi/codegen",
-      "version": "0.1.0",
-      "bin": {
-        "soribashi": "./bin/soribashi.js",
-      },
-    },
     "packages/core": {
       "name": "@soribashi/core",
       "version": "0.1.0",
@@ -66,14 +59,6 @@
         "react": "^18.0.0 || ^19.0.0",
         "react-dom": "^18.0.0 || ^19.0.0",
       },
-    },
-    "packages/factory": {
-      "name": "@soribashi/factory",
-      "version": "0.1.0",
-    },
-    "packages/theme": {
-      "name": "@soribashi/theme",
-      "version": "0.1.0",
     },
     "packages/ui": {
       "name": "@soribashi/ui",
@@ -248,13 +233,7 @@
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.1", "", {}, "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw=="],
 
-    "@soribashi/codegen": ["@soribashi/codegen@workspace:packages/codegen"],
-
     "@soribashi/core": ["@soribashi/core@workspace:packages/core"],
-
-    "@soribashi/factory": ["@soribashi/factory@workspace:packages/factory"],
-
-    "@soribashi/theme": ["@soribashi/theme@workspace:packages/theme"],
 
     "@soribashi/ui": ["@soribashi/ui@workspace:packages/ui"],
 
