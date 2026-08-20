@@ -37,9 +37,6 @@
       "bin": {
         "soribashi": "./bin/soribashi.js",
       },
-      "dependencies": {
-        "@soribashi/core": "workspace:*",
-      },
     },
     "packages/core": {
       "name": "@soribashi/core",
@@ -73,16 +70,10 @@
     "packages/factory": {
       "name": "@soribashi/factory",
       "version": "0.1.0",
-      "dependencies": {
-        "@soribashi/core": "workspace:*",
-      },
     },
     "packages/theme": {
       "name": "@soribashi/theme",
       "version": "0.1.0",
-      "dependencies": {
-        "@soribashi/core": "workspace:*",
-      },
     },
     "packages/ui": {
       "name": "@soribashi/ui",

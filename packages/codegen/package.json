@@ -19,8 +19,5 @@
   "files": [
     "shim",
     "bin"
-  ],
-  "dependencies": {
-    "@soribashi/core": "workspace:*"
-  }
+  ]
 }
