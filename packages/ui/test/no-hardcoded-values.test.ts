@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -577,6 +577,12 @@ describe('scanCssModule', () => {
 const RECIPES_DIR = join(import.meta.dirname, '../src/recipes');
 
 function findModuleCssFiles(dir: string): string[] {
+  // A fresh checkout, a package move, or a future refactor could leave
+  // src/recipes/ absent rather than merely empty; readdirSync throws ENOENT
+  // in that case, which would abort this whole gate with an opaque crash
+  // instead of a legible "0 stylesheets" result. Treat "absent" the same as
+  // "empty".
+  if (!existsSync(dir)) return [];
   const out: string[] = [];
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
@@ -592,8 +598,23 @@ function findModuleCssFiles(dir: string): string[] {
 describe('no hardcoded values: real recipe stylesheets', () => {
   const files = findModuleCssFiles(RECIPES_DIR);
 
-  it('finds at least one recipe stylesheet (guards against a silently empty sweep)', () => {
-    expect(files.length).toBeGreaterThan(0);
+  it('the sweep finds exactly the .module.css files under the recipes directory', () => {
+    // A bare `files.length > 0` floor goes silently toothless the moment
+    // zero recipes is ever a legitimate state (e.g. mid-migration): the
+    // assertion becomes unsatisfiable by design instead of meaningful. Cross
+    // -checking the sweep's own result against an independently-obtained
+    // directory listing stays meaningful at zero recipes (both sides empty
+    // and equal) while still catching a sweep that silently drops or
+    // fabricates entries.
+    const expected = existsSync(RECIPES_DIR)
+      ? readdirSync(RECIPES_DIR, { recursive: true })
+          .filter((entry): entry is string => typeof entry === 'string')
+          .filter((entry) => entry.endsWith('.module.css'))
+          .map((entry) => entry.split('\\').join('/'))
+          .sort()
+      : [];
+    const actual = files.map((f) => relative(RECIPES_DIR, f)).sort();
+    expect(actual).toEqual(expected);
   });
 
   it.each(files.map((f) => [relative(RECIPES_DIR, f), f] as const))(
