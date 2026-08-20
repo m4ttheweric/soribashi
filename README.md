@@ -15,7 +15,7 @@ Run it locally: see [Getting started](#getting-started). For how the rails work,
 
 ## The rails
 
-**Vocabulary is declared, not assumed.** Soribashi itself has no opinion on what `size`, `intent`, or `variant` mean. You declare them once with `defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'])`, a typed tuple backed by Zod, and every component that opts into that axis gets compile-time narrowing and a runtime check for free. The framework packages never hardcode a vocabulary; only a consumer (like `@soribashi/ui`, in its own `theme.ts`) does.
+**Vocabulary is declared, not assumed.** Soribashi itself has no opinion on what `size`, `intent`, or `variant` mean. You declare them once with `defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'])`, a typed tuple backed by Zod, and every component that opts into that axis gets compile-time narrowing and a runtime check for free. The framework never hardcodes a vocabulary; only a consumer (like `@soribashi/ui`, in its own `theme.ts`) does.
 
 **Four builders for four shapes of component.**
 
@@ -48,7 +48,7 @@ Every token the theme declares is emitted exactly once by codegen; recipes are s
 bunx shadcn@latest add ./registry/button.json
 ```
 
-That exact command, against that exact file, is what `bun run smoke:registry` runs end-to-end in CI: scaffold a throwaway Vite + React project, vendor four registry items into it with the real CLI (`button`, one leaf primitive; `stack`, a layout recipe; `checkbox`, a Base UI-backed form control with an external npm dependency to resolve; `textinput`, the first recipe whose own `registryDependencies` pulls in a sibling recipe, `field`, transitively), install, build, and assert each of the four's own `--sb-<name>-*` custom-property marker actually made it into both the built CSS and the built JS bundle. There's no hosted registry URL yet; `@soribashi/core` and its workspace dependencies aren't published to npm, so today's smoke check vendors against a local, in-repo copy of the packages rather than a real `bun add @soribashi/core`. That gap closes when we publish; it's called out plainly here instead of glossed over.
+That exact command, against that exact file, is what `bun run smoke:registry` runs end-to-end in CI: scaffold a throwaway Vite + React project, vendor four registry items into it with the real CLI (`button`, one leaf primitive; `stack`, a layout recipe; `checkbox`, a Base UI-backed form control with an external npm dependency to resolve; `textinput`, the first recipe whose own `registryDependencies` pulls in a sibling recipe, `field`, transitively), install, build, and assert each of the four's own `--sb-<name>-*` custom-property marker actually made it into both the built CSS and the built JS bundle. There's no hosted registry URL yet, and `@soribashi/core` isn't published to npm, so today's smoke check vendors against a local, in-repo copy of the package rather than a real `bun add @soribashi/core`. That gap closes when we publish; it's called out plainly here instead of glossed over.
 
 ## The verification story
 
@@ -74,21 +74,23 @@ Two things exist specifically so an agent (or a developer moving fast) doesn't h
 
 ## Installing from npm
 
-The four framework packages are published as built artifacts:
-
-| Package | What it is |
-| --- | --- |
-| [`@soribashi/core`](./packages/core) | The barrel. One import for the factory's builders and the theme model. Start here. |
-| [`@soribashi/factory`](./packages/factory) | `defineComponent`, `defineCompound`, polymorphic/generic builders, style props. |
-| [`@soribashi/theme`](./packages/theme) | `createTheme`, `composeTheme`, `defineVocabulary`, the token contract. |
-| [`@soribashi/codegen`](./packages/codegen) | The `soribashi` CLI: theme -> CSS. |
+There is one package. It is [`@soribashi/core`](./packages/core), published as a built artifact:
 
 ```bash
 bun add @soribashi/core react react-dom
-bun add -d @soribashi/codegen
 ```
 
-`@soribashi/core` re-exports the public surface of `factory` and `theme`, so most projects need only `core` plus `codegen`. `react` and `react-dom` (18 or 19) are peer dependencies. The four packages are versioned in lock step.
+That is the whole install. The builders, the theme model, the style-prop machinery, the codegen API, and the `soribashi` CLI all ship in it. `react` and `react-dom` (18 or 19) are peer dependencies.
+
+| Import | What you get |
+| --- | --- |
+| `@soribashi/core` | The framework: `defineComponent`, `defineCompound`, the polymorphic and generic builders, `createTheme`, `composeTheme`, `defineVocabulary`, `SoribashiProvider`, `registerTheme`, style props, visibility props. Never a component. |
+| `@soribashi/core/codegen` | The codegen API — `build`, `emitCss`, `emitTailwindV4`, `loadConfig`, `watch` — for driving it programmatically instead of through the CLI. |
+| `soribashi` (the bin) | The CLI: theme -> CSS. Ships with the package; there is nothing else to install. |
+
+**Why one package, and why it still has a scope.** This was four packages once — `core`, `factory`, `theme`, `codegen` — which was four npm identities for one indivisible thing. Nobody installs the factory without the theme model, and the barrel existed only to spare you from wiring three of them together. Four packages bought four changelogs, four lockstep version bumps, and three `workspace:*` interdependencies that npm cannot publish. They bought an adopter nothing.
+
+The scope stays because the org is the product, not the package. `@soribashi/core` is the mandatory surface and is meant to stay the only thing you *must* install. Anything genuinely optional that shows up later — an adapter, a preset, a devtool — joins the `@soribashi` org beside core rather than being folded into it. The test for a new package is "would an adopter reasonably not want this?", not "is this a separate concern internally". Internal concerns are directories.
 
 ```tsx
 import { createTheme, defineComponent, defineVocabulary, SoribashiProvider } from '@soribashi/core';
@@ -110,7 +112,9 @@ export default { theme, output: { css: './src/generated/theme.css' } };
 bunx soribashi build     # or: bunx soribashi watch
 ```
 
-**Each package ships compiled JavaScript and `.d.ts` declarations in `dist/`, and its `exports` map points there.** Your `tsc` never compiles Soribashi's source, so you don't inherit its `tsconfig` requirements: no `@types/node` or `bun-types` entries you didn't ask for, and no `TS2578` from suppressions inside our source being re-checked against your ambient types. (`src/` rides along in the tarball only so declaration maps resolve for go-to-definition; it is not an entry point.)
+**The package ships compiled JavaScript and `.d.ts` declarations in `dist/`, and its `exports` map points there.** Your `tsc` never compiles Soribashi's source, so you don't inherit its `tsconfig` requirements: no `@types/node` or `bun-types` entries you didn't ask for, and no `TS2578` from suppressions inside our source being re-checked against your ambient types. (`src/` rides along in the tarball only so declaration maps resolve for go-to-definition; it is not an entry point.)
+
+This is verified, not asserted: `bun run pack:check` packs the real tarball and proves every entry point resolves under `dist/`, and a throwaway consumer project installs that tarball and type-checks it with `skipLibCheck: false` and `types: ["bun"]` — the harshest settings available — with `--traceResolution` confirming every one of the resolutions lands in `dist/` and none in `src/`.
 
 The `soribashi` CLI needs [Bun](https://bun.sh) on `PATH` — its shebang is `#!/usr/bin/env bun`, because a `soribashi.config.ts` is imported directly and Bun's native TypeScript loader is what makes that work with no build step. The library packages themselves are plain ESM and run under Node, Bun, or any bundler.
 
@@ -125,26 +129,32 @@ bun install
 bun run test            # vitest across all packages
 bun run typecheck
 bun run lint             # biome
-bun run build            # compile packages/{theme,factory,core,codegen} to dist/
+bun run build            # compile packages/core to dist/
+bun run pack:check       # pack the tarball and assert it is publishable
 bun run codegen          # theme -> CSS
 bun run dev:workshop     # recipe showcase + multi-tenant demo
 ```
 
 ### How this repo consumes its own packages
 
-Each publishable package's `exports` map points at `dist/`, which is what consumers get. Each map also lists a `"soribashi-source"` condition **first**, pointing back at `src/`:
+The published package's `exports` map points at `dist/`, which is what consumers get. Each entry also lists a `"soribashi-source"` condition **first**, pointing back at `src/`:
 
 ```jsonc
 "exports": {
   ".": {
-    "soribashi-source": "./src/index.ts", // this workspace only
-    "types": "./dist/index.d.ts",         // everyone else
-    "default": "./dist/index.js"
+    "soribashi-source": "./src/index.ts",  // this workspace only
+    "types": "./dist/src/index.d.ts",      // everyone else
+    "default": "./dist/src/index.js"
+  },
+  "./codegen": {
+    "soribashi-source": "./src/codegen/index.ts",
+    "types": "./dist/src/codegen/index.d.ts",
+    "default": "./dist/src/codegen/index.js"
   }
 }
 ```
 
-Only this repo opts into that condition, so the workspace keeps running against TypeScript source with no build step — a change in `packages/theme/src` is seen immediately by `packages/factory`, and go-to-definition lands on real source. Each tool opts in its own way:
+Only this repo opts into that condition, so the workspace keeps running against TypeScript source with no build step — a change in `packages/core/src/theme` is seen immediately by `packages/ui`, and go-to-definition lands on real source. Each tool opts in its own way:
 
 - **tsc** — `customConditions` in [`tsconfig.base.json`](./tsconfig.base.json)
 - **Vite / Vitest** — `resolve.conditions`, shared from [`scripts/source-conditions.ts`](./scripts/source-conditions.ts)
@@ -154,9 +164,23 @@ No consumer sets the condition, so no consumer ever resolves our source. If you 
 
 ### Publishing
 
-**Publish with Bun, not npm.** `bun publish` rewrites each `workspace:*` interdependency to the concrete version; `npm publish` does not, and would push a manifest containing the literal string `workspace:*` — not a valid registry range, so every install of it fails. npm also ignores `publishConfig` field overrides such as `exports` (that's a pnpm/yarn feature), which is why these `exports` maps point at `dist/` directly rather than relying on a publish-time swap.
+One package, one command, run from its directory:
 
-`bun run pack:check` packs all four with `bun pm pack` and asserts both invariants: no `workspace:` range survives, and no published entry point escapes `dist/`. Run it before publishing.
+```bash
+cd packages/core && bun publish --access public --otp CODE
+```
+
+Before that, always:
+
+```bash
+bun run build && bun run pack:check
+```
+
+`bun run pack:check` packs the real tarball with `bun pm pack` and asserts four invariants: no `workspace:` range survives into the manifest, no published entry point escapes `dist/`, every entry point actually exists inside the archive, and no shipped `.d.ts` carries a relative `.ts`/`.tsx` specifier (the `TS5097` failure mode).
+
+**Why still Bun and not npm.** The original reason was hard: `bun publish` rewrites each `workspace:*` interdependency to a concrete version and `npm publish` does not, so npm would push a manifest containing the literal string `workspace:*` — not a valid registry range, so every install fails. **That reason is gone.** Merging the four packages left exactly zero soribashi interdependencies, so there is no longer a `workspace:` range for anything to mangle, and `pack:check`'s first invariant is now deliberately vacuous — it stays as the assertion that this is still true.
+
+`bun publish` remains the documented path anyway, for consistency with the rest of the workspace's tooling and because the second npm gap is still real: npm ignores `publishConfig` field overrides such as `exports` (a pnpm/yarn feature), which is why the `exports` map points at `dist/` directly rather than relying on a publish-time swap. Nothing would now silently break under `npm publish`, but there is no reason to find out.
 
 ### Development-mode appendix: consuming from a checkout
 
@@ -164,7 +188,9 @@ Before the packages were published, adopters consumed them from a sibling checko
 
 One thing changed for existing `file:` consumers: because `exports` now points at `dist/`, and `dist/` is generated (and gitignored), **a `file:` dependency resolves to nothing until this checkout has been built.** Run `bun run build` here once after pulling, and again after any change you want the consumer to see. That staleness window is the reason `file:` is no longer the recommended path.
 
-The rest of the friction is real too, and is why it's no longer primary: Bun's `overrides` are top-level only and aren't re-applied to an already-overridden package's own `workspace:*` requests, so an adopter has to hand-flatten the whole graph — every `@soribashi/*` package as a direct `file:` dependency, plus each one's own runtime dependencies (`clsx`, `tailwind-merge`, `zod`) re-declared at the consumer root, because `file:`-delivered packages don't install their own. See [SORI-4](https://linear.app/mattstack/issue/SORI-4) for the full failure signature.
+The old graph-flattening friction is gone with the merge: there was one `@soribashi/*` package to depend on and no interdependencies for Bun's top-level-only `overrides` to fail to reach. What remains is that `file:`-delivered packages don't install their own runtime dependencies, so `clsx`, `tailwind-merge`, and `zod` still have to be re-declared at the consumer root. See [SORI-4](https://linear.app/mattstack/issue/SORI-4) for the full history.
+
+`packages/{theme,factory,codegen}` still exist in this repo as **private, unpublished shims** that re-export `@soribashi/core`. They exist for exactly one consumer — a sibling `tui-kit` checkout that depends on all four by `file:` path — and are deleted the moment it moves to `@soribashi/core`. They are not published and are not a supported import path.
 
 To develop against a local checkout today, prefer linking over `file:`:
 
@@ -178,7 +204,7 @@ cd ~/path/to/your-app && bun link @soribashi/core
 
 ## Status
 
-Pre-v1, actively built in public slices. The foundation (factory, theme, codegen, vocabulary rails) is stable and framework-only: `@soribashi/core` exports no components. `@soribashi/ui` has twenty-eight recipes across all four authoring categories, ten of them native layout recipes carrying universal style props, with the full three-tier verification story described above wired into CI. See [STATUS.md](./STATUS.md) for the detailed record and what's deliberately still ahead. The four framework packages are versioned at `0.1.0` and prepared for their first npm release — built artifacts, declarations, and `dist`-first `exports` are in place; see [Installing from npm](#installing-from-npm).
+Pre-v1, actively built in public slices. The foundation (factory, theme, codegen, vocabulary rails) is stable and framework-only: `@soribashi/core` exports no components. `@soribashi/ui` has twenty-eight recipes across all four authoring categories, ten of them native layout recipes carrying universal style props, with the full three-tier verification story described above wired into CI. See [STATUS.md](./STATUS.md) for the detailed record and what's deliberately still ahead. The framework ships as the single `@soribashi/core` at `0.1.0`, prepared for its first npm release — built artifacts, declarations, and `dist`-first `exports` are in place, proved end to end against a real tarball; see [Installing from npm](#installing-from-npm).
 
 ## Manifesto
 
