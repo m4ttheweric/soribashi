@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { build } from './build.ts';
 import { loadConfig } from './load-config.ts';
 import { watch } from './watch.ts';
@@ -134,11 +135,33 @@ function parseArgs(argv: string[]): ParsedArgs {
   return args;
 }
 
+/**
+ * Reads this package's own version.
+ *
+ * Deliberately walks up from this module rather than hardcoding
+ * `new URL('../package.json', import.meta.url)`. That fixed single hop is only
+ * correct while this module sits one level below the package root, which holds
+ * for `src/cli.ts` but NOT for the published build, where the same module is
+ * emitted to `dist/src/cli.js` and one hop lands on a `dist/package.json` that
+ * does not exist. Walking up until a `package.json` turns up is correct for
+ * both layouts, so `soribashi --version` works from an installed tarball as
+ * well as from a source checkout.
+ */
 function readOwnVersion(): string {
-  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
-    version?: string;
-  };
-  return pkg.version ?? '0.0.0';
+  let dir = dirname(fileURLToPath(import.meta.url));
+
+  // The filesystem root is a fixed point of `dirname`, which is the loop's stop
+  // condition — there is no unbounded walk here.
+  for (;;) {
+    const candidate = join(dir, 'package.json');
+    if (existsSync(candidate)) {
+      const pkg = JSON.parse(readFileSync(candidate, 'utf-8')) as { version?: string };
+      if (pkg.version) return pkg.version;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return '0.0.0';
+    dir = parent;
+  }
 }
 
 function findConfig(cwd: string): string | null {
