@@ -16,6 +16,19 @@ import type { ResolvedTheme } from '@soribashi/theme';
  * Registration is what makes length tokens animatable, so transitioning
  * --sb-button-h becomes possible for the first time.
  *
+ * DOWNSTREAM BUNDLER NOISE (SORI-24, historical). `Bun.build`'s CSS bundler
+ * does not recognise `@property` and prints `warn: invalid @ rule
+ * encountered: '@property'` once per rule -- 65 warnings per boot for an app
+ * serving a generated theme.css through it. The rules pass through intact, so
+ * the emitted CSS is correct; the cost is that a genuine future build warning
+ * is buried under the repeated ones. If a bundler warning about this file's
+ * output ever needs triaging, that class is the known-harmless one and
+ * anything else in the log is worth reading. There WAS one real `@property`
+ * parse-warning class behind that wall: a hardcoded `<length>` syntax emitted
+ * for values that are not lengths, fixed in SORI-7 by deriving the syntax from
+ * the value (`inferLengthSyntax` below, which skips what it cannot type). Do
+ * not re-hardcode the syntax to quiet a parser.
+ *
  * Dark overrides are colour-only, so this freezing failure is not reachable
  * for the properties registered here. light-dark() is a <color> production;
  * substituting it into a registered <length> property like --radius-md is
