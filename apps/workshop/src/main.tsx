@@ -1,4 +1,4 @@
-import { SoribashiProvider } from '@soribashi/core';
+import { registerTheme, SoribashiProvider } from '@soribashi/core';
 import { uiTheme } from '@soribashi/ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -11,6 +11,12 @@ const container = document.getElementById('root');
 if (!container) {
   throw new Error('workshop: #root element not found');
 }
+
+// create-builders.ts documents the split: `makeBuilders`/builders carry no
+// runtime registerTheme call themselves, so the app entry must call it once,
+// which is what turns on dev-time vocabulary validation for every builder
+// that reads from this theme.
+registerTheme(uiTheme);
 
 createRoot(container).render(
   <StrictMode>
