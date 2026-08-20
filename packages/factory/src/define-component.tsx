@@ -26,6 +26,11 @@ export interface DefineComponentConfig<
   TSelectors extends readonly string[],
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+  // SORI-14: defaults to HTMLElement so every existing call site (which
+  // never names this param) keeps typechecking unchanged. A recipe whose
+  // root is outside HTMLElement (Icon's <svg>) passes its real element type
+  // explicitly instead of casting the ref at the render site.
+  TElement extends Element = HTMLElement,
 > {
   name: string;
   /**
@@ -58,7 +63,7 @@ export interface DefineComponentConfig<
       InjectedVocabularyProps<TVocabAxes> &
       StylesApiProps<any> & { variant?: TVariants[number]; intent?: string };
     getStyles: GetStylesFn<{ props: TOwnProps; stylesNames: TSelectors[number] } & FactoryPayload>;
-    ref: Ref<HTMLElement>;
+    ref: Ref<TElement>;
   }) => React.ReactNode;
 }
 
@@ -74,9 +79,12 @@ export type DefineComponentResult<
   TVariants extends readonly string[],
   TVocabAxes extends readonly VocabularyAxis[],
   TExtra = unknown,
+  // SORI-14: defaults to HTMLElement, matching DefineComponentConfig's
+  // default, so every existing call site's public type is unchanged.
+  TElement extends Element = HTMLElement,
 > = React.ForwardRefExoticComponent<
   DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra> &
-    React.RefAttributes<HTMLElement>
+    React.RefAttributes<TElement>
 > & {
   extend: (
     config: ComponentExtendConfig<
@@ -95,7 +103,7 @@ export type DefineComponentResult<
     presets: Partial<
       DefineComponentPublicProps<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>
     >,
-  ) => DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra>;
+  ) => DefineComponentResult<TOwnProps, TSelectors, TVariants, TVocabAxes, TExtra, TElement>;
   classes?: Partial<Record<TSelectors[number], string>>;
   displayName?: string;
 };
@@ -130,10 +138,13 @@ export function defineComponent<
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
->(config: DefineComponentConfig<TOwnProps, TSelectors, TVariants, TVocabAxes>) {
+  // SORI-14: defaults to HTMLElement, so a call site that never names this
+  // param (i.e. every existing recipe) is unaffected either way.
+  TElement extends Element = HTMLElement,
+>(config: DefineComponentConfig<TOwnProps, TSelectors, TVariants, TVocabAxes, TElement>) {
   const hasVariants = (config.variants?.length ?? 0) > 0;
 
-  const Component = forwardRef<HTMLElement, any>((rawProps, ref) => {
+  const Component = forwardRef<TElement, any>((rawProps, ref) => {
     const merged = useProps<TOwnProps & StylesApiProps<any>>(
       config.name,
       (config.defaults ?? null) as Partial<TOwnProps & StylesApiProps<any>> | null,
@@ -206,6 +217,8 @@ export function defineComponent<
     TOwnProps,
     TSelectors,
     TVariants,
-    TVocabAxes
+    TVocabAxes,
+    unknown,
+    TElement
   >;
 }

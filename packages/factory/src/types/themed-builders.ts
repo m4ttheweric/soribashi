@@ -55,15 +55,19 @@ export type ThemedDefineComponent<TVocab extends ThemeVocabulary> = <
   TSelectors extends readonly string[] = readonly string[],
   TVariants extends readonly string[] = readonly string[],
   TVocabAxes extends readonly VocabularyAxis[] = readonly [],
+  // SORI-14: defaults to HTMLElement, matching the raw builder's default, so
+  // a themed call site that never names this param is unaffected either way.
+  TElement extends Element = HTMLElement,
 >(
-  config: DefineComponentConfig<TOwnProps, TSelectors, TVariants, TVocabAxes> &
+  config: DefineComponentConfig<TOwnProps, TSelectors, TVariants, TVocabAxes, TElement> &
     ThemedDefaults<TVocab, TVocabAxes>,
 ) => DefineComponentResult<
   TOwnProps,
   TSelectors,
   TVariants,
   TVocabAxes,
-  ThemedVocabularyProps<TVocab, TVocabAxes>
+  ThemedVocabularyProps<TVocab, TVocabAxes>,
+  TElement
 >;
 
 export type ThemedDefinePolymorphicComponent<TVocab extends ThemeVocabulary> = <
