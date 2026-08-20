@@ -8,16 +8,24 @@
  *   - Token names: --mantine-spacing-{key} → --spacing-{key}
  *   - Replaced KNOWN_KEYS allowlist with open-ended token resolution via getSize;
  *     any non-numeric, non-CSS-function string is treated as a token key.
+ *   - Accepts the resolved theme (Mantine parity) so getSize can check
+ *     theme.tokens.spacing for the key before applying the raw-CSS
+ *     heuristic (SORI-6).
  */
+import type { ResolvedTheme } from '@soribashi/theme';
 import { getSize } from './get-size.ts';
 
 /**
  * Resolves a spacing value to a CSS string:
  *   - number → rem string (e.g. 16 → '1rem')
- *   - token key (any non-digit-leading string) → var(--spacing-{key})
+ *   - token key declared in theme.tokens.spacing → var(--spacing-{key})
+ *   - other non-digit-leading string → var(--spacing-{key})
  *   - raw CSS value (digit-leading or CSS function) → pass-through
  *   - undefined → undefined
  */
-export function getSpacing(value: string | number | undefined): string | undefined {
-  return getSize(value, 'spacing');
+export function getSpacing(
+  value: string | number | undefined,
+  theme?: ResolvedTheme,
+): string | undefined {
+  return getSize(value, 'spacing', theme);
 }

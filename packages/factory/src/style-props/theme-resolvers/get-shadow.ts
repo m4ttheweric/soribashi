@@ -8,7 +8,11 @@
  *   - Replaced the closed sm..xl allowlist with open-ended token resolution via
  *     getSize (matching getSpacing/getRadius): any token-looking key becomes
  *     var(--shadow-{key}), raw CSS shadows pass through.
+ *   - Accepts the resolved theme (Mantine parity) so getSize can check
+ *     theme.tokens.shadow for the key before applying the raw-CSS
+ *     heuristic (SORI-6).
  */
+import type { ResolvedTheme } from '@soribashi/theme';
 import { getSize } from './get-size.ts';
 
 /**
@@ -17,9 +21,9 @@ import { getSize } from './get-size.ts';
  *   - raw CSS shadow ('0 1px 2px black', 'inset 0 1px 2px black', 'none') → pass-through
  *   - undefined → undefined
  */
-export function getShadow(value: string | undefined): string | undefined {
+export function getShadow(value: string | undefined, theme?: ResolvedTheme): string | undefined {
   if (value === undefined || value === null) return undefined;
   // box-shadow: none is valid CSS; 'none' is not a plausible shadow token key
   if (value === 'none') return value;
-  return getSize(value, 'shadow');
+  return getSize(value, 'shadow', theme);
 }

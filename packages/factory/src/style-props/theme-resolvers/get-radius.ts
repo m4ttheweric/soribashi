@@ -9,7 +9,11 @@
  *   - undefined falls back to 'var(--radius-md)' (maps --mantine-radius-default)
  *   - Replaced KNOWN_KEYS allowlist with open-ended token resolution via getSize;
  *     any non-numeric, non-CSS-function string is treated as a token key.
+ *   - Accepts the resolved theme (Mantine parity) so getSize can check
+ *     theme.tokens.radius for the key before applying the raw-CSS
+ *     heuristic (SORI-6).
  */
+import type { ResolvedTheme } from '@soribashi/theme';
 import { getSize } from './get-size.ts';
 
 /**
@@ -19,7 +23,7 @@ import { getSize } from './get-size.ts';
  *   - token key → var(--radius-{key})
  *   - raw CSS value → pass-through
  */
-export function getRadius(value: string | number | undefined): string {
+export function getRadius(value: string | number | undefined, theme?: ResolvedTheme): string {
   if (value === undefined || value === null) return 'var(--radius-md)';
-  return getSize(value, 'radius') as string;
+  return getSize(value, 'radius', theme) as string;
 }

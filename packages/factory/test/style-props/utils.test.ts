@@ -87,6 +87,30 @@ describe('getSpacing', () => {
   it('passes leading-dot values through as raw CSS', () => {
     expect(getSpacing('.5rem')).toBe('.5rem');
   });
+
+  // SORI-6: digit-leading token keys must resolve against the theme's own
+  // token scale before the raw-CSS heuristic kicks in.
+  describe('with a theme (SORI-6)', () => {
+    const theme = { tokens: { spacing: { '2xs': '0.15rem', md: '1rem' } } } as never;
+
+    it('resolves a digit-leading key declared in theme.tokens.spacing to var()', () => {
+      expect(getSpacing('2xs', theme)).toBe('var(--spacing-2xs)');
+    });
+
+    it('still resolves ordinary token keys to var()', () => {
+      expect(getSpacing('md', theme)).toBe('var(--spacing-md)');
+    });
+
+    it('still treats a genuinely raw value as raw CSS, not a token', () => {
+      expect(getSpacing('12px', theme)).toBe('12px');
+      expect(getSpacing('0.5rem', theme)).toBe('0.5rem');
+    });
+
+    it('falls back to the raw-CSS heuristic for a digit-leading key the theme does not declare', () => {
+      // '2xl' is not in theme.tokens.spacing — still raw CSS pass-through
+      expect(getSpacing('2xl', theme)).toBe('2xl');
+    });
+  });
 });
 
 describe('getRadius', () => {
@@ -138,6 +162,29 @@ describe('getSize', () => {
   });
   it('returns undefined for undefined', () => {
     expect(getSize(undefined, 'foo')).toBeUndefined();
+  });
+
+  // SORI-6: token-scale keys win over the raw-CSS heuristic when a theme is given.
+  describe('with a theme (SORI-6)', () => {
+    const theme = { tokens: { spacing: { '2xs': '0.15rem' }, radius: { '3xl': '2rem' } } } as never;
+
+    it('treats a declared digit-leading spacing key as a token', () => {
+      expect(getSize('2xs', 'spacing', theme)).toBe('var(--spacing-2xs)');
+    });
+
+    it('treats a declared digit-leading radius key as a token', () => {
+      expect(getSize('3xl', 'radius', theme)).toBe('var(--radius-3xl)');
+    });
+
+    it('does not cross-apply one scale to an unrelated prefix', () => {
+      // '2xs' is only declared under spacing, not under a 'font-size' scale
+      expect(getSize('2xs', 'font-size', theme)).toBe('2xs');
+    });
+
+    it('still falls through to raw CSS for genuinely raw values', () => {
+      expect(getSize('12px', 'spacing', theme)).toBe('12px');
+      expect(getSize('0.5rem', 'spacing', theme)).toBe('0.5rem');
+    });
   });
 });
 

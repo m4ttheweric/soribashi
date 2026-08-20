@@ -11,8 +11,36 @@
  *     else is treated as a design-token key and resolved to var(--prefix-key).
  *   - Adds an explicit CSS keyword allowlist (Mantine instead routes unknown
  *     strings through rem(), which passes them through unchanged).
+ *   - When a resolved theme is supplied, its own token-scale keys are checked
+ *     FIRST, before the raw-CSS heuristic (SORI-6): a digit-leading key like
+ *     '2xs' that the theme actually declares (e.g. spacing['2xs']) resolves
+ *     to a token reference instead of being emitted as a literal CSS value.
  */
+import type { ResolvedTheme, ThemeTokens } from '@soribashi/theme';
 import { rem } from './rem.ts';
+
+/**
+ * Maps a getSize `prefix` argument to the ThemeTokens field it corresponds
+ * to. Only prefixes with a real token scale are listed; unlisted prefixes
+ * (used only in doc examples, e.g. 'container-size') skip the token-existence
+ * check and fall through to the raw-CSS heuristic unchanged.
+ */
+const PREFIX_TO_TOKEN_SCALE: Partial<Record<string, keyof ThemeTokens>> = {
+  spacing: 'spacing',
+  radius: 'radius',
+  'font-size': 'fontSize',
+  shadow: 'shadow',
+};
+
+function tokenScaleFor(
+  theme: ResolvedTheme | undefined,
+  prefix: string,
+): Record<string, string> | undefined {
+  if (theme === undefined) return undefined;
+  const field = PREFIX_TO_TOKEN_SCALE[prefix];
+  if (field === undefined) return undefined;
+  return theme.tokens[field] as Record<string, string> | undefined;
+}
 
 /**
  * CSS-wide keywords plus intrinsic sizing keywords that must never be
@@ -80,10 +108,23 @@ export function isRawCss(value: string): boolean {
  *   getSize('100px', 'whatever')          => '100px'
  *   getSize('calc(100% - 8px)', 'foo')    => 'calc(100% - 8px)'
  *   getSize(undefined, 'foo')             => undefined
+ *   getSize('2xs', 'spacing', theme)      => 'var(--spacing-2xs)' when theme
+ *                                              declares spacing['2xs']
  */
-export function getSize(value: string | number | undefined, prefix: string): string | undefined {
+export function getSize(
+  value: string | number | undefined,
+  prefix: string,
+  theme?: ResolvedTheme,
+): string | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value === 'number') return rem(value);
+  // A key that exists in the relevant token scale is a token key, full
+  // stop — checked before the raw-CSS heuristic so digit-leading token
+  // names (e.g. '2xs') aren't misread as literal CSS values (SORI-6).
+  const scale = tokenScaleFor(theme, prefix);
+  if (scale !== undefined && Object.hasOwn(scale, value)) {
+    return `var(--${prefix}-${value})`;
+  }
   if (isRawCss(value)) return value;
   return `var(--${prefix}-${value})`;
 }

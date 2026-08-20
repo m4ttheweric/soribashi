@@ -8,7 +8,11 @@
  *   - Token names: --mantine-font-size-{key} → --font-size-{key}
  *   - Replaced KNOWN_KEYS allowlist with open-ended token resolution via getSize;
  *     any non-numeric, non-CSS-function string is treated as a token key.
+ *   - Accepts the resolved theme (Mantine parity) so getSize can check
+ *     theme.tokens.fontSize for the key before applying the raw-CSS
+ *     heuristic (SORI-6).
  */
+import type { ResolvedTheme } from '@soribashi/theme';
 import { getSize } from './get-size.ts';
 
 /**
@@ -18,6 +22,9 @@ import { getSize } from './get-size.ts';
  *   - raw CSS value → pass-through
  *   - undefined → undefined
  */
-export function getFontSize(value: string | number | undefined): string | undefined {
-  return getSize(value, 'font-size');
+export function getFontSize(
+  value: string | number | undefined,
+  theme?: ResolvedTheme,
+): string | undefined {
+  return getSize(value, 'font-size', theme);
 }
