@@ -1,5 +1,5 @@
 import { createTheme } from '@soribashi/theme';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { autoVars } from '../src/auto-vars.ts';
 
 const theme = createTheme({
@@ -53,5 +53,69 @@ describe('autoVars', () => {
   it('returns empty when component declares variants but instance lacks intent', () => {
     const result = autoVars(theme, 'Button', { variant: 'filled' }, true);
     expect(result).toEqual({});
+  });
+
+  // SORI-20: the missing-default no-op is deliberately unchanged behaviour;
+  // these only pin the new dev-only diagnostic on top of it.
+  describe('dev-only missing-default warning (SORI-20)', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllEnvs();
+    });
+
+    it('warns, naming the component and the missing default, when intent is absent', () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Distinct component name per test so the dedupe Set in auto-vars.ts
+      // (module-scoped, shared across tests) can't mask a fresh warning.
+      autoVars(theme, 'WarnIntentMissing', { variant: 'filled' }, true);
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      const message = warn.mock.calls[0]?.[0] as string;
+      expect(message).toContain('WarnIntentMissing');
+      expect(message).toContain('intent');
+    });
+
+    it('warns, naming the component and the missing default, when variant is absent', () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      autoVars(theme, 'WarnVariantMissing', { intent: 'primary' }, true);
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      const message = warn.mock.calls[0]?.[0] as string;
+      expect(message).toContain('WarnVariantMissing');
+      expect(message).toContain('variant');
+    });
+
+    it('does not warn a second time for the same component + missing default', () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      autoVars(theme, 'WarnDedupeCase', { variant: 'filled' }, true);
+      autoVars(theme, 'WarnDedupeCase', { variant: 'filled' }, true);
+      autoVars(theme, 'WarnDedupeCase', { variant: 'outline' }, true);
+
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('never warns when both intent and variant are set (autoVars actually runs)', () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      autoVars(theme, 'WarnNeverCase', { intent: 'primary', variant: 'filled' }, true);
+
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('never warns when the component has no variants at all (hasVariants false)', () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      autoVars(theme, 'WarnNoVariantsCase', {}, false);
+
+      expect(warn).not.toHaveBeenCalled();
+    });
   });
 });
