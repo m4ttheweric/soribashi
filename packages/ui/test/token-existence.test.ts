@@ -15,12 +15,11 @@ import { buildManifest } from '../scripts/derive.ts';
 import { uiTheme } from '../src/theme.ts';
 
 /**
- * The repo's own `soribashi.config.ts`, resolved relative to this test file
- * (packages/ui/test/ -> repo root is three levels up).
+ * This package's own `soribashi.config.ts`, resolved relative to this test
+ * file (packages/ui/test/ -> the package root is one level up). It moved here
+ * from the repo root with the generated CSS it produces (SORI-13).
  */
-const REPO_CONFIG_PATH = fileURLToPath(
-  new URL('../../../soribashi.config.ts', import.meta.url),
-);
+const REPO_CONFIG_PATH = fileURLToPath(new URL('../soribashi.config.ts', import.meta.url));
 
 /**
  * `emitCss(theme, opts)` accepts `opts.cssVariablesResolver`, where adopters

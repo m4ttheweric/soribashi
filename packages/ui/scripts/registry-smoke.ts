@@ -116,7 +116,9 @@ import { buildScratchDependencies } from './scratch-deps.ts';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, '..', '..', '..');
-const THEME_CSS_PATH = join(REPO_ROOT, 'apps', 'workshop', 'src', 'generated', 'theme.css');
+// This package's own codegen artifact (SORI-13); it used to be read out of
+// apps/workshop, where the root config wrote it.
+const THEME_CSS_PATH = join(REPO_ROOT, 'packages', 'ui', 'src', 'generated', 'theme.css');
 const MANIFEST_PATH = join(REPO_ROOT, 'packages', 'ui', 'manifest.json');
 
 /**

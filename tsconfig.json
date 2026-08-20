@@ -15,8 +15,8 @@
     "apps/*/tests/**/*",
     "apps/*/scripts/**/*",
     "apps/*/soribashi.config.ts",
+    "packages/*/soribashi.config.ts",
     "apps/*/vitest*.config.ts",
-    "soribashi.config.ts",
     "tests/**/*",
     "playwright.config.ts",
     "vitest.config.ts"
