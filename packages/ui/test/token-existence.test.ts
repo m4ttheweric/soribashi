@@ -1,12 +1,40 @@
+import { fileURLToPath } from 'node:url';
 import { createTheme, defaultDarkTokens, defaultTokens } from '@soribashi/core';
 import { describe, expect, it } from 'vitest';
 // Deep import, same rationale as reskin.test.tsx: `emitCss` is pure (no
 // filesystem access), but `@soribashi/codegen`'s index.ts re-exports
 // `watch.ts`, which pulls in `node:fs`/`node:child_process`. Importing the
 // barrel here would drag that into this node-tier test for no reason.
+// `loadConfig` and the `types.ts` type-only imports are equally
+// filesystem-free (loadConfig only touches node:url + a dynamic import), so
+// they're deep-imported for the same reason.
 import { emitCss } from '../../codegen/src/emit-css.ts';
+import { loadConfig } from '../../codegen/src/load-config.ts';
+import type { CssVariablesResolver, EmitCssOptions } from '../../codegen/src/types.ts';
 import { buildManifest } from '../scripts/derive.ts';
 import { uiTheme } from '../src/theme.ts';
+
+/**
+ * The repo's own `soribashi.config.ts`, resolved relative to this test file
+ * (packages/ui/test/ -> repo root is three levels up).
+ */
+const REPO_CONFIG_PATH = fileURLToPath(
+  new URL('../../../soribashi.config.ts', import.meta.url),
+);
+
+/**
+ * `emitCss(theme, opts)` accepts `opts.cssVariablesResolver`, where adopters
+ * register additional public custom-property names (SORI-11). A gate that
+ * only ever calls bare `emitCss(theme)` is blind to those names and will
+ * flag a recipe's `var(--adopter-name)` dependency as unresolved even though
+ * the adopter's own config would emit it. Load the resolver (if any) from
+ * the repo's real config and thread it through every `emitCss` call this
+ * gate makes, so the gate checks what actually ships.
+ */
+async function loadEmitOptions(): Promise<EmitCssOptions> {
+  const config = await loadConfig(REPO_CONFIG_PATH);
+  return config.emit ?? {};
+}
 
 /**
  * Token-existence gate (step 4): every `--x` custom property a recipe's
@@ -86,7 +114,8 @@ function unsatisfiedDependencies(
 
 describe('token existence: recipe tokenDependencies resolve against emitted CSS', () => {
   it('every manifest recipe tokenDependency is an emitted custom property, or allowlisted', async () => {
-    const emitted = extractEmittedVarNames(emitCss(uiTheme));
+    const emitOptions = await loadEmitOptions();
+    const emitted = extractEmittedVarNames(emitCss(uiTheme, emitOptions));
     const manifest = await buildManifest();
     // Floor: if the barrel ever silently resolved to zero recipes, the loop
     // below would find nothing to check and this guard would pass
@@ -128,7 +157,8 @@ describe('token existence: recipe tokenDependencies resolve against emitted CSS'
       tokens: defaultTokens,
       dark: defaultDarkTokens,
     });
-    const emitted = extractEmittedVarNames(emitCss(starterTheme));
+    const emitOptions = await loadEmitOptions();
+    const emitted = extractEmittedVarNames(emitCss(starterTheme, emitOptions));
     const manifest = await buildManifest();
     expect(manifest.recipes.length, 'expected at least one manifest recipe').toBeGreaterThan(0);
 
@@ -145,5 +175,38 @@ describe('token existence: recipe tokenDependencies resolve against emitted CSS'
             'recipe genuinely stays usable without it, to UI_THEME_ONLY in ' +
             'packages/ui/test/token-existence.test.ts with a comment saying why.',
     ).toEqual([]);
+  });
+});
+
+describe('SORI-11: gate forwards the repo config emit options to emitCss', () => {
+  it("soribashi's own config declares no cssVariablesResolver, so forwarding it changes nothing", async () => {
+    const emitOptions = await loadEmitOptions();
+    expect(emitOptions.cssVariablesResolver).toBeUndefined();
+
+    const before = extractEmittedVarNames(emitCss(uiTheme));
+    const after = extractEmittedVarNames(emitCss(uiTheme, emitOptions));
+    expect([...after].sort()).toEqual([...before].sort());
+  });
+
+  /**
+   * Fixture-level proof of the mechanism itself (independent of what the
+   * repo's own config happens to declare): a `cssVariablesResolver` that
+   * injects a public property name must show up in
+   * `extractEmittedVarNames`'s output when threaded through `emitCss`, and
+   * must NOT show up when it isn't — otherwise the gate would flag a
+   * recipe's `var(--adopter-name)` dependency as broken even though an
+   * adopter's resolver supplies it at build time.
+   */
+  it('a resolver-injected property name counts as emitted once threaded through emitCss', () => {
+    const injectedName = '--adopter-accent';
+    const resolver: CssVariablesResolver = () => ({ root: { [injectedName]: '#123456' } });
+
+    const withoutResolver = extractEmittedVarNames(emitCss(uiTheme));
+    const withResolver = extractEmittedVarNames(
+      emitCss(uiTheme, { cssVariablesResolver: resolver }),
+    );
+
+    expect(withoutResolver.has(injectedName)).toBe(false);
+    expect(withResolver.has(injectedName)).toBe(true);
   });
 });
