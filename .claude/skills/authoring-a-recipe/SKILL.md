@@ -73,6 +73,17 @@ With that widening, `<MyRecipe variant="nope" />` compiles silently, with no err
 
 Generic params are still worth spelling out explicitly for other reasons (readability, and `defineGenericComponent` specifically has no automatic vocabulary-axis composition at all -- see Select.test.tsx's compile-time pin on `SelectSignature`), but doing so does not, by itself, produce any narrowing that inference wouldn't already give you.
 
+### Zero-axis recipes
+
+Not every recipe has a `variant` or an `intent`/`size` axis at all. A pure wrapper with no themeable dimension of its own -- an SVG icon component is the clearest case, but any recipe that is genuinely just a styled pass-through with no size/intent/variant knobs qualifies -- declares none of the vocabulary machinery: no `variants` tuple on the builder config, no `vocabularyAxes` entry, and no `defaultProps` for an axis that was never declared in the first place (there is nothing for a default to default). This is a legitimate, final shape, not a recipe that forgot to opt in.
+
+Two consequences follow mechanically, both already covered elsewhere in this file but worth stating together for the zero-axis case specifically, since it's easy to go looking for guidance that doesn't apply here:
+
+- **`autoVars` never fires.** `autoVars` (section 4, and the traps in section 10) requires `hasVariants` to be true before it does anything at all; a recipe with an empty/absent `variants` tuple gets `{}` back unconditionally, every render. This is section 4's ordinary no-op path, not a bug and not something to special-case in the recipe -- just don't reach for `--{name}-bg`/`-color`/`-border` vars in a zero-axis recipe's CSS, since nothing will ever populate them.
+- **Section 7's axis-prop destructure doesn't apply.** Section 7's rule (destructure `size`/`intent`/`variant` out of `props` before spreading onto the DOM element) exists because the builder doesn't strip vocabulary-axis props for you. A recipe with no `vocabularyAxes` and no `variants` tuple never receives those props as axis props in the first place, so there is nothing to destructure and no `data-size`/`data-intent`/`data-variant` will be stamped by `getStyles`. Don't add a defensive destructure for an axis the recipe never declared; it's dead code that suggests an axis exists where none does.
+
+Style the recipe with ordinary CSS instead: fixed values, or the dimension-record pattern (section 6) if it genuinely varies by something other than a themed vocabulary axis (e.g. a raw `size` number prop that isn't the `size` vocabulary at all).
+
 ## 3. The two invariants
 
 These are CLAUDE.md's project invariants, verbatim, and they bind every recipe:
