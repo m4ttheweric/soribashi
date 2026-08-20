@@ -60,6 +60,19 @@ export interface PartRenderCtx<
   TCtxExtra = object,
   TVariants extends readonly string[] = readonly string[],
   TSlotKeys extends string = string,
+  // SORI-21: the element this part's ref points at. Defaults to `unknown`, so
+  // every existing annotation (which never names this param) keeps its exact
+  // current `Ref<unknown>` typing. A part that needs a real handle on its own
+  // element — to measure itself, or to answer "was that event inside me" —
+  // names it (`PartRenderCtx<Props, Ctx, Variants, Slots, HTMLDivElement>`)
+  // and merges with `mergeRefs` instead of casting `ref` by hand.
+  //
+  // The knob lives here rather than as a type param on `defineCompound`
+  // because a config-level param cannot reach an explicitly annotated render
+  // parameter, and an UNannotated one is contextually `any` (AnyPartConfig's
+  // `render: (ctx: any) => ReactNode`, which is deliberate — see its doc
+  // comment). Annotated render ctxs were the only place the cast was forced.
+  TElement = unknown,
 > {
   props: TProps &
     CompoundStylesApiProps<{ props: TProps; stylesNames: TSlotKeys } & FactoryPayload>;
@@ -74,7 +87,7 @@ export interface PartRenderCtx<
   getStyles: (opts?: { part?: TSlotKeys } & GetStylesOptions) => GetStylesResult;
   ctx: TCtxExtra & { variant: TVariants[number] | undefined };
   children?: ReactNode;
-  ref: Ref<unknown>;
+  ref: Ref<TElement>;
 }
 
 /**
@@ -85,7 +98,8 @@ export interface PolymorphicPartRenderCtx<
   TCtxExtra = object,
   TVariants extends readonly string[] = readonly string[],
   TSlotKeys extends string = string,
-> extends PartRenderCtx<TProps, TCtxExtra, TVariants, TSlotKeys> {
+  TElement = unknown,
+> extends PartRenderCtx<TProps, TCtxExtra, TVariants, TSlotKeys, TElement> {
   Element: keyof JSX.IntrinsicElements;
 }
 

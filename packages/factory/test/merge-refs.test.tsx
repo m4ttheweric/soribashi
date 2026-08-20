@@ -1,7 +1,16 @@
 import { render } from '@testing-library/react';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import * as factory from '../src/index.ts';
 import { type MergedRefCallback, mergeRefs } from '../src/merge-refs.ts';
+
+// SORI-21: the helper existed and Slot used it, but the barrel never re-exported
+// it, so recipes needing the same merge hand-rolled 8 lines of ref plumbing.
+describe('@soribashi/factory barrel', () => {
+  it('re-exports mergeRefs', () => {
+    expect(factory.mergeRefs).toBe(mergeRefs);
+  });
+});
 
 describe('mergeRefs', () => {
   it('forwards a node to multiple ref objects', () => {

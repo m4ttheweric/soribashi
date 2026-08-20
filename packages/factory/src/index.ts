@@ -39,6 +39,11 @@ export type { UseStylesConfig } from './hooks/use-styles.ts';
 export { useStyles } from './hooks/use-styles.ts';
 export type { InlineStylesProps } from './inline-styles/InlineStyles.tsx';
 export { InlineStyles } from './inline-styles/InlineStyles.tsx';
+// Ref merging. `Slot` uses it internally; a recipe that keeps its own handle on
+// an element while still honouring a forwarded ref needs exactly this, and was
+// hand-rolling it because the barrel never re-exported it (SORI-21).
+export type { MergedRefCallback } from './merge-refs.ts';
+export { mergeRefs } from './merge-refs.ts';
 export { polymorphicComponent } from './polymorphic-component.tsx';
 export type { SoribashiProviderProps } from './provider/provider.tsx';
 export { SoribashiProvider } from './provider/provider.tsx';
