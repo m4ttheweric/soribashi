@@ -6,10 +6,15 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    // Root is the package directory, not `./src`, because the build has to span
+    // both `src/` and `bin/` (the `soribashi` CLI entry point). The source
+    // tree's shape is therefore preserved one level down — `dist/src/index.js`,
+    // `dist/bin/soribashi.js` — which no consumer ever sees, since they resolve
+    // through the `exports` map.
+    "rootDir": ".",
     "rewriteRelativeImportExtensions": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "bin/**/*"],
   "exclude": ["node_modules", "dist", "test"]
 }

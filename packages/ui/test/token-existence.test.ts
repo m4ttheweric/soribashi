@@ -2,15 +2,15 @@ import { fileURLToPath } from 'node:url';
 import { createTheme, defaultDarkTokens, defaultTokens } from '@soribashi/core';
 import { describe, expect, it } from 'vitest';
 // Deep import, same rationale as reskin.test.tsx: `emitCss` is pure (no
-// filesystem access), but `@soribashi/codegen`'s index.ts re-exports
+// filesystem access), but `@soribashi/core/codegen`'s index.ts re-exports
 // `watch.ts`, which pulls in `node:fs`/`node:child_process`. Importing the
 // barrel here would drag that into this node-tier test for no reason.
 // `loadConfig` and the `types.ts` type-only imports are equally
 // filesystem-free (loadConfig only touches node:url + a dynamic import), so
 // they're deep-imported for the same reason.
-import { emitCss } from '../../codegen/src/emit-css.ts';
-import { loadConfig } from '../../codegen/src/load-config.ts';
-import type { CssVariablesResolver, EmitCssOptions } from '../../codegen/src/types.ts';
+import { emitCss } from '../../core/src/codegen/emit-css.ts';
+import { loadConfig } from '../../core/src/codegen/load-config.ts';
+import type { CssVariablesResolver, EmitCssOptions } from '../../core/src/codegen/types.ts';
 import { buildManifest } from '../scripts/derive.ts';
 import { uiTheme } from '../src/theme.ts';
 

@@ -1,66 +1,26 @@
 {
   "name": "@soribashi/codegen",
   "version": "0.1.0",
-  "description": "The `soribashi` CLI: reads a Soribashi theme and emits layered CSS custom properties, @property registrations, and Tailwind v4 output.",
+  "description": "INTERNAL SHIM for file:-era consumers of @soribashi/codegen. Re-exports @soribashi/core/codegen and keeps the `soribashi` bin working. Never published; deleted once tui-kit migrates.",
+  "private": true,
   "license": "MIT",
-  "author": "Matthew Goodwin",
-  "homepage": "https://github.com/m4ttheweric/soribashi#readme",
-  "bugs": {
-    "url": "https://github.com/m4ttheweric/soribashi/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/m4ttheweric/soribashi.git",
-    "directory": "packages/codegen"
-  },
-  "keywords": [
-    "soribashi",
-    "codegen",
-    "css",
-    "design-tokens",
-    "tailwindcss",
-    "cli"
-  ],
   "type": "module",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./shim/index.js",
+  "types": "./shim/index.d.ts",
   "bin": {
-    "soribashi": "./dist/bin/soribashi.js"
+    "soribashi": "./bin/soribashi.js"
   },
   "exports": {
     ".": {
-      "soribashi-source": "./src/index.ts",
-      "types": "./dist/src/index.d.ts",
-      "default": "./dist/src/index.js"
+      "types": "./shim/index.d.ts",
+      "default": "./shim/index.js"
     }
   },
   "files": [
-    "dist",
-    "src",
-    "bin",
-    "CHANGELOG.md",
-    "README.md",
-    "LICENSE"
+    "shim",
+    "bin"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "engines": {
-    "bun": ">=1.1.0"
-  },
-  "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun ../../scripts/fix-dts-extensions.ts dist",
-    "prepack": "bun run build",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
-    "@soribashi/theme": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.0",
-    "tailwindcss": "^4",
-    "typescript": "^7",
-    "vitest": "^4"
+    "@soribashi/core": "workspace:*"
   }
 }

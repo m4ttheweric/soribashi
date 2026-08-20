@@ -1,4 +1,5 @@
-// @soribashi/core — public barrel package
+// @soribashi/core — the published barrel: one import for the component
+// factory's builders and the theme model. Framework only, no components.
 
 export type {
   BoxStyleProps,
@@ -22,7 +23,7 @@ export type {
   UniversalStyleProps,
   UseStylePropsResult,
   VocabularyOverride,
-} from '@soribashi/factory';
+} from './factory/index.ts';
 export {
   autoVars,
   cn,
@@ -53,7 +54,7 @@ export {
   useRandomClassName,
   useStyleProps,
   useTheme,
-} from '@soribashi/factory';
+} from './factory/index.ts';
 export type {
   ColorScale,
   ComponentThemeConfig,
@@ -67,7 +68,7 @@ export type {
   ThemeDefinition,
   ThemeTokens,
   Vocabulary,
-} from '@soribashi/theme';
+} from './theme/index.ts';
 export {
   composeTheme,
   createTheme,
@@ -76,4 +77,4 @@ export {
   defaultTokens,
   defineVocabulary,
   isThemeComponentEntry,
-} from '@soribashi/theme';
+} from './theme/index.ts';

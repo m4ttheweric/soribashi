@@ -1,0 +1,562 @@
+/**
+ * Tier 2 Batch T2-E — Emitter Logic Parity Tests
+ *
+ * These tests cover line-level branches in emit-css.ts found during the
+ * 2026-04-25 full-audit pass (Mantine commit 63dafbbf).
+ *
+ * They complement the existing emit-css.test.ts (which tests the happy path
+ * of each token type) by covering:
+ *   - BUG-E-1: breakpoint tokens not emitted by emitTokenLines()
+ *   - BUG-E-2: non-colour families (fontFamily, fontWeight, lineHeight,
+ *              breakpoint, heading) must NEVER thread a dark override
+ *              through as a light-dark() pair. This used to assert the
+ *              opposite (that they DID thread through as light-dark() pairs),
+ *              which was itself a bug: light-dark() is a colour-only CSS
+ *              function, so wrapping a length/number/keyword value in it is
+ *              invalid at computed-value time and the token resolves to
+ *              nothing in both schemes. See emit-css.ts's pairValue() doc
+ *              comment. validateTheme now rejects a `dark` entry for any of
+ *              these families outright (validate-theme.ts), so these cases
+ *              also cover emitCss's own defensive behaviour if it is ever
+ *              called directly (as these tests do) with a theme that skipped
+ *              validation.
+ *   - Sort order: colors sorted family-then-shade alphabetically
+ *   - Dark block emission: the .dark selector is now unconditional (it only
+ *     flips color-scheme, so there is nothing to gate on theme.dark)
+ *   - Edge cases: empty token sets, undefined heading props
+ *   - semanticToVar: all four reference syntaxes
+ */
+
+import { describe, expect, it } from 'vitest';
+import { emitCss } from '../../src/codegen/emit-css.ts';
+import { createTheme } from '../../src/theme/index.ts';
+
+// ---------------------------------------------------------------------------
+// BUG-E-1: breakpoint tokens must be emitted in the light scope block
+// ---------------------------------------------------------------------------
+
+describe('emitCss — BUG-E-1: breakpoint emission', () => {
+  it('emits --breakpoint-* vars when tokens.breakpoint is provided', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        breakpoint: { xs: '36em', sm: '48em', md: '62em', lg: '75em', xl: '88em' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--breakpoint-xs: 36em;');
+    expect(css).toContain('--breakpoint-sm: 48em;');
+    expect(css).toContain('--breakpoint-md: 62em;');
+    expect(css).toContain('--breakpoint-lg: 75em;');
+    expect(css).toContain('--breakpoint-xl: 88em;');
+  });
+
+  it('does NOT emit --breakpoint-* vars when tokens.breakpoint is absent', () => {
+    const theme = createTheme({
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+    });
+    // createTheme backfills default breakpoints; strip them so the emitter's
+    // absent-breakpoint branch is still exercised.
+    const { breakpoint: _backfilled, ...tokens } = theme.tokens;
+
+    const css = emitCss({ ...theme, tokens });
+    expect(css).not.toContain('--breakpoint-');
+  });
+
+  it('breakpoints appear inside the light-scope block (before closing brace)', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        breakpoint: { md: '62em' },
+      },
+    });
+
+    const css = emitCss(theme);
+    // The light-scope block is ':root { ... }'. The breakpoint must be inside it,
+    // not floating at the top level.
+    const rootStart = css.indexOf(':root {');
+    const firstClose = css.indexOf('}', rootStart);
+    const breakpointPos = css.indexOf('--breakpoint-md');
+    expect(breakpointPos).toBeGreaterThan(rootStart);
+    expect(breakpointPos).toBeLessThan(firstClose);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-E-2 (inverted): non-colour families must NEVER thread a dark override
+// through emitTokenLines() as a light-dark() pair. light-dark() is a
+// colour-only CSS function; a valid theme cannot even construct this input
+// (validateTheme rejects a `dark` entry for any of these families), so these
+// cases exercise emitCss's own defensive bare-value behaviour when called
+// directly with a theme that skipped validation.
+//
+// Each row below names the declaration it is asserting about rather than
+// searching the whole output for `light-dark(`: createTheme's default
+// semantic set now contributes one unconditionally (surface.placeholder
+// carries a per-scheme reference), so a whole-output search would report the
+// default's pair no matter what the family under test did. The emitted CSS
+// now legitimately contains a light-dark() pair for --surface-placeholder
+// (a framework default), so a whole-output search cannot distinguish that
+// expected pair from a regression; each assertion narrows to the specific
+// declaration its test is actually about.
+// ---------------------------------------------------------------------------
+
+describe('emitCss: BUG-E-2, non-colour dark overrides are never paired', () => {
+  it('ignores a dark fontFamily override and emits the light value bare', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        fontFamily: { sans: 'Inter' },
+      },
+      dark: {
+        fontFamily: { sans: 'SystemFont' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--font-family-sans: Inter;');
+    expect(css).not.toContain('--font-family-sans: light-dark(');
+  });
+
+  it('ignores a dark fontWeight override and emits the light value bare', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        fontWeight: { bold: '700' },
+      },
+      dark: {
+        fontWeight: { bold: '600' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--font-weight-bold: 700;');
+    expect(css).not.toContain('--font-weight-bold: light-dark(');
+  });
+
+  it('ignores a dark lineHeight override and emits the light value bare', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        lineHeight: { md: '1.55' },
+      },
+      dark: {
+        lineHeight: { md: '1.6' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--line-height-md: 1.55;');
+    expect(css).not.toContain('--line-height-md: light-dark(');
+  });
+
+  it('ignores a dark breakpoint override and emits the light value bare', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        breakpoint: { md: '62em' },
+      },
+      dark: {
+        breakpoint: { md: '60em' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--breakpoint-md: 62em;');
+    expect(css).not.toContain('--breakpoint-md: light-dark(');
+  });
+
+  it('ignores a dark heading.textWrap override and emits the light value bare', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        heading: {
+          textWrap: 'wrap',
+          sizes: {
+            h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+      dark: {
+        heading: {
+          textWrap: 'balance',
+          sizes: {
+            h1: { fontSize: '1.875rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--heading-text-wrap: wrap;');
+    expect(css).not.toContain('--heading-text-wrap: light-dark(');
+  });
+
+  it('ignores a dark heading fontSize override and emits the light value bare', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        heading: {
+          sizes: {
+            h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+      dark: {
+        heading: {
+          sizes: {
+            h1: { fontSize: '1.875rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--heading-h1-font-size: 2rem;');
+    expect(css).not.toContain('--heading-h1-font-size: light-dark(');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sort order — family-then-shade alphabetical
+// ---------------------------------------------------------------------------
+
+describe('emitCss — sort order', () => {
+  it('color families are sorted alphabetically in the output', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {
+          zebra: { '500': 'red' },
+          alpha: { '500': 'blue' },
+          mango: { '500': 'green' },
+        },
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+    });
+
+    const css = emitCss(theme);
+    const alphaPos = css.indexOf('--color-alpha-500');
+    const mangoPos = css.indexOf('--color-mango-500');
+    const zebraPos = css.indexOf('--color-zebra-500');
+    expect(alphaPos).toBeLessThan(mangoPos);
+    expect(mangoPos).toBeLessThan(zebraPos);
+  });
+
+  it('shades within a color family are sorted alphabetically (50 < 500 < 900 in string order)', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {
+          primary: { '900': 'dark', '50': 'light', '500': 'mid' },
+        },
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+    });
+
+    const css = emitCss(theme);
+    // String sort: '50' < '500' < '900'
+    const pos50 = css.indexOf('--color-primary-50:');
+    const pos500 = css.indexOf('--color-primary-500:');
+    const pos900 = css.indexOf('--color-primary-900:');
+    expect(pos50).toBeLessThan(pos500);
+    expect(pos500).toBeLessThan(pos900);
+  });
+
+  it('token sections appear in a deterministic order across runs', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: { md: '0.5rem' },
+        spacing: { md: '0.5rem' },
+        fontSize: { md: '1rem' },
+        fontFamily: { sans: 'Inter' },
+        fontWeight: { bold: '700' },
+        lineHeight: { md: '1.55' },
+        shadow: { md: '0 1px 2px black' },
+        breakpoint: { md: '62em' },
+      },
+    });
+    expect(emitCss(theme)).toBe(emitCss(theme));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Dark block emission — always present now; it only flips color-scheme
+// ---------------------------------------------------------------------------
+
+describe('emitCss — dark block emission', () => {
+  it('dark block is still emitted (color-scheme only) when theme.dark is empty', () => {
+    // Previously the .dark selector was only emitted when there was
+    // something to restate. Now it carries no tokens at all — just the
+    // color-scheme flip — so there is no longer a reason to omit it based on
+    // theme.dark's contents.
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)' } },
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+    });
+
+    const css = emitCss(theme);
+    // Wrapped one level deeper inside @layer soribashi.tokens { ... } now.
+    expect(css).toContain('.dark {\n    color-scheme: dark;\n  }');
+    // Named declaration, for the same reason the BUG-E-2 rows above name
+    // theirs: the default semantic set always contributes a light-dark().
+    expect(css).toContain('--color-primary-500: hsl(0 0% 50%);');
+    expect(css).not.toContain('--color-primary-500: light-dark(');
+  });
+
+  it('dark block uses the configured darkMode.selector', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+      dark: {
+        colors: { primary: { '500': 'hsl(0 0% 80%)' } },
+      },
+      darkMode: { selector: '[data-theme="dark"]' },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('[data-theme="dark"] {');
+    expect(css).not.toContain('.dark {');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Edge cases — empty sets, undefined heading props
+// ---------------------------------------------------------------------------
+
+describe('emitCss — edge cases', () => {
+  it('handles completely empty tokens gracefully', () => {
+    const theme = createTheme({
+      tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {} },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain(':root {');
+    expect(css).toContain('}');
+    // No undefined or "[object Object]" in output
+    expect(css).not.toContain('undefined');
+    expect(css).not.toContain('[object');
+  });
+
+  it('omits --heading-{n}-font-weight when size.fontWeight is undefined', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        heading: {
+          sizes: {
+            h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+    });
+
+    const css = emitCss(theme);
+    // Only fontSize was specified; fontWeight and lineHeight should not appear
+    expect(css).toContain('--heading-h1-font-size: 2rem;');
+    expect(css).not.toContain('--heading-h1-font-weight');
+    expect(css).not.toContain('--heading-h1-line-height');
+  });
+
+  it('omits --heading-text-wrap when textWrap is undefined', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+        heading: {
+          sizes: {
+            h1: { fontSize: '2rem' },
+            h2: { fontSize: '1.5rem' },
+            h3: { fontSize: '1.25rem' },
+            h4: { fontSize: '1.125rem' },
+            h5: { fontSize: '1rem' },
+            h6: { fontSize: '0.875rem' },
+          },
+        },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).not.toContain('--heading-text-wrap');
+  });
+
+  it('dark override with undefined value falls back to a bare declaration, not light-dark(x, undefined)', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'hsl(0 0% 50%)', '600': 'hsl(0 0% 40%)' } },
+        radius: { md: '0.5rem' },
+        spacing: {},
+        fontSize: {},
+      },
+      dark: {
+        colors: { primary: { '500': 'hsl(0 0% 80%)', '600': undefined } },
+        radius: { md: undefined },
+      },
+    });
+
+    const css = emitCss(theme);
+    // '500' has a real dark override — paired.
+    expect(css).toContain('--color-primary-500: light-dark(hsl(0 0% 50%), hsl(0 0% 80%));');
+    // '600' has no dark override — bare value, no light-dark() wrapping.
+    expect(css).toContain('--color-primary-600: hsl(0 0% 40%);');
+    // radius.md has no dark override — bare value.
+    expect(css).toContain('--radius-md: 0.5rem;');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// semanticToVar — all four reference syntaxes
+// ---------------------------------------------------------------------------
+
+describe('emitCss — semanticToVar reference resolution', () => {
+  it('resolves colors.{family}.{shade} → var(--color-{family}-{shade})', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: { neutral: { '900': '#111' } },
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+      semanticTokens: {
+        text: { primary: 'colors.neutral.900' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--text-primary: var(--color-neutral-900);');
+  });
+
+  it('resolves radius.{key} → var(--radius-{key})', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: { md: '0.5rem' },
+        spacing: {},
+        fontSize: {},
+      },
+      semanticTokens: {
+        border: { radius: 'radius.md' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--border-radius: var(--radius-md);');
+  });
+
+  it('resolves spacing.{key} → var(--spacing-{key})', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: { md: '1rem' },
+        fontSize: {},
+      },
+      semanticTokens: {
+        surface: { gutter: 'spacing.md' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--surface-gutter: var(--spacing-md);');
+  });
+
+  it('resolves fontSize.{key} → var(--font-size-{key})', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: { md: '1rem' },
+      },
+      semanticTokens: {
+        text: { body: 'fontSize.md' },
+      },
+    });
+
+    const css = emitCss(theme);
+    expect(css).toContain('--text-body: var(--font-size-md);');
+  });
+
+  it('passes through unknown reference strings verbatim', () => {
+    const theme = createTheme({
+      tokens: {
+        colors: {},
+        radius: {},
+        spacing: {},
+        fontSize: {},
+      },
+      semanticTokens: {
+        text: { accent: '#ff0000' },
+      },
+    });
+
+    const css = emitCss(theme);
+    // An unrecognized reference is emitted as-is (not wrapped in var())
+    expect(css).toContain('--text-accent: #ff0000;');
+  });
+});

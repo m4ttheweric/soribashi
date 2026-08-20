@@ -6,9 +6,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: [
-      './packages/theme/vitest.config.ts',
-      './packages/codegen/vitest.config.ts',
-      './packages/factory/vitest.config.ts',
+      './packages/core/vitest.node.config.ts',
+      './packages/core/vitest.dom.config.ts',
       './packages/ui/vitest.config.ts',
       './packages/ui/vitest.browser.config.ts',
     ],

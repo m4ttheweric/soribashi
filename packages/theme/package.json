@@ -1,55 +1,22 @@
 {
   "name": "@soribashi/theme",
   "version": "0.1.0",
-  "description": "Soribashi's theme model: createTheme, composeTheme, declared vocabularies, and the token contract the rest of the stack resolves against.",
+  "description": "INTERNAL SHIM for file:-era consumers of @soribashi/theme. Re-exports @soribashi/core. Never published; deleted once tui-kit migrates.",
+  "private": true,
   "license": "MIT",
-  "author": "Matthew Goodwin",
-  "homepage": "https://github.com/m4ttheweric/soribashi#readme",
-  "bugs": {
-    "url": "https://github.com/m4ttheweric/soribashi/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/m4ttheweric/soribashi.git",
-    "directory": "packages/theme"
-  },
-  "keywords": [
-    "soribashi",
-    "theme",
-    "design-tokens",
-    "design-system"
-  ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./shim/index.js",
+  "types": "./shim/index.d.ts",
   "exports": {
     ".": {
-      "soribashi-source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./shim/index.d.ts",
+      "default": "./shim/index.js"
     }
   },
   "files": [
-    "dist",
-    "src",
-    "CHANGELOG.md",
-    "README.md",
-    "LICENSE"
+    "shim"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun ../../scripts/fix-dts-extensions.ts dist",
-    "prepack": "bun run build",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
-    "zod": "^4"
-  },
-  "devDependencies": {
-    "typescript": "^7",
-    "vitest": "^4"
+    "@soribashi/core": "workspace:*"
   }
 }

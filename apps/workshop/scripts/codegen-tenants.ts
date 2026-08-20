@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { emitCss } from '@soribashi/codegen';
+import { emitCss } from '@soribashi/core/codegen';
 import { tenantThemes } from '../src/theme/tenants.ts';
 
 /**

@@ -17,7 +17,7 @@
       "path": "registry/soribashi.config.ts",
       "type": "registry:file",
       "target": "soribashi.config.ts",
-      "content": "// Starter soribashi config, scaffolded by the soribashi-init registry item.\n// Points the codegen step at your theme and where to write the generated CSS.\n// Run your project's codegen step (wraps @soribashi/codegen's `soribashi build`)\n// whenever this file or ./soribashi/theme.ts changes, to regenerate that CSS.\nimport { theme } from './soribashi/theme.ts';\n\nexport default {\n  theme,\n  output: { css: 'src/generated/theme.css' },\n};\n"
+      "content": "// Starter soribashi config, scaffolded by the soribashi-init registry item.\n// Points the codegen step at your theme and where to write the generated CSS.\n// Run your project's codegen step (wraps @soribashi/core's `soribashi build`)\n// whenever this file or ./soribashi/theme.ts changes, to regenerate that CSS.\nimport { theme } from './soribashi/theme.ts';\n\nexport default {\n  theme,\n  output: { css: 'src/generated/theme.css' },\n};\n"
     }
   ]
 }

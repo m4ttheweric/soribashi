@@ -2,13 +2,13 @@ import { createTheme, getRecipeMeta, SoribashiProvider } from '@soribashi/core';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 // Deep import, deliberately not the codegen package barrel: `emitCss` is pure
-// (no filesystem access), but `@soribashi/codegen`'s index.ts re-exports
+// (no filesystem access), but `@soribashi/core/codegen`'s index.ts re-exports
 // `watch.ts`, which pulls in `node:fs`/`node:child_process`. Importing the
 // barrel here would drag that into the browser test bundle.
-import { emitCss } from '../../../codegen/src/emit-css.ts';
+import { emitCss } from '../../../core/src/codegen/emit-css.ts';
+import manifest from '../../manifest.json' with { type: 'json' };
 import * as barrel from '../index.ts';
 import { uiTheme } from '../theme.ts';
-import manifest from '../../manifest.json' with { type: 'json' };
 import { RESKIN_FIXTURES } from './reskin-fixtures.tsx';
 
 /**
@@ -22,7 +22,7 @@ import { RESKIN_FIXTURES } from './reskin-fixtures.tsx';
  * which theme's CSS custom properties are in scope; no recipe source is
  * touched.
  *
- * Full colour coverage matches the shade list `packages/codegen/test/
+ * Full colour coverage matches the shade list `packages/core/test/codegen/
  * validate-theme.test.ts` uses to satisfy createTheme's default semantic
  * tokens (text/surface/border all resolve through these `neutral` shades),
  * plus a `primary` scale (500 + foreground) for Button's `filled` variant,

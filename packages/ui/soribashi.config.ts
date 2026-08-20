@@ -17,5 +17,5 @@ import { uiTheme } from './src/theme.ts';
 export default {
   theme: uiTheme,
   output: { css: 'src/generated/theme.css' },
-  watch: ['src/theme.ts', '../theme/src/**/*.ts'],
+  watch: ['src/theme.ts', '../core/src/theme/**/*.ts'],
 };

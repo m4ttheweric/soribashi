@@ -208,7 +208,7 @@ export const theme = createTheme({
 
 const INIT_CONFIG_TS = `// Starter soribashi config, scaffolded by the soribashi-init registry item.
 // Points the codegen step at your theme and where to write the generated CSS.
-// Run your project's codegen step (wraps @soribashi/codegen's \`soribashi build\`)
+// Run your project's codegen step (wraps @soribashi/core's \`soribashi build\`)
 // whenever this file or ./soribashi/theme.ts changes, to regenerate that CSS.
 import { theme } from './soribashi/theme.ts';
 

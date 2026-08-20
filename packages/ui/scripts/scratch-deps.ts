@@ -9,8 +9,13 @@
  * uses, instead of leaving the version to whatever the shadcn CLI resolves.
  */
 
-/** Soribashi packages the smoke vendors into scratchDir/vendor/<name>. */
-const VENDORED = new Set(['@soribashi/core', '@soribashi/factory', '@soribashi/theme']);
+/**
+ * Soribashi packages the smoke vendors into scratchDir/vendor/<name>. One
+ * entry since the four framework packages merged into @soribashi/core; still a
+ * Set rather than an equality check, so an OPTIONAL @soribashi/* sibling
+ * joining the story later is a one-line change here, not a rewrite.
+ */
+const VENDORED = new Set(['@soribashi/core']);
 
 /** React and its DOM binding are the scaffold's own, not any item's. */
 const SCAFFOLD_DEPS: Record<string, string> = { react: '^19.2', 'react-dom': '^19.2' };
@@ -31,10 +36,10 @@ export function buildScratchDependencies(
               `(${[...VENDORED].join(', ')}). Vendor it in writeScaffold or fix the item.`,
           );
         }
-        // Only core needs hoisting into the scratch project's own node_modules:
-        // it is what a vendored recipe's `from '@soribashi/core'` import
-        // resolves against. factory/theme resolve from inside vendor/core via
-        // workspace membership.
+        // core is hoisted into the scratch project's own node_modules: it is
+        // what a vendored recipe's `from '@soribashi/core'` import resolves
+        // against. A future optional sibling would only need hoisting if a
+        // recipe imported it directly, hence the explicit name test.
         if (dep === '@soribashi/core') out[dep] = 'file:./vendor/core';
         continue;
       }

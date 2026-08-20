@@ -211,8 +211,7 @@ const LENGTH_LITERAL = /\d*\.?\d+(px|rem|em|vh|vw|vmin|vmax|ch|ex|%)/g;
 // A comma-separated list of percentage keyframe offsets (`50%`, `0%, 100%`)
 // immediately preceding the rule's opening brace -- a SELECTOR, not a
 // declared value. The lookahead keeps the brace itself untouched.
-const KEYFRAME_SELECTOR_PERCENTAGES =
-  /(?:\d+(?:\.\d+)?%\s*,\s*)*\d+(?:\.\d+)?%(?=\s*\{)/g;
+const KEYFRAME_SELECTOR_PERCENTAGES = /(?:\d+(?:\.\d+)?%\s*,\s*)*\d+(?:\.\d+)?%(?=\s*\{)/g;
 
 /** True if `text[index]` would extend an identifier (letter/digit/_/-). */
 function isIdentChar(text: string, index: number): boolean {
@@ -663,20 +662,19 @@ describe('scanCssModule', () => {
       '',
     ].join('\n');
     const violations = scanCssModule(css, 'fixture.module.css');
-    expect(violations).toEqual([{ path: 'fixture.module.css', line: 4, token: '50%', kind: 'length' }]);
+    expect(violations).toEqual([
+      { path: 'fixture.module.css', line: 4, token: '50%', kind: 'length' },
+    ]);
   });
 
   it('still flags a non-allowlisted percentage used as a declared value outside any keyframes block', () => {
-    const css = [
-      '@layer soribashi.recipes {',
-      '  .root {',
-      '    width: 50%;',
-      '  }',
-      '}',
-      '',
-    ].join('\n');
+    const css = ['@layer soribashi.recipes {', '  .root {', '    width: 50%;', '  }', '}', ''].join(
+      '\n',
+    );
     const violations = scanCssModule(css, 'fixture.module.css');
-    expect(violations).toEqual([{ path: 'fixture.module.css', line: 3, token: '50%', kind: 'length' }]);
+    expect(violations).toEqual([
+      { path: 'fixture.module.css', line: 3, token: '50%', kind: 'length' },
+    ]);
   });
 
   it('still flags a genuine violation alongside a correctly stripped nested var()', () => {

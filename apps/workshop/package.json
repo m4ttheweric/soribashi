@@ -9,7 +9,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@soribashi/codegen": "workspace:*",
     "@soribashi/core": "workspace:*",
     "@soribashi/ui": "workspace:*",
     "react": "^19.2",

@@ -12,20 +12,25 @@
  * one recipe's registry item.
  *
  * What this DOES prove: the vendored .tsx/.module.css files resolve
- * against @soribashi/core (and its workspace-internal deps: factory,
- * theme), compile under Vite/React 19, and the resulting bundle contains,
- * for each SMOKE_ITEM, a marker that came from that item's own files (see
- * findItemMarker).
+ * against @soribashi/core, compile under Vite/React 19, and the resulting
+ * bundle contains, for each SMOKE_ITEM, a marker that came from that item's
+ * own files (see findItemMarker).
  *
  * What this CANNOT prove yet: resolution of @soribashi/core from the real
- * npm registry. It is `private: true` and unpublished, so this script
- * copies @soribashi/core, @soribashi/factory, and @soribashi/theme
- * (core's own `workspace:*` dependencies) into the
- * scratch project as a self-contained `vendor/` workspace and links against
- * those copies. That is a materially different resolution path than `bun
- * add @soribashi/core` against the public registry, which is exactly what a
- * real consumer would do post-publish. This note is repeated in the
+ * npm registry. It is unpublished, so this script copies @soribashi/core
+ * into the scratch project as a self-contained `vendor/` workspace and links
+ * against that copy. That is a materially different resolution path than
+ * `bun add @soribashi/core` against the public registry, which is exactly
+ * what a real consumer would do post-publish. This note is repeated in the
  * script's own console output for anyone reading CI logs.
+ *
+ * Since the four framework packages merged into the single @soribashi/core
+ * (packages/core), there is exactly ONE package to vendor and it has no
+ * soribashi interdependencies at all — which is what retired the
+ * `workspace:*` rewriting this script used to need. That rewrite is kept as
+ * a no-op guard (see vendorSourcePackage) rather than deleted, because it
+ * costs nothing and re-breaks loudly if a soribashi interdependency ever
+ * comes back.
  *
  * This DOES now also prove a Base UI item (`checkbox`, which declares
  * `@base-ui/react` in its registry dependencies) resolves and builds through
@@ -284,6 +289,20 @@ function vendorSourcePackage(name: string, scratchDir: string): void {
   }
   writeFileSync(join(dest, 'package.json'), `${JSON.stringify(pkgJson, null, 2)}\n`, 'utf-8');
   cpSync(join(src, 'src'), join(dest, 'src'), { recursive: true });
+  // `dist/` too, and it is the part that actually matters: the package's
+  // `exports` map points every consumer-visible condition at `dist/`, and only
+  // this workspace's own `soribashi-source` condition points back at `src/`.
+  // The scratch project is a real consumer — it never sets that condition — so
+  // without `dist/` the vendored copy has no resolvable entry point at all.
+  // `src/` still comes along so declaration maps and source maps resolve.
+  const dist = join(src, 'dist');
+  if (!existsSync(dist)) {
+    throw new Error(
+      `[registry-smoke] ${src}/dist does not exist. The vendored copy resolves through the ` +
+        "package's exports map, which points at dist/. Run `bun run build` first.",
+    );
+  }
+  cpSync(dist, join(dest, 'dist'), { recursive: true });
 }
 
 /**
@@ -356,11 +375,10 @@ function scratchRegistryDependencies(
 }
 
 /**
- * A minimal Vite + React 19 project. `@soribashi/core` and its
- * `workspace:*` dependencies (@soribashi/factory, @soribashi/theme) are
- * vendored into a scratch-local `vendor/` workspace (see
- * vendorSourcePackage) and linked in via `file:`, per the module-level
- * doc comment's caveat about what this can and cannot prove.
+ * A minimal Vite + React 19 project. `@soribashi/core` — one package now, with
+ * no soribashi interdependencies — is vendored into a scratch-local `vendor/`
+ * workspace (see vendorSourcePackage) and linked in via `file:`, per the
+ * module-level doc comment's caveat about what this can and cannot prove.
  *
  * `items` here is the FULL dependency closure of SMOKE_ITEMS (see
  * resolveDependencyClosure), not SMOKE_ITEMS alone: a dependency like `field`
@@ -370,9 +388,7 @@ function scratchRegistryDependencies(
  * invocation.
  */
 async function writeScaffold(scratchDir: string, items: RegistryItem[]): Promise<void> {
-  for (const name of ['core', 'factory', 'theme']) {
-    vendorSourcePackage(name, scratchDir);
-  }
+  vendorSourcePackage('core', scratchDir);
 
   const uiDeps = JSON.parse(
     readFileSync(join(REPO_ROOT, 'packages', 'ui', 'package.json'), 'utf-8'),
@@ -389,20 +405,17 @@ async function writeScaffold(scratchDir: string, items: RegistryItem[]): Promise
     // external package beyond @soribashi/core (e.g. a Base UI item's
     // `@base-ui/react`) gets that package pinned to the range
     // packages/ui/package.json itself uses, not left to whatever the shadcn
-    // CLI resolves. @soribashi/core is the only soribashi package that also
-    // gets a top-level entry here, since that is what the vendored
-    // Button.tsx (which imports `from '@soribashi/core'`) needs hoisted into
-    // this project's own node_modules; factory/theme only need to be
-    // resolvable from inside vendor/core, which workspace membership alone
-    // provides (see buildScratchDependencies for why).
+    // CLI resolves. @soribashi/core gets a top-level entry here because that
+    // is what the vendored Button.tsx (which imports `from '@soribashi/core'`)
+    // needs hoisted into this project's own node_modules.
     dependencies: buildScratchDependencies(items, uiDeps),
     devDependencies: {
       '@vitejs/plugin-react': '^6',
       vite: '^8',
     },
-    // Relative, entirely inside the scratch dir: `@soribashi/core`'s own
-    // `workspace:*` dependencies on factory/theme resolve against these
-    // siblings once they are all workspace members together.
+    // Relative, entirely inside the scratch dir. One member today
+    // (vendor/core); the glob stays so a second vendored package would need no
+    // change here.
     workspaces: ['vendor/*'],
   };
 
@@ -780,10 +793,10 @@ async function assertBundleHasRecipeMarkers(
 
 async function main(): Promise<void> {
   log(
-    'NOTE: this proves each registry item resolves and builds via a workspace file: link to ' +
-      '@soribashi/core (and its factory/theme workspace deps), not via published-npm ' +
-      'resolution, since @soribashi/core is not published. That is a real gap this check cannot ' +
-      'close until publishing exists.',
+    'NOTE: this proves each registry item resolves and builds via a workspace file: link to a ' +
+      'vendored copy of @soribashi/core, not via published-npm resolution, since ' +
+      '@soribashi/core is not published yet. That is a real gap this check cannot close until ' +
+      'publishing exists.',
   );
   log(`SMOKE_ITEMS: ${SMOKE_ITEMS.join(', ')}`);
 

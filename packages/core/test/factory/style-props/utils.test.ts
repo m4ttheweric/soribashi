@@ -1,0 +1,305 @@
+import { describe, expect, it } from 'vitest';
+import {
+  getFontSize,
+  getLineHeight,
+  getRadius,
+  getShadow,
+  getSize,
+  getSpacing,
+  getThemeColor,
+  rem,
+} from '../../../src/factory/style-props/theme-resolvers/index.ts';
+
+describe('rem', () => {
+  it('converts pixel numbers to rem', () => {
+    expect(rem(16)).toBe('1rem');
+    expect(rem(8)).toBe('0.5rem');
+  });
+  it('converts zero', () => {
+    expect(rem(0)).toBe('0rem');
+  });
+  it('passes through strings', () => {
+    expect(rem('1.5rem')).toBe('1.5rem');
+    expect(rem('var(--x)')).toBe('var(--x)');
+    expect(rem('100%')).toBe('100%');
+  });
+  it('converts px strings to rem (#11)', () => {
+    expect(rem('8px')).toBe('0.5rem');
+    expect(rem('16px')).toBe('1rem');
+  });
+  it('recurses on space-separated px values (#11)', () => {
+    expect(rem('16px 32px')).toBe('1rem 2rem');
+  });
+  it('passes through calc/clamp/var/rgba strings (#11)', () => {
+    expect(rem('calc(100% - 16px)')).toBe('calc(100% - 16px)');
+    expect(rem('var(--x)')).toBe('var(--x)');
+    expect(rem('clamp(1rem, 5vw, 3rem)')).toBe('clamp(1rem, 5vw, 3rem)');
+  });
+  it('returns undefined for undefined', () => {
+    expect(rem(undefined)).toBeUndefined();
+  });
+});
+
+describe('getSpacing', () => {
+  it('returns var() for token keys', () => {
+    expect(getSpacing('md')).toBe('var(--spacing-md)');
+    expect(getSpacing('xl')).toBe('var(--spacing-xl)');
+  });
+  it('returns rem for numbers', () => {
+    expect(getSpacing(16)).toBe('1rem');
+  });
+  it('passes through other strings', () => {
+    expect(getSpacing('1.25rem')).toBe('1.25rem');
+    expect(getSpacing('calc(1rem + 2px)')).toBe('calc(1rem + 2px)');
+  });
+  it('returns undefined for undefined', () => {
+    expect(getSpacing(undefined)).toBeUndefined();
+  });
+  // #10a: custom keys — not in KNOWN_KEYS but should still resolve
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getSpacing('custom-key')).toBe('var(--spacing-custom-key)');
+  });
+  it('passes through raw CSS values with digits (#10a)', () => {
+    expect(getSpacing('100px')).toBe('100px');
+    expect(getSpacing('1.25rem')).toBe('1.25rem');
+    expect(getSpacing('-4')).toBe('-4');
+  });
+  // 2xl starts with '2' — digit-leading string is treated as raw CSS per Mantine heuristic
+  it('treats digit-leading strings as raw CSS (#10a edge case)', () => {
+    // '2xl' starts with '2' → raw CSS pass-through, not a token
+    expect(getSpacing('2xl')).toBe('2xl');
+  });
+  it('passes CSS-wide and sizing keywords through unchanged', () => {
+    for (const keyword of [
+      'auto',
+      'inherit',
+      'initial',
+      'unset',
+      'revert',
+      'revert-layer',
+      'fit-content',
+      'max-content',
+      'min-content',
+    ]) {
+      expect(getSpacing(keyword)).toBe(keyword);
+    }
+  });
+  it('passes leading-dot values through as raw CSS', () => {
+    expect(getSpacing('.5rem')).toBe('.5rem');
+  });
+
+  // SORI-6: digit-leading token keys must resolve against the theme's own
+  // token scale before the raw-CSS heuristic kicks in.
+  describe('with a theme (SORI-6)', () => {
+    const theme = { tokens: { spacing: { '2xs': '0.15rem', md: '1rem' } } } as never;
+
+    it('resolves a digit-leading key declared in theme.tokens.spacing to var()', () => {
+      expect(getSpacing('2xs', theme)).toBe('var(--spacing-2xs)');
+    });
+
+    it('still resolves ordinary token keys to var()', () => {
+      expect(getSpacing('md', theme)).toBe('var(--spacing-md)');
+    });
+
+    it('still treats a genuinely raw value as raw CSS, not a token', () => {
+      expect(getSpacing('12px', theme)).toBe('12px');
+      expect(getSpacing('0.5rem', theme)).toBe('0.5rem');
+    });
+
+    it('falls back to the raw-CSS heuristic for a digit-leading key the theme does not declare', () => {
+      // '2xl' is not in theme.tokens.spacing — still raw CSS pass-through
+      expect(getSpacing('2xl', theme)).toBe('2xl');
+    });
+  });
+});
+
+describe('getRadius', () => {
+  it('returns var() for token keys including full', () => {
+    expect(getRadius('md')).toBe('var(--radius-md)');
+    expect(getRadius('full')).toBe('var(--radius-full)');
+  });
+  it('returns rem for numbers', () => {
+    expect(getRadius(8)).toBe('0.5rem');
+  });
+  // #10b: undefined → var(--radius-md) fallback
+  it('falls back to var(--radius-md) for undefined (#10b)', () => {
+    expect(getRadius(undefined)).toBe('var(--radius-md)');
+  });
+  // #10a: custom keys
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getRadius('custom-key')).toBe('var(--radius-custom-key)');
+  });
+  it('passes through raw CSS values with digits (#10a)', () => {
+    expect(getRadius('100px')).toBe('100px');
+  });
+});
+
+describe('getSize', () => {
+  it('parameterizes the prefix', () => {
+    expect(getSize('md', 'container-size')).toBe('var(--container-size-md)');
+    expect(getSize('lg', 'sg')).toBe('var(--sg-lg)');
+  });
+  it('returns rem for numbers regardless of prefix', () => {
+    expect(getSize(20, 'whatever')).toBe('1.25rem');
+  });
+  // #10a: custom keys not in STANDARD_KEYS
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getSize('custom-key', 'foo')).toBe('var(--foo-custom-key)');
+    expect(getSize('2xl', 'foo')).toBe('2xl'); // digit-leading → raw CSS
+  });
+  it('passes through raw CSS values (#10a)', () => {
+    expect(getSize('100px', 'foo')).toBe('100px');
+    expect(getSize('var(--x)', 'foo')).toBe('var(--x)');
+    expect(getSize('calc(100% - 8px)', 'foo')).toBe('calc(100% - 8px)');
+  });
+  it('passes through hsla() and leading-dot values', () => {
+    expect(getSize('hsla(217, 91%, 60%, 0.5)', 'foo')).toBe('hsla(217, 91%, 60%, 0.5)');
+    expect(getSize('.5rem', 'foo')).toBe('.5rem');
+  });
+  it('passes CSS keywords through for any prefix', () => {
+    expect(getSize('auto', 'spacing')).toBe('auto');
+    expect(getSize('fit-content', 'spacing')).toBe('fit-content');
+  });
+  it('returns undefined for undefined', () => {
+    expect(getSize(undefined, 'foo')).toBeUndefined();
+  });
+
+  // SORI-6: token-scale keys win over the raw-CSS heuristic when a theme is given.
+  describe('with a theme (SORI-6)', () => {
+    const theme = { tokens: { spacing: { '2xs': '0.15rem' }, radius: { '3xl': '2rem' } } } as never;
+
+    it('treats a declared digit-leading spacing key as a token', () => {
+      expect(getSize('2xs', 'spacing', theme)).toBe('var(--spacing-2xs)');
+    });
+
+    it('treats a declared digit-leading radius key as a token', () => {
+      expect(getSize('3xl', 'radius', theme)).toBe('var(--radius-3xl)');
+    });
+
+    it('does not cross-apply one scale to an unrelated prefix', () => {
+      // '2xs' is only declared under spacing, not under a 'font-size' scale
+      expect(getSize('2xs', 'font-size', theme)).toBe('2xs');
+    });
+
+    it('still falls through to raw CSS for genuinely raw values', () => {
+      expect(getSize('12px', 'spacing', theme)).toBe('12px');
+      expect(getSize('0.5rem', 'spacing', theme)).toBe('0.5rem');
+    });
+  });
+});
+
+describe('getFontSize', () => {
+  it('returns var(--font-size-{key})', () => {
+    expect(getFontSize('lg')).toBe('var(--font-size-lg)');
+  });
+  // #10a: custom keys
+  it('resolves custom token keys to var() (#10a)', () => {
+    expect(getFontSize('custom-key')).toBe('var(--font-size-custom-key)');
+  });
+  it('passes through raw CSS values (#10a)', () => {
+    expect(getFontSize('100px')).toBe('100px');
+    expect(getFontSize('2rem')).toBe('2rem');
+  });
+  it('returns undefined for undefined', () => {
+    expect(getFontSize(undefined)).toBeUndefined();
+  });
+});
+
+describe('getLineHeight', () => {
+  it('returns var(--line-height-{key}) for known keys', () => {
+    expect(getLineHeight('md')).toBe('var(--line-height-md)');
+  });
+  it('passes through numbers as-is (line-height is unitless)', () => {
+    expect(getLineHeight(1.5)).toBe('1.5');
+  });
+  it('resolves custom token keys open-endedly', () => {
+    expect(getLineHeight('xs')).toBe('var(--line-height-xs)');
+    expect(getLineHeight('custom-key')).toBe('var(--line-height-custom-key)');
+  });
+  it('passes raw CSS strings through', () => {
+    expect(getLineHeight('1.5')).toBe('1.5');
+    expect(getLineHeight('normal')).toBe('normal');
+  });
+});
+
+describe('getShadow', () => {
+  it('returns var() for known keys', () => {
+    expect(getShadow('md')).toBe('var(--shadow-md)');
+  });
+  it('passes through other strings', () => {
+    expect(getShadow('0 1px 2px black')).toBe('0 1px 2px black');
+  });
+  it('resolves xs and custom token keys open-endedly', () => {
+    expect(getShadow('xs')).toBe('var(--shadow-xs)');
+    expect(getShadow('custom-key')).toBe('var(--shadow-custom-key)');
+  });
+  it('passes none and inset shadows through', () => {
+    expect(getShadow('none')).toBe('none');
+    expect(getShadow('inset 0 1px 2px black')).toBe('inset 0 1px 2px black');
+  });
+});
+
+describe('getThemeColor', () => {
+  const theme = {
+    tokens: {
+      colors: {
+        primary: { '500': 'hsl(217 91% 60%)' },
+        danger: { '700': 'hsl(0 74% 42%)' },
+      },
+    },
+  } as never;
+
+  it('resolves family.shade to var(--color-{family}-{shade})', () => {
+    expect(getThemeColor('primary.500', theme)).toBe('var(--color-primary-500)');
+    expect(getThemeColor('danger.700', theme)).toBe('var(--color-danger-700)');
+  });
+
+  it('assumes family.shade for dot-paths when no theme is given', () => {
+    expect(getThemeColor('danger.700')).toBe('var(--color-danger-700)');
+  });
+
+  it('passes dot-paths through when the family is not in theme colors', () => {
+    expect(getThemeColor('unknown.500', theme)).toBe('unknown.500');
+  });
+
+  it('resolves bare names that are theme color families to shade 500', () => {
+    expect(getThemeColor('primary', theme)).toBe('var(--color-primary-500)');
+  });
+
+  it('passes bare names through when not in theme colors', () => {
+    expect(getThemeColor('white', theme)).toBe('white');
+    expect(getThemeColor('black', theme)).toBe('black');
+    expect(getThemeColor('red', theme)).toBe('red');
+  });
+
+  it('passes bare names through when no theme is given', () => {
+    expect(getThemeColor('primary')).toBe('primary');
+  });
+
+  it('is safe against prototype key names', () => {
+    expect(getThemeColor('constructor', theme)).toBe('constructor');
+  });
+
+  it('resolves semantic surface/text/border refs', () => {
+    expect(getThemeColor('surface.raised', theme)).toBe('var(--surface-raised)');
+    expect(getThemeColor('text.muted', theme)).toBe('var(--text-muted)');
+    expect(getThemeColor('border.strong', theme)).toBe('var(--border-strong)');
+  });
+
+  it('passes through CSS keywords', () => {
+    expect(getThemeColor('transparent', theme)).toBe('transparent');
+    expect(getThemeColor('inherit', theme)).toBe('inherit');
+    expect(getThemeColor('currentColor', theme)).toBe('currentColor');
+    expect(getThemeColor('currentcolor', theme)).toBe('currentcolor');
+  });
+
+  it('passes through CSS color values', () => {
+    expect(getThemeColor('#fff', theme)).toBe('#fff');
+    expect(getThemeColor('rgb(0 0 0)', theme)).toBe('rgb(0 0 0)');
+    expect(getThemeColor('var(--my-color)', theme)).toBe('var(--my-color)');
+  });
+
+  it('returns undefined for undefined', () => {
+    expect(getThemeColor(undefined, theme)).toBeUndefined();
+  });
+});
