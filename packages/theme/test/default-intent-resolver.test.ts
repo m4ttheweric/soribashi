@@ -138,6 +138,19 @@ describe('defaultIntentResolver', () => {
     });
   });
 
+  // SORI-8: `theme` is optional on IntentResolverInput because this resolver
+  // never reads it. Calling without one is the natural unit-test shape; it now
+  // typechecks (see intent-resolver-input.test-d.ts) and behaves identically.
+  describe('without a theme', () => {
+    it('resolves identically to a call that passes one', () => {
+      for (const variant of ['filled', 'outline', 'subtle', 'ghost', 'link']) {
+        expect(defaultIntentResolver({ intent: 'primary', variant })).toEqual(
+          defaultIntentResolver({ intent: 'primary', variant, theme }),
+        );
+      }
+    });
+  });
+
   describe('unknown variant', () => {
     it('returns transparent neutral fallback', () => {
       const result = defaultIntentResolver({ intent: 'primary', variant: 'invalid', theme });

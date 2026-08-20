@@ -201,8 +201,15 @@ export interface IntentResolverInput {
    * vocabulary. The default resolver does not consult it; it emits fixed
    * `var(--color-{intent}-{shade})` references instead (see the scale
    * contract on `IntentResolver`).
+   *
+   * Optional because most resolvers never read it, and requiring it forced
+   * every resolver unit test to construct or import a whole `ResolvedTheme`
+   * just to satisfy the type. The framework always passes it (see
+   * `auto-vars.ts`), so a resolver that DOES derive from tokens still gets one
+   * at runtime — it just has to narrow, which is the honest signature for a
+   * value a direct caller may omit.
    */
-  theme: ResolvedTheme;
+  theme?: ResolvedTheme;
 }
 
 export interface IntentResolverResult {
