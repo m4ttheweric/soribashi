@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { getRecipeMeta, type RecipeMeta } from '@soribashi/core';
@@ -132,12 +132,37 @@ function extractVocabulary(uiVocabulary: Record<string, VocabularyLike>): Record
 
 const VALID_CATEGORIES = new Set([1, 2, 3, 4]);
 
+/**
+ * Every recipe declares exactly these four files (section 1 of the
+ * authoring-a-recipe skill); a missing or misnamed one used to go unnoticed
+ * in `buildManifestEntry`, since only the .tsx/.module.css paths were ever
+ * actually read there -- the .test.tsx/.visual.test.tsx paths were recorded
+ * into `files` without being verified to exist (SORI-16). Checks all four
+ * up front and fails loudly, naming both the recipe and the specific
+ * missing file(s); pulled out as its own exported function (rather than
+ * inlined in `buildManifestEntry`) so it's independently unit-testable
+ * against arbitrary paths, not just the real recipes tree.
+ */
+export function assertRecipeFilesExist(recipeName: string, requiredFiles: readonly string[]): void {
+  const missingFiles = requiredFiles.filter((filePath) => !existsSync(filePath));
+  if (missingFiles.length > 0) {
+    throw new Error(
+      `[derive] Recipe "${recipeName}" is missing required file(s): ` +
+        `${missingFiles.map(toRepoRelative).join(', ')}. Every recipe under ` +
+        'packages/ui/src/recipes/<Name>/ needs exactly these four files: <Name>.tsx, ' +
+        '<Name>.module.css, <Name>.test.tsx, <Name>.visual.test.tsx.',
+    );
+  }
+}
+
 async function buildManifestEntry(meta: RecipeMeta): Promise<ManifestEntry> {
   const recipeDir = join(RECIPES_DIR, meta.name);
   const tsxPath = join(recipeDir, `${meta.name}.tsx`);
   const cssPath = join(recipeDir, `${meta.name}.module.css`);
   const testPath = join(recipeDir, `${meta.name}.test.tsx`);
   const visualTestPath = join(recipeDir, `${meta.name}.visual.test.tsx`);
+
+  assertRecipeFilesExist(meta.name, [tsxPath, cssPath, testPath, visualTestPath]);
 
   const tsxSource = readFileSync(tsxPath, 'utf-8');
   const cssSource = readFileSync(cssPath, 'utf-8');

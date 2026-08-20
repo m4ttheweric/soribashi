@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  assertRecipeFilesExist,
   buildManifest,
   extractRecipeDependencies,
   extractTokenDependencies,
@@ -264,5 +268,66 @@ describe('buildManifest', () => {
       'info',
     ]);
     expect(manifest.vocabulary.variant).toEqual(['filled', 'outline', 'subtle', 'ghost', 'link']);
+  });
+});
+
+// SORI-16: a missing/misnamed declared file (derive.ts only ever read the
+// .tsx/.module.css of the four) must fail loudly, naming the recipe and the
+// specific missing file(s), instead of silently going unnoticed.
+describe('assertRecipeFilesExist', () => {
+  let tempDir: string;
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'soribashi-derive-test-'));
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('passes silently when every declared file exists', () => {
+    const files = ['Foo.tsx', 'Foo.module.css', 'Foo.test.tsx', 'Foo.visual.test.tsx'].map((name) =>
+      join(tempDir, name),
+    );
+    for (const f of files) writeFileSync(f, '');
+
+    expect(() => assertRecipeFilesExist('Foo', files)).not.toThrow();
+  });
+
+  it('throws naming the recipe and the single missing file', () => {
+    const tsxPath = join(tempDir, 'Foo.tsx');
+    const cssPath = join(tempDir, 'Foo.module.css');
+    const testPath = join(tempDir, 'Foo.test.tsx');
+    const visualTestPath = join(tempDir, 'Foo.visual.test.tsx');
+    writeFileSync(tsxPath, '');
+    writeFileSync(cssPath, '');
+    writeFileSync(visualTestPath, '');
+    // testPath deliberately never written — the missing/misnamed test file case.
+
+    expect(() =>
+      assertRecipeFilesExist('Foo', [tsxPath, cssPath, testPath, visualTestPath]),
+    ).toThrow(/"Foo".*Foo\.test\.tsx/s);
+  });
+
+  it('throws naming every missing file when more than one is absent', () => {
+    const tsxPath = join(tempDir, 'Foo.tsx');
+    const cssPath = join(tempDir, 'Foo.module.css');
+    const testPath = join(tempDir, 'Foo.test.tsx');
+    const visualTestPath = join(tempDir, 'Foo.visual.test.tsx');
+    writeFileSync(tsxPath, '');
+    writeFileSync(cssPath, '');
+    // testPath and visualTestPath both missing.
+
+    let thrown: unknown;
+    try {
+      assertRecipeFilesExist('Foo', [tsxPath, cssPath, testPath, visualTestPath]);
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(Error);
+    const message = (thrown as Error).message;
+    expect(message).toContain('"Foo"');
+    expect(message).toContain('Foo.test.tsx');
+    expect(message).toContain('Foo.visual.test.tsx');
   });
 });
