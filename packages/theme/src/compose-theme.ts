@@ -54,6 +54,12 @@ export function composeTheme(
       ...((base.semanticTokens?.accent || child.semanticTokens?.accent) && {
         accent: { ...base.semanticTokens?.accent, ...(child.semanticTokens?.accent ?? {}) },
       }),
+      // The default-backfill opt-out is a property of the semantic layer, not
+      // a slot within it: carry it through so feeding a composed definition
+      // back into createTheme does not re-backfill what either side declined.
+      ...((base.semanticTokens?.defaults === false || child.semanticTokens?.defaults === false) && {
+        defaults: false as const,
+      }),
     },
     intentResolver: child.intentResolver ?? base.intentResolver,
     components: mergeComponents(

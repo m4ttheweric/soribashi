@@ -62,6 +62,28 @@ const DEFAULT_BORDER: Record<string, string> = {
 };
 
 /**
+ * The semantic slots `createTheme` backfills into a FRESH theme (one without
+ * `extends`) that did not declare them itself, exposed so tooling can tell a
+ * backfilled slot from an authored one.
+ *
+ * Every reference here resolves against the `neutral` colour family, which is
+ * why a from-scratch theme whose palette has no `neutral` ramp fails
+ * validation on slots it never wrote. codegen's `validateTheme` reads this map
+ * to say so in the error instead of only naming the unresolved reference;
+ * authors who genuinely have no neutral ramp opt the backfill out with
+ * `semanticTokens: { defaults: false }`.
+ */
+export const DEFAULT_SEMANTIC_TOKENS: {
+  readonly text: Readonly<Record<string, string>>;
+  readonly surface: Readonly<Record<string, SemanticSurfaceValue>>;
+  readonly border: Readonly<Record<string, string>>;
+} = {
+  text: DEFAULT_TEXT,
+  surface: DEFAULT_SURFACE,
+  border: DEFAULT_BORDER,
+};
+
+/**
  * Breakpoint tokens are structural, not aesthetic: blocks' responsive style
  * props and visibility.css derive `(min-width: ...)` queries from them, so a
  * theme without any breakpoints breaks responsiveness outright (everything
@@ -119,11 +141,25 @@ function resolveTheme(definition: ComposableThemeDefinition): ResolvedTheme {
 
   // Per-key merge over the defaults, matching composeTheme's per-slot merge:
   // declaring `surface.brand` must not delete `surface.default` and friends.
+  //
+  // Two conditions gate the backfill:
+  // - `semanticTokens.defaults: false` opts out (see the field's doc comment).
+  //   The flag is carried onto the resolved theme and inherited by children,
+  //   so the opt-out survives both `extends` and re-resolution of an already
+  //   resolved theme.
+  // - a theme WITH a base does not re-backfill. The base was itself resolved
+  //   through this function, so composeTheme has already merged whatever the
+  //   base ended up with; re-applying the defaults here is a no-op when the
+  //   base opted in and would silently undo the opt-out when it did not.
+  const optedOut =
+    definition.semanticTokens?.defaults === false || base?.semanticTokens.defaults === false;
+  const backfillDefaults = base === null && !optedOut;
   const semanticTokens: SemanticTokensConfig = {
-    text: { ...DEFAULT_TEXT, ...merged.semanticTokens?.text },
-    surface: { ...DEFAULT_SURFACE, ...merged.semanticTokens?.surface },
-    border: { ...DEFAULT_BORDER, ...merged.semanticTokens?.border },
+    text: { ...(backfillDefaults ? DEFAULT_TEXT : {}), ...merged.semanticTokens?.text },
+    surface: { ...(backfillDefaults ? DEFAULT_SURFACE : {}), ...merged.semanticTokens?.surface },
+    border: { ...(backfillDefaults ? DEFAULT_BORDER : {}), ...merged.semanticTokens?.border },
     ...(merged.semanticTokens?.accent ? { accent: merged.semanticTokens.accent } : {}),
+    ...(optedOut ? { defaults: false as const } : {}),
   };
 
   // The empty-family fallback only fires for untyped callers: the overloads

@@ -528,6 +528,62 @@ describe('validateTheme — dark overrides must have a light counterpart', () =>
   });
 });
 
+// SORI-5: a from-scratch palette with no `neutral` ramp fails on nine slots it
+// never wrote, because createTheme backfills them. The error has to name that.
+describe('validateTheme — default semanticTokens backfill diagnostics', () => {
+  const paletteWithoutNeutral = {
+    colors: { ink: { '900': '#111' }, paper: { '50': '#fafafa' } },
+    radius: { md: '0.5rem' },
+    spacing: { md: '1rem' },
+    fontSize: { md: '1rem' },
+  };
+
+  it('names the backfill, the required family and shades, and the opt-out', () => {
+    const theme = createTheme({ tokens: paletteWithoutNeutral });
+
+    let message = '';
+    try {
+      validateTheme(theme);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+
+    expect(message).toContain('semanticTokens slots this theme never declared');
+    expect(message).toContain('tokens.colors.neutral with shades 0, 50, 100, 200, 400, 600, 900');
+    expect(message).toContain('semanticTokens: { defaults: false }');
+  });
+
+  it('passes with no neutral family once the backfill is opted out', () => {
+    const theme = createTheme({
+      tokens: paletteWithoutNeutral,
+      semanticTokens: {
+        defaults: false,
+        text: { default: 'colors.ink.900' },
+        surface: { canvas: 'colors.paper.50' },
+        border: { default: 'colors.ink.900' },
+      },
+    });
+
+    expect(() => validateTheme(theme)).not.toThrow();
+  });
+
+  it('stays silent when the failing slot is one the theme declared itself', () => {
+    const theme = themeWith({
+      semanticTokens: { text: { default: 'colors.missing.500' } },
+    });
+
+    let message = '';
+    try {
+      validateTheme(theme);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+
+    expect(message).toContain('colors.missing.500');
+    expect(message).not.toContain('semanticTokens slots this theme never declared');
+  });
+});
+
 describe('build — fails on dark-only token overrides', () => {
   it('rejects with the validation error instead of writing CSS that silently drops the token', async () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'soribashi-validate-dark-'));

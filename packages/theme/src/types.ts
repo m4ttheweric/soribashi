@@ -160,6 +160,15 @@ export interface SemanticTokensConfig {
   surface: Record<string, SemanticSurfaceValue>;
   border: Record<string, SemanticReference>;
   accent?: Record<string, SemanticReference>;
+  /**
+   * Present (as `false`) only on a theme that opted out of createTheme's
+   * default backfill. Recorded on the resolved theme so the opt-out survives
+   * re-resolution: `createTheme({ extends: alreadyResolvedTheme })` feeds the
+   * resolved object back through the resolver, which would otherwise backfill
+   * the very slots the base declined. Absent means "backfilled normally",
+   * which is every theme that predates the flag.
+   */
+  defaults?: false;
 }
 
 export type PartialSemanticTokensConfig = {
@@ -167,6 +176,19 @@ export type PartialSemanticTokensConfig = {
   surface?: Record<string, SemanticSurfaceValue>;
   border?: Record<string, SemanticReference>;
   accent?: Record<string, SemanticReference>;
+  /**
+   * Whether `createTheme` backfills the text/surface/border slots this theme
+   * did not declare (`DEFAULT_SEMANTIC_TOKENS`). Defaults to `true`.
+   *
+   * Those defaults reference the `neutral` colour family, so a palette built
+   * from scratch with no `neutral` ramp fails validation on slots it never
+   * wrote. Set `false` to take full ownership of the semantic layer: nothing
+   * is backfilled, and every text/surface/border slot the recipes in use read
+   * must be declared here. Only meaningful on a theme WITHOUT `extends` — a
+   * theme that extends another inherits the base's semantic slots as resolved
+   * and is never backfilled on top of them.
+   */
+  defaults?: boolean;
 };
 
 // Intent resolver types

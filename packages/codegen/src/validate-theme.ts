@@ -1,4 +1,8 @@
-import type { ResolvedTheme } from '@soribashi/theme';
+import {
+  DEFAULT_SEMANTIC_TOKENS,
+  type ResolvedTheme,
+  type SemanticSurfaceValue,
+} from '@soribashi/theme';
 
 // Segments of a CSS custom property name; anything outside this set (spaces,
 // dots, colons, ...) breaks the emitted `--color-{family}-{shade}` vars.
@@ -71,10 +75,95 @@ export function validateTheme(theme: ResolvedTheme): void {
   }
 
   if (errors.length > 0) {
+    const hint = defaultBackfillHint(theme);
     throw new Error(
-      `[soribashi] invalid theme '${theme.name}' (${errors.length} error(s)):\n${errors.map((e) => `  - ${e}`).join('\n')}`,
+      `[soribashi] invalid theme '${theme.name}' (${errors.length} error(s)):\n${errors.map((e) => `  - ${e}`).join('\n')}${hint ? `\n\n${hint}` : ''}`,
     );
   }
+}
+
+/**
+ * Names the CAUSE when the failures above came from slots the theme never
+ * wrote.
+ *
+ * `createTheme` backfills the text/surface/border slots a fresh theme omitted
+ * (`DEFAULT_SEMANTIC_TOKENS`), and every one of those defaults references the
+ * `neutral` colour family. A palette built from scratch without a `neutral`
+ * ramp therefore fails on nine `semanticTokens.*` slots that appear nowhere in
+ * its source — and the per-error text only ever names the symptom (an
+ * unresolved reference). This appends the missing half: that the slot is a
+ * backfill, which family and shades the backfill needs, and how to opt out.
+ *
+ * A slot counts as backfilled only if it still holds the default value
+ * verbatim; a theme that declared its own value for the same key owns that
+ * error and is left out of the hint.
+ */
+function defaultBackfillHint(theme: ResolvedTheme): string | null {
+  const unresolved = new Set<string>();
+
+  for (const section of ['text', 'surface', 'border'] as const) {
+    for (const [key, defaultValue] of Object.entries(DEFAULT_SEMANTIC_TOKENS[section])) {
+      const live: SemanticSurfaceValue | undefined = theme.semanticTokens[section][key];
+      if (live === undefined) continue;
+      if (JSON.stringify(live) !== JSON.stringify(defaultValue)) continue;
+      for (const ref of refsOf(defaultValue)) {
+        if (!refResolves(ref, theme)) unresolved.add(ref);
+      }
+    }
+  }
+
+  if (unresolved.size === 0) return null;
+
+  const byFamily = new Map<string, Set<string>>();
+  const other: string[] = [];
+  for (const ref of unresolved) {
+    const parts = ref.split('.');
+    if (parts[0] === 'colors' && parts.length === 3) {
+      const [, family, shade] = parts as [string, string, string];
+      const shades = byFamily.get(family) ?? new Set<string>();
+      shades.add(shade);
+      byFamily.set(family, shades);
+    } else {
+      other.push(ref);
+    }
+  }
+
+  const needs = [
+    ...[...byFamily].map(
+      ([family, shades]) =>
+        `tokens.colors.${family} with shades ${[...shades].sort(shadeOrder).join(', ')}`,
+    ),
+    ...other.map((ref) => `tokens.${ref}`),
+  ].join('; ');
+
+  return [
+    `Some of the failures above are semanticTokens slots this theme never declared: createTheme backfills the`,
+    `text/surface/border slots a theme omits, and those defaults reference ${needs}.`,
+    `Either declare that in tokens, override the named slots in semanticTokens, or opt out of the backfill`,
+    `entirely with \`semanticTokens: { defaults: false }\` — then nothing is backfilled and this theme owns`,
+    `every text/surface/border slot its recipes read.`,
+  ].join(' ');
+}
+
+function refsOf(value: SemanticSurfaceValue): string[] {
+  if (typeof value === 'string') return [value];
+  return [value.value, value.dark, value.foreground].filter((v): v is string => v !== undefined);
+}
+
+function refResolves(ref: string, theme: ResolvedTheme): boolean {
+  const probe: string[] = [];
+  validateRef(ref, 'probe', theme, probe);
+  return probe.length === 0;
+}
+
+// Numeric shades sort numerically ('50' before '100'); named ones alphabetically after.
+function shadeOrder(a: string, b: string): number {
+  const na = Number(a);
+  const nb = Number(b);
+  if (Number.isNaN(na) && Number.isNaN(nb)) return a.localeCompare(b);
+  if (Number.isNaN(na)) return 1;
+  if (Number.isNaN(nb)) return -1;
+  return na - nb;
 }
 
 function validateColorNames(
