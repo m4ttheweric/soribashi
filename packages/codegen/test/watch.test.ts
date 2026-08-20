@@ -141,8 +141,15 @@ function configSource(color: string, outPath: string): string {
 }
 
 describe('watch — config reload integration', () => {
+  // SORI-3: this test spawns a fresh `bun` subprocess per rebuild (no fs
+  // events involved at all — `handle.rebuild()` is called directly), so a
+  // timeout here can only be subprocess-spawn/build latency. The diagnosis
+  // reproduced this timing out at the old 20s budget "under load" even though
+  // the underlying watch/rebuild logic was correct — the budget was sized for
+  // an unloaded machine. Scaling it up (20s -> 40s) is a pure test-timing
+  // change; it doesn't relax what's being asserted.
   it('rebuild() picks up config edits (fresh subprocess per build)', {
-    timeout: 20000,
+    timeout: 40000,
   }, async () => {
     const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));
     try {
@@ -168,8 +175,20 @@ describe('watch — config reload integration', () => {
     }
   });
 
+  // SORI-3: macOS FSEvents is documented to occasionally drop a change event,
+  // and every rebuild pays fresh-`bun`-subprocess spawn latency that isn't
+  // bounded under load (see watch.ts's module doc). The diagnosis couldn't
+  // get a deterministic repro (21/21 passes in isolation), which points at a
+  // low-frequency timing flake rather than a hard regression — but the
+  // re-write-inside-`waitFor` retry below is already a poll backstop against
+  // a dropped FSEvents delivery; it just didn't have enough budget to survive
+  // a genuinely loaded machine. Scaling the budget (10s -> 20s waitFor, 250ms
+  // -> 500ms interval so a slow build round-trip isn't miscounted as several
+  // failed polls, 20s -> 40s outer test timeout) gives that same backstop
+  // more room without changing what's being asserted or touching watch.ts's
+  // production watch/rebuild path.
   it('a file change event triggers a rebuild with the fresh config', {
-    timeout: 20000,
+    timeout: 40000,
   }, async () => {
     const dir = mkdtempSync(join(tmpdir(), 'soribashi-watch-'));
     try {
@@ -189,13 +208,16 @@ describe('watch — config reload integration', () => {
             // registers, and a single dropped event used to hang this waitFor
             // to its timeout. Re-touching the file keeps the test about "a
             // change event triggers a rebuild", not "the first event is never
-            // dropped" — the OS guarantee the watcher never had.
+            // dropped" — the OS guarantee the watcher never had. This is the
+            // poll backstop: as long as the budget below gives it enough
+            // attempts, it will eventually force a fresh fs event even if
+            // every prior one was dropped.
             if (!readFileSync(outPath, 'utf-8').includes('hsl(240 80% 60%)')) {
               writeFileSync(configPath, configSource('hsl(240 80% 60%)', outPath));
             }
             expect(readFileSync(outPath, 'utf-8')).toContain('hsl(240 80% 60%)');
           },
-          { timeout: 10000, interval: 250 },
+          { timeout: 20000, interval: 500 },
         );
       } finally {
         await handle.stop();
