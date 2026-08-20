@@ -105,7 +105,7 @@ export function extractTokenDependencies(css: string): string[] {
  */
 export function extractRecipeDependencies(tsxSource: string): string[] {
   const found = new Set<string>();
-  const re = /from\s+'\.\.\/([A-Z][A-Za-z0-9]*)\//g;
+  const re = /from\s+["']\.\.\/([A-Z][A-Za-z0-9]*)\//g;
   let match: RegExpExecArray | null;
   // biome-ignore lint/suspicious/noAssignInExpressions: standard exec-loop idiom
   while ((match = re.exec(tsxSource)) !== null) {
