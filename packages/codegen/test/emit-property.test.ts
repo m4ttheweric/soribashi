@@ -42,4 +42,38 @@ describe('emitPropertyRegistrations', () => {
     expect(out).toContain('inherits: true;');
     expect(out).not.toContain('inherits: false;');
   });
+
+  it('registers a percentage value with a length-percentage syntax', () => {
+    // A percentage value (e.g. radius.round: "50%") is not a valid <length>,
+    // so registering it under `syntax: "<length>"` produces an invalid
+    // @property rule that the browser silently drops. The syntax must be
+    // derived from the value.
+    const pctTheme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'oklch(0.62 0.19 259)' } },
+        radius: { round: '50%' },
+        spacing: {},
+        fontSize: {},
+      },
+    });
+    const out = emitPropertyRegistrations(pctTheme).join('\n');
+    expect(out).toContain('@property --radius-round {');
+    expect(out).toContain('syntax: "<length-percentage>";');
+    expect(out).toContain('initial-value: 50%;');
+  });
+
+  it('still registers a plain length value with a length syntax', () => {
+    const pxTheme = createTheme({
+      tokens: {
+        colors: { primary: { '500': 'oklch(0.62 0.19 259)' } },
+        radius: { sm: '8px' },
+        spacing: {},
+        fontSize: {},
+      },
+    });
+    const out = emitPropertyRegistrations(pxTheme).join('\n');
+    expect(out).toContain('@property --radius-sm {');
+    expect(out).toContain('syntax: "<length>";');
+    expect(out).toContain('initial-value: 8px;');
+  });
 });

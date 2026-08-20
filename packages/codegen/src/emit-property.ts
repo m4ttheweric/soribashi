@@ -29,7 +29,13 @@ import type { ResolvedTheme } from '@soribashi/theme';
 export function emitPropertyRegistrations(theme: ResolvedTheme): string[] {
   const blocks: string[] = [];
 
-  const register = (name: string, syntax: string, initial: string): void => {
+  const register = (name: string, value: string): void => {
+    const syntax = inferLengthSyntax(value);
+    // A value this family can't be typed as a <length> or <length-percentage>
+    // (e.g. a keyword, a var() reference, an unrecognised calc()) is skipped
+    // rather than registered with a syntax that would reject it outright.
+    if (syntax === null) return;
+
     blocks.push(
       `@property ${name} {`,
       `  syntax: "${syntax}";`,
@@ -47,19 +53,19 @@ export function emitPropertyRegistrations(theme: ResolvedTheme): string[] {
       // override. Syntax validation, fallback, and animatability are all
       // independent of this flag, so true costs nothing here.
       '  inherits: true;',
-      `  initial-value: ${initial};`,
+      `  initial-value: ${value};`,
       '}',
     );
   };
 
   for (const [key, value] of Object.entries(theme.tokens.radius).sort(byKey)) {
-    register(`--radius-${key}`, '<length>', value);
+    register(`--radius-${key}`, value);
   }
   for (const [key, value] of Object.entries(theme.tokens.spacing).sort(byKey)) {
-    register(`--spacing-${key}`, '<length>', value);
+    register(`--spacing-${key}`, value);
   }
   for (const [key, value] of Object.entries(theme.tokens.fontSize).sort(byKey)) {
-    register(`--font-size-${key}`, '<length>', value);
+    register(`--font-size-${key}`, value);
   }
 
   return blocks;
@@ -67,4 +73,31 @@ export function emitPropertyRegistrations(theme: ResolvedTheme): string[] {
 
 function byKey([a]: [string, unknown], [b]: [string, unknown]): number {
   return a.localeCompare(b);
+}
+
+const PLAIN_LENGTH = /^[+-]?(\d+\.?\d*|\.\d+)(px|rem|em|ex|ch|vw|vh|vmin|vmax|cm|mm|in|pt|pc|q)$/i;
+const PLAIN_PERCENTAGE = /^[+-]?(\d+\.?\d*|\.\d+)%$/;
+
+/**
+ * Picks the narrowest @property syntax that can hold `value`, or null when
+ * the value isn't a length/percentage at all (a keyword, a var() reference,
+ * an unrecognised calc() expression, ...) — such tokens are left unregistered
+ * rather than registered under a syntax that would make the browser drop the
+ * rule.
+ */
+function inferLengthSyntax(value: string): '<length>' | '<length-percentage>' | null {
+  const trimmed = value.trim();
+
+  if (trimmed.includes('%')) {
+    if (PLAIN_PERCENTAGE.test(trimmed) || /^calc\(.*%.*\)$/i.test(trimmed)) {
+      return '<length-percentage>';
+    }
+    return null;
+  }
+
+  if (trimmed === '0' || PLAIN_LENGTH.test(trimmed) || /^calc\(.*\)$/i.test(trimmed)) {
+    return '<length>';
+  }
+
+  return null;
 }
