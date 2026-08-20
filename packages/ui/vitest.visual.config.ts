@@ -24,23 +24,23 @@ export default defineConfig({
       headless: true,
       provider: playwright(),
       instances: [{ browser: 'chromium' }],
-    },
-    expect: {
-      toMatchScreenshot: {
-        comparatorName: 'pixelmatch',
-        comparatorOptions: {
-          // Vitest 4.1's visual-regression docs (installed version confirmed
-          // against @vitest/browser-playwright's expect-element.js) do not set a
-          // default for either value ("that's up for the user to decide"); the
-          // docs' own example config uses exactly these two numbers together,
-          // which is what's pinned here: `threshold` (0-1, per-pixel Lab color
-          // distance tolerance) absorbs anti-aliasing/subpixel font rendering
-          // noise, `allowedMismatchedPixelRatio` (fraction of the image) is the
-          // recommended knob over a fixed `allowedMismatchedPixels` count
-          // because it scales with each fixture's screenshot size instead of a
-          // magic constant.
-          threshold: 0.2,
-          allowedMismatchedPixelRatio: 0.01,
+      expect: {
+        toMatchScreenshot: {
+          comparatorName: 'pixelmatch',
+          comparatorOptions: {
+            // Vitest 4.1's visual-regression docs (installed version confirmed
+            // against @vitest/browser-playwright's expect-element.js) do not set a
+            // default for either value ("that's up for the user to decide"); the
+            // docs' own example config uses exactly these two numbers together,
+            // which is what's pinned here: `threshold` (0-1, per-pixel Lab color
+            // distance tolerance) absorbs anti-aliasing/subpixel font rendering
+            // noise, `allowedMismatchedPixelRatio` (fraction of the image) is the
+            // recommended knob over a fixed `allowedMismatchedPixels` count
+            // because it scales with each fixture's screenshot size instead of a
+            // magic constant.
+            threshold: 0.2,
+            allowedMismatchedPixelRatio: 0.01,
+          },
         },
       },
     },
