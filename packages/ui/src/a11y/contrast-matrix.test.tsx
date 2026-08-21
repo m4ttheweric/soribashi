@@ -59,6 +59,7 @@ const SIZES = uiVocabulary.size.values;
 // to track here.
 describeColourGrid({
   name: 'Button',
+  theme: uiTheme,
   intents: INTENTS,
   variants: VARIANTS,
   sizes: SIZES,
@@ -81,6 +82,7 @@ describeColourGrid({
 // there, so there is no grid cell to render for them here either).
 describeColourGrid({
   name: 'Alert',
+  theme: uiTheme,
   intents: INTENTS,
   variants: ['filled', 'outline', 'light'] as const,
   renderCell: (intent, variant, testId) => (
@@ -101,6 +103,7 @@ describeColourGrid({
 // builder config in Badge.tsx (subtle/link excluded, same rationale as Alert).
 describeColourGrid({
   name: 'Badge',
+  theme: uiTheme,
   intents: INTENTS,
   variants: ['filled', 'outline', 'light'] as const,
   renderCell: (intent, variant, testId) => (
