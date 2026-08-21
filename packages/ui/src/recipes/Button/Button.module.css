@@ -39,7 +39,8 @@
       pointer-events: none;
     }
 
-    &[data-variant="outline"] {
+    &[data-variant="outline"],
+    &[data-variant="default"] {
       border-color: var(--button-border);
     }
     &[data-variant="link"] {

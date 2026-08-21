@@ -2,7 +2,7 @@ import { Alert, uiVocabulary } from '@soribashi/ui';
 import { useState } from 'react';
 
 const INTENTS = uiVocabulary.intent.values;
-const VARIANTS = ['filled', 'outline', 'light'] as const;
+const VARIANTS = ['filled', 'light', 'outline'] as const;
 
 function BellIcon() {
   return (

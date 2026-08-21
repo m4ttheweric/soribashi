@@ -13,14 +13,15 @@ import classes from './Badge.module.css';
 export const recipeCategory = 1 as const;
 
 /**
- * Badge's own variant set. Deliberately three, not the theme's five (same
- * rationale as Alert.tsx): `subtle` and `link` have no sane badge rendering,
- * and inheriting them would commit styling, contrast cells, and visual
- * baselines for pairings no consumer wants. Declared on the builder config
- * (not via extend({ vocabulary })), because RecipeMeta.variants,
- * data-variant stamping, and dev validation all key on this tuple.
+ * Badge's own variant set. Deliberately three, not the theme's full seven
+ * (same rationale as Alert.tsx): `subtle`, `default`, `transparent`, and
+ * `link` have no sane badge rendering, and inheriting them would commit
+ * styling, contrast cells, and visual baselines for pairings no consumer
+ * wants. Declared on the builder config (not via extend({ vocabulary })),
+ * because RecipeMeta.variants, data-variant stamping, and dev validation all
+ * key on this tuple.
  */
-const BADGE_VARIANTS = ['filled', 'outline', 'light'] as const;
+const BADGE_VARIANTS = ['filled', 'light', 'outline'] as const;
 
 /**
  * Heights keyed on the ui theme's size vocabulary. Lives in the recipe (not
@@ -56,7 +57,7 @@ export const Badge = definePolymorphicComponent<
   BadgeProps,
   'span',
   readonly ['root'],
-  readonly ['filled', 'outline', 'light'],
+  readonly ['filled', 'light', 'outline'],
   readonly ['size', 'intent', 'variant']
 >({
   name: 'Badge',

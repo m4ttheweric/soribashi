@@ -2,7 +2,7 @@
   "vocabulary": {
     "size": ["xs", "sm", "md", "lg", "xl"],
     "intent": ["primary", "neutral", "success", "warning", "danger", "info"],
-    "variant": ["filled", "outline", "light", "subtle", "link"]
+    "variant": ["filled", "light", "outline", "subtle", "default", "transparent", "link"]
   },
   "recipes": [
     {
@@ -43,7 +43,7 @@
       "slots": ["root", "icon", "title", "body", "close"],
       "parts": [],
       "vocabularyAxes": ["intent", "variant"],
-      "variants": ["filled", "outline", "light"],
+      "variants": ["filled", "light", "outline"],
       "defaults": {
         "intent": "info",
         "variant": "light"
@@ -126,7 +126,7 @@
       "slots": ["root"],
       "parts": [],
       "vocabularyAxes": ["size", "intent", "variant"],
-      "variants": ["filled", "outline", "light"],
+      "variants": ["filled", "light", "outline"],
       "defaults": {
         "intent": "primary",
         "variant": "filled",
@@ -174,7 +174,7 @@
       "slots": ["root", "label"],
       "parts": [],
       "vocabularyAxes": ["size", "intent", "variant"],
-      "variants": ["filled", "outline", "light", "subtle", "link"],
+      "variants": ["filled", "light", "outline", "subtle", "default", "transparent", "link"],
       "defaults": {
         "intent": "primary",
         "variant": "filled",

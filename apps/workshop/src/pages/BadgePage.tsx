@@ -1,7 +1,7 @@
 import { Badge, uiVocabulary } from '@soribashi/ui';
 
 const INTENTS = uiVocabulary.intent.values;
-const VARIANTS = ['filled', 'outline', 'light'] as const;
+const VARIANTS = ['filled', 'light', 'outline'] as const;
 const SIZES = uiVocabulary.size.values;
 
 export function BadgePage() {

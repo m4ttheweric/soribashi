@@ -19,14 +19,14 @@ import classes from './Alert.module.css';
 export const recipeCategory = 1 as const;
 
 /**
- * Alert's own variant set. Deliberately three, not the theme's five: `subtle`
- * and `link` have no sane alert rendering, and inheriting them would commit
- * styling, contrast cells, and visual baselines for pairings no consumer
- * wants. Declared on the builder config (not via extend({ vocabulary })),
- * because RecipeMeta.variants, data-variant stamping, and dev validation all
- * key on this tuple.
+ * Alert's own variant set. Deliberately three, not the theme's full seven:
+ * `subtle`, `default`, `transparent`, and `link` have no sane alert
+ * rendering, and inheriting them would commit styling, contrast cells, and
+ * visual baselines for pairings no consumer wants. Declared on the builder
+ * config (not via extend({ vocabulary })), because RecipeMeta.variants,
+ * data-variant stamping, and dev validation all key on this tuple.
  */
-const ALERT_VARIANTS = ['filled', 'outline', 'light'] as const;
+const ALERT_VARIANTS = ['filled', 'light', 'outline'] as const;
 
 export interface AlertProps {
   /** Optional heading rendered in the title slot. */
@@ -50,7 +50,7 @@ export interface AlertProps {
 export const Alert = defineComponent<
   AlertProps,
   readonly ['root', 'icon', 'title', 'body', 'close'],
-  readonly ['filled', 'outline', 'light'],
+  readonly ['filled', 'light', 'outline'],
   readonly ['intent', 'variant']
 >({
   name: 'Alert',

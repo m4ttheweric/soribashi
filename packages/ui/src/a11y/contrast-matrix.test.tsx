@@ -50,13 +50,16 @@ const SIZES = uiVocabulary.size.values;
 // No allowlist here on purpose. This matrix only renders enabled buttons;
 // `disabled` (the one combination that would legitimately be out of AA
 // scope, and that axe-core itself exempts from color-contrast) isn't part
-// of the 6 x 5 x 5 grid at all. Every combination that IS in the grid is a
+// of the 6 x 7 x 5 grid at all. Every combination that IS in the grid is a
 // real, in-scope, enabled control, so a failure here is a genuine WCAG AA
 // gap, not something to allowlist away. Both light and dark scheme clear
-// the whole matrix (300/300 cells across both schemes) since the dark
+// the whole matrix (420/420 cells across both schemes) since the dark
 // token derivation commits (ed313f4, f50938d) gave every non-neutral
-// intent its own dark-specific text shades; there is no known gap left
-// to track here.
+// intent its own dark-specific text shades, and `default`/`transparent`
+// (the two variants this task added) read the semantic surface/text layer
+// this task extended with a `panel`/`primary` declaration of its own (see
+// theme.ts) rather than an intent shade; there is no known gap left to
+// track here.
 describeColourGrid({
   name: 'Button',
   theme: uiTheme,
@@ -77,14 +80,15 @@ describeColourGrid({
 
 // Alert has no size axis (colour does not vary by size for this recipe), so
 // `sizes` is omitted: 6 intents x 3 variants x 2 schemes = 36 cells. Its own
-// three-variant tuple (not uiVocabulary's five) is used directly, matching
-// the builder config in Alert.tsx (subtle/link are deliberately excluded
-// there, so there is no grid cell to render for them here either).
+// three-variant tuple (not uiVocabulary's full seven) is used directly,
+// matching the builder config in Alert.tsx (subtle/default/transparent/link
+// are deliberately excluded there, so there is no grid cell to render for
+// them here either).
 describeColourGrid({
   name: 'Alert',
   theme: uiTheme,
   intents: INTENTS,
-  variants: ['filled', 'outline', 'light'] as const,
+  variants: ['filled', 'light', 'outline'] as const,
   renderCell: (intent, variant, testId) => (
     <Alert
       intent={intent}
@@ -100,12 +104,13 @@ describeColourGrid({
 // Badge has no size axis (colour does not vary by size for this recipe, the
 // same as Alert), so `sizes` is omitted: 6 intents x 3 variants x 2 schemes
 // = 36 cells, per the task brief. Its own three-variant tuple mirrors the
-// builder config in Badge.tsx (subtle/link excluded, same rationale as Alert).
+// builder config in Badge.tsx (subtle/default/transparent/link excluded,
+// same rationale as Alert).
 describeColourGrid({
   name: 'Badge',
   theme: uiTheme,
   intents: INTENTS,
-  variants: ['filled', 'outline', 'light'] as const,
+  variants: ['filled', 'light', 'outline'] as const,
   renderCell: (intent, variant, testId) => (
     <Badge intent={intent} variant={variant} attributes={{ root: { 'data-testid': testId } }}>
       {intent}

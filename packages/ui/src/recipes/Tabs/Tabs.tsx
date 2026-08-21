@@ -26,11 +26,11 @@ export const recipeCategory = 3 as const;
  * `data-variant` on root when `config.variants.length > 0`
  * (define-compound.tsx), and only reports a non-empty `RecipeMeta.variants`
  * (and therefore a non-empty manifest entry) when this tuple is populated
- * here. The theme's own five-value `variant` vocabulary
- * (filled/outline/light/subtle/link) is a colour-intent axis and has no
- * bearing on a tab strip's structural treatment, so it is deliberately not
- * reused; Tabs declares its own three values instead, the same way Alert
- * and Badge declare their own narrower variant tuples.
+ * here. The theme's own seven-value `variant` vocabulary
+ * (filled/light/outline/subtle/default/transparent/link) is a colour-intent
+ * axis and has no bearing on a tab strip's structural treatment, so it is
+ * deliberately not reused; Tabs declares its own three values instead, the
+ * same way Alert and Badge declare their own narrower variant tuples.
  */
 const TABS_VARIANTS = ['line', 'pill', 'enclosed'] as const;
 

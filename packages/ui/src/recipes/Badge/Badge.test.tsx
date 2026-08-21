@@ -106,7 +106,7 @@ describe('Badge (browser)', () => {
 
   it('has zero axe violations across its showcase states (intent x variant, sizes)', async () => {
     const intents = uiVocabulary.intent.values;
-    const variants = ['filled', 'outline', 'light'] as const;
+    const variants = ['filled', 'light', 'outline'] as const;
     const sizes = uiVocabulary.size.values;
 
     const screen = await wrap(
