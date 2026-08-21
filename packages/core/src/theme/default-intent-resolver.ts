@@ -1,5 +1,20 @@
 import type { IntentResolver, IntentResolverResult } from './types.ts';
 
+const NUMERIC_SHADE_KEY = /^\d+$/;
+
+/**
+ * A scale's canonical shade for the single-shade branch: `500` if the scale
+ * declares it, else the first numeric-keyed entry (object key order, which
+ * for a genuinely single-shade palette is its only entry).
+ */
+function canonicalShade(scale: Record<string, string>): string | undefined {
+  if (scale['500'] !== undefined) return scale['500'];
+  for (const key of Object.keys(scale)) {
+    if (NUMERIC_SHADE_KEY.test(key)) return scale[key];
+  }
+  return undefined;
+}
+
 /**
  * Derives an interaction state from an already-resolved, opaque background.
  *
@@ -189,9 +204,131 @@ export function rampVariantColors(intent: string, variant: string): IntentResolv
 }
 
 /**
+ * Single-shade counterpart to `rampVariantColors`, for themes whose palette
+ * has no ramp to derive hover/active states from -- just one color per
+ * intent (`tone`), any CSS color value or `var()` reference.
+ *
+ * Every mix below is `color-mix(in srgb, ...)`, not `deriveState`/`wash`'s
+ * `in oklab`: this branch exists to match tui-kit's shipped `Button` recipe
+ * for consumers on a single-shade palette (Tokyo-style themes), and tui-kit's
+ * `OUTLINE_HOVER_TINT`/`GHOST_HOVER_TINT`/`SUBTLE_HOVER_TINT` constants
+ * (`Button.tsx`) are literally `color-mix(in srgb, ...)` -- srgb here is
+ * parity with what already ships, not a stylistic choice independent of the
+ * ramp branch's oklab.
+ *
+ * `light` and `subtle` mix over different surfaces because they rest on
+ * different surfaces: `light` already sits on `--surface-card` (its
+ * background), so its hover mixes over that same surface (tui-kit's
+ * `subtle`); `subtle` rests transparent with no surface of its own, so its
+ * hover mixes over `--surface-canvas` (tui-kit's `ghost`). `outline` also
+ * rests transparent and mixes its hover over the canvas, at the lighter 5%
+ * tint (tui-kit's `outline`).
+ *
+ * `filled`'s foreground has no per-intent shade to read (no ramp means no
+ * `{intent}-foreground` scale entry), so it names the generic
+ * `--sb-intent-foreground` custom property with a plain white fallback
+ * instead.
+ *
+ * No `active` key anywhere here (unlike the ramp branch's `filled`/`light`):
+ * tui-kit's shipped CSS has no distinct `:active` color step for any
+ * variant, only a shared `transform` on `.root:active`, so there is no
+ * shipped value to mirror.
+ */
+export function singleShadeVariantColors(tone: string, variant: string): IntentResolverResult {
+  if (variant === 'filled') {
+    return {
+      background: tone,
+      color: 'var(--sb-intent-foreground, #fff)',
+      border: 'transparent',
+      hover: `color-mix(in srgb, ${tone} 90%, black)`,
+    };
+  }
+
+  if (variant === 'outline') {
+    return {
+      background: 'transparent',
+      color: tone,
+      border: tone,
+      hover: `color-mix(in srgb, ${tone} 5%, var(--surface-canvas))`,
+    };
+  }
+
+  if (variant === 'light') {
+    return {
+      background: 'var(--surface-card)',
+      color: tone,
+      border: 'transparent',
+      hover: `color-mix(in srgb, ${tone} 12%, var(--surface-card))`,
+    };
+  }
+
+  if (variant === 'subtle') {
+    return {
+      background: 'transparent',
+      color: tone,
+      border: 'transparent',
+      hover: `color-mix(in srgb, ${tone} 12%, var(--surface-canvas))`,
+    };
+  }
+
+  if (variant === 'default') {
+    return {
+      background: 'var(--surface-panel)',
+      color: 'var(--text-primary)',
+      border: 'var(--border-default)',
+      hover: 'var(--surface-card)',
+    };
+  }
+
+  if (variant === 'transparent') {
+    return {
+      background: 'transparent',
+      color: tone,
+      border: 'transparent',
+    };
+  }
+
+  if (variant === 'link') {
+    return {
+      background: 'transparent',
+      color: tone,
+      border: 'transparent',
+      hoverColor: tone,
+    };
+  }
+
+  // Fallback for unknown variants
+  return {
+    background: 'transparent',
+    color: 'inherit',
+    border: 'none',
+  } satisfies IntentResolverResult;
+}
+
+/**
  * Default intent resolver. Maps `(intent, variant)` to CSS values referencing
  * the theme's CSS variables. Components consume this through the framework;
  * never directly.
+ *
+ * Branches on the intent's color scale, when a theme is supplied: fewer than
+ * 3 numeric shade keys means the theme declared a single-shade palette for
+ * this intent (no ramp to derive states from), so this delegates to
+ * `singleShadeVariantColors` with the scale's canonical value (`500` if
+ * present, else the first numeric-keyed entry) as `tone`. An intent that
+ * theme.tokens.colors doesn't mention at all (as opposed to a scale that
+ * exists but is thin) carries no palette information to branch on, so it
+ * falls through to the ramp branch same as no theme at all -- both are "this
+ * resolver has nothing but the fixed `--color-{intent}-{shade}` contract to
+ * go on".
  */
-export const defaultIntentResolver: IntentResolver = ({ intent, variant }) =>
-  rampVariantColors(intent, variant);
+export const defaultIntentResolver: IntentResolver = ({ intent, variant, theme }) => {
+  const scale = theme?.tokens?.colors?.[intent];
+  if (scale) {
+    const numericShadeCount = Object.keys(scale).filter((key) =>
+      NUMERIC_SHADE_KEY.test(key),
+    ).length;
+    const tone = numericShadeCount < 3 ? canonicalShade(scale) : undefined;
+    if (tone !== undefined) return singleShadeVariantColors(tone, variant);
+  }
+  return rampVariantColors(intent, variant);
+};

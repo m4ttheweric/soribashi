@@ -78,4 +78,5 @@ export {
   defineVocabulary,
   isThemeComponentEntry,
   rampVariantColors,
+  singleShadeVariantColors,
 } from './theme/index.ts';

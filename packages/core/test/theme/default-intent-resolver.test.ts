@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   defaultIntentResolver,
   rampVariantColors,
+  singleShadeVariantColors,
 } from '../../src/theme/default-intent-resolver.ts';
 import type { ResolvedTheme } from '../../src/theme/types.ts';
 
@@ -244,5 +245,178 @@ describe('rampVariantColors', () => {
         defaultIntentResolver({ intent: 'primary', variant, theme }),
       );
     }
+  });
+});
+
+describe('singleShadeVariantColors', () => {
+  const TONE = 'var(--color-accent-500)';
+
+  describe('filled variant', () => {
+    it('paints TONE as the background with a generic foreground fallback', () => {
+      const result = singleShadeVariantColors(TONE, 'filled');
+      expect(result.background).toBe(TONE);
+      expect(result.color).toBe('var(--sb-intent-foreground, #fff)');
+      expect(result.border).toBe('transparent');
+    });
+
+    it('hover mixes 90% TONE toward black, in srgb (tui-kit parity)', () => {
+      const result = singleShadeVariantColors(TONE, 'filled');
+      expect(result.hover).toBe(`color-mix(in srgb, ${TONE} 90%, black)`);
+    });
+
+    it('has no active key', () => {
+      const result = singleShadeVariantColors(TONE, 'filled');
+      expect('active' in result).toBe(false);
+    });
+  });
+
+  describe('outline variant', () => {
+    it('transparent background, TONE color and border', () => {
+      const result = singleShadeVariantColors(TONE, 'outline');
+      expect(result.background).toBe('transparent');
+      expect(result.color).toBe(TONE);
+      expect(result.border).toBe(TONE);
+    });
+
+    // tui-kit's shipped OUTLINE_HOVER_TINT (Button.tsx) is 5%, mixed in srgb
+    // over the canvas surface -- verified against the real constant, not the
+    // spec table, before writing this assertion.
+    it('hover is a 5% srgb mix of TONE over the canvas', () => {
+      const result = singleShadeVariantColors(TONE, 'outline');
+      expect(result.hover).toBe(`color-mix(in srgb, ${TONE} 5%, var(--surface-canvas))`);
+    });
+
+    it('has no hoverColor key', () => {
+      const result = singleShadeVariantColors(TONE, 'outline');
+      expect('hoverColor' in result).toBe(false);
+    });
+  });
+
+  describe('light variant', () => {
+    it('rests on --surface-card, not a wash, with a transparent border', () => {
+      const result = singleShadeVariantColors(TONE, 'light');
+      expect(result.background).toBe('var(--surface-card)');
+      expect(result.color).toBe(TONE);
+      expect(result.border).toBe('transparent');
+    });
+
+    // tui-kit's shipped SUBTLE_HOVER_TINT is 12%, mixed in srgb over the
+    // variant's OWN resting surface (--surface-card), not the canvas.
+    it('hover is a 12% srgb mix of TONE over --surface-card', () => {
+      const result = singleShadeVariantColors(TONE, 'light');
+      expect(result.hover).toBe(`color-mix(in srgb, ${TONE} 12%, var(--surface-card))`);
+    });
+
+    it('has no active key', () => {
+      const result = singleShadeVariantColors(TONE, 'light');
+      expect('active' in result).toBe(false);
+    });
+  });
+
+  describe('subtle variant', () => {
+    it('transparent until hover', () => {
+      const result = singleShadeVariantColors(TONE, 'subtle');
+      expect(result.background).toBe('transparent');
+      expect(result.color).toBe(TONE);
+      expect(result.border).toBe('transparent');
+    });
+
+    // tui-kit's shipped GHOST_HOVER_TINT is 12%, mixed in srgb over the
+    // canvas (this branch has no resting surface of its own to mix over).
+    it('hover is a 12% srgb mix of TONE over the canvas', () => {
+      const result = singleShadeVariantColors(TONE, 'subtle');
+      expect(result.hover).toBe(`color-mix(in srgb, ${TONE} 12%, var(--surface-canvas))`);
+    });
+  });
+
+  describe('default variant', () => {
+    it('reads the same semantic layer as the ramp branch, plain --surface-card hover', () => {
+      const result = singleShadeVariantColors(TONE, 'default');
+      expect(result.background).toBe('var(--surface-panel)');
+      expect(result.color).toBe('var(--text-primary)');
+      expect(result.border).toBe('var(--border-default)');
+      expect(result.hover).toBe('var(--surface-card)');
+    });
+
+    it('is not TONE-parameterized', () => {
+      const a = singleShadeVariantColors('var(--color-accent-500)', 'default');
+      const b = singleShadeVariantColors('var(--color-danger-500)', 'default');
+      expect(a).toEqual(b);
+    });
+  });
+
+  describe('transparent variant', () => {
+    it('stays transparent with TONE text and no hover key', () => {
+      const result = singleShadeVariantColors(TONE, 'transparent');
+      expect(result.background).toBe('transparent');
+      expect(result.color).toBe(TONE);
+      expect(result.border).toBe('transparent');
+      expect('hover' in result).toBe(false);
+    });
+  });
+
+  describe('link variant', () => {
+    it('uses TONE for both color and hoverColor, with no hover key', () => {
+      const result = singleShadeVariantColors(TONE, 'link');
+      expect(result.background).toBe('transparent');
+      expect(result.border).toBe('transparent');
+      expect(result.color).toBe(TONE);
+      expect(result.hoverColor).toBe(TONE);
+      expect('hover' in result).toBe(false);
+    });
+  });
+
+  describe('unknown variant', () => {
+    it('returns the same transparent neutral fallback as the ramp branch', () => {
+      const result = singleShadeVariantColors(TONE, 'invalid');
+      expect(result.background).toBe('transparent');
+      expect(result.color).toBe('inherit');
+    });
+  });
+});
+
+describe('branch detection', () => {
+  function themeWithScale(scale: Record<string, string>): ResolvedTheme {
+    return {
+      ...theme,
+      tokens: { ...theme.tokens, colors: { accent: scale } },
+    } as ResolvedTheme;
+  }
+
+  it('a scale with a single numeric shade key routes to the single-shade branch, tone = that value', () => {
+    const scaleTheme = themeWithScale({ '500': '#2e7de9' });
+    const result = defaultIntentResolver({ intent: 'accent', variant: 'filled', theme: scaleTheme });
+    expect(result).toEqual(singleShadeVariantColors('#2e7de9', 'filled'));
+  });
+
+  it('a scale with two numeric shade keys, no 500, routes to single-shade using the first entry', () => {
+    const scaleTheme = themeWithScale({ '400': '#1e6fd9', '600': '#0e5fc9' });
+    const result = defaultIntentResolver({ intent: 'accent', variant: 'outline', theme: scaleTheme });
+    expect(result).toEqual(singleShadeVariantColors('#1e6fd9', 'outline'));
+  });
+
+  it('a scale with 50..900 (>=3 numeric keys) routes to the ramp branch', () => {
+    const scaleTheme = themeWithScale({
+      '50': '#eef4ff',
+      '100': '#dde8ff',
+      '500': '#2e7de9',
+      '700': '#1a4fa0',
+      '900': '#0d2c5c',
+    });
+    const result = defaultIntentResolver({ intent: 'accent', variant: 'filled', theme: scaleTheme });
+    expect(result).toEqual(rampVariantColors('accent', 'filled'));
+  });
+
+  it('an intent absent from theme.tokens.colors falls back to the ramp branch', () => {
+    // Existing coverage above already exercises this via the shared `theme`
+    // fixture (colors: {}); asserted explicitly here as the detection
+    // contract, not an incidental side effect of an empty fixture.
+    const result = defaultIntentResolver({ intent: 'primary', variant: 'filled', theme });
+    expect(result).toEqual(rampVariantColors('primary', 'filled'));
+  });
+
+  it('no theme at all routes to the ramp branch', () => {
+    const result = defaultIntentResolver({ intent: 'accent', variant: 'filled' });
+    expect(result).toEqual(rampVariantColors('accent', 'filled'));
   });
 });

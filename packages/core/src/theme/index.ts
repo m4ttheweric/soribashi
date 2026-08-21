@@ -3,7 +3,11 @@
 
 export { composeTheme } from './compose-theme.ts';
 export { createTheme, DEFAULT_SEMANTIC_TOKENS } from './create-theme.ts';
-export { defaultIntentResolver, rampVariantColors } from './default-intent-resolver.ts';
+export {
+  defaultIntentResolver,
+  rampVariantColors,
+  singleShadeVariantColors,
+} from './default-intent-resolver.ts';
 export type { Vocabulary } from './define-vocabulary.ts';
 export { defineVocabulary } from './define-vocabulary.ts';
 
