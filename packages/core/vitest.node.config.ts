@@ -16,6 +16,6 @@ export default defineConfig({
   test: {
     name: 'core-node',
     environment: 'node',
-    include: ['test/theme/**/*.test.ts', 'test/codegen/**/*.test.ts'],
+    include: ['test/theme/**/*.test.ts', 'test/codegen/**/*.test.ts', 'test/exports/**/*.test.ts'],
   },
 });

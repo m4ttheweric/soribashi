@@ -4,7 +4,18 @@ All notable changes to `@soribashi/core` are documented here.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.1.0 — unreleased
+## 0.2.0
+
+### Added
+
+- `@soribashi/core/testing` subpath export: the contrast matrix harness (`describeColourGrid`) and its `./testing/contrast` pure-math split, relocated from `packages/ui`. `describeColourGrid` now takes an explicit `theme` option rather than importing a consumer theme directly.
+
+### Changed
+
+- **BREAKING:** `DEFAULT_VOCABULARIES.variant` adopts the canonical Mantine variant menu: `subtle` renames to `light`, `ghost` renames to `subtle`, and `default`/`transparent` are added, giving `filled | light | outline | subtle | default | transparent | link`. The per-`(intent, variant)` CSS table is now also exported standalone as `rampVariantColors(intent, variant)`, which `defaultIntentResolver` delegates to.
+- The default resolver grew a single-shade palette branch alongside the existing ramp-based one.
+
+## 0.1.0
 
 First published release.
 

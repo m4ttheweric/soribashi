@@ -1,6 +1,6 @@
 {
   "name": "@soribashi/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Soribashi: a theme model, a component factory, and the `soribashi` CSS codegen CLI in one package. Framework only — it ships no components.",
   "license": "MIT",
   "author": "Matthew Goodwin",
@@ -41,6 +41,16 @@
       "types": "./dist/src/codegen/index.d.ts",
       "default": "./dist/src/codegen/index.js"
     },
+    "./testing": {
+      "soribashi-source": "./src/testing/index.ts",
+      "types": "./dist/src/testing/index.d.ts",
+      "default": "./dist/src/testing/index.js"
+    },
+    "./testing/contrast": {
+      "soribashi-source": "./src/testing/contrast.ts",
+      "types": "./dist/src/testing/contrast.d.ts",
+      "default": "./dist/src/testing/contrast.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -70,7 +80,17 @@
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0"
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "vitest": "^4",
+    "vitest-browser-react": "^2"
+  },
+  "peerDependenciesMeta": {
+    "vitest": {
+      "optional": true
+    },
+    "vitest-browser-react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -83,6 +103,7 @@
     "react-dom": "^19.2",
     "tailwindcss": "^4",
     "typescript": "^7",
-    "vitest": "^4"
+    "vitest": "^4",
+    "vitest-browser-react": "^2.2.0"
   }
 }

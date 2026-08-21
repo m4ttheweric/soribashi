@@ -9,7 +9,7 @@ import { createTheme, defaultDarkTokens, defaultTokens, defineVocabulary } from 
 
 const tenantVocabulary = {
   intent: defineVocabulary(['primary', 'neutral', 'danger', 'success', 'warning', 'info']),
-  variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']),
+  variant: defineVocabulary(['filled', 'outline', 'light', 'subtle', 'link']),
 };
 
 const tenantSemanticTokens = {

@@ -6,7 +6,7 @@ import { uiTheme, uiVocabulary } from '../../theme.ts';
 import { Badge } from './Badge.tsx';
 
 const INTENTS = uiVocabulary.intent.values;
-const VARIANTS = ['filled', 'outline', 'subtle'] as const;
+const VARIANTS = ['filled', 'light', 'outline'] as const;
 const SIZES = uiVocabulary.size.values;
 
 /**

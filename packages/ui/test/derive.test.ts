@@ -220,7 +220,15 @@ describe('buildManifest', () => {
     expect(button?.slots).toEqual(['root', 'label']);
     expect(button?.parts).toEqual([]);
     expect(button?.vocabularyAxes).toEqual(['size', 'intent', 'variant']);
-    expect(button?.variants).toEqual(['filled', 'outline', 'subtle', 'ghost', 'link']);
+    expect(button?.variants).toEqual([
+      'filled',
+      'light',
+      'outline',
+      'subtle',
+      'default',
+      'transparent',
+      'link',
+    ]);
     expect(button?.defaults).toEqual({ intent: 'primary', variant: 'filled', size: 'md' });
     expect(button?.baseUi).toBe(false);
     expect(button?.files).toEqual([
@@ -267,7 +275,15 @@ describe('buildManifest', () => {
       'danger',
       'info',
     ]);
-    expect(manifest.vocabulary.variant).toEqual(['filled', 'outline', 'subtle', 'ghost', 'link']);
+    expect(manifest.vocabulary.variant).toEqual([
+      'filled',
+      'light',
+      'outline',
+      'subtle',
+      'default',
+      'transparent',
+      'link',
+    ]);
   });
 });
 

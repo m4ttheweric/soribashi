@@ -68,7 +68,7 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
   ),
 
   Alert: () => (
-    <Alert classNames={{ root: 'reskin-target' }} intent="info" variant="subtle">
+    <Alert classNames={{ root: 'reskin-target' }} intent="info" variant="light">
       x
     </Alert>
   ),

@@ -66,8 +66,8 @@ describe('Alert (browser)', () => {
     // computed background equals an explicit variant="outline" Alert's
     // computed background rendered under the plain uiTheme. If
     // .extend({ defaultProps }) stopped threading, `Outlined` would fall
-    // back to Alert's own built-in default variant ('subtle'), and this
-    // equality would fail rather than matching by coincidence: 'subtle' and
+    // back to Alert's own built-in default variant ('light'), and this
+    // equality would fail rather than matching by coincidence: 'light' and
     // 'outline' resolve to different backgrounds (see the intent case above).
     const Outlined = Alert.extend({ defaultProps: { variant: 'outline' } });
     const extendedTheme = createTheme({
@@ -118,7 +118,7 @@ describe('Alert (browser)', () => {
 
   it('has zero axe violations across its showcase states (intent x variant, with/without close button)', async () => {
     const intents = uiVocabulary.intent.values;
-    const variants = ['filled', 'outline', 'subtle'] as const;
+    const variants = ['filled', 'light', 'outline'] as const;
 
     const screen = await wrap(
       <div>
