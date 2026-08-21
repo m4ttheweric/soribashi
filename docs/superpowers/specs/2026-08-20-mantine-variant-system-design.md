@@ -184,9 +184,15 @@ consumers (Checkbox/RadioGroup/Switch) are untouched.
   structural CSS (padding, radius, `translateY(1px)` active, focus ring,
   disabled opacity) stays.
 - Pixel parity: the single-shade branch's constants are defined as tui-kit's
-  shipped values, so Button's rendered output is unchanged. The Button visual
-  baselines must pass WITHOUT regeneration; any diff is a defect in the
-  branch constants, not a baseline to accept.
+  shipped values (including its `in srgb` mix space — the branch uses srgb,
+  not the ramp branch's oklab, precisely for this parity), so Button's
+  rendered chrome is unchanged. Proof mechanism: a computed-style parity
+  test asserting resolved background/color/border/hover per variant × intent
+  equal the pre-migration values. Visual baselines MAY be regenerated only
+  where fixture label text changes (labels render into the PNGs); the
+  reviewer confirms every baseline delta is text-only.
+- Chip's variant tuple renames with the vocabulary (`subtle`→`light`;
+  `outline` unchanged) — its CSS selectors and call sites follow.
 - Workshop Buttons page renames its labels; matrix test added (§4).
 - `@soribashi/core` dep bumped to 0.2.0.
 
@@ -195,6 +201,12 @@ Call-site rename sweep only (`variant="ghost"` → `variant="subtle"`; default
 usages already omit the prop), `bun run build:board`, and the existing
 15-capture `capture:compare` must pass at zero diff — same
 parity-by-construction argument. No new tests.
+
+### mr-board
+Also a tui-kit consumer (file:../tui-kit): sweep any Chip/kit variant call
+sites for the renames, rebuild, and its existing 20-capture harness must
+pass at zero diff. If no call site passes a renamed variant value, the sweep
+is a verified no-op.
 
 ## 6. Publishing and sequencing
 
