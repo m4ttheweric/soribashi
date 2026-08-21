@@ -16,16 +16,9 @@ export const MIN_CONTRAST = 4.5;
 /**
  * Class name a `<style>` tag (installed by `installNoTransitionStyle` below)
  * keys off to force `transition: none !important` on itself and every
- * descendant. Shared by `describeColourGrid`'s grid path AND
- * contrast-matrix.test.tsx's small-coverage path (fix-round-1 finding: the
- * two paths originally diverged, with only the grid path disabling
- * transitions, which forced individual recipes — Tabs first — to instead
- * strip their own colour transitions to dodge a mid-interpolation read after
- * the shared `dark` class toggle. That is a workaround for this file's own
- * gap, not a per-recipe CSS decision, and it made Tabs visually inconsistent
- * with Button, whose `.root` transitions background-color/border-color/color
- * on hover/active exactly the same way Tabs originally did, safely, because
- * the grid path already disables transitions during measurement).
+ * descendant. Used by both the grid and small-coverage paths to prevent
+ * mid-interpolation color reads when the `dark` class toggles
+ * `light-dark()` tokens.
  */
 export const NO_TRANSITION_CLASS = 'a11y-contrast-matrix-no-transition';
 
@@ -54,34 +47,13 @@ export function installNoTransitionStyle(): () => void {
  * Normalizes any getComputedStyle-serialized CSS color to an `rgb()`/
  * `rgba()` string, the only shape contrast.ts's `contrastRatio` accepts.
  *
- * The task brief's premise was that Chromium always serializes computed
- * `color`/`background-color` as legacy `rgb()`/`rgba()`; in practice, on the
- * Chromium build this repo's Playwright provider pins, every token in this
- * theme (all declared as `oklch()`, several through `light-dark()`) comes
- * back from `getComputedStyle` as `oklch(...)`, unconverted: confirmed by a
- * throwaway probe test before writing this (`getComputedStyle` on both an
- * inline-styled and a class-styled div, plus a literal `color: oklch(...)`
- * with no custom property involved at all, all three still read back as
- * `oklch(...)`). That rules out "it's just how the custom property
- * resolves" and means every fg/bg read in this matrix needs the same
- * treatment, not only the canvas-backdrop path the brief called out.
- *
- * The brief's suggested fix, "getComputedStyle on a div whose color you
- * set, which forces rgb serialization", did not hold on this Chromium
- * build (same probe test, unchanged). Its other suggested option, a canvas,
- * does: `CanvasRenderingContext2D` has operated in 8-bit sRGB since long
- * before `oklch()` existed, so painting a 1x1 rect with the CSS color string
- * as `fillStyle` and reading the pixel back via `getImageData` yields an
- * authoritative `rgb()`/`rgba()` regardless of how getComputedStyle chooses
- * to serialize the value. Verified against a known value before use: the
- * fixed `primary-500` (oklch(0.57 0.1859 259.6)) round-trips to
- * `rgb(42, 114, 226)` here, matching the sRGB conversion computed
- * independently while triaging Step 4's failures.
- *
- * One canvas/context is created lazily and reused for every call across
- * every matrix consumer of this module (every grid cell x 2 colors x 2
- * schemes, plus canvas-backdrop reads): cheap, and avoids constructing a
- * fresh canvas element per read.
+ * `getComputedStyle` may return CSS colors in their authored format
+ * (e.g., `oklch(...)` for token-based colors declared as such). Canvas
+ * rendering context always operates in 8-bit sRGB: painting a 1x1 rect with
+ * the CSS color string as `fillStyle` and reading the pixel back via
+ * `getImageData` yields an authoritative `rgb()`/`rgba()` regardless of the
+ * serialization format. One canvas/context is created lazily and reused
+ * across all calls to avoid overhead.
  */
 let normalizeCtx: CanvasRenderingContext2D | undefined;
 export function toRgbString(cssColor: string): string {
@@ -124,13 +96,8 @@ export function resolveCanvasColor(scope: HTMLElement): string {
 /**
  * Deterministic `data-testid` for one grid cell, shared by `describeColourGrid`
  * and any fixture (e.g. a `SMALL_COVERAGE` entry) that wants to put the same
- * id on the element it wants measured.
- *
- * Since this module's pre-refactor form, the id is prefixed with the recipe
- * name (`Button-primary-filled-md`); the prior shape had no recipe prefix at
- * all (`primary-filled-md`). A reader diffing this file's output against
- * older CI runs should expect that prefix to be new, not a sign something
- * else changed.
+ * id on the element it wants measured. The id is prefixed with the recipe
+ * name to ensure uniqueness across grids.
  */
 export function cellId(name: string, intent: string, variant: string): string {
   return `${name}-${intent}-${variant}`;
