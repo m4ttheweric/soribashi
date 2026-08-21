@@ -77,4 +77,5 @@ export {
   defaultTokens,
   defineVocabulary,
   isThemeComponentEntry,
+  rampVariantColors,
 } from './theme/index.ts';

@@ -72,36 +72,44 @@ function wash(intent: string, weight: number): string {
 }
 
 /**
- * Default intent resolver. Maps `(intent, variant)` to CSS values referencing
- * the theme's CSS variables. Components consume this through the framework;
- * never directly.
+ * The `(intent, variant)` -> CSS-values table, extracted from
+ * `defaultIntentResolver` so a custom resolver can extend this menu (e.g. add
+ * a variant) rather than re-deriving every branch from scratch.
  *
  * Scale contract: this resolver hardcodes shade lookups rather than consulting
- * `input.theme`, so every color scale named by the theme's intent vocabulary
- * MUST define the shades `500`, `600`, `700`, `800`, and `foreground` (the
- * text color paired with the `500` filled background). A scale missing one of
+ * a theme, so every color scale named by the theme's intent vocabulary MUST
+ * define the shades `500`, `600`, `700`, `800`, and `foreground` (the text
+ * color paired with the `500` filled background). A scale missing one of
  * these leaves components referencing an undefined `--color-{intent}-{shade}`
  * variable. Custom scales that cannot satisfy the contract need a custom
  * `IntentResolver` instead. (`50`/`100`/`200` are no longer referenced here:
  * the wash formula above replaced every near-canvas ramp-shade lookup.)
  *
- * `filled` and `subtle` derive their `hover`/`active` from `background` via
- * `deriveState` (see above). `outline` and `ghost` derive their `hover`
+ * `filled` and `light` derive their `hover`/`active` from `background` via
+ * `deriveState` (see above). `outline` and `subtle` derive their `hover`
  * background from a `wash` (see above) instead: their resting `background` is
  * `transparent`, so `deriveState`-from-background would flatten their
  * deliberate "wash appears on hover" effect into a no-op
  * `color-mix(transparent, ...)`. `link` keeps a literal `hover: 'transparent'`
  * (a deliberate no-op, not a wash) -- it intentionally never grows a
- * background.
+ * background. `transparent` carries no `hover` key at all: unlike `link`, it
+ * has no hover treatment to declare, deliberate or otherwise.
  *
- * `subtle`'s hover/active weights (94%/88%, applied via `deriveState` to its
+ * `light`'s hover/active weights (94%/88%, applied via `deriveState` to its
  * now-opaque wash background) are a starting point tunable by design review,
  * same as the wash weights themselves.
  *
+ * `default` is the one variant not parameterized by `intent`: it is the
+ * neutral/unstyled-chrome surface, so it reads the semantic surface/text/
+ * border layer instead of a `--color-{intent}-*` shade. Its `hover` names the
+ * `--surface-card` slot with a `color-mix` fallback, since not every theme
+ * declares that slot.
+ *
  * Reference: based on Mantine's `defaultVariantColorsResolver`. The variant
- * set is adapted to soribashi's `filled | outline | subtle | ghost | link`.
+ * set is adapted to soribashi's
+ * `filled | light | outline | subtle | default | transparent | link`.
  */
-export const defaultIntentResolver: IntentResolver = ({ intent, variant }) => {
+export function rampVariantColors(intent: string, variant: string): IntentResolverResult {
   const v = (shade: string) => `var(--color-${intent}-${shade})`;
 
   if (variant === 'filled') {
@@ -125,7 +133,7 @@ export const defaultIntentResolver: IntentResolver = ({ intent, variant }) => {
     };
   }
 
-  if (variant === 'subtle') {
+  if (variant === 'light') {
     const background = wash(intent, 15);
     return {
       background,
@@ -136,12 +144,29 @@ export const defaultIntentResolver: IntentResolver = ({ intent, variant }) => {
     };
   }
 
-  if (variant === 'ghost') {
+  if (variant === 'subtle') {
     return {
       background: 'transparent',
       color: v('700'),
       border: 'transparent',
       hover: wash(intent, 12),
+    };
+  }
+
+  if (variant === 'default') {
+    return {
+      background: 'var(--surface-panel)',
+      color: 'var(--text-primary)',
+      border: 'var(--border-default)',
+      hover: 'var(--surface-card, color-mix(in oklab, var(--surface-panel) 92%, black))',
+    };
+  }
+
+  if (variant === 'transparent') {
+    return {
+      background: 'transparent',
+      color: v('700'),
+      border: 'transparent',
     };
   }
 
@@ -161,4 +186,12 @@ export const defaultIntentResolver: IntentResolver = ({ intent, variant }) => {
     color: 'inherit',
     border: 'none',
   } satisfies IntentResolverResult;
-};
+}
+
+/**
+ * Default intent resolver. Maps `(intent, variant)` to CSS values referencing
+ * the theme's CSS variables. Components consume this through the framework;
+ * never directly.
+ */
+export const defaultIntentResolver: IntentResolver = ({ intent, variant }) =>
+  rampVariantColors(intent, variant);

@@ -2,7 +2,7 @@
   "vocabulary": {
     "size": ["xs", "sm", "md", "lg", "xl"],
     "intent": ["primary", "neutral", "success", "warning", "danger", "info"],
-    "variant": ["filled", "outline", "subtle", "ghost", "link"]
+    "variant": ["filled", "outline", "light", "subtle", "link"]
   },
   "recipes": [
     {
@@ -43,10 +43,10 @@
       "slots": ["root", "icon", "title", "body", "close"],
       "parts": [],
       "vocabularyAxes": ["intent", "variant"],
-      "variants": ["filled", "outline", "subtle"],
+      "variants": ["filled", "outline", "light"],
       "defaults": {
         "intent": "info",
-        "variant": "subtle"
+        "variant": "light"
       },
       "files": [
         "packages/ui/src/recipes/Alert/Alert.tsx",
@@ -126,7 +126,7 @@
       "slots": ["root"],
       "parts": [],
       "vocabularyAxes": ["size", "intent", "variant"],
-      "variants": ["filled", "outline", "subtle"],
+      "variants": ["filled", "outline", "light"],
       "defaults": {
         "intent": "primary",
         "variant": "filled",
@@ -174,7 +174,7 @@
       "slots": ["root", "label"],
       "parts": [],
       "vocabularyAxes": ["size", "intent", "variant"],
-      "variants": ["filled", "outline", "subtle", "ghost", "link"],
+      "variants": ["filled", "outline", "light", "subtle", "link"],
       "defaults": {
         "intent": "primary",
         "variant": "filled",

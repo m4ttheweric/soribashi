@@ -11,7 +11,9 @@ const fullTokens = {
 };
 
 type DefaultSize = Vocabulary<'xs' | 'sm' | 'md' | 'lg' | 'xl'>;
-type DefaultVariant = Vocabulary<'filled' | 'outline' | 'subtle' | 'ghost' | 'link'>;
+type DefaultVariant = Vocabulary<
+  'filled' | 'light' | 'outline' | 'subtle' | 'default' | 'transparent' | 'link'
+>;
 
 describe('createTheme + extends vocabulary typing', () => {
   it('omitted axes inherit the BASE vocabulary literals, not the defaults', () => {

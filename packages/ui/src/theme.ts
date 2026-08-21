@@ -8,7 +8,7 @@ import { createTheme, defaultDarkTokens, defaultTokens, defineVocabulary } from 
 export const uiVocabulary = {
   size: defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl'] as const),
   intent: defineVocabulary(['primary', 'neutral', 'success', 'warning', 'danger', 'info'] as const),
-  variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link'] as const),
+  variant: defineVocabulary(['filled', 'outline', 'light', 'subtle', 'link'] as const),
 };
 
 // createTheme's non-extending overload requires `tokens` in full (ThemeTokens

@@ -13,7 +13,7 @@ import classes from './Button.module.css';
  */
 export const recipeCategory = 1 as const;
 
-const BUTTON_VARIANTS = ['filled', 'outline', 'subtle', 'ghost', 'link'] as const;
+const BUTTON_VARIANTS = ['filled', 'outline', 'light', 'subtle', 'link'] as const;
 
 /**
  * Heights keyed on the ui theme's size vocabulary. Lives in the recipe (not

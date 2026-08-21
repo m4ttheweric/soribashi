@@ -21,7 +21,7 @@ describe('uiVocabulary', () => {
   });
 
   it('parses declared variant values', () => {
-    for (const value of ['filled', 'outline', 'subtle', 'ghost', 'link']) {
+    for (const value of ['filled', 'outline', 'light', 'subtle', 'link']) {
       expect(uiVocabulary.variant.schema.parse(value)).toBe(value);
     }
   });

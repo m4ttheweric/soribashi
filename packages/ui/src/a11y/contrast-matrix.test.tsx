@@ -77,12 +77,12 @@ describeColourGrid({
 // Alert has no size axis (colour does not vary by size for this recipe), so
 // `sizes` is omitted: 6 intents x 3 variants x 2 schemes = 36 cells. Its own
 // three-variant tuple (not uiVocabulary's five) is used directly, matching
-// the builder config in Alert.tsx (ghost/link are deliberately excluded
+// the builder config in Alert.tsx (subtle/link are deliberately excluded
 // there, so there is no grid cell to render for them here either).
 describeColourGrid({
   name: 'Alert',
   intents: INTENTS,
-  variants: ['filled', 'outline', 'subtle'] as const,
+  variants: ['filled', 'outline', 'light'] as const,
   renderCell: (intent, variant, testId) => (
     <Alert
       intent={intent}
@@ -98,11 +98,11 @@ describeColourGrid({
 // Badge has no size axis (colour does not vary by size for this recipe, the
 // same as Alert), so `sizes` is omitted: 6 intents x 3 variants x 2 schemes
 // = 36 cells, per the task brief. Its own three-variant tuple mirrors the
-// builder config in Badge.tsx (ghost/link excluded, same rationale as Alert).
+// builder config in Badge.tsx (subtle/link excluded, same rationale as Alert).
 describeColourGrid({
   name: 'Badge',
   intents: INTENTS,
-  variants: ['filled', 'outline', 'subtle'] as const,
+  variants: ['filled', 'outline', 'light'] as const,
   renderCell: (intent, variant, testId) => (
     <Badge intent={intent} variant={variant} attributes={{ root: { 'data-testid': testId } }}>
       {intent}
@@ -120,7 +120,7 @@ describeColourGrid({
  * the measured element's own background is transparent AND the element it
  * visually sits on is not the page canvas (Text/Title nested inside Paper).
  * When absent, the live-resolved canvas colour is used, matching the Button
- * grid's ghost/link/outline handling; that's a no-op whenever the target's
+ * grid's subtle/link/outline handling; that's a no-op whenever the target's
  * own background is opaque (Popover's popup, Paper's root), since
  * contrastRatio ignores `backdrop` for an alpha-1 bg.
  */

@@ -67,7 +67,7 @@ export function compositeOver(color: RGBA, backdrop: RGBA): RGBA {
 /**
  * WCAG 2.x contrast ratio between `fg` and `bg`, both Chromium-serialized
  * `rgb()`/`rgba()` computed-style strings. Either (or both) may carry
- * alpha < 1 (the design system's `outline`/`ghost`/`link`/`subtle` variants
+ * alpha < 1 (the design system's `outline`/`subtle`/`link`/`light` variants
  * render transparent backgrounds by construction), in which case the
  * translucent color is composited over `backdrop` (defaults to opaque white,
  * the typical page background) before luminance is computed. An opaque input

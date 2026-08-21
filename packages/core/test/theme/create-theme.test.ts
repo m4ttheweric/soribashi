@@ -59,9 +59,11 @@ describe('createTheme', () => {
     ]);
     expect(theme.vocabulary.variant.values).toEqual([
       'filled',
+      'light',
       'outline',
       'subtle',
-      'ghost',
+      'default',
+      'transparent',
       'link',
     ]);
   });

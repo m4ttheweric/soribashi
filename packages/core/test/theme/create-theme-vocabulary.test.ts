@@ -36,9 +36,11 @@ describe('createTheme — vocabulary field', () => {
     ]);
     expect(theme.vocabulary.variant.values).toEqual([
       'filled',
+      'light',
       'outline',
       'subtle',
-      'ghost',
+      'default',
+      'transparent',
       'link',
     ]);
   });
@@ -49,7 +51,7 @@ describe('createTheme — vocabulary field', () => {
     });
     expect(theme.vocabulary.size.values).toEqual(['xs', 'sm', 'md', 'lg', 'xl']);
     expect(theme.vocabulary.intent.values.length).toBe(6);
-    expect(theme.vocabulary.variant.values.length).toBe(5);
+    expect(theme.vocabulary.variant.values.length).toBe(7);
   });
 
   it('vocabulary values pass Zod validation through the schema', () => {

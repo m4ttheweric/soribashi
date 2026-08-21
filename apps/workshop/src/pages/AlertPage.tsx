@@ -2,7 +2,7 @@ import { Alert, uiVocabulary } from '@soribashi/ui';
 import { useState } from 'react';
 
 const INTENTS = uiVocabulary.intent.values;
-const VARIANTS = ['filled', 'outline', 'subtle'] as const;
+const VARIANTS = ['filled', 'outline', 'light'] as const;
 
 function BellIcon() {
   return (
@@ -39,7 +39,7 @@ export function AlertPage() {
       </div>
 
       <h2>Icon</h2>
-      <Alert intent="info" variant="subtle" icon={<BellIcon />} title="With an icon">
+      <Alert intent="info" variant="light" icon={<BellIcon />} title="With an icon">
         Rendered in the icon slot, before the title and body.
       </Alert>
 

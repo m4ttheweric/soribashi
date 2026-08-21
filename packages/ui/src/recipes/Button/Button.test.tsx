@@ -120,7 +120,7 @@ describe('Button (browser)', () => {
     expect(results.violations, formatViolations(results.violations)).toEqual([]);
   });
 
-  it('paints a hover wash on a neutral ghost button that is distinct from the canvas (real pointer hover)', async () => {
+  it('paints a hover wash on a neutral subtle button that is distinct from the canvas (real pointer hover)', async () => {
     // Transitions disabled before hovering, same mechanism
     // matrix-harness.tsx installs for the grid and small-coverage contrast
     // reads: Button's background-color transition (Button.module.css)
@@ -137,8 +137,8 @@ describe('Button (browser)', () => {
     const removeNoTransitionStyle = installNoTransitionStyle();
     try {
       const screen = await wrap(
-        <Button intent="neutral" variant="ghost" classNames={{ root: 'probe-wash' }}>
-          Ghost
+        <Button intent="neutral" variant="subtle" classNames={{ root: 'probe-wash' }}>
+          Subtle
         </Button>,
       );
       const root = screen.container.querySelector('.probe-wash') as HTMLElement;
@@ -152,7 +152,7 @@ describe('Button (browser)', () => {
       // browser applying `:hover`, rather than assuming it is synchronous.
       await vi.waitFor(() => {
         const hovered = getComputedStyle(root).backgroundColor;
-        // Not transparent (the rest-state ghost background) ...
+        // Not transparent (the rest-state subtle background) ...
         expect(toRgbString(hovered)).not.toBe(toRgbString('rgba(0, 0, 0, 0)'));
         // ... and not the canvas colour itself: the wash must be VISIBLE.
         expect(toRgbString(hovered)).not.toBe(canvas);

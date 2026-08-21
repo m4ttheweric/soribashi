@@ -202,7 +202,7 @@ export function describeColourGrid<
                 // wrapping a cell in an actual DOM node would sit between the
                 // cell and whatever it visually composites against, changing
                 // the CSS cascade for any transparent-background variant
-                // (outline/ghost/link) and silently invalidating its contrast
+                // (outline/subtle/link) and silently invalidating its contrast
                 // reading.
                 <Fragment key={gridTestId(intent, variant, size)}>
                   {renderCell(intent, variant, gridTestId(intent, variant, size), size)}

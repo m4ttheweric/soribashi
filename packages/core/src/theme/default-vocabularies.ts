@@ -14,7 +14,15 @@ import { defineVocabulary, type Vocabulary } from './define-vocabulary.ts';
 export const DEFAULT_VOCABULARIES = {
   size: defineVocabulary(['xs', 'sm', 'md', 'lg', 'xl']),
   intent: defineVocabulary(['primary', 'neutral', 'success', 'warning', 'danger', 'info']),
-  variant: defineVocabulary(['filled', 'outline', 'subtle', 'ghost', 'link']),
+  variant: defineVocabulary([
+    'filled',
+    'light',
+    'outline',
+    'subtle',
+    'default',
+    'transparent',
+    'link',
+  ]),
 } as const satisfies Record<string, Vocabulary>;
 
 /**

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { defaultIntentResolver } from '../../src/theme/default-intent-resolver.ts';
+import {
+  defaultIntentResolver,
+  rampVariantColors,
+} from '../../src/theme/default-intent-resolver.ts';
 import type { ResolvedTheme } from '../../src/theme/types.ts';
 
 const theme = {
@@ -7,7 +10,9 @@ const theme = {
   dark: {},
   vocabulary: {
     intent: { values: ['primary', 'danger'] },
-    variant: { values: ['filled', 'outline', 'subtle', 'ghost', 'link'] },
+    variant: {
+      values: ['filled', 'light', 'outline', 'subtle', 'default', 'transparent', 'link'],
+    },
     size: { values: [] },
   },
   semanticTokens: { text: {}, surface: {}, border: {} },
@@ -72,7 +77,7 @@ describe('defaultIntentResolver', () => {
     });
   });
 
-  describe('subtle variant', () => {
+  describe('light variant (formerly subtle)', () => {
     // Wash formula, heavier weight than the hover wash (15% vs. 12%): this is
     // a resting background, not a hover affordance, so it needs to read as a
     // real chip colour at rest. 15% (not the ~18% starting point) is the
@@ -83,20 +88,25 @@ describe('defaultIntentResolver', () => {
     // tightest margin is `info` at 18%: 4.508, essentially at the floor;
     // dark's is `warning`). 15% keeps a >=0.19 margin in both schemes.
     it('uses a 15% wash of intent-500 over the canvas as its background', () => {
-      const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'light', theme });
       expect(result.background).toBe(
         'color-mix(in oklab, var(--color-primary-500) 15%, var(--surface-canvas))',
       );
       expect(result.color).toBe('var(--color-primary-700)');
     });
 
+    it('has a transparent border', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'light', theme });
+      expect(result.border).toBe('transparent');
+    });
+
     it('derives hover via color-mix at 94% weight toward black, from the wash background', () => {
-      const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'light', theme });
       expect(result.hover).toBe(`color-mix(in oklab, ${result.background} 94%, black)`);
     });
 
     it('derives active via color-mix at 88% weight toward black, from the wash background', () => {
-      const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'light', theme });
       expect(result.active).toBe(`color-mix(in oklab, ${result.background} 88%, black)`);
     });
 
@@ -107,25 +117,66 @@ describe('defaultIntentResolver', () => {
     // mixed with the canvas, not `v('100')`), so a second intent proves the
     // substitution is real, not incidentally correct for `primary`.
     it('substitutes the intent name for a different intent (not hardcoded)', () => {
-      const result = defaultIntentResolver({ intent: 'danger', variant: 'subtle', theme });
+      const result = defaultIntentResolver({ intent: 'danger', variant: 'light', theme });
       expect(result.background).toBe(
         'color-mix(in oklab, var(--color-danger-500) 15%, var(--surface-canvas))',
       );
     });
   });
 
-  describe('ghost variant', () => {
+  describe('subtle variant (formerly ghost)', () => {
     it('transparent until hover, then a 12% wash of intent-500 over the canvas', () => {
-      const result = defaultIntentResolver({ intent: 'primary', variant: 'ghost', theme });
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
       expect(result.background).toBe('transparent');
+      expect(result.color).toBe('var(--color-primary-700)');
+      expect(result.border).toBe('transparent');
       expect(result.hover).toBe(
         'color-mix(in oklab, var(--color-primary-500) 12%, var(--surface-canvas))',
       );
     });
 
     it('has no hoverColor override', () => {
-      const result = defaultIntentResolver({ intent: 'primary', variant: 'ghost', theme });
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'subtle', theme });
       expect(result.hoverColor).toBeUndefined();
+    });
+  });
+
+  describe('default variant', () => {
+    // Not intent-parameterized like the ramp variants above: `default` is the
+    // neutral/unstyled-chrome surface (a plain panel with a border), so it
+    // reads from the semantic surface/text/border layer instead of
+    // `--color-{intent}-*`. The hover step names a fallback because the
+    // `--surface-card` slot may not exist on every theme; the fallback keeps
+    // the variant usable without requiring one.
+    it('reads background/color/border from the semantic token layer', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'default', theme });
+      expect(result.background).toBe('var(--surface-panel)');
+      expect(result.color).toBe('var(--text-primary)');
+      expect(result.border).toBe('var(--border-default)');
+    });
+
+    it('hover names the --surface-card step with a color-mix fallback', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'default', theme });
+      expect(result.hover).toBe(
+        'var(--surface-card, color-mix(in oklab, var(--surface-panel) 92%, black))',
+      );
+    });
+
+    it('is not intent-parameterized', () => {
+      const primary = defaultIntentResolver({ intent: 'primary', variant: 'default', theme });
+      const danger = defaultIntentResolver({ intent: 'danger', variant: 'default', theme });
+      expect(primary).toEqual(danger);
+    });
+  });
+
+  describe('transparent variant', () => {
+    it('stays transparent with intent-700 text and no hover key', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'transparent', theme });
+      expect(result.background).toBe('transparent');
+      expect(result.color).toBe('var(--color-primary-700)');
+      expect(result.border).toBe('transparent');
+      expect(result.hover).toBeUndefined();
+      expect('hover' in result).toBe(false);
     });
   });
 
@@ -143,7 +194,15 @@ describe('defaultIntentResolver', () => {
   // typechecks (see intent-resolver-input.test-d.ts) and behaves identically.
   describe('without a theme', () => {
     it('resolves identically to a call that passes one', () => {
-      for (const variant of ['filled', 'outline', 'subtle', 'ghost', 'link']) {
+      for (const variant of [
+        'filled',
+        'light',
+        'outline',
+        'subtle',
+        'default',
+        'transparent',
+        'link',
+      ]) {
         expect(defaultIntentResolver({ intent: 'primary', variant })).toEqual(
           defaultIntentResolver({ intent: 'primary', variant, theme }),
         );
@@ -157,5 +216,27 @@ describe('defaultIntentResolver', () => {
       expect(result.background).toBe('transparent');
       expect(result.color).toBe('inherit');
     });
+  });
+});
+
+describe('rampVariantColors', () => {
+  // The extraction point: defaultIntentResolver must delegate rather than
+  // duplicate, so a caller building a custom resolver can extend this table
+  // instead of re-deriving it. Proven by equality against the resolver's own
+  // output across the full variant menu, not just spot-checked.
+  it('is exactly what defaultIntentResolver returns, for every variant', () => {
+    for (const variant of [
+      'filled',
+      'light',
+      'outline',
+      'subtle',
+      'default',
+      'transparent',
+      'link',
+    ]) {
+      expect(rampVariantColors('primary', variant)).toEqual(
+        defaultIntentResolver({ intent: 'primary', variant, theme }),
+      );
+    }
   });
 });
