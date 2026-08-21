@@ -187,6 +187,12 @@ describe('defaultIntentResolver', () => {
       expect(result.border).toBe('transparent');
       expect(result.color).toBe('var(--color-primary-600)');
     });
+
+    it('keeps hover as a deliberate no-op and hoverColor at intent-800', () => {
+      const result = defaultIntentResolver({ intent: 'primary', variant: 'link', theme });
+      expect(result.hover).toBe('transparent');
+      expect(result.hoverColor).toBe('var(--color-primary-800)');
+    });
   });
 
   // SORI-8: `theme` is optional on IntentResolverInput because this resolver
