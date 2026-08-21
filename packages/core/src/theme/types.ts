@@ -198,9 +198,10 @@ export interface IntentResolverInput {
   variant: string;
   /**
    * The fully-resolved theme, for resolvers that derive values from tokens or
-   * vocabulary. The default resolver does not consult it; it emits fixed
-   * `var(--color-{intent}-{shade})` references instead (see the scale
-   * contract on `IntentResolver`).
+   * vocabulary. The default resolver consults `theme.tokens.colors` to decide,
+   * per intent, whether to branch into the ramp or single-shade variant-color
+   * path (see the scale contract on `IntentResolver`); it does not read any
+   * other part of the theme.
    *
    * Optional because most resolvers never read it, and requiring it forced
    * every resolver unit test to construct or import a whole `ResolvedTheme`
@@ -224,13 +225,18 @@ export interface IntentResolverResult {
 /**
  * Maps `(intent, variant)` to concrete CSS values.
  *
- * Scale contract when using the DEFAULT resolver: every scale named by the
- * intent vocabulary must define shades `500`, `600`, `700`, `800`, and
- * `foreground` (text paired with the `500` background). (`50`/`100`/`200` are
- * NOT required: near-canvas washes are computed at render time from `500` and
- * `--surface-canvas`, not looked up from the ramp -- see
- * `default-intent-resolver.ts`'s `wash` helper.) Themes whose scales cannot
- * provide those shades must supply their own resolver here.
+ * Scale contract when using the DEFAULT resolver: `theme.tokens.colors[intent]`
+ * decides which of the two built-in branches (`default-intent-resolver.ts`)
+ * an intent gets, per intent. A scale with 3+ numeric shade keys must define
+ * `500`, `600`, `700`, `800`, and `foreground` (text paired with the `500`
+ * background) and is routed to the ramp branch. (`50`/`100`/`200` are NOT
+ * required: near-canvas washes are computed at render time from `500` and
+ * `--surface-canvas`, not looked up from the ramp -- see the `wash` helper.)
+ * A scale with fewer than 3 numeric shade keys is routed to the single-shade
+ * branch instead, keyed on its own canonical value (`500` if present, else
+ * the first numeric-keyed entry) — no `600`/`700`/`800`/`foreground` required
+ * there. Themes whose scales cannot satisfy either shape must supply their
+ * own resolver here.
  */
 export type IntentResolver = (input: IntentResolverInput) => IntentResolverResult;
 

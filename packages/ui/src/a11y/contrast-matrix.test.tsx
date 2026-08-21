@@ -56,9 +56,8 @@ const SIZES = uiVocabulary.size.values;
 // the whole matrix (420/420 cells across both schemes) since the dark
 // token derivation commits (ed313f4, f50938d) gave every non-neutral
 // intent its own dark-specific text shades, and `default`/`transparent`
-// (the two variants this task added) read the semantic surface/text layer
-// this task extended with a `panel`/`primary` declaration of its own (see
-// theme.ts) rather than an intent shade; there is no known gap left to
+// read the semantic surface/text layer's own `panel`/`primary` declaration
+// (see theme.ts) rather than an intent shade; there is no known gap left to
 // track here.
 describeColourGrid({
   name: 'Button',
@@ -103,9 +102,9 @@ describeColourGrid({
 
 // Badge has no size axis (colour does not vary by size for this recipe, the
 // same as Alert), so `sizes` is omitted: 6 intents x 3 variants x 2 schemes
-// = 36 cells, per the task brief. Its own three-variant tuple mirrors the
-// builder config in Badge.tsx (subtle/default/transparent/link excluded,
-// same rationale as Alert).
+// = 36 cells. Its own three-variant tuple mirrors the builder config in
+// Badge.tsx (subtle/default/transparent/link excluded, same rationale as
+// Alert).
 describeColourGrid({
   name: 'Badge',
   theme: uiTheme,

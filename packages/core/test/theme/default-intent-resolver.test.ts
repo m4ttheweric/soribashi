@@ -278,9 +278,8 @@ describe('singleShadeVariantColors', () => {
       expect(result.border).toBe(TONE);
     });
 
-    // tui-kit's shipped OUTLINE_HOVER_TINT (Button.tsx) is 5%, mixed in srgb
-    // over the canvas surface -- verified against the real constant, not the
-    // spec table, before writing this assertion.
+    // Mirrors tui-kit's shipped OUTLINE_HOVER_TINT (Button.tsx): a 5% srgb
+    // mix over the canvas surface, not the ramp branch's oklab wash.
     it('hover is a 5% srgb mix of TONE over the canvas', () => {
       const result = singleShadeVariantColors(TONE, 'outline');
       expect(result.hover).toBe(`color-mix(in srgb, ${TONE} 5%, var(--surface-canvas))`);
@@ -408,9 +407,9 @@ describe('branch detection', () => {
   });
 
   it('an intent absent from theme.tokens.colors falls back to the ramp branch', () => {
-    // Existing coverage above already exercises this via the shared `theme`
-    // fixture (colors: {}); asserted explicitly here as the detection
-    // contract, not an incidental side effect of an empty fixture.
+    // The shared `theme` fixture's empty `colors: {}` already exercises this
+    // path above; this case pins it as the detection contract in its own
+    // right rather than leaving it implicit in another assertion's fixture.
     const result = defaultIntentResolver({ intent: 'primary', variant: 'filled', theme });
     expect(result).toEqual(rampVariantColors('primary', 'filled'));
   });
