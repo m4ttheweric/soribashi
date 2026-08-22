@@ -10,12 +10,17 @@ export { cn, configureClassNameMerge } from './cn.ts';
 // entry); `createSoribashiBuilders` is the combined convenience.
 export { createSoribashiBuilders, makeBuilders, registerTheme } from './create-builders.ts';
 export { createVarsResolver } from './create-vars-resolver.ts';
-export type { DefineComponentConfig } from './define-component.tsx';
+export type { DefineComponentConfig, DefineComponentPublicProps, DefineComponentResult } from './define-component.tsx';
 export { defineComponent } from './define-component.tsx';
 export type {
+  AnyPartConfig,
+  CompoundComponent,
+  CompoundSlotKeys,
   DefineCompoundConfig,
+  ExtractPartProps,
   PartConfig,
   PartRenderCtx,
+  PartsRecord,
   PolymorphicPartConfig,
   PolymorphicPartRenderCtx,
   StandardPartConfig,
@@ -23,11 +28,15 @@ export type {
 export { defineCompound } from './define-compound.tsx';
 export type {
   DefineGenericComponentConfig,
+  GenericComponentFn,
+  GenericComponentStatics,
   GenericRenderCtx,
 } from './define-generic-component.tsx';
 export { defineGenericComponent } from './define-generic-component.tsx';
 export type {
   DefinePolymorphicComponentConfig,
+  PolymorphicComponentResult,
+  PolymorphicPublicProps,
   PolymorphicRenderCtx,
 } from './define-polymorphic-component.tsx';
 export { definePolymorphicComponent } from './define-polymorphic-component.tsx';
@@ -95,10 +104,15 @@ export type {
   GetStylesFn,
   GetStylesOptions,
   GetStylesResult,
+  GlobalVocabularyAxis,
+  InjectedVocabularyProps,
   RenderContext,
   Styles,
   StylesApiProps,
+  ThemedVocabularyProps,
+  VariantProp,
   Vars,
+  VocabularyAxis,
 } from './types/index.ts';
 export type {
   PolymorphicComponentProps,
@@ -107,4 +121,15 @@ export type {
   PolymorphicRenderProps,
   SoribashiPolymorphicComponent,
 } from './types/polymorphic.ts';
+// The theme-narrowed builder types `makeBuilders`/`createSoribashiBuilders` cast
+// their return value to (see create-builders.ts). Not opaque implementation
+// detail: a consumer's `builders.ts` that re-exports the destructured builders
+// without an explicit annotation needs these nameable to print its own .d.ts.
+export type {
+  ThemedDefineComponent,
+  ThemedDefineCompound,
+  ThemedDefineGenericComponent,
+  ThemedDefinePolymorphicComponent,
+  VocabularyOf,
+} from './types/themed-builders.ts';
 export { useRandomClassName } from './use-random-class-name.ts';

@@ -21,4 +21,10 @@ export type {
   RenderContext,
 } from './render-context.ts';
 
-export type { InjectedVocabularyProps, VocabularyAxis } from './vocabulary-axes.ts';
+export type {
+  GlobalVocabularyAxis,
+  InjectedVocabularyProps,
+  ThemedVocabularyProps,
+  VariantProp,
+  VocabularyAxis,
+} from './vocabulary-axes.ts';

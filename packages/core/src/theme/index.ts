@@ -27,6 +27,7 @@ export type {
   PartialThemeTokens,
   PartialThemeVocabulary,
   ResolvedTheme,
+  ResolveVocab,
   SemanticReference,
   SemanticSurfaceValue,
   SemanticTokensConfig,
