@@ -1,6 +1,6 @@
 {
   "name": "@soribashi/core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Soribashi: a theme model, a component factory, and the `soribashi` CSS codegen CLI in one package. Framework only — it ships no components.",
   "license": "MIT",
   "author": "Matthew Goodwin",
