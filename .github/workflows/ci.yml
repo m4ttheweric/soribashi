@@ -51,6 +51,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
+      # smoke:registry vendors @soribashi/core via a workspace file: link that
+      # resolves through the package's exports map, which points at dist/. Since
+      # the SORI-4 single-package merge, core ships built, so dist/ must exist
+      # before the smoke runs (it errors "packages/core/dist does not exist"
+      # otherwise).
+      - run: bun run build
       # Network-dependent (resolves the shadcn CLI and real npm deps) and
       # takes minutes, which is why this is its own job and not part of
       # `bun run test`.
