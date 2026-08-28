@@ -9,7 +9,28 @@
 >
 > The established slice workflow: brainstorm against this file plus the latest outcomes record, write the spec to `.local-dev/specs/`, have a subagent review the spec BEFORE planning (this has caught an unsatisfiable acceptance criterion three slices running), then plan and execute subagent-driven on a `feat/slice-N-*` branch, closing with a whole-branch review, one fix wave, and a new `.local-dev/slice-N-outcomes.md`.
 
-> **Current as of 2026-08-27.** The **packaging-for-adoption** record (immediately below) is the current top record: after the design ledger closed at 28 recipes, the roadmap pivoted from "more recipes" to "make it adoptable", and 43 commits landed on `main` (Aug 20-22) merging the four framework packages into one published `@soribashi/core` and shipping the Mantine variant system. It sits above the design-ledger record (2026-08-03), the slice 4 record, the slice 3 record, the slice 2 record, the slice 1b record, the recipe-pilot record (2026-07-01), and the v1 Mantine-adaptation foundation record (2026-04-25), all kept unchanged further down this file.
+> **Current as of 2026-08-27.** The **Toast** record (immediately below) is the current top record: the capstone recipe that completes the parent spec's §11 component roadmap. It sits above the packaging-for-adoption record (2026-08-22), the design-ledger record (2026-08-03), the slice 4 record, the slice 3 record, the slice 2 record, the slice 1b record, the recipe-pilot record (2026-07-01), and the v1 Mantine-adaptation foundation record (2026-04-25), all kept unchanged further down this file.
+
+## Toast: the manager-driven capstone recipe, §11 roadmap complete (2026-08-27)
+
+Toast was the one unbuilt entry on the parent spec's §11 component roadmap (`.local-dev/specs/2026-07-24-soribashi-ui-design.md`), chosen to prove an imperative/programmatic API, a surface nothing else in the package touches. The July roadmap assumed it would need hand-rolling because Base UI lacked the primitive; that was stale by build time (installed `@base-ui/react@1.6.0` ships a full `toast` primitive), so Toast became a category-2 wrap plus a new manager layer. **`@soribashi/ui` now has 29 recipes, and the §11 roadmap is complete.** Branch `feat/toast-recipe`, from `main` @ `fafb2d9`, 7 commits (spec → subagent spec-review → plan → inline TDD execution, four tasks → whole-branch review → one fix wave), fast-forward merged at `97f74f1`. Spec + plan (gitignored) at `.local-dev/specs/2026-08-27-toast-recipe-design.md` and `.local-dev/plans/2026-08-27-toast-recipe.md`; outcomes at `.local-dev/toast-outcomes.md`.
+
+### What landed
+
+- **A `defineCompound` with a global Provider and an imperative queue.** `Toast.Provider` IS the compound's `parts.root` (the one architecture that works: a Viewport rendered outside a compound root would hit `rawCtx === null` and `getStyles('viewport')` would throw). `Toast.Viewport` is batteries-included: it wraps Base UI's `Portal` + `Viewport` and owns the `manager.toasts.map(...)` itself (Base UI's own Viewport renders only children + focus guards + a hidden live region). The per-instance anatomy (`toast`/`title`/`description`/`close`/`action`) are **style slots, not parts**, addressed via `getStyles({ part })` in the map, so the public surface stays `Toast.Provider` + `Toast.Viewport` (no `Toast.Toast`).
+- **Per-toast dynamic intent coloring.** Intent is set imperatively (`useToast().add({ intent })` maps to Base UI's per-toast `type`), so it cannot ride the static vocabulary-axis path. The Viewport map computes `autoVars(theme, 'Toast', { intent: t.type, variant: ctx.variant }, true)` per toast (gated on `t.type`, else the neutral `--surface-raised` CSS fallback) and spreads it inline. Colour comes only from the theme's intent resolver (invariant 2 intact); `intent` stays typed `string` (a vendored recipe has no opinion on vocabulary values). Variants `filled`/`light`/`outline`, default `light`, are the static axis. 18 contrast cells (6 intents x 3 variants) clear AA in both schemes.
+- **The `useToast()` wrapper** (intent→`type`, action→`actionProps`) plus a `createToastManager` re-export for enqueuing outside React. Enter/exit motion rides the `--motion-*` tokens (the migration that landed in the debt sweep). Full recipe-contract registration; authoring skill gained **§23** documenting the manager-driven sub-pattern and its traps.
+
+### Gate state (2026-08-27, `main` @ `97f74f1`)
+
+- `bun run test`: 1664 tests across 136 files. `bun run typecheck`: clean. `bun run lint`: 0 errors, 439 baseline warnings. `bun run generate:ui`: no drift. Whole-branch review returned **Yes/merge** (no Critical or Important; the load-bearing mechanisms were verified against the installed Base UI source and the core factory, not just comments).
+- **`bun run test:visual` and `bun run smoke:registry` not run this session.** Toast's Linux visual baselines are **deferred**: `Toast.visual.test.tsx` exists but its baselines are uncommitted (`bun run test` excludes the visual tier), pending a post-merge Docker regen like Checkbox's.
+
+### Deliberately future (not yet done)
+
+- **Toast visual baselines** need a Linux regen via the pinned Docker workflow (deferred, accepted).
+- The whole-branch review's Minor notes, none blocking: the real-timer auto-dismiss test depends on the window staying focused (Base UI pauses the dismiss timer otherwise; documented in the test); the visual/matrix/workshop intent sets differ harmlessly.
+- **`--accent-primary` focus-ring gap** (pre-existing, still open across recipes; Toast uses the `--text-default` fallback and does not add to it).
 
 ## Packaging for adoption: one published `@soribashi/core`, ~25 DX-bug fixes, and the Mantine variant system (2026-08-22)
 
