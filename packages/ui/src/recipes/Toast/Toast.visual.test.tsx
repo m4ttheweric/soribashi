@@ -7,17 +7,20 @@ import { uiTheme } from '../../theme.ts';
 import { Toast, useToast } from './Toast.tsx';
 
 /**
- * Toast portals its Viewport under `<body>`; `Toast.Viewport`'s `container`
- * prop (exercised the same way in Toast.test.tsx / the reskin fixture)
+ * Toast portals its Viewport under `<body>`; `Toast.Viewport`'s `container` prop
  * re-anchors it into a local node so this no-transition/no-animation class
- * reaches the portalled toasts. Both `transition` AND `animation` are killed
- * (the Skeleton frozen-motion idiom, authoring skill §21): a toast's enter is a
- * transition, but freezing only transitions would still let any keyframe land
- * on an arbitrary frame.
+ * reaches the portalled toast (the Skeleton frozen-motion idiom, §21).
  *
- * Linux baselines are intentionally NOT committed yet (deferred to a post-merge
- * Docker regen, like Checkbox); `bun run test` excludes the visual tier, so this
- * file exists for the four-file recipe contract and the eventual baseline run.
+ * A SINGLE toast is rendered, deliberately: Base UI stacks multiple toasts with
+ * a JS-driven height/transform settle (ResizeObserver + position recalculation)
+ * that `transition: none` cannot freeze, so a stack never yields two matching
+ * frames for `toMatchScreenshot` ("could not capture a stable screenshot"). One
+ * toast has no stack and its surface is static once entered. The intent x
+ * variant colour matrix is proven numerically by contrast-matrix.test.tsx; this
+ * tier only guards the surface's overall appearance against accidental change.
+ *
+ * Linux baselines regenerated via the pinned Docker workflow; `bun run test`
+ * excludes the visual tier.
  */
 const NO_TRANSITION_CLASS = 'sb-visual-no-transition';
 const noTransitionStyle = document.createElement('style');
@@ -27,15 +30,16 @@ noTransitionStyle.textContent = `
 `;
 document.head.appendChild(noTransitionStyle);
 
-const INTENTS = ['success', 'warning', 'danger', 'info'] as const;
-
-function FireIntents() {
+function FireOne() {
   const toast = useToast();
   // biome-ignore lint/correctness/useExhaustiveDependencies: fire once at mount; useToast() identity changes as toasts are added, so depping would loop
   useEffect(() => {
-    for (const intent of INTENTS) {
-      toast.add({ title: intent, description: `${intent} notification`, intent, timeout: 0 });
-    }
+    toast.add({
+      intent: 'success',
+      title: 'Changes saved',
+      description: 'Your edits are live.',
+      timeout: 0,
+    });
   }, []);
   return null;
 }
@@ -48,8 +52,14 @@ describe('Toast (visual)', () => {
     viewportContainer = undefined;
   });
 
-  async function mountToasts({ dark = false } = {}) {
-    await page.viewport(520, 520);
+  // Returns the toast surface element (the screenshot target). The `.viewport`
+  // slot is position: fixed, so it contributes nothing to `viewportContainer`'s
+  // box; screenshotting the container captures a zero-size region that never
+  // stabilizes. The toast element itself has a real, static box once settled
+  // (the same "screenshot the fixed element, not its portal wrapper" shape
+  // Dialog.visual.test.tsx uses for the backdrop).
+  async function mountToast({ dark = false } = {}): Promise<HTMLElement> {
+    await page.viewport(480, 240);
     viewportContainer = document.createElement('div');
     viewportContainer.className = NO_TRANSITION_CLASS;
     if (dark) viewportContainer.classList.add('dark');
@@ -57,37 +67,32 @@ describe('Toast (visual)', () => {
 
     await render(
       <SoribashiProvider theme={uiTheme}>
-        <Toast.Provider limit={INTENTS.length + 1}>
-          <FireIntents />
+        <Toast.Provider>
+          <FireOne />
           <Toast.Viewport container={viewportContainer} />
         </Toast.Provider>
       </SoribashiProvider>,
     );
     await document.fonts.ready;
-    // Wait for every toast to mount and its Base UI enter-state to clear.
+    let toastEl: HTMLElement | null = null;
     await vi.waitFor(
       () => {
-        const toasts = viewportContainer?.querySelectorAll('[data-intent]') ?? [];
-        expect(toasts.length).toBe(INTENTS.length);
-        for (const el of toasts) {
-          expect((el as HTMLElement).hasAttribute('data-starting-style')).toBe(false);
-        }
+        toastEl = viewportContainer?.querySelector<HTMLElement>('[data-intent="success"]') ?? null;
+        expect(toastEl).not.toBeNull();
+        expect((toastEl as HTMLElement).hasAttribute('data-starting-style')).toBe(false);
       },
       { timeout: 1000, interval: 10 },
     );
+    return toastEl as unknown as HTMLElement;
   }
 
-  it('intent toasts match their baseline in light mode', async () => {
-    await mountToasts();
-    await expect(page.elementLocator(viewportContainer as HTMLElement)).toMatchScreenshot(
-      'toast-intents-light',
-    );
+  it('a success toast matches its baseline in light mode', async () => {
+    const toastEl = await mountToast();
+    await expect(page.elementLocator(toastEl)).toMatchScreenshot('toast-success-light');
   });
 
-  it('intent toasts match their baseline in dark mode', async () => {
-    await mountToasts({ dark: true });
-    await expect(page.elementLocator(viewportContainer as HTMLElement)).toMatchScreenshot(
-      'toast-intents-dark',
-    );
+  it('a success toast matches its baseline in dark mode', async () => {
+    const toastEl = await mountToast({ dark: true });
+    await expect(page.elementLocator(toastEl)).toMatchScreenshot('toast-success-dark');
   });
 });
