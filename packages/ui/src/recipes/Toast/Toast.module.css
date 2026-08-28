@@ -1,0 +1,75 @@
+@layer soribashi.recipes {
+  .viewport {
+    position: fixed;
+    inset-block-end: var(--spacing-lg);
+    inset-inline-end: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    width: var(--breakpoint-xs);
+    max-width: 100%;
+    /* Unitless raw z-index: this theme emits no --z-index-* token (see Select's
+       own .popup comment), and toasts must stack above dialogs/popovers. */
+    z-index: 100;
+  }
+
+  .toast {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "title close"
+      "description action";
+    gap: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    /* autoVars supplies --toast-bg/-color/-border per toast (spread inline);
+       the neutral fallback covers a toast with no intent. */
+    background: var(--toast-bg, var(--surface-raised));
+    color: var(--toast-color, var(--text-default));
+    border: 1px solid var(--toast-border, var(--border-default));
+    box-shadow: var(--shadow-lg);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-sm);
+  }
+
+  .title {
+    grid-area: title;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-sm);
+  }
+
+  .description {
+    grid-area: description;
+    color: var(--toast-color, var(--text-muted));
+    line-height: var(--line-height-md);
+  }
+
+  .close {
+    grid-area: close;
+    justify-self: end;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    line-height: var(--line-height-sm);
+  }
+  .close:focus-visible {
+    outline: 2px solid var(--text-default);
+    outline-offset: 2px;
+  }
+
+  .action {
+    grid-area: action;
+    justify-self: start;
+    background: transparent;
+    border: 1px solid var(--toast-border, var(--border-default));
+    border-radius: var(--radius-sm);
+    color: inherit;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    cursor: pointer;
+  }
+  .action:focus-visible {
+    outline: 2px solid var(--text-default);
+    outline-offset: 2px;
+  }
+}

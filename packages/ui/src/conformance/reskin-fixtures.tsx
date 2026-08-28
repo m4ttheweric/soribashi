@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Accordion } from '../recipes/Accordion/Accordion.tsx';
 import { Alert } from '../recipes/Alert/Alert.tsx';
 import { AspectRatio } from '../recipes/AspectRatio/AspectRatio.tsx';
@@ -26,7 +26,30 @@ import { Text } from '../recipes/Text/Text.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
+import { Toast, useToast } from '../recipes/Toast/Toast.tsx';
 import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
+
+/**
+ * Toast is manager-driven: a fixture must enqueue a toast (timeout: 0 so it does
+ * not auto-dismiss), forward `scopeEl` into the Viewport's portal `container`
+ * (§15), and tag the `toast` slot (the surface with background/radius/padding).
+ */
+function ToastReskinFixture({ scopeEl }: { scopeEl: HTMLElement }) {
+  function Fire() {
+    const toast = useToast();
+    // biome-ignore lint/correctness/useExhaustiveDependencies: fire once at mount; useToast() identity changes as toasts are added, so depping would loop
+    useEffect(() => {
+      toast.add({ title: 'Reskin', description: 'x', timeout: 0 });
+    }, []);
+    return null;
+  }
+  return (
+    <Toast.Provider classNames={{ toast: 'reskin-target' }}>
+      <Fire />
+      <Toast.Viewport container={scopeEl} />
+    </Toast.Provider>
+  );
+}
 
 /**
  * One minimal, force-visible rendering per recipe, keyed by the recipe's
@@ -211,6 +234,8 @@ export const RESKIN_FIXTURES: Record<string, (scopeEl: HTMLElement) => ReactNode
   TextInput: () => <TextInput label="x" classNames={{ input: 'reskin-target' }} />,
 
   Title: () => <Title className="reskin-target">x</Title>,
+
+  Toast: (scopeEl) => <ToastReskinFixture scopeEl={scopeEl} />,
 
   // `defaultOpen` force-opens without a hover/focus interaction (Tooltip's
   // Root forwards it straight to Base UI's TooltipRoot, same mount-time-open

@@ -166,6 +166,12 @@
       "description": "Semantic h1-h6 heading with theme heading tokens per order."
     },
     {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "Imperative, auto-dismissing notifications with per-toast intent coloring, driven by a useToast() manager over a global Provider and Viewport."
+    },
+    {
       "name": "tooltip",
       "type": "registry:ui",
       "title": "Tooltip",

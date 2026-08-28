@@ -57,6 +57,7 @@ export const MATRIX_CLASSIFICATION: Record<string, MatrixClassification> = {
   Textarea: 'covered',
   TextInput: 'covered',
   Title: 'covered',
+  Toast: 'covered',
   Tooltip: 'covered',
 };
 
@@ -81,5 +82,6 @@ export const SMALL_COVERAGE_NAMES: readonly string[] = [
   'Textarea',
   'TextInput',
   'Title',
+  'Toast',
   'Tooltip',
 ];

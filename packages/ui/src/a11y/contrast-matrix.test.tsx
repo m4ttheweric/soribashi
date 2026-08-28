@@ -1,5 +1,5 @@
 import { SoribashiProvider } from '@soribashi/core';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 // `vitest-browser-react`'s main entry (`import ... from 'vitest-browser-react'`)
 // registers a global `beforeEach(() => cleanup())` as a side effect of import
@@ -30,6 +30,7 @@ import { Text } from '../recipes/Text/Text.tsx';
 import { Textarea } from '../recipes/Textarea/Textarea.tsx';
 import { TextInput } from '../recipes/TextInput/TextInput.tsx';
 import { Title } from '../recipes/Title/Title.tsx';
+import { Toast, useToast } from '../recipes/Toast/Toast.tsx';
 import { Tooltip } from '../recipes/Tooltip/Tooltip.tsx';
 import { uiTheme, uiVocabulary } from '../theme.ts';
 import { SMALL_COVERAGE_NAMES } from './matrix-classification.ts';
@@ -160,6 +161,24 @@ interface SmallCoverageEntry {
   /** Mounts every cell this entry proves; see each cell's targetClass/backdropClass. */
   render: () => ReactNode;
   cells: readonly SmallCoverageCell[];
+}
+
+/**
+ * Fires one non-dismissing (timeout: 0) toast per intent on mount, for Toast's
+ * contrast cells. add() through the real manager is the sanctioned path (spec
+ * R1: store.addToast is synchronous and the harness's beforeAll waits via
+ * vi.waitUntil before reading); state is established at mount only, never by a
+ * per-scheme interaction.
+ */
+function ToastMatrixFire() {
+  const toast = useToast();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fire once at mount; useToast() identity changes as toasts are added, so depping would loop
+  useEffect(() => {
+    for (const intent of INTENTS) {
+      toast.add({ title: intent, description: `${intent} copy`, intent, timeout: 0 });
+    }
+  }, []);
+  return null;
 }
 
 const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
@@ -700,6 +719,36 @@ const SMALL_COVERAGE: Record<string, SmallCoverageEntry> = {
         description: 'Tooltip: popup text on popup surface',
       },
     ],
+  },
+
+  // One Provider tree per variant (variant is global-per-Provider), each firing
+  // one timeout: 0 toast per intent at mount. The toast surface carries the
+  // per-variant class plus the recipe's hand-stamped data-intent/data-variant,
+  // so each of the 18 cells resolves to exactly one element (avoiding
+  // resolveUniqueTarget's multi-match guard). The Viewport portals to <body>;
+  // the harness queries document and waits via vi.waitUntil, so that is fine.
+  Toast: {
+    render: () => (
+      <>
+        {(['filled', 'light', 'outline'] as const).map((variant) => (
+          <Toast.Provider
+            key={variant}
+            variant={variant}
+            limit={INTENTS.length + 1}
+            classNames={{ toast: `matrix-target-toast-${variant}` }}
+          >
+            <ToastMatrixFire />
+            <Toast.Viewport />
+          </Toast.Provider>
+        ))}
+      </>
+    ),
+    cells: (['filled', 'light', 'outline'] as const).flatMap((variant) =>
+      INTENTS.map((intent) => ({
+        targetClass: `matrix-target-toast-${variant}[data-intent="${intent}"]`,
+        description: `Toast: ${intent} ${variant} text on the toast surface`,
+      })),
+    ),
   },
 };
 

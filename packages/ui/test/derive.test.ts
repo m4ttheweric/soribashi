@@ -209,6 +209,7 @@ describe('buildManifest', () => {
       'Textarea',
       'TextInput',
       'Title',
+      'Toast',
       'Tooltip',
     ]);
   });

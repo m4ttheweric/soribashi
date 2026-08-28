@@ -784,6 +784,45 @@
       "registryDependencies": []
     },
     {
+      "name": "Toast",
+      "category": 2,
+      "builder": "defineCompound",
+      "slots": ["root", "viewport", "toast", "title", "description", "close", "action"],
+      "parts": ["root", "viewport"],
+      "vocabularyAxes": ["intent", "variant"],
+      "variants": ["filled", "light", "outline"],
+      "defaults": {
+        "variant": "light"
+      },
+      "files": [
+        "packages/ui/src/recipes/Toast/Toast.tsx",
+        "packages/ui/src/recipes/Toast/Toast.module.css",
+        "packages/ui/src/recipes/Toast/Toast.test.tsx",
+        "packages/ui/src/recipes/Toast/Toast.visual.test.tsx"
+      ],
+      "tokenDependencies": [
+        "--border-default",
+        "--breakpoint-xs",
+        "--font-family-sans",
+        "--font-size-sm",
+        "--font-weight-semibold",
+        "--line-height-md",
+        "--line-height-sm",
+        "--radius-md",
+        "--radius-sm",
+        "--shadow-lg",
+        "--spacing-lg",
+        "--spacing-md",
+        "--spacing-sm",
+        "--spacing-xs",
+        "--surface-raised",
+        "--text-default",
+        "--text-muted"
+      ],
+      "baseUi": true,
+      "registryDependencies": []
+    },
+    {
       "name": "Tooltip",
       "category": 2,
       "builder": "defineCompound",
