@@ -384,13 +384,21 @@ describe('branch detection', () => {
 
   it('a scale with a single numeric shade key routes to the single-shade branch, tone = that value', () => {
     const scaleTheme = themeWithScale({ '500': '#2e7de9' });
-    const result = defaultIntentResolver({ intent: 'accent', variant: 'filled', theme: scaleTheme });
+    const result = defaultIntentResolver({
+      intent: 'accent',
+      variant: 'filled',
+      theme: scaleTheme,
+    });
     expect(result).toEqual(singleShadeVariantColors('#2e7de9', 'filled'));
   });
 
   it('a scale with two numeric shade keys, no 500, routes to single-shade using the first entry', () => {
     const scaleTheme = themeWithScale({ '400': '#1e6fd9', '600': '#0e5fc9' });
-    const result = defaultIntentResolver({ intent: 'accent', variant: 'outline', theme: scaleTheme });
+    const result = defaultIntentResolver({
+      intent: 'accent',
+      variant: 'outline',
+      theme: scaleTheme,
+    });
     expect(result).toEqual(singleShadeVariantColors('#1e6fd9', 'outline'));
   });
 
@@ -402,7 +410,11 @@ describe('branch detection', () => {
       '700': '#1a4fa0',
       '900': '#0d2c5c',
     });
-    const result = defaultIntentResolver({ intent: 'accent', variant: 'filled', theme: scaleTheme });
+    const result = defaultIntentResolver({
+      intent: 'accent',
+      variant: 'filled',
+      theme: scaleTheme,
+    });
     expect(result).toEqual(rampVariantColors('accent', 'filled'));
   });
 

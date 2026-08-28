@@ -10,7 +10,11 @@ export { cn, configureClassNameMerge } from './cn.ts';
 // entry); `createSoribashiBuilders` is the combined convenience.
 export { createSoribashiBuilders, makeBuilders, registerTheme } from './create-builders.ts';
 export { createVarsResolver } from './create-vars-resolver.ts';
-export type { DefineComponentConfig, DefineComponentPublicProps, DefineComponentResult } from './define-component.tsx';
+export type {
+  DefineComponentConfig,
+  DefineComponentPublicProps,
+  DefineComponentResult,
+} from './define-component.tsx';
 export { defineComponent } from './define-component.tsx';
 export type {
   AnyPartConfig,

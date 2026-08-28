@@ -1,4 +1,4 @@
-import type { Ref, RefCallback } from 'react';
+import type { Ref } from 'react';
 
 /**
  * Return type of mergeRefs: a ref callback that may also return a cleanup
