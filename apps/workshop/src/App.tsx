@@ -20,6 +20,7 @@ import { TabsPage } from './pages/TabsPage.tsx';
 import { TenantsPage } from './pages/TenantsPage.tsx';
 import { TextareaPage } from './pages/TextareaPage.tsx';
 import { TextInputPage } from './pages/TextInputPage.tsx';
+import { ToastPage } from './pages/ToastPage.tsx';
 import { Tokens } from './pages/Tokens.tsx';
 import { TooltipPage } from './pages/TooltipPage.tsx';
 
@@ -46,6 +47,7 @@ const PAGES: Record<string, ComponentType> = {
   radiogroup: RadioGroupPage,
   tooltip: TooltipPage,
   dialog: DialogPage,
+  toast: ToastPage,
   accordion: AccordionPage,
   avatar: AvatarPage,
   skeleton: SkeletonPage,

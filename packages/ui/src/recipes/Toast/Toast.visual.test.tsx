@@ -27,7 +27,7 @@ noTransitionStyle.textContent = `
 `;
 document.head.appendChild(noTransitionStyle);
 
-const INTENTS = ['success', 'warning', 'error', 'info'] as const;
+const INTENTS = ['success', 'warning', 'danger', 'info'] as const;
 
 function FireIntents() {
   const toast = useToast();
