@@ -83,21 +83,14 @@ describe('Text (browser)', () => {
     expect(screen.container.querySelector('p')).toBeNull();
   });
 
-  it('fw="semibold" via the universal style-prop path computes font-weight 600 through an explicit token var', async () => {
-    // Text.tsx declares NO own `fw` prop (the AMENDED interface note): `fw`
-    // is a STYLE_PROPS_DATA key (packages/factory/src/style-props/style-props-data.ts)
-    // resolved by `identity` (a documented, deliberate design: CSS keywords
-    // and numeric font-weight values pass through as-is; a bare theme key
-    // like "semibold" is NOT auto-resolved to a token the way fz/lh/ff are).
-    // Verified directly against this build (`el.style.fontWeight = 'semibold'`
-    // is rejected by CSSOM as an invalid value and the assignment is a
-    // no-op, leaving the computed weight at its 400 initial): a bare
-    // `fw="semibold"` does NOT compute to 600. The documented, working form
-    // of the universal path is the explicit CSS var the resolver's own
-    // comment names: `fw="var(--font-weight-semibold)"`, which resolves the
-    // real theme token (--font-weight-semibold: 600) and is what this pins.
+  it('fw="semibold" resolves the theme font-weight token to a computed 600', async () => {
+    // Text.tsx declares NO own `fw` prop: `fw` is a STYLE_PROPS_DATA key,
+    // now resolved by getFontWeight, which resolves a bare theme token key
+    // the way fz/lh/ff do. `fw="semibold"` becomes var(--font-weight-semibold)
+    // (the theme token is 600), so it computes to 600. The earlier identity
+    // resolver left "semibold" as an invalid raw value that computed to 400.
     const screen = await wrap(
-      <Text data-testid="text" fw="var(--font-weight-semibold)">
+      <Text data-testid="text" fw="semibold">
         Emphasized copy
       </Text>,
     );
