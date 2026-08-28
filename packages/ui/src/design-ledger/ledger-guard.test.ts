@@ -99,7 +99,7 @@ describe('ledger coverage', () => {
     );
     expect(
       unexercised,
-      `These ledger rows are asserted by no tier — a row nobody exercises is decoration: ${unexercised.join(', ')}. ` +
+      `These ledger rows are asserted by no tier... a row nobody exercises is decoration: ${unexercised.join(', ')}. ` +
         "Add an assertion in the row's tier runner (token: ledger.test.ts, measured: " +
         'ledger.browser.test.tsx) that names the row id in a string literal, or delete the row.',
     ).toEqual([]);
@@ -152,7 +152,7 @@ describe('ledger coverage', () => {
     // TextInput, Select, Switch, Group all are) would satisfy a
     // mounted-somewhere check without its ring ever being focused and
     // measured. The real completeness condition is membership in
-    // focus.ring.uniform's own `covers` list — the browser test iterates
+    // focus.ring.uniform's own `covers` list... the browser test iterates
     // exactly that list and fails any entry lacking a mount fixture, so
     // covers-membership closes the loop end-to-end.
     const recipesDir = join(import.meta.dirname, '..', 'recipes');

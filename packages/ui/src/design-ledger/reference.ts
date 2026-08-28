@@ -14,32 +14,13 @@ export interface RampProvenance {
 }
 
 /**
- * Provenance of the non-colour ramps. Recorded 2026-08-06 (part 2, step 1).
- * The radius / spacing / shadow / breakpoint ramps in
- * packages/theme/src/tokens/default-tokens.ts are Tailwind CSS's default
- * scale values, adopted at v1 foundation time with no value-level adaptation
- * (each entry below records the exact key mapping, which is the only place
- * anything was adapted). Verified against real published source on
- * 2026-08-06, never recalled: tailwindcss v4.1.14, repo
- * tailwindlabs/tailwindcss @ b67cbcf6ccaa58097cb6d8d7e0eb1fca1091ccca
- * (packages/tailwindcss/theme.css), with two values traced to v3.4.17's
- * stubs/config.full.js where v4 dropped or renamed them. KEEPING these
- * values is now a recorded decision, not an accident: they are good,
- * widely-tested defaults, and consumers re-skin via createTheme anyway. Any
- * future divergence from Tailwind's values must update this record and the
- * identity rows in ledger.ts rather than drifting silently. The spec named
- * "identity values silently re-converging on shadcn" (which ships these
- * same Tailwind ramps) as its one unsolved risk; this record is what makes
- * the convergence explicit instead of silent.
- */
-/**
  * Floor rows the design-ledger spec (2026-07-27, section 7) named that have
  * not shipped. Each entry says why it was deferred and what would unblock it,
  * the same "not done, recorded" discipline the STATUS.md future lists use;
  * the ledger's whole ethos is that "not done" gets written down. Remove an
  * entry when its row lands (ledger-guard.test.ts fails any id appearing in
  * both DEFERRED and LEDGER). For the record: the spec's other two floor
- * lines DID ship — dialog.scrim.effectiveDarkness as itself, and
+ * lines DID ship... dialog.scrim.effectiveDarkness as itself, and
  * skeleton.deltaL as the two skeleton.deltaY.* rows (renamed to the scale
  * actually measured).
  */
@@ -76,6 +57,25 @@ export const DEFERRED: Record<string, string> = {
     'Unblocked the same way, with outline-offset added to the measured tuple.',
 };
 
+/**
+ * Provenance of the non-colour ramps, recorded 2026-08-06. The radius /
+ * spacing / shadow / breakpoint ramps in
+ * packages/core/src/theme/tokens/default-tokens.ts are Tailwind CSS's default
+ * scale values, adopted at v1 foundation time with no value-level adaptation
+ * (each entry below records the exact key mapping, which is the only place
+ * anything was adapted). Verified against real published source on
+ * 2026-08-06, never recalled: tailwindcss v4.1.14, repo
+ * tailwindlabs/tailwindcss @ b67cbcf6ccaa58097cb6d8d7e0eb1fca1091ccca
+ * (packages/tailwindcss/theme.css), with two values traced to v3.4.17's
+ * stubs/config.full.js where v4 dropped or renamed them. KEEPING these
+ * values is now a recorded decision, not an accident: they are good,
+ * widely-tested defaults, and consumers re-skin via createTheme anyway. Any
+ * future divergence from Tailwind's values must update this record and the
+ * identity rows in ledger.ts rather than drifting silently. The spec named
+ * "identity values silently re-converging on shadcn" (which ships these
+ * same Tailwind ramps) as its one unsolved risk; this record is what makes
+ * the convergence explicit instead of silent.
+ */
 export const PROVENANCE: Record<string, RampProvenance> = {
   radius: {
     source: 'tailwindcss packages/tailwindcss/theme.css --radius-*',

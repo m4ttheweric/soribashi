@@ -175,7 +175,7 @@ describe('design ledger: measured rows', () => {
     // "Uniform" means the RENDERED ring, not the source text. The previous
     // shape of this row scanned document.styleSheets for rules mentioning
     // --accent-primary and asserted each contained the exact fallback string
-    // `var(--accent-primary, var(--text-default))` — which passes even when
+    // `var(--accent-primary, var(--text-default))`... which passes even when
     // recipes' computed rings genuinely differ (a divergent outline-width or
     // outline-style, or a ring rule sitting on an element that never takes
     // focus, was invisible to it). This version focuses the real control in
@@ -275,13 +275,13 @@ describe('design ledger: measured rows', () => {
     // this is its replacement). A declared ring computes a concrete style
     // ('solid' today); 'none' means no outline at all and 'auto' means the
     // UA default took over. Deliberately ONLY an existence check, not a
-    // perceptual band — visibility/contrast of the ring belongs to the
+    // perceptual band... visibility/contrast of the ring belongs to the
     // deferred focus.ring.visible row (reference.ts DEFERRED), not here.
     const [uniformRing] = [...rings] as [string];
     const uniformStyle = uniformRing.split(' | ')[2];
     expect(
       uniformStyle !== 'none' && uniformStyle !== 'auto',
-      `focus.ring.uniform: the one uniform tuple (${uniformRing}) is not a declared ring — outline-style "${uniformStyle}" means the recipes' ring rules have stopped applying; uniform absence is still absence`,
+      `focus.ring.uniform: the one uniform tuple (${uniformRing}) is not a declared ring... outline-style "${uniformStyle}" means the recipes' ring rules have stopped applying; uniform absence is still absence`,
     ).toBe(true);
   });
 
@@ -289,8 +289,8 @@ describe('design ledger: measured rows', () => {
     // The 2026-08-03 defect this row earns Accordion's coverage credit for:
     // the panel needed keepMounted, keyframes, and the panelContent slot all
     // together before it animated at all. The row pins the observable
-    // outcome only — an opening panel carries a real animation with a
-    // nonzero duration — NOT the one-off frame-sampling monotonicity sweep
+    // outcome only... an opening panel carries a real animation with a
+    // nonzero duration... NOT the one-off frame-sampling monotonicity sweep
     // the original fix used for verification. Reading computed style after
     // the click is race-free: `.panel[data-open]`'s animation declaration
     // keeps animation-name/duration computed on the element for as long as
@@ -357,7 +357,7 @@ describe('design ledger: measured rows', () => {
       // by mount-order happenstance: reorder the JSX above and the query
       // would silently start resolving to the Select trigger instead, and
       // this row would stop measuring Button at all while still reporting
-      // green. The `:not([role="combobox"])` exclusion is load-bearing, not
+      // green. The `:not([role="combobox"])` exclusion is essential, not
       // decorative. Verified order-independent by temporarily swapping the
       // JSX so Select mounted first: the exclusion still found the real
       // Button and the row still passed.
@@ -405,7 +405,7 @@ describe('design ledger: measured rows', () => {
   });
 
   // The identity rows assert THROUGH their declared bound (read from LEDGER,
-  // not restated inline) so ledger.ts's number is the load-bearing record
+  // not restated inline) so ledger.ts's number is the authoritative record
   // rather than a decorative copy of a constant that really lives here.
   function identityBound(id: string): number {
     const row = LEDGER.find((r) => r.id === id);

@@ -118,7 +118,7 @@ export const LEDGER: readonly LedgerRow[] = [
     // a real, running animation with a nonzero duration.
     covers: ['Accordion'],
   },
-  // The first identity rows (part 2, step 1). An identity row records
+  // The first identity rows. An identity row records
   // soribashi's OWN decision, with no external witness: the value asserted is
   // what the shipped uiTheme actually renders, measured before being written
   // down (an identity row records reality, it does not aspirate). Provenance
