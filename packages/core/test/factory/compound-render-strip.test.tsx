@@ -1,7 +1,7 @@
-import { createTheme } from '../../src/theme/index.ts';
 import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { defineCompound, SoribashiProvider } from '../../src/factory/index.ts';
+import { createTheme } from '../../src/theme/index.ts';
 
 const baseTokens = {
   colors: { neutral: { '0': 'hsl(0 0% 100%)' } },

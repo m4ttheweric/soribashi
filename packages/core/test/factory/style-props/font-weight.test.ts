@@ -1,8 +1,8 @@
-import { createTheme } from '../../../src/theme/index.ts';
 import { describe, expect, it } from 'vitest';
 import { parseStyleProps } from '../../../src/factory/style-props/parse-style-props.ts';
 import { STYLE_PROPS_DATA } from '../../../src/factory/style-props/style-props-data.ts';
 import { getFontWeight } from '../../../src/factory/style-props/theme-resolvers/index.ts';
+import { createTheme } from '../../../src/theme/index.ts';
 
 const theme = createTheme({
   tokens: { colors: {}, radius: {}, spacing: {}, fontSize: {}, breakpoint: {} },
