@@ -30,6 +30,18 @@
     box-shadow: var(--shadow-lg);
     font-family: var(--font-family-sans);
     font-size: var(--font-size-sm);
+    /* Base UI drives data-starting-style (enter) / data-ending-style (exit) on
+       the toast root, the same transitionStatus mechanism Tooltip/Popover use.
+       The --motion-* tokens collapse to ~0 under prefers-reduced-motion via
+       codegen, so no separate reduced-motion rule is needed. */
+    transition:
+      opacity var(--motion-duration-base) var(--motion-ease-standard),
+      transform var(--motion-duration-base) var(--motion-ease-standard);
+  }
+  .toast[data-starting-style],
+  .toast[data-ending-style] {
+    opacity: 0;
+    transform: translateY(var(--spacing-sm));
   }
 
   .title {
