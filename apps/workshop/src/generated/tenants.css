@@ -123,6 +123,13 @@
     --breakpoint-sm: 40rem;
     --breakpoint-xl: 80rem;
     --breakpoint-xs: 24rem;
+    --motion-duration-base: 150ms;
+    --motion-duration-fast: 120ms;
+    --motion-duration-pulse: 1500ms;
+    --motion-duration-slow: 200ms;
+    --motion-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+    --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --heading-text-wrap: wrap;
     --heading-h1-font-size: 2.125rem;
     --heading-h1-font-weight: 700;
@@ -385,6 +392,13 @@
     --breakpoint-sm: 40rem;
     --breakpoint-xl: 80rem;
     --breakpoint-xs: 24rem;
+    --motion-duration-base: 150ms;
+    --motion-duration-fast: 120ms;
+    --motion-duration-pulse: 1500ms;
+    --motion-duration-slow: 200ms;
+    --motion-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+    --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --heading-text-wrap: wrap;
     --heading-h1-font-size: 2.125rem;
     --heading-h1-font-weight: 700;
