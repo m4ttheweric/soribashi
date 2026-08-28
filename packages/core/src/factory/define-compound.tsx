@@ -616,8 +616,7 @@ export function defineCompound<
           // Base UI's `render` prop is not part of soribashi's public part
           // API: drop it here so it can never be spread into Base UI or onto
           // the DOM element. Recipes' own type-level Omit<..., 'render'> and
-          // runtime destructures remain as an unreachable double-guard (the
-          // same posture slice 4 took for className/style).
+          // runtime destructures remain as an unreachable double-guard.
           const {
             as: asProp,
             render: _render,
@@ -778,8 +777,7 @@ export function defineCompound<
       // Base UI's `render` prop is not part of soribashi's public part API:
       // drop it here so it can never be spread into Base UI or onto the DOM
       // element. Recipes' own type-level Omit<..., 'render'> and runtime
-      // destructures remain as an unreachable double-guard (the same posture
-      // slice 4 took for className/style).
+      // destructures remain as an unreachable double-guard.
       const { render: _render, ...partProps } = merged as {
         render?: unknown;
         [key: string]: unknown;
