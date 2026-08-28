@@ -1,4 +1,10 @@
-import { type ComponentPropsWithoutRef, type ElementType, forwardRef, type Ref } from 'react';
+import {
+  type ComponentPropsWithoutRef,
+  type CSSProperties,
+  type ElementType,
+  forwardRef,
+  type Ref,
+} from 'react';
 import type { ResolvedTheme } from '../theme/index.ts';
 import { autoVars } from './auto-vars.ts';
 import { buildDataAttrs } from './data-attrs.ts';
@@ -145,7 +151,7 @@ export function definePolymorphicComponent<
       dataAttrs: buildDataAttrs(config.vocabularyAxes ?? [], hasVariants, sp.rest),
       props: sp.rest as any,
       varsResolver: varsResolver as any,
-      stylePropsStyle: sp.rootStyle as any,
+      stylePropsStyle: sp.rootStyle as CSSProperties | null,
       stylePropsClassName: sp.rootClassName,
     });
 
